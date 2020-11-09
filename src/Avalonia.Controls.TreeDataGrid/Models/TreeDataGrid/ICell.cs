@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Avalonia.Controls.Models.TreeDataGrid
+﻿namespace Avalonia.Controls.Models.TreeDataGrid
 {
     public interface ICell
     {
+        object? Value { get; }
     }
 }

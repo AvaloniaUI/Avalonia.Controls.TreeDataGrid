@@ -1,0 +1,109 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="clr-namespace:Avalonia.Controls"
+        xmlns:conv="clr-namespace:Avalonia.Controls.Converters"
+        xmlns:p="clr-namespace:Avalonia.Controls.Primitives">
+  <Styles.Resources>
+    <SolidColorBrush x:Key="TreeDataGridGridLinesBrush"
+                     Color="{StaticResource SystemBaseMediumLowColor}"
+                     Opacity="0.4" />
+  </Styles.Resources>
+  <Style Selector="c|TreeDataGrid">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <p:TreeDataGridPanel>
+          <p:TreeDataGridPanel.Header>
+            <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+                          VerticalScrollBarVisibility="Hidden"
+                          Offset="{TemplateBinding ScrollOffset}">
+              <Border DockPanel.Dock="Top"
+                      BorderThickness="0 0 0 1"
+                      BorderBrush="{DynamicResource TreeDataGridGridLinesBrush}">
+                <ItemsRepeater Name="PART_Header"
+                               Items="{TemplateBinding Columns}">
+                  <ItemsRepeater.Layout>
+                    <p:TreeDataGridLayout Columns="{Binding Columns, RelativeSource={RelativeSource TemplatedParent}}"
+                                        SharedState="{Binding SharedState, RelativeSource={RelativeSource TemplatedParent}}}"/>
+                  </ItemsRepeater.Layout>
+                  <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                      <p:TreeDataGridHeaderCell/>
+                    </DataTemplate>
+                  </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+              </Border>
+            </ScrollViewer>
+          </p:TreeDataGridPanel.Header>
+
+          <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                        Offset="{TemplateBinding ScrollOffset, Mode=TwoWay}">
+            <ItemsRepeater Name="PART_Cells"
+                           Items="{TemplateBinding Cells}"
+                           ItemTemplate="{TemplateBinding ElementFactory}"
+                           HorizontalCacheLength="0"
+                           VerticalCacheLength="0">
+              <ItemsRepeater.Layout>
+                <p:TreeDataGridLayout Columns="{Binding Columns, RelativeSource={RelativeSource TemplatedParent}}"
+                                    SharedState="{Binding SharedState, RelativeSource={RelativeSource TemplatedParent}}}"/>
+              </ItemsRepeater.Layout>
+            </ItemsRepeater>
+          </ScrollViewer>
+        </p:TreeDataGridPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="p|TreeDataGridHeaderCell">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DockPanel VerticalAlignment="Stretch">
+          <Thumb Name="PART_Resizer"
+                 DockPanel.Dock="Right"
+                 Background="Transparent"
+                 Cursor="SizeWestEast">
+            <Thumb.Template>
+              <ControlTemplate>
+                <Border Background="Transparent" Padding="1 0">
+                  <Rectangle Fill="{DynamicResource TreeDataGridGridLinesBrush}"
+                             VerticalAlignment="Stretch"
+                             Width="1"/>
+                </Border>
+              </ControlTemplate>
+            </Thumb.Template>
+          </Thumb>
+          <TextBlock Margin="4 2"
+                     Text="{TemplateBinding Header}"
+                     VerticalAlignment="Center"/>
+        </DockPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="p|TreeDataGridExpanderCell">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DockPanel Margin="{TemplateBinding Indent, Converter={x:Static conv:IndentConverter.Instance}}">
+          <Border DockPanel.Dock="Left"
+                  Margin="4 0"
+                  Width="12" Height="12">
+            <ToggleButton Classes="ExpandCollapseChevron"
+                          Focusable="False"
+                          IsChecked="{Binding IsExpanded}"
+                          IsVisible="{Binding ShowExpander}"/>
+          </Border>
+          <TextBlock Text="{TemplateBinding Value}" VerticalAlignment="Center"/>
+        </DockPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="p|TreeDataGridTextCell">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Padding="4 2">
+          <TextBlock Text="{TemplateBinding Value}" VerticalAlignment="Center"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>

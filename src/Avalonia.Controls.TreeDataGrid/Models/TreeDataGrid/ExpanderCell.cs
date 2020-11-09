@@ -14,5 +14,7 @@
         }
 
         public TValue Value { get; }
+
+        protected override object? GetUntypedValue() => Value;
     }
 }

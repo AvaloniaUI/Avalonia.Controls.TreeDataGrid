@@ -9,5 +9,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         public T Value { get; }
+        object? ICell.Value => Value;
     }
 }
