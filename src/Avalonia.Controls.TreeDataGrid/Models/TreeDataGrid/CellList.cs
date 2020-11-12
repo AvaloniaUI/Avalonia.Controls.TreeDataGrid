@@ -20,5 +20,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             for (var columnIndex = 0; columnIndex < ColumnCount; ++columnIndex)
                 Insert(cellIndex++, selector(model, columnIndex));
         }
+
+        public void RemoveRows(int index, int count) => RemoveRange(index * ColumnCount, count * ColumnCount);
     }
 }

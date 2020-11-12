@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls
@@ -53,7 +54,25 @@ namespace Avalonia.Controls
 
         public void AddColumn(ColumnBase<TModel> column) => _columns.Add(column);
 
-        void IExpanderController.IsExpandedChanged(IExpander expander)
+        bool IExpanderController.TryExpand(IExpander expander)
+        {
+            if (_cells is null)
+                return false;
+
+            if (expander is ExpanderCellBase<TModel> cell &&
+                _columns.IndexOf(cell.Column) is var columnIndex &&
+                columnIndex != -1 &&
+                FindRowIndexForModelIndex(columnIndex, cell.ModelIndex) is var rowIndex &&
+                rowIndex != -1 &&
+                cell.GetChildModels() is IEnumerable<TModel> childModels)
+            {
+                return InsertRows(_cells, rowIndex + 1, cell.ModelIndex, childModels) > 0;
+            }
+
+            return false;
+        }
+
+        void IExpanderController.Collapse(IExpander expander)
         {
             if (_cells is null)
                 return;
@@ -61,11 +80,11 @@ namespace Avalonia.Controls
             if (expander is ExpanderCellBase<TModel> cell &&
                 _columns.IndexOf(cell.Column) is var columnIndex &&
                 columnIndex != -1 &&
-                FindRowIndexForModelIndex(columnIndex, cell.ModelIndex) is var index &&
-                index != -1 &&
-                cell.GetChildModels() is IEnumerable<TModel> childModels)
+                FindRowIndexForModelIndex(columnIndex, cell.ModelIndex) is var rowIndex &&
+                rowIndex != -1)
             {
-                InsertRows(_cells, index + 1, cell.ModelIndex, childModels);
+                var childRowCount = GetDescendentRowCount(columnIndex, rowIndex);
+                _cells.RemoveRows(++rowIndex, childRowCount);
             }
         }
 
@@ -82,7 +101,7 @@ namespace Avalonia.Controls
             return result;
         }
 
-        private void InsertRows(
+        private int InsertRows(
             CellList cells,
             int rowIndex,
             IndexPath parentModelIndex,
@@ -103,6 +122,8 @@ namespace Avalonia.Controls
 
                 ++_rows.Count;
             }
+
+            return childRowIndex;
         }
 
         private int FindRowIndexForModelIndex(int columnIndex, IndexPath modelIndex)
@@ -120,6 +141,27 @@ namespace Avalonia.Controls
             }
 
             return -1;
+        }
+
+        private int GetDescendentRowCount(int columnIndex, int rowIndex)
+        {
+            if (_cells is null || (rowIndex + 1) >= _cells.RowCount)
+                return -1;
+
+            var parentCell = _cells[columnIndex, rowIndex] as IExpanderCell ??
+                throw new ArgumentException("Cannot count children of non-expander cell.");
+
+            var depth = parentCell.ModelIndex.GetSize();
+            var i = 1;
+
+            while (rowIndex + i < _cells.RowCount &&
+                _cells[columnIndex, rowIndex + i] is IExpanderCell cell &&
+                cell.ModelIndex.GetSize() > depth)
+            {
+                ++i;
+            }
+
+            return i - 1;
         }
     }
 }

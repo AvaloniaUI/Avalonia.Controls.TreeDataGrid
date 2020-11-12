@@ -55,6 +55,41 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 modelIndexes);
         }
 
+        [Fact]
+        public void Attempting_To_Expand_Node_That_Has_No_Children_Hides_Expander()
+        {
+            var data = new Node { Id = 0, Title = "Node 0", Description = "Root" };
+
+            // Here we return true from hasChildren selector, but there are actually no children.
+            // This may happen if calculating the children is expensive.
+            var target = new HierarchicalTreeDataGridSource<Node>(data, x => x.Children, x => true);
+            target.AddColumn("ID", x => x.Id);
+            target.AddColumn("Title", x => x.Title);
+            target.AddColumn("Description", x => x.Description);
+
+            var expander = (IExpanderCell)target.Cells[0, 0];
+            Assert.True(expander.ShowExpander);
+
+            expander.IsExpanded = true;
+
+            Assert.False(expander.ShowExpander);
+            Assert.False(expander.IsExpanded);
+        }
+
+        [Fact]
+        public void Collapsing_Root_Removes_Child_Cells()
+        {
+            var data = CreateTreeData();
+            var target = CreateTarget(data);
+            var expander = (IExpander)target.Cells[0, 0];
+
+            expander.IsExpanded = true;
+            Assert.Equal(6, target.Cells.RowCount);
+
+            expander.IsExpanded = false;
+            Assert.Equal(1, target.Cells.RowCount);
+        }
+
         private Node CreateTreeData()
         {
             var root = new Node 

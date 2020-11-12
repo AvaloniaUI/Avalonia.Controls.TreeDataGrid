@@ -42,10 +42,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <param name="model">The model.</param>
         public abstract IEnumerable<TModel>? GetChildModels(TModel model);
 
-        /// <summary>
-        /// Called when a cell in this column is expanded or collapsed.
-        /// </summary>
-        /// <param name="expander">The cell.</param>
-        public void IsExpandedChanged(IExpander expander) => _owner.IsExpandedChanged(expander);
+        public bool TryExpand(IExpander expander) => _owner.TryExpand(expander);
+        public void Collapse(IExpander expander) => _owner.Collapse(expander);
     }
 }

@@ -2,10 +2,11 @@
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    public abstract class ExpanderCellBase<TModel> : IExpanderCell
+    public abstract class ExpanderCellBase<TModel> : NotifyingBase, IExpanderCell
     {
         private readonly TModel _model;
         private bool _isExpanded;
+        private bool _showExpander;
 
         protected ExpanderCellBase(
             ExpanderColumnBase<TModel> column,
@@ -21,7 +22,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public ExpanderColumnBase<TModel> Column { get; }
         public IndexPath ModelIndex { get; }
-        public bool ShowExpander { get; }
+
+        public bool ShowExpander 
+        {
+            get => _showExpander;
+            private set => RaiseAndSetIfChanged(ref _showExpander, value);
+        }
+
         object? ICell.Value => GetUntypedValue();
 
         public bool IsExpanded
@@ -32,7 +39,24 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 if (_isExpanded != value)
                 {
                     _isExpanded = value;
-                    Column.IsExpandedChanged(this);
+
+                    if (_isExpanded)
+                    {
+                        if (Column.TryExpand(this))
+                        {
+                            RaisePropertyChanged();
+                        }
+                        else
+                        {
+                            _isExpanded = false;
+                            ShowExpander = false;
+                        }
+                    }
+                    else
+                    {
+                        Column.Collapse(this);
+                        RaisePropertyChanged();
+                    }
                 }
             }
         }
