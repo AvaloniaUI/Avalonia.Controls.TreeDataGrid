@@ -4,7 +4,7 @@ using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls
 {
-    public class HierarchicalTreeDataGridSource<TModel> : IExpanderController
+    public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource, IExpanderController
         where TModel : class
     {
         private readonly List<TModel> _roots;

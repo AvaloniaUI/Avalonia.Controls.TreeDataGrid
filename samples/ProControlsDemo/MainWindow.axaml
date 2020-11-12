@@ -1,0 +1,22 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="ProControlsDemo.MainWindow"
+        Title="ProControlsDemo">
+  <TabControl Name="tabs">
+    <TabItem Header="Files">
+      <DockPanel>
+        <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
+        <TreeDataGrid Name="fileViewer" Source="{Binding Files}"/>
+      </DockPanel>
+    </TabItem>
+    <TabItem Header="Spreadsheet">
+      <DockPanel>
+        <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
+        <TreeDataGrid Name="spreadsheet" Source="{Binding Spreadsheet}"/>
+      </DockPanel>
+    </TabItem>
+  </TabControl>
+</Window>
