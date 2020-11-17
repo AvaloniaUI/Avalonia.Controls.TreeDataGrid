@@ -1,6 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-using Avalonia.Controls.Models;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Xunit;
 
@@ -23,6 +23,35 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             Assert.False(cell0.ShowExpander);
             Assert.Equal("Node 0", cell1.Value);
             Assert.Equal("Root", cell2.Value);
+        }
+
+        [Fact]
+        public void Creates_Cells_For_Root_Models()
+        {
+            var data = new[]
+            {
+                new Node { Id = 0, Title = "Node 0", Description = "Root 0" },
+                new Node { Id = 1, Title = "Node 1", Description = "Root 1" },
+            };
+            var target = CreateTarget(data);
+
+            Assert.Equal(2, target.Cells.RowCount);
+            Assert.Equal(3, target.Cells.ColumnCount);
+            var cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 0]);
+            var cell1 = Assert.IsType<TextCell<string>>(target.Cells[1, 0]);
+            var cell2 = Assert.IsType<TextCell<string>>(target.Cells[2, 0]);
+            Assert.Equal(0, cell0.Value);
+            Assert.False(cell0.ShowExpander);
+            Assert.Equal("Node 0", cell1.Value);
+            Assert.Equal("Root 0", cell2.Value);
+
+            cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 1]);
+            cell1 = Assert.IsType<TextCell<string>>(target.Cells[1, 1]);
+            cell2 = Assert.IsType<TextCell<string>>(target.Cells[2, 1]);
+            Assert.Equal(1, cell0.Value);
+            Assert.False(cell0.ShowExpander);
+            Assert.Equal("Node 1", cell1.Value);
+            Assert.Equal("Root 1", cell2.Value);
         }
 
         [Fact]
@@ -63,9 +92,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             // Here we return true from hasChildren selector, but there are actually no children.
             // This may happen if calculating the children is expensive.
             var target = new HierarchicalTreeDataGridSource<Node>(data, x => x.Children, x => true);
-            target.AddColumn("ID", x => x.Id);
-            target.AddColumn("Title", x => x.Title);
-            target.AddColumn("Description", x => x.Description);
+            CreateColumns(target);
 
             var expander = (IExpanderCell)target.Cells[0, 0];
             Assert.True(expander.ShowExpander);
@@ -119,10 +146,25 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 root,
                 x => x.Children,
                 x => x.Children?.Count > 0);
-            result.AddColumn("ID", x => x.Id);
-            result.AddColumn("Title", x => x.Title);
-            result.AddColumn("Description", x => x.Description);
+            CreateColumns(result);
             return result;
+        }
+
+        private HierarchicalTreeDataGridSource<Node> CreateTarget(IEnumerable<Node> roots)
+        {
+            var result = new HierarchicalTreeDataGridSource<Node>(
+                roots,
+                x => x.Children,
+                x => x.Children?.Count > 0);
+            CreateColumns(result);
+            return result;
+        }
+
+        private void CreateColumns(HierarchicalTreeDataGridSource<Node> source)
+        {
+            source.AddColumn("ID", x => x.Id);
+            source.AddColumn("Title", x => x.Title);
+            source.AddColumn("Description", x => x.Description);
         }
 
         private class Node

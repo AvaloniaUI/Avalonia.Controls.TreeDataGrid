@@ -19,7 +19,12 @@
         }
 
         /// <summary>
-        /// Gets the width of the column.
+        /// Gets or sets the column index.
+        /// </summary>
+        public int Index { get; set; }
+
+        /// <summary>
+        /// Gets or sets the width of the column.
         /// </summary>
         public GridLength Width { get; set; }
 

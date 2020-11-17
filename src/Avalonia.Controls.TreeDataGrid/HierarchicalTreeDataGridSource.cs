@@ -8,7 +8,7 @@ namespace Avalonia.Controls
     public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource, IExpanderController
         where TModel : class
     {
-        private readonly List<TModel> _roots;
+        private readonly ItemsSourceView<TModel> _roots;
         private readonly ColumnList<TModel> _columns;
         private readonly AutoRows _rows;
         private readonly Func<TModel, IEnumerable<TModel>?> _childSelector;
@@ -19,8 +19,16 @@ namespace Avalonia.Controls
             TModel root,
             Func<TModel, IEnumerable<TModel>?> childSelector,
             Func<TModel, bool> hasChildrenSelector)
+            : this(new[] { root }, childSelector, hasChildrenSelector)
         {
-            _roots = new List<TModel> { root };
+        }
+
+        public HierarchicalTreeDataGridSource(
+            IEnumerable<TModel> roots,
+            Func<TModel, IEnumerable<TModel>?> childSelector,
+            Func<TModel, bool> hasChildrenSelector)
+        {
+            _roots = new ItemsSourceView<TModel>(roots);
             _columns = new ColumnList<TModel>();
             _rows = new AutoRows();
             _childSelector = childSelector;

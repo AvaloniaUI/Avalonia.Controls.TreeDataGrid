@@ -1,7 +1,5 @@
 ﻿using System;
-using Avalonia;
 using Avalonia.Controls.Models.TreeDataGrid;
-using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Controls.Primitives
 {
