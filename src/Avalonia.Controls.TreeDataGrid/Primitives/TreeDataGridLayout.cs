@@ -92,8 +92,7 @@ namespace Avalonia.Controls.Primitives
 
                     for (var rowIndex = state.FirstRealizedRow; rowIndex <= state.LastRealizedRow; rowIndex++)
                     {
-                        int firstItemIndex = rowIndex * 3;
-                        var index = firstItemIndex + columnIndex;
+                        var index = (rowIndex * columnCount) + columnIndex;
                         var container = context.GetOrCreateElementAt(index);
 
                         container.Measure(new Size(availableWidth, RowHeight));
