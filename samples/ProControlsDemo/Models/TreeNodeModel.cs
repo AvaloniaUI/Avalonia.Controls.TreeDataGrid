@@ -4,7 +4,7 @@ using System.IO;
 
 namespace ProControlsDemo.Models
 {
-    class TreeNodeModel
+    internal class TreeNodeModel
     {
         private IReadOnlyList<TreeNodeModel>? _children;
 

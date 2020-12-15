@@ -149,7 +149,7 @@ namespace Avalonia.Controls.Primitives
 
                 for (int rowIndex = state.FirstRealizedRow; rowIndex <= state.LastRealizedRow; rowIndex++)
                 {
-                    var index = (rowIndex * 3) + columnIndex;
+                    var index = (rowIndex * columnCount) + columnIndex;
                     var container = context.GetOrCreateElementAt(index);
                     var rect = new Rect(x, rowIndex * RowHeight, columnWidth, RowHeight);
                     container.Arrange(rect);

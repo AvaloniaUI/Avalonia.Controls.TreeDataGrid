@@ -7,6 +7,26 @@ namespace ProControlsDemo.ViewModels
     {
         private HierarchicalTreeDataGridSource<TreeNodeModel>? _files;
 
+        public FlatTreeDataGridSource<Country>? _countries;
+
+        public FlatTreeDataGridSource<Country> Countries
+        {
+            get
+            {
+                if (_countries is null)
+                {
+                    _countries = new FlatTreeDataGridSource<Country>(Models.Countries.All);
+                    _countries.AddColumn("Country", x => x.Name, new GridLength(6, GridUnitType.Star));
+                    _countries.AddColumn("Region", x => x.Region, new GridLength(4, GridUnitType.Star));
+                    _countries.AddColumn("Popuplation", x => x.Population, new GridLength(3, GridUnitType.Star));
+                    _countries.AddColumn("Area", x => x.Area, new GridLength(3, GridUnitType.Star));
+                    _countries.AddColumn("GDP", x => x.GDP, new GridLength(3, GridUnitType.Star));
+                }
+
+                return _countries;
+            }
+        }
+
         public HierarchicalTreeDataGridSource<TreeNodeModel> Files
         {
             get
