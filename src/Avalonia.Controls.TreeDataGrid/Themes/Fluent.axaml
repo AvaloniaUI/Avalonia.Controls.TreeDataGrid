@@ -35,16 +35,16 @@
 
           <ScrollViewer HorizontalScrollBarVisibility="Auto"
                         Offset="{TemplateBinding ScrollOffset, Mode=TwoWay}">
-            <ItemsRepeater Name="PART_Cells"
+            <ItemsRepeaterHack Name="PART_Cells"
                            Items="{TemplateBinding Cells}"
                            ItemTemplate="{TemplateBinding ElementFactory}"
                            HorizontalCacheLength="0"
                            VerticalCacheLength="0">
-              <ItemsRepeater.Layout>
+              <ItemsRepeaterHack.Layout>
                 <TreeDataGridLayout Columns="{Binding Columns, RelativeSource={RelativeSource TemplatedParent}}"
                                     SharedState="{Binding SharedState, RelativeSource={RelativeSource TemplatedParent}}}"/>
-              </ItemsRepeater.Layout>
-            </ItemsRepeater>
+              </ItemsRepeaterHack.Layout>
+            </ItemsRepeaterHack>
           </ScrollViewer>
         </TreeDataGridPanel>
       </ControlTemplate>
