@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Controls.Selection;
 using ProControlsDemo.Models;
 
 namespace ProControlsDemo.ViewModels
@@ -6,6 +7,7 @@ namespace ProControlsDemo.ViewModels
     internal class MainWindowViewModel
     {
         private HierarchicalTreeDataGridSource<TreeNodeModel>? _files;
+        private TreeSelectionModel<TreeNodeModel>? _selectedFiles;
 
         public FlatTreeDataGridSource<Country>? _countries;
 
@@ -44,5 +46,7 @@ namespace ProControlsDemo.ViewModels
                 return _files;
             }
         }
+
+        public TreeSelectionModel<TreeNodeModel> SelectedFiles => _selectedFiles ??= new TreeSelectionModel<TreeNodeModel>();
     }
 }

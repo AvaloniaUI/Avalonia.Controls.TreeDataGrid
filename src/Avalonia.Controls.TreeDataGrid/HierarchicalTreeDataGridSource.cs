@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls
@@ -10,7 +9,7 @@ namespace Avalonia.Controls
     {
         private readonly ItemsSourceView<TModel> _roots;
         private readonly ColumnList<TModel> _columns;
-        private readonly AutoRows _rows;
+        private readonly RowList<TModel> _rows;
         private readonly Func<TModel, IEnumerable<TModel>?> _childSelector;
         private readonly Func<TModel, bool> _hasChildrenSelector;
         private CellList? _cells;
@@ -30,7 +29,7 @@ namespace Avalonia.Controls
         {
             _roots = new ItemsSourceView<TModel>(roots);
             _columns = new ColumnList<TModel>();
-            _rows = new AutoRows();
+            _rows = new RowList<TModel>();
             _childSelector = childSelector;
             _hasChildrenSelector = hasChildrenSelector;
         }
@@ -57,7 +56,7 @@ namespace Avalonia.Controls
                     header,
                     selector,
                     columnWidth);
-            _columns.Add(column);
+            AddColumn(column);
         }
 
         public void AddColumn(ColumnBase<TModel> column) => _columns.Add(column);
@@ -92,8 +91,21 @@ namespace Avalonia.Controls
                 rowIndex != -1)
             {
                 var childRowCount = GetDescendentRowCount(columnIndex, rowIndex);
-                _cells.RemoveRows(++rowIndex, childRowCount);
+                RemoveRows(_cells, rowIndex + 1, childRowCount);
             }
+        }
+
+        object ITreeDataGridSource.RowToModelHack(int rowIndex) => _rows[rowIndex].Model;
+        
+        int ITreeDataGridSource.ModelToRowHack(object? model)
+        {
+            for (var i = 0; i < _rows.Count; ++i)
+            {
+                if (Equals(model, _rows[i].Model))
+                    return i;
+            }
+
+            return -1;
         }
 
         private CellList InitializeCells()
@@ -102,7 +114,6 @@ namespace Avalonia.Controls
 
             if (_columns is object)
             {
-                _rows.Count = 0;
                 InsertRows(result, 0, default, _roots);
             }
 
@@ -121,17 +132,26 @@ namespace Avalonia.Controls
             {
                 var modelIndex = parentModelIndex.CloneWithChildIndex(childRowIndex++);
 
+                _rows.Insert(rowIndex, new HierarchicalRow<TModel>(row, modelIndex));
+
                 cells.InsertRow(rowIndex++, row, (model, columnIndex) => _columns[columnIndex] switch
                 {
                     ExpanderColumnBase<TModel> expander => expander.CreateCell(modelIndex, model),
                     StandardColumnBase<TModel> column => column.CreateCell(model),
                     _ => throw new NotSupportedException("Unsupported column type"),
                 });
-
-                ++_rows.Count;
             }
 
             return childRowIndex;
+        }
+
+        private void RemoveRows(
+            CellList cells,
+            int rowIndex,
+            int rowCount)
+        {
+            _rows.RemoveRange(rowIndex, rowCount);
+            cells.RemoveRows(rowIndex, rowCount);
         }
 
         private int FindRowIndexForModelIndex(int columnIndex, IndexPath modelIndex)
@@ -140,12 +160,10 @@ namespace Avalonia.Controls
                 return -1;
 
             // TODO: Do this with an index or binary search or something.
-            for (var i = 0; i < _cells.RowCount; ++i)
+            for (var i = 0; i < _rows.Count; ++i)
             {
-                if (_cells[columnIndex, i] is IExpanderCell cell && cell.ModelIndex == modelIndex)
-                {
+                if (((HierarchicalRow<TModel>)_rows[i]).ModelIndex == modelIndex)
                     return i;
-                }
             }
 
             return -1;

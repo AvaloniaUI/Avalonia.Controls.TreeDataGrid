@@ -1,10 +1,9 @@
 ﻿using System;
-using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TreeListElementFactory : IElementFactory
+    public class TreeDataGridElementFactory : IElementFactory
     {
         private readonly RecyclePool _recyclePool = new RecyclePool();
 
@@ -40,6 +39,12 @@ namespace Avalonia.Controls.Primitives
         public void RecycleElement(ElementFactoryRecycleArgs args)
         {
             _recyclePool.PutElement(args.Element, args.Element.GetType().FullName, args.Parent);
+        }
+
+        public static void SetCellIndex(TreeDataGridCell cell, int columnIndex, int rowIndex)
+        {
+            cell.ColumnIndex = columnIndex;
+            cell.RowIndex = rowIndex;
         }
     }
 }

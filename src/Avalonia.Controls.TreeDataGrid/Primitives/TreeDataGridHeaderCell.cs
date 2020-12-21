@@ -6,7 +6,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TreeDataGridHeaderCell : TemplatedControl
+    public class TreeDataGridHeaderCell : TreeDataGridCell
     {
         public static readonly DirectProperty<TreeDataGridHeaderCell, object?> HeaderProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridHeaderCell, object?>(

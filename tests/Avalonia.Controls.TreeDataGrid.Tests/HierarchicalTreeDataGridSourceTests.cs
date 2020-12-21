@@ -15,6 +15,10 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             var target = CreateTarget(data);
 
             Assert.Equal(1, target.Cells.RowCount);
+            var row0 = Assert.IsType<HierarchicalRow<Node>>(target.Rows[0]);
+            Assert.Equal(data, row0.Model);
+            Assert.Equal(new IndexPath(0), row0.ModelIndex);
+
             Assert.Equal(3, target.Cells.ColumnCount);
             var cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 0]);
             var cell1 = Assert.IsType<TextCell<string>>(target.Cells[1, 0]);
@@ -36,6 +40,13 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             var target = CreateTarget(data);
 
             Assert.Equal(2, target.Cells.RowCount);
+            var row0 = Assert.IsType<HierarchicalRow<Node>>(target.Rows[0]);
+            var row1 = Assert.IsType<HierarchicalRow<Node>>(target.Rows[1]);
+            Assert.Equal(data[0], row0.Model);
+            Assert.Equal(new IndexPath(0), row0.ModelIndex);
+            Assert.Equal(data[1], row1.Model);
+            Assert.Equal(new IndexPath(1), row1.ModelIndex);
+
             Assert.Equal(3, target.Cells.ColumnCount);
             var cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 0]);
             var cell1 = Assert.IsType<TextCell<string>>(target.Cells[1, 0]);

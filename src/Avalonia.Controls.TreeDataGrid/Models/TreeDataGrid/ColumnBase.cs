@@ -1,7 +1,7 @@
 ﻿namespace Avalonia.Controls.Models.TreeDataGrid
 {
     /// <summary>
-    /// Base class for columns in an <see cref="ITreeDataGridSource"/> which uses a model as its data
+    /// Base class for columns in an <see cref="ITreeDataGridSource"/> which use a model as their data
     /// source.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
@@ -17,11 +17,6 @@
             Header = header;
             Width = width;
         }
-
-        /// <summary>
-        /// Gets or sets the column index.
-        /// </summary>
-        public int Index { get; set; }
 
         /// <summary>
         /// Gets or sets the width of the column.

@@ -1,6 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
+using Avalonia.Input;
+using Avalonia.VisualTree;
 using SharedLayoutState = Avalonia.Controls.Primitives.TreeDataGridLayout.SharedLayoutState;
 
 namespace Avalonia.Controls
@@ -28,6 +32,12 @@ namespace Avalonia.Controls
                 o => o.ScrollOffset,
                 (o, v) => o.ScrollOffset = v);
 
+        public static readonly DirectProperty<TreeDataGrid, ITreeSelectionModel?> SelectionProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGrid, ITreeSelectionModel?>(
+                nameof(Selection),
+                o => o.Selection,
+                (o, v) => o.Selection = v);
+
         public static readonly DirectProperty<TreeDataGrid, SharedLayoutState> SharedStateProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, SharedLayoutState>(
                 nameof(SharedState),
@@ -43,6 +53,7 @@ namespace Avalonia.Controls
         private IReadOnlyList<ICell>? _cells;
         private IReadOnlyList<IColumn>? _columns;
         private Vector _scrollOffset;
+        private ITreeSelectionModel? _selection;
 
         public TreeDataGrid()
         {
@@ -62,7 +73,7 @@ namespace Avalonia.Controls
             private set => SetAndRaise(ColumnsProperty, ref _columns, value);
         }
 
-        public IElementFactory ElementFactory { get; } = new TreeListElementFactory();
+        public IElementFactory ElementFactory { get; } = new TreeDataGridElementFactory();
 
         public ItemsRepeater? Repeater { get; private set; }
 
@@ -70,6 +81,19 @@ namespace Avalonia.Controls
         {
             get => _scrollOffset;
             set => SetAndRaise(ScrollOffsetProperty, ref _scrollOffset, value);
+        }
+
+        public ITreeSelectionModel? Selection
+        {
+            get => _selection;
+            set
+            {
+                if (SetAndRaise(SelectionProperty, ref _selection, value) &&
+                    _selection is object)
+                {
+                    _selection.SelectionChanged += HandleSelectionChanged;
+                }
+            }
         }
 
         public SharedLayoutState SharedState { get; }
@@ -89,12 +113,43 @@ namespace Avalonia.Controls
             }
         }
 
-        protected virtual IElementFactory CreateElementFactory() => new TreeListElementFactory();
+        protected virtual IElementFactory CreateElementFactory() => new TreeDataGridElementFactory();
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
             Repeater = e.NameScope.Find<ItemsRepeater>("PART_Cells");
+        }
+
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+
+            if (_selection is null)
+                return;
+
+            var cell = (e.Source as IVisual)?.FindAncestorOfType<TreeDataGridCell>();
+
+            if (cell is object)
+            {
+                _selection.SelectedItem = _source!.RowToModelHack(cell.RowIndex);
+            }
+        }
+
+        private void HandleSelectionChanged(object sender, TreeSelectionModelSelectionChangedEventArgs e)
+        {
+            if (_source is null || Repeater is null)
+                return;
+
+            var selectedRow = _source.ModelToRowHack(_selection?.SelectedItem);
+
+            foreach (var child in Repeater.Children)
+            {
+                if (child is TreeDataGridCell cell)
+                {
+                    cell.IsSelected = cell.RowIndex == selectedRow;
+                }
+            }
         }
     }
 }

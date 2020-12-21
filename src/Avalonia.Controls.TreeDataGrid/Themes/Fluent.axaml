@@ -78,9 +78,11 @@
   </Style>
 
   <Style Selector="TreeDataGridExpanderCell">
+    <Setter Property="Background" Value="Transparent"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <DockPanel Margin="{TemplateBinding Indent, Converter={x:Static conv:IndentConverter.Instance}}">
+        <DockPanel Background="{TemplateBinding Background}"
+                   Margin="{TemplateBinding Indent, Converter={x:Static conv:IndentConverter.Instance}}">
           <Border DockPanel.Dock="Left"
                   Margin="4 0"
                   Width="12" Height="12">
@@ -96,12 +98,17 @@
   </Style>
 
   <Style Selector="TreeDataGridTextCell">
+    <Setter Property="Background" Value="Transparent"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Padding="4 2">
+        <Border Background="{TemplateBinding Background}" Padding="4 2">
           <TextBlock Text="{TemplateBinding Value}" VerticalAlignment="Center"/>
         </Border>
       </ControlTemplate>
     </Setter>
+  </Style>
+
+  <Style Selector=":is(TreeDataGridCell):selected">
+    <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
   </Style>
 </Styles>

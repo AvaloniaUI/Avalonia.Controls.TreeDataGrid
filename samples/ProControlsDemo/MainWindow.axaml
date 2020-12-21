@@ -15,7 +15,7 @@
     <TabItem Header="Files">
       <DockPanel>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
-        <TreeDataGrid Name="fileViewer" Source="{Binding Files}"/>
+        <TreeDataGrid Name="fileViewer" Source="{Binding Files}" Selection="{Binding SelectedFiles}"/>
       </DockPanel>
     </TabItem>
     <TabItem Header="Spreadsheet">

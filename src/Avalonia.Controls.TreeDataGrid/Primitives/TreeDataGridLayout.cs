@@ -95,6 +95,11 @@ namespace Avalonia.Controls.Primitives
                         var index = (rowIndex * columnCount) + columnIndex;
                         var container = context.GetOrCreateElementAt(index);
 
+                        if (container is TreeDataGridCell cell)
+                        {
+                            TreeDataGridElementFactory.SetCellIndex(cell, columnIndex, rowIndex);
+                        }
+
                         container.Measure(new Size(availableWidth, RowHeight));
                         minColumnWidth = Math.Max(minColumnWidth, container.DesiredSize.Width);
                     }

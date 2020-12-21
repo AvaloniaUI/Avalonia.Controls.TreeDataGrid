@@ -34,6 +34,16 @@ namespace Avalonia.Controls
         public IRows Rows => _rows;
         public ICells Cells => _cells ??= InitializeCells();
 
+        object ITreeDataGridSource.RowToModelHack(int rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        int ITreeDataGridSource.ModelToRowHack(object? model)
+        {
+            throw new NotImplementedException();
+        }
+
         private CellList InitializeCells()
         {
             var result = new CellList(_columns.Count);
@@ -67,6 +77,5 @@ namespace Avalonia.Controls
 
             return childRowIndex;
         }
-
     }
 }
