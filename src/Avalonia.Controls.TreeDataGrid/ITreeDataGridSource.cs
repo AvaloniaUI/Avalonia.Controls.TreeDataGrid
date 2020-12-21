@@ -26,7 +26,7 @@ namespace Avalonia.Controls
         /// Temorary hack for selection purposes: returns the model for a row index.
         /// </summary>
         /// <param name="rowIndex">The row index.</param>
-        object RowToModelHack(int rowIndex);
+        object? RowToModelHack(int rowIndex);
 
         /// <summary>
         /// Temorary hack for selection purposes: returns the row index for a model.

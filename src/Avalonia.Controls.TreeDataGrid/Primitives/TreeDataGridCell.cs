@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Controls.Primitives
+﻿using Avalonia.VisualTree;
+
+namespace Avalonia.Controls.Primitives
 {
     public abstract class TreeDataGridCell : TemplatedControl, ISelectable
     {
@@ -10,8 +12,8 @@
 
         private bool _isSelected;
 
-        public int ColumnIndex { get; internal set; }
-        public int RowIndex { get; internal set; }
+        public int ColumnIndex { get; private set; }
+        public int RowIndex { get; private set; }
         
         public bool IsSelected 
         {
@@ -24,6 +26,19 @@
             if (change.Property == IsSelectedProperty)
             {
                 PseudoClasses.Set(":selected", change.NewValue.GetValueOrDefault<bool>());
+            }
+        }
+
+        internal void SetColumnRowIndex(int columnIndex, int rowIndex)
+        {
+            ColumnIndex = columnIndex;
+            RowIndex = rowIndex;
+
+            // Massive hack.
+            if (Parent is ItemsRepeater repeater &&
+                repeater.TemplatedParent is TreeDataGrid parent)
+            {
+                parent.ColumnRowIndexChanged(this);
             }
         }
     }

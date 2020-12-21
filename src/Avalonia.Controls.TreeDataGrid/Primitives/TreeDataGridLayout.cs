@@ -97,7 +97,7 @@ namespace Avalonia.Controls.Primitives
 
                         if (container is TreeDataGridCell cell)
                         {
-                            TreeDataGridElementFactory.SetCellIndex(cell, columnIndex, rowIndex);
+                            cell.SetColumnRowIndex(columnIndex, rowIndex);
                         }
 
                         container.Measure(new Size(availableWidth, RowHeight));

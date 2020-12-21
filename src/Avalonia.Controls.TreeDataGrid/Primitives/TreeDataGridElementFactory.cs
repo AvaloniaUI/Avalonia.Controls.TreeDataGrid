@@ -40,11 +40,5 @@ namespace Avalonia.Controls.Primitives
         {
             _recyclePool.PutElement(args.Element, args.Element.GetType().FullName, args.Parent);
         }
-
-        public static void SetCellIndex(TreeDataGridCell cell, int columnIndex, int rowIndex)
-        {
-            cell.ColumnIndex = columnIndex;
-            cell.RowIndex = rowIndex;
-        }
     }
 }

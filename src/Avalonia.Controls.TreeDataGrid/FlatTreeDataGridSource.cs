@@ -34,15 +34,8 @@ namespace Avalonia.Controls
         public IRows Rows => _rows;
         public ICells Cells => _cells ??= InitializeCells();
 
-        object ITreeDataGridSource.RowToModelHack(int rowIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-        int ITreeDataGridSource.ModelToRowHack(object? model)
-        {
-            throw new NotImplementedException();
-        }
+        object? ITreeDataGridSource.RowToModelHack(int rowIndex) => null;
+        int ITreeDataGridSource.ModelToRowHack(object? model) => -1;
 
         private CellList InitializeCells()
         {

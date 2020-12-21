@@ -95,7 +95,7 @@ namespace Avalonia.Controls
             }
         }
 
-        object ITreeDataGridSource.RowToModelHack(int rowIndex) => _rows[rowIndex].Model;
+        object? ITreeDataGridSource.RowToModelHack(int rowIndex) => _rows[rowIndex].Model;
         
         int ITreeDataGridSource.ModelToRowHack(object? model)
         {

@@ -136,6 +136,16 @@ namespace Avalonia.Controls
             }
         }
 
+        internal void ColumnRowIndexChanged(TreeDataGridCell cell)
+        {
+            if (_source is null)
+                return;
+
+            // Massive hack.
+            var model = _source.RowToModelHack(cell.RowIndex);
+            cell.IsSelected = model is object && _selection?.SelectedItem == model;
+        }
+
         private void HandleSelectionChanged(object sender, TreeSelectionModelSelectionChangedEventArgs e)
         {
             if (_source is null || Repeater is null)
