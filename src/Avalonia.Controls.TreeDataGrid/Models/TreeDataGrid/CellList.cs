@@ -6,11 +6,17 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public class CellList : AvaloniaList<ICell>, ICells
     {
         public CellList(int columCount) => ColumnCount = columCount;
-        public ICell this[int column, int row] => this[row * ColumnCount + column];
+        
+        public ICell this[int column, int row]
+        {
+            get => this[row * ColumnCount + column];
+            set => this[row * ColumnCount + column] = value;
+        }
+        
         public int ColumnCount { get; }
         public int RowCount => ColumnCount > 0 ? Count / ColumnCount : 0;
 
-        public void InsertRow<TModel>(int index, TModel model, Func<TModel, int, ICell> selector)
+        public void InsertRows<TModel>(int index, TModel model, Func<TModel, int, ICell> selector)
         {
             if (index > RowCount)
                 throw new IndexOutOfRangeException();

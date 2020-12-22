@@ -121,7 +121,7 @@ namespace Avalonia.Controls
             {
                 var modelIndex = parentModelIndex.CloneWithChildIndex(childRowIndex++);
 
-                cells.InsertRow(rowIndex++, row, (model, columnIndex) => _columns[columnIndex] switch
+                cells.InsertRows(rowIndex++, row, (model, columnIndex) => _columns[columnIndex] switch
                 {
                     ExpanderColumnBase<TModel> expander => expander.CreateCell(modelIndex, model),
                     SelectorColumnBase<TModel> column => column.CreateCell(model),
