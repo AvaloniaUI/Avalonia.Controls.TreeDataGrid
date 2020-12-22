@@ -5,6 +5,8 @@
     <SolidColorBrush x:Key="TreeDataGridGridLinesBrush"
                      Color="{StaticResource SystemBaseMediumLowColor}"
                      Opacity="0.4" />
+    <StreamGeometry x:Key="TreeDataGridGridSortIconAscendingPath">M1875 1011l-787 787v-1798h-128v1798l-787 -787l-90 90l941 941l941 -941z</StreamGeometry>
+    <StreamGeometry x:Key="TreeDataGridGridSortIconDescendingPath">M1965 947l-941 -941l-941 941l90 90l787 -787v1798h128v-1798l787 787z</StreamGeometry>
   </Styles.Resources>
   <Style Selector="TreeDataGrid">
     <Setter Property="Template">
@@ -72,6 +74,13 @@
               </ControlTemplate>
             </Thumb.Template>
           </Thumb>
+          <Path Name="SortIcon"
+                DockPanel.Dock="Right"
+                Fill="{TemplateBinding Foreground}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Stretch="Uniform"
+                Height="12" />
           <ContentPresenter Name="PART_ContentPresenter"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
@@ -96,6 +105,16 @@
     <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
+  </Style>
+
+  <Style Selector="TreeDataGridColumnHeader[SortDirection=Ascending] /template/ Path#SortIcon">
+    <Setter Property="IsVisible" Value="True" />
+    <Setter Property="Data" Value="{StaticResource TreeDataGridGridSortIconAscendingPath}" />
+  </Style>
+
+  <Style Selector="TreeDataGridColumnHeader[SortDirection=Descending] /template/ Path#SortIcon">
+    <Setter Property="IsVisible" Value="True" />
+    <Setter Property="Data" Value="{StaticResource TreeDataGridGridSortIconDescendingPath}" />
   </Style>
 
   <Style Selector="TreeDataGridExpanderCell">

@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Models.TreeDataGrid;
+﻿using System.ComponentModel;
+using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls
 {
@@ -26,8 +27,8 @@ namespace Avalonia.Controls
         /// Requests to sort the source by the specified column.
         /// </summary>
         /// <param name="column">The column.</param>
-        /// <param name="descending">The sort direction.</param>
+        /// <param name="direction">The sort direction.</param>
         /// <returns>True if the sort could be performed; otherwise false.</returns>
-        bool SortBy(IColumn column, bool descending);
+        bool SortBy(IColumn column, ListSortDirection direction);
     }
 }

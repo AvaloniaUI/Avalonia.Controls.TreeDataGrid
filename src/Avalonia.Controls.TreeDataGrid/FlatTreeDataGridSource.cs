@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls
@@ -42,27 +43,29 @@ namespace Avalonia.Controls
             _rows?.SetSort(_comparer);
         }
 
-        public bool SortBy(ColumnBase<TModel> column, bool descending)
+        public bool SortBy(ColumnBase<TModel> column, ListSortDirection direction)
         {
             if (!_columns.Contains(column))
                 return false;
 
-            var comparer = column.GetComparer(descending);
+            var comparer = column.GetComparer(direction);
 
             if (comparer is object)
             {
                 SetSort(comparer);
+                foreach (var c in _columns)
+                    c.SortDirection = c == column ? (ListSortDirection?)direction : null;
                 return true;
             }
 
             return false;
         }
 
-        bool ITreeDataGridSource.SortBy(IColumn? column, bool descending)
+        bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)
         {
             if (column is ColumnBase<TModel> typedColumn)
             {
-                SortBy(typedColumn, descending);
+                SortBy(typedColumn, direction);
                 return true;
             }
 

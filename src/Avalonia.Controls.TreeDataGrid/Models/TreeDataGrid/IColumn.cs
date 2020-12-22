@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.ComponentModel;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -16,5 +16,15 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets the width of the column.
         /// </summary>
         GridLength Width { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort direction indicator that will be displayed on the column.
+        /// </summary>
+        /// <remarks>
+        /// Note that changing this property does not change the sorting of the data, it is only 
+        /// used to display a sort direction indicator. To sort data according to a column use
+        /// <see cref="ITreeDataGridSource.SortBy(IColumn, ListSortDirection)"/>.
+        /// </remarks>
+        ListSortDirection? SortDirection { get; set; }
     }
 }

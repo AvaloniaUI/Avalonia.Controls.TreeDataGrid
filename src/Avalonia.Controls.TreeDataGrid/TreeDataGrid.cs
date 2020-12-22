@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -48,7 +49,7 @@ namespace Avalonia.Controls
         private IReadOnlyList<IColumn>? _columns;
         private Vector _scrollOffset;
         private IControl? _userSortColumn;
-        private bool _userSortDescending;
+        private ListSortDirection _userSortDirection;
 
         public TreeDataGrid()
         {
@@ -122,14 +123,15 @@ namespace Avalonia.Controls
                 if (_userSortColumn != columnHeader)
                 {
                     _userSortColumn = columnHeader;
-                    _userSortDescending = false;
+                    _userSortDirection = ListSortDirection.Ascending;
                 }
                 else
                 {
-                    _userSortDescending = !_userSortDescending;
+                    _userSortDirection = _userSortDirection == ListSortDirection.Ascending ?
+                        ListSortDirection.Descending : ListSortDirection.Ascending;
                 }
 
-                _source.SortBy(columnHeader.Model, _userSortDescending);
+                _source.SortBy(columnHeader.Model, _userSortDirection);
             }
         }
     }

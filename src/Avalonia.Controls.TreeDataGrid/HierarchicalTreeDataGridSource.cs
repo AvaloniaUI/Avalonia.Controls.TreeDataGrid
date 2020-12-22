@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 
@@ -96,7 +97,7 @@ namespace Avalonia.Controls
             }
         }
 
-        bool ITreeDataGridSource.SortBy(IColumn? column, bool descending) => false;
+        bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction) => false;
 
         private CellList InitializeCells()
         {

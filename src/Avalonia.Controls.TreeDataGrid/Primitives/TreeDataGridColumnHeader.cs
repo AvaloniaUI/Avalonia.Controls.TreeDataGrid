@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Input;
 using Avalonia.Utilities;
@@ -16,6 +17,11 @@ namespace Avalonia.Controls.Primitives
                 nameof(Header),
                 o => o.Header);
 
+        public static readonly DirectProperty<TreeDataGridColumnHeader, ListSortDirection?> SortDirectionProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridColumnHeader, ListSortDirection?>(
+                nameof(SortDirection),
+                o => o.SortDirection);
+
         private Thumb? _resizer;
 
         public bool CanUserSort
@@ -25,6 +31,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         public object? Header => Model?.Header;
+        public ListSortDirection? SortDirection => Model?.SortDirection;
 
         internal IColumn? Model => (IColumn?)DataContext;
 
@@ -40,10 +47,30 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnDataContextChanged(EventArgs e)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            base.OnDataContextChanged(e);
-            RaisePropertyChanged(HeaderProperty, default, default);
+            if (change.Property == DataContextProperty)
+            {
+                var oldValue = change.OldValue.GetValueOrDefault<object?>();
+                var newValue = change.NewValue.GetValueOrDefault<object?>();
+                var oldModel = oldValue as IColumn;
+                var newModel = newValue as IColumn;
+
+                if (oldModel is INotifyPropertyChanged oldInpc)
+                    oldInpc.PropertyChanged -= ModelPropertyChanged;
+                if (newModel is INotifyPropertyChanged newInpc)
+                    newInpc.PropertyChanged += ModelPropertyChanged;
+                if (!Equals(oldModel?.Header, newModel?.Header))
+                    RaisePropertyChanged(HeaderProperty, oldModel?.Header, newModel?.Header);
+                if (oldModel?.SortDirection != newModel?.SortDirection)
+                    RaisePropertyChanged(SortDirectionProperty, oldModel?.SortDirection, newModel?.SortDirection);
+            }
+        }
+
+        private void ModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IColumn.SortDirection))
+                RaisePropertyChanged(SortDirectionProperty, default, SortDirection);
         }
 
         private void ResizerDragDelta(object? sender, VectorEventArgs e)
