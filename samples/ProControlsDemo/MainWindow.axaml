@@ -9,6 +9,19 @@
     <TabItem Header="Countries">
       <DockPanel>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
+        <StackPanel DockPanel.Dock="Right" Spacing="4">
+          <Label Target="countryTextBox">_Country</Label>
+          <TextBox Name="countryTextBox">Sealand</TextBox>
+          <Label Target="regionTextBox">_Region</Label>
+          <TextBox Name="regionTextBox">WESTERN EUROPE</TextBox>
+          <Label Target="populationTextBox">_Population</Label>
+          <TextBox Name="populationTextBox">2</TextBox>
+          <Label Target="areaTextBox">_Area</Label>
+          <TextBox Name="areaTextBox">0.004</TextBox>
+          <Label Target="gdpTextBox">_GDP</Label>
+          <TextBox Name="gdpTextBox">600000</TextBox>
+          <Button Click="AddCountryClick">Add</Button>
+        </StackPanel>
         <TreeDataGrid Name="countries" Source="{Binding Countries}"/>
       </DockPanel>
     </TabItem>

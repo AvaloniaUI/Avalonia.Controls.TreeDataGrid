@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using System.Collections.ObjectModel;
+using Avalonia.Controls;
 using ProControlsDemo.Models;
 
 namespace ProControlsDemo.ViewModels
@@ -6,8 +7,8 @@ namespace ProControlsDemo.ViewModels
     internal class MainWindowViewModel
     {
         private HierarchicalTreeDataGridSource<TreeNodeModel>? _files;
-
-        public FlatTreeDataGridSource<Country>? _countries;
+        private ObservableCollection<Country>? _countryData;
+        private FlatTreeDataGridSource<Country>? _countries;
 
         public FlatTreeDataGridSource<Country> Countries
         {
@@ -15,7 +16,8 @@ namespace ProControlsDemo.ViewModels
             {
                 if (_countries is null)
                 {
-                    _countries = new FlatTreeDataGridSource<Country>(Models.Countries.All);
+                    _countryData ??= new ObservableCollection<Country>(Models.Countries.All);
+                    _countries = new FlatTreeDataGridSource<Country>(_countryData);
                     _countries.AddColumn("Country", x => x.Name, new GridLength(6, GridUnitType.Star));
                     _countries.AddColumn("Region", x => x.Region, new GridLength(4, GridUnitType.Star));
                     _countries.AddColumn("Popuplation", x => x.Population, new GridLength(3, GridUnitType.Star));
@@ -44,5 +46,7 @@ namespace ProControlsDemo.ViewModels
                 return _files;
             }
         }
+
+        public void AddCountry(Country country) => _countryData?.Add(country);
     }
 }
