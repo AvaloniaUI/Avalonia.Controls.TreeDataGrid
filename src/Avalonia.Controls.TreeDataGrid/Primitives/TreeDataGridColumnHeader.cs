@@ -6,18 +6,27 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TreeDataGridHeaderCell : TemplatedControl
+    public class TreeDataGridColumnHeader : Button
     {
-        public static readonly DirectProperty<TreeDataGridHeaderCell, object?> HeaderProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGridHeaderCell, object?>(
+        public static readonly StyledProperty<bool> CanUserSortProperty =
+            AvaloniaProperty.Register<TreeDataGridColumnHeader, bool>(nameof(CanUserSort), true);
+
+        public static readonly DirectProperty<TreeDataGridColumnHeader, object?> HeaderProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridColumnHeader, object?>(
                 nameof(Header),
                 o => o.Header);
 
         private Thumb? _resizer;
 
+        public bool CanUserSort
+        {
+            get => GetValue(CanUserSortProperty);
+            set => SetValue(CanUserSortProperty, value);
+        }
+
         public object? Header => Model?.Header;
 
-        private IColumn? Model => (IColumn?)DataContext;
+        internal IColumn? Model => (IColumn?)DataContext;
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {

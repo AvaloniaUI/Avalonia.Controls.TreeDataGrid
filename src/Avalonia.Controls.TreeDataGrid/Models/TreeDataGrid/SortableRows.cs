@@ -44,6 +44,20 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 yield return this[i];
         }
 
+        public void SetSort(IComparer<TModel>? comparer)
+        {
+            _comparer = comparer;
+
+            if (_comparer is null && _sortedItems is object)
+                _sortedItems = null;
+            else
+                _sortedItems ??= new List<TModel>();
+
+            OnItemsCollectionChanged(
+                _items, 
+                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+
         IEnumerator<IRow> IEnumerable<IRow>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 

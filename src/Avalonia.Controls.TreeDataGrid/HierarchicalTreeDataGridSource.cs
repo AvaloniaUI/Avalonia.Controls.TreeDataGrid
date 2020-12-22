@@ -96,6 +96,8 @@ namespace Avalonia.Controls
             }
         }
 
+        bool ITreeDataGridSource.SortBy(IColumn? column, bool descending) => false;
+
         private CellList InitializeCells()
         {
             var result = new CellList(_columns.Count);

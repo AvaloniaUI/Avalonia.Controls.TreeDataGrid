@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -23,6 +24,17 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public override ICell CreateCell(TModel model)
         {
             return new TextCell<TValue>(_valueSelector(model));
+        }
+
+        public override Func<TModel, TModel, int>? GetComparer(bool descending)
+        {
+            return (x, y) =>
+            {
+                var a = _valueSelector(x);
+                var b = _valueSelector(y);
+                var r = Comparer<TValue>.Default.Compare(a, b);
+                return descending ? -r : r;
+            };
         }
     }
 }

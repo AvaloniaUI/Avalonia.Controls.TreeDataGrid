@@ -25,7 +25,7 @@
                   </ItemsRepeater.Layout>
                   <ItemsRepeater.ItemTemplate>
                     <DataTemplate>
-                      <TreeDataGridHeaderCell/>
+                      <TreeDataGridColumnHeader/>
                     </DataTemplate>
                   </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
@@ -51,7 +51,10 @@
     </Setter>
   </Style>
 
-  <Style Selector="TreeDataGridHeaderCell">
+  <Style Selector="TreeDataGridColumnHeader">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Padding" Value="4 2"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel VerticalAlignment="Stretch">
@@ -69,12 +72,30 @@
               </ControlTemplate>
             </Thumb.Template>
           </Thumb>
-          <TextBlock Margin="4 2"
-                     Text="{TemplateBinding Header}"
-                     VerticalAlignment="Center"/>
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Padding="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
         </DockPanel>
       </ControlTemplate>
     </Setter>
+  </Style>
+
+  <Style Selector="TreeDataGridColumnHeader:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
+  </Style>
+
+  <Style Selector="TreeDataGridColumnHeader:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
   </Style>
 
   <Style Selector="TreeDataGridExpanderCell">

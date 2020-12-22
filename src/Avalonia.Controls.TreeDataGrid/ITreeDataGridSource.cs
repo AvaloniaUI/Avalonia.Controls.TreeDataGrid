@@ -21,5 +21,13 @@ namespace Avalonia.Controls
         /// Gets the cells to be displayed.
         /// </summary>
         ICells Cells { get; }
+
+        /// <summary>
+        /// Requests to sort the source by the specified column.
+        /// </summary>
+        /// <param name="column">The column.</param>
+        /// <param name="descending">The sort direction.</param>
+        /// <returns>True if the sort could be performed; otherwise false.</returns>
+        bool SortBy(IColumn column, bool descending);
     }
 }

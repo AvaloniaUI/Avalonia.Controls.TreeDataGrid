@@ -1,12 +1,16 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using SharedLayoutState = Avalonia.Controls.Primitives.TreeDataGridLayout.SharedLayoutState;
 
 namespace Avalonia.Controls
 {
     public class TreeDataGrid : TemplatedControl
     {
+        public static readonly StyledProperty<bool> CanUserSortColumnsProperty =
+            AvaloniaProperty.Register<TreeDataGridPanel, bool>(nameof(CanUserSortColumns), true);
+
         public static readonly DirectProperty<TreeDataGrid, IReadOnlyList<ICell>?> CellsProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, IReadOnlyList<ICell>?>(
                 nameof(Cells),
@@ -43,11 +47,20 @@ namespace Avalonia.Controls
         private IReadOnlyList<ICell>? _cells;
         private IReadOnlyList<IColumn>? _columns;
         private Vector _scrollOffset;
+        private IControl? _userSortColumn;
+        private bool _userSortDescending;
 
         public TreeDataGrid()
         {
             ElementFactory = CreateElementFactory();
             SharedState = new SharedLayoutState();
+            AddHandler(TreeDataGridColumnHeader.ClickEvent, OnClick);
+        }
+
+        public bool CanUserSortColumns
+        {
+            get => GetValue(CanUserSortColumnsProperty);
+            set => SetValue(CanUserSortColumnsProperty, value);
         }
 
         public IReadOnlyList<ICell>? Cells
@@ -95,6 +108,29 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
             Repeater = e.NameScope.Find<ItemsRepeater>("PART_Cells");
+        }
+
+        private void OnClick(object sender, RoutedEventArgs e)
+        {
+            if (_source is null)
+                return;
+
+            if (e.Source is TreeDataGridColumnHeader columnHeader &&
+                columnHeader.Model is object &&
+                CanUserSortColumns)
+            {
+                if (_userSortColumn != columnHeader)
+                {
+                    _userSortColumn = columnHeader;
+                    _userSortDescending = false;
+                }
+                else
+                {
+                    _userSortDescending = !_userSortDescending;
+                }
+
+                _source.SortBy(columnHeader.Model, _userSortDescending);
+            }
         }
     }
 }

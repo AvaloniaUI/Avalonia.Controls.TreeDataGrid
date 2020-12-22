@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Controls.Models.TreeDataGrid
+﻿using System;
+
+namespace Avalonia.Controls.Models.TreeDataGrid
 {
     /// <summary>
     /// Base class for columns with a model type.
@@ -15,5 +17,14 @@
         /// Gets the column header.
         /// </summary>
         public abstract object? Header { get; }
+
+        /// <summary>
+        /// Gets a comparer function for the column.
+        /// </summary>
+        /// <param name="descending">The sort direction.</param>
+        /// <returns>
+        /// The comparer function or null if comparing cannot be performed on the column.
+        /// </returns>
+        public virtual Func<TModel, TModel, int>? GetComparer(bool descending) => null;
     }
 }

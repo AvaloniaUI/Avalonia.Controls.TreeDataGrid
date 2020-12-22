@@ -39,8 +39,34 @@ namespace Avalonia.Controls
         public void SetSort(Func<TModel, TModel, int>? comparer)
         {
             _comparer = comparer is object ? new Comparer(comparer) : null;
-            if (_cells is object)
-                Reset(_cells);
+            _rows?.SetSort(_comparer);
+        }
+
+        public bool SortBy(ColumnBase<TModel> column, bool descending)
+        {
+            if (!_columns.Contains(column))
+                return false;
+
+            var comparer = column.GetComparer(descending);
+
+            if (comparer is object)
+            {
+                SetSort(comparer);
+                return true;
+            }
+
+            return false;
+        }
+
+        bool ITreeDataGridSource.SortBy(IColumn? column, bool descending)
+        {
+            if (column is ColumnBase<TModel> typedColumn)
+            {
+                SortBy(typedColumn, descending);
+                return true;
+            }
+
+            return false;
         }
 
         private SortableRows<TModel> InitializeRows()
