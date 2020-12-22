@@ -11,6 +11,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         IExpanderController
     {
         private readonly IExpanderController _owner;
+        private GridLength _width;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpanderColumnBase{TModel}"/> class.
@@ -24,9 +25,18 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             IExpanderController owner,
             object? header,
             GridLength width)
-            : base(header, width)
         {
             _owner = owner;
+            Header = header;
+            _width = width;
+        }
+
+        public override object? Header { get; }
+
+        public override GridLength Width 
+        {
+            get => _width;
+            set => _width = value;
         }
 
         /// <summary>

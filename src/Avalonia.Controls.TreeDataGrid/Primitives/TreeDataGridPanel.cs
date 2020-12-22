@@ -1,6 +1,4 @@
 ﻿using System;
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Primitives

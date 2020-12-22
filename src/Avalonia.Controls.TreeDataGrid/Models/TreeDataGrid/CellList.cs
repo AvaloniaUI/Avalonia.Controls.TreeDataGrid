@@ -5,7 +5,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 {
     public class CellList : AvaloniaList<ICell>, ICells
     {
-        public CellList(int columCount) => ColumnCount = columCount;
+        public CellList(int columnCount) => ColumnCount = columnCount;
         
         public ICell this[int column, int row]
         {

@@ -7,10 +7,22 @@
     /// <typeparam name="TModel">The model type.</typeparam>
     public abstract class SelectorColumnBase<TModel> : ColumnBase<TModel>
     {
+        private GridLength _width;
+
         protected SelectorColumnBase(object? header, GridLength width)
-            : base(header, width)
         {
+            Header = header;
+            Width = width;
         }
+
+        public override object? Header { get; }
+
+        public override GridLength Width
+        {
+            get => _width;
+            set => _width = value;
+        }
+
 
         public abstract ICell CreateCell(TModel model);
     }

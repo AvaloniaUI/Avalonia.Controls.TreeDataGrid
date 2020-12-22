@@ -10,16 +10,19 @@ namespace Avalonia.Controls
     {
         private readonly ItemsSourceView<TModel> _items;
         private readonly ColumnList<TModel> _columns;
-        private readonly AutoRows _rows;
+        private SortableRows<TModel>? _rows;
         private CellList? _cells;
+        private IComparer<TModel>? _comparer;
 
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = new ItemsSourceView<TModel>(items);
-            _items.CollectionChanged += OnItemsCollectionChanged;
             _columns = new ColumnList<TModel>();
-            _rows = new AutoRows();
         }
+
+        public IColumns Columns => _columns;
+        public IRows Rows => _rows ??= InitializeRows();
+        public ICells Cells => _cells ??= InitializeCells();
 
         public void AddColumn<TValue>(
             string header,
@@ -33,40 +36,25 @@ namespace Avalonia.Controls
 
         public void AddColumn(ColumnBase<TModel> column) => _columns.Add(column);
 
-        public IColumns Columns => _columns;
-        public IRows Rows => _rows;
-        public ICells Cells => _cells ??= InitializeCells();
+        public void SetSort(Func<TModel, TModel, int>? comparer)
+        {
+            _comparer = comparer is object ? new Comparer(comparer) : null;
+            if (_cells is object)
+                Reset(_cells);
+        }
+
+        private SortableRows<TModel> InitializeRows()
+        {
+            var result = new SortableRows<TModel>(_items, _comparer);
+            result.CollectionChanged += RowsCollectionChanged;
+            return result;
+        }
 
         private CellList InitializeCells()
         {
             var result = new CellList(_columns.Count);
-
-            if (_columns is object)
-            {
-                _rows.Count = 0;
-                InsertRows(result, 0, _items);
-            }
-
+            Reset(result);
             return result;
-        }
-
-        private void InsertRows(
-            CellList cells,
-            int rowIndex,
-            IEnumerable<TModel> models)
-        {
-            foreach (var row in models)
-                InsertRow(cells, rowIndex++, row);
-        }
-
-        private void InsertRow(CellList cells, int rowIndex, TModel row)
-        {
-            var columnCount = _columns.Count;
-            var cellIndex = rowIndex * columnCount;
-
-            for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
-                cells.Insert(cellIndex++, CreateCell(row, columnIndex));
-            ++_rows.Count;
         }
 
         private ICell CreateCell(TModel model, int columnIndex)
@@ -76,24 +64,42 @@ namespace Avalonia.Controls
                 SelectorColumnBase<TModel> column => column.CreateCell(model),
                 _ => throw new NotSupportedException("Unsupported column type"),
             };
-    }
+        }
 
-        private void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void Reset(CellList cells)
+        {
+            _rows ??= InitializeRows();
+            cells.Clear();
+
+            foreach (var row in _rows)
+            {
+                var columnCount = _columns.Count;
+
+                for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
+                    cells.Add(CreateCell(row.Model, columnIndex));
+            }
+        }
+
+        private void RowsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (_cells is null)
                 return;
 
-            void Add(int rowIndex, IEnumerable items)
+            void Add(int rowIndex, IList rows)
             {
-                foreach (var item in items)
-                    if (item is TModel row)
-                        InsertRow(_cells, rowIndex++, row);
+                var cellIndex = rowIndex * _columns.Count;
+                var columnCount = _columns.Count;
+
+                foreach (RowBase<TModel> row in rows)
+                {
+                    for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
+                        _cells.Insert(cellIndex++, CreateCell(row.Model, columnIndex));
+                }
             }
 
             void Remove(int rowIndex, int rowCount)
             {
                 _cells.RemoveRange(rowIndex * _columns.Count, rowCount * _columns.Count);
-                _rows.Count -= rowCount;
             }
 
             switch (e.Action)
@@ -105,27 +111,33 @@ namespace Avalonia.Controls
                     Remove(e.OldStartingIndex, e.OldItems.Count);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    for (var i = 0; i < e.NewItems.Count; ++i)
+                    var cellIndex = e.NewStartingIndex * _columns.Count;
+                    var columnCount = _columns.Count;
+
+                    foreach (RowBase<TModel> row in e.NewItems)
                     {
-                        for (var columnIndex = 0; columnIndex < _columns.Count; ++columnIndex)
-                        {
-                            if (e.NewItems[i] is TModel model)
-                                _cells[columnIndex, e.NewStartingIndex + i] = CreateCell(model, columnIndex);
-                        }
+                        for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
+                            _cells[cellIndex++] = CreateCell(row.Model, columnIndex);
                     }
+
                     break;
                 case NotifyCollectionChangedAction.Move:
                     Remove(e.OldStartingIndex, e.OldItems.Count);
                     Add(e.NewStartingIndex, e.NewItems);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    _cells.Clear();
-                    InsertRows(_cells, 0, _items);
-                    _rows.Count = _items.Count;
+                    Reset(_cells);
                     break;
                 default:
                     throw new NotSupportedException();
             }
+        }
+
+        private class Comparer : IComparer<TModel>
+        {
+            private readonly Func<TModel, TModel, int> _func;
+            public Comparer(Func<TModel, TModel, int> func) => _func = func;
+            public int Compare(TModel x, TModel y) => _func(x, y);
         }
     }
 }
