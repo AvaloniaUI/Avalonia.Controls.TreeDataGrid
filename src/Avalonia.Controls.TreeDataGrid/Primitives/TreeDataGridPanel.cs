@@ -59,6 +59,18 @@ namespace Avalonia.Controls.Primitives
                 result = new Size(
                     Math.Max(result.Width, _header.DesiredSize.Width),
                     result.Height + _header.DesiredSize.Height);
+
+                // Arranging Grid to a size smaller than the measure constraint causes it to just use
+                // the measure constraint anyway. Because of this we have to remeasure the content
+                // now we know the header height.
+                var maxContentHeight = availableSize.Height - _header.DesiredSize.Height;
+                if (_content is object && 
+                    !double.IsInfinity(availableSize.Height) &&
+                    _content.DesiredSize.Height > maxContentHeight)
+                {
+                    _content.Measure(new Size(availableSize.Width, maxContentHeight));
+                    result = result.WithHeight(_header.DesiredSize.Height + _content.DesiredSize.Height);
+                }
             }
 
             return result;
