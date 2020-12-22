@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
     /// <typeparam name="TValue">The column data type.</typeparam>
-    public class TextColumn<TModel, TValue> : StandardColumnBase<TModel>
+    public class TextColumn<TModel, TValue> : SelectorColumnBase<TModel>
     {
         private readonly Func<TModel, TValue> _valueSelector;
 

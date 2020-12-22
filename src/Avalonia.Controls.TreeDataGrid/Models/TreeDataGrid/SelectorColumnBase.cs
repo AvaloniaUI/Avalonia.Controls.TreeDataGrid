@@ -5,9 +5,9 @@
     /// a model.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public abstract class StandardColumnBase<TModel> : ColumnBase<TModel>
+    public abstract class SelectorColumnBase<TModel> : ColumnBase<TModel>
     {
-        protected StandardColumnBase(object? header, GridLength width)
+        protected SelectorColumnBase(object? header, GridLength width)
             : base(header, width)
         {
         }

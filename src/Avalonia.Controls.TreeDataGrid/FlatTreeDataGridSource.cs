@@ -58,7 +58,7 @@ namespace Avalonia.Controls
             {
                 cells.InsertRow(rowIndex++, row, (model, columnIndex) => _columns[columnIndex] switch
                 {
-                    StandardColumnBase<TModel> column => column.CreateCell(model),
+                    SelectorColumnBase<TModel> column => column.CreateCell(model),
                     _ => throw new NotSupportedException("Unsupported column type"),
                 });
 
