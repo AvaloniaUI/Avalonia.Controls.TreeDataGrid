@@ -17,6 +17,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             bool showExpander)
         {
             _model = model;
+            _isExpanded = row.IsExpanded;
             Column = column;
             Row = row;
             ModelIndex = modelIndex;

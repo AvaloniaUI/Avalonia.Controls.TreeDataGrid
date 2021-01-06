@@ -69,20 +69,24 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return -1;
         }
 
-        private int GetInsertIndex(int parentRowIndex, int modelIndex)
-        {
-            var parentModelIndex = parentRowIndex >= 0 ? _rows[parentRowIndex].Index : default;
-            var index = parentModelIndex.CloneWithChildIndex(modelIndex);
-            var i = parentRowIndex + 1;
-
-            while (i < _rows.Count && _rows[i].Index < index)
-                ++i;
-
-            return parentRowIndex >= 0 ? i - parentRowIndex : i;
-        }
-
         private void OnCollectionChanged(IndexPath parentIndex, NotifyCollectionChangedEventArgs e)
         {
+            int AddRow(int index, HierarchicalRow<TModel> row)
+            {
+                var i = index;
+                _rows.Insert(i++, row);
+
+                if (row.Children is object)
+                {
+                    foreach (var childRow in row.Children)
+                    {
+                        i += AddRow(i, childRow);
+                    }
+                }
+
+                return i - index;
+            }
+
             void Add(int index, IEnumerable? items, bool raise)
             {
                 if (items is null)
@@ -92,7 +96,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
                 foreach (HierarchicalRow<TModel> row in items)
                 {
-                    _rows.Insert(index++, row);
+                    index += AddRow(index, row);
                 }
 
                 if (raise && index > start)

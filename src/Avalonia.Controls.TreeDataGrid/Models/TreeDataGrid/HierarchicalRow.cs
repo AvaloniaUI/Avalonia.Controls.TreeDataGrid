@@ -27,6 +27,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public IReadOnlyList<HierarchicalRow<TModel>>? Children => _isExpanded ? _childRows : null;
         public override object? Header => Index;
         public IndexPath Index { get; }
+        public override bool IsExpanded => _isExpanded;
         public override TModel Model { get; }
 
         public override GridLength Height 

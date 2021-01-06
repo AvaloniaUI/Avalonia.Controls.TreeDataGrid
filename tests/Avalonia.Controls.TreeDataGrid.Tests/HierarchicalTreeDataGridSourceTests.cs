@@ -34,6 +34,41 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
         }
 
         [Fact]
+        public void Expanding_Previously_Expanded_Node_Creates_Expanded_Descendent()
+        {
+            var data = CreateData();
+            var target = CreateTarget(data);
+
+            data[0].Children![0].Children = new AvaloniaList<Node> 
+            { 
+                new Node { Id = 100, Caption = "Grandchild" } 
+            };
+
+            // Expand first root node.
+            var cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 0]);
+            cell0.IsExpanded = true;
+
+            Assert.Equal(10, target.Rows.Count);
+
+            // Expand first child node.
+            var cell01 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 1]);
+            cell01.IsExpanded = true;
+
+            // Grandchild should now be visible.
+            Assert.Equal(11, target.Rows.Count);
+            var cell12 = Assert.IsType<TextCell<string>>(target.Cells[1, 2]);
+            Assert.Equal("Grandchild", cell12.Value);
+
+            // Collapse root node.
+            cell0.IsExpanded = false;
+            Assert.Equal(5, target.Rows.Count);
+
+            // And expand again. Grandchild should now be visible once more.
+            cell0.IsExpanded = true;
+            Assert.Equal(11, target.Rows.Count);
+        }
+
+        [Fact]
         public void Attempting_To_Expand_Node_That_Has_No_Children_Hides_Expander()
         {
             var data = new Node { Id = 0, Caption = "Node 0" };
