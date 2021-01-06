@@ -3,34 +3,40 @@ using System.Collections;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    internal class RowItems<TModel> : IList
+    internal class ListSpan : IList
     {
         private readonly IList _items;
-        private readonly AnonymousRow<TModel> _row;
+        private readonly int _index;
+        private readonly int _count;
 
-        public RowItems(IList items)
+        public ListSpan(IList items, int index, int count)
         {
             _items = items;
-            _row = new AnonymousRow<TModel>();
+            _index = index;
+            _count = count;
         }
 
-        public object? this[int index] 
+        public object? this[int index]
         {
-            get => _row.Update(index, (TModel)_items[index]);
-            set => throw new NotSupportedException(); 
+            get
+            {
+                if (index >= _count)
+                    throw new ArgumentOutOfRangeException();
+                return _items[_index + index];
+            }
+            set => throw new NotSupportedException();
         }
 
         bool IList.IsFixedSize => true;
         bool IList.IsReadOnly => true;
-        int ICollection.Count => _items.Count;
+        int ICollection.Count => _count;
         bool ICollection.IsSynchronized => false;
         object? ICollection.SyncRoot => null;
 
         public IEnumerator GetEnumerator()
         {
-            var count = _items.Count;
-            for (var i = 0; i < count; ++i)
-                yield return this[i];
+            for (var i = 0; i < _count; ++i)
+                yield return _items[_index + i];
         }
 
         int IList.Add(object value) => throw new NotSupportedException();

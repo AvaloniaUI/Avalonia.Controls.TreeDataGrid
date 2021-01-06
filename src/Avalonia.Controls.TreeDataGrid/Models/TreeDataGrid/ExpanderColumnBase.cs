@@ -7,10 +7,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// cells show an expander to reveal nested data.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public abstract class ExpanderColumnBase<TModel> : ColumnBase<TModel>,
-        IExpanderController
+    public abstract class ExpanderColumnBase<TModel> : ColumnBase<TModel>
     {
-        private readonly IExpanderController _owner;
         private GridLength _width;
 
         /// <summary>
@@ -22,11 +20,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <param name="header">The column header.</param>
         /// <param name="width">The column width.</param>
         protected ExpanderColumnBase(
-            IExpanderController owner,
             object? header,
             GridLength width)
         {
-            _owner = owner;
             Header = header;
             _width = width;
         }
@@ -42,17 +38,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Creates a cell for the column from a model.
         /// </summary>
-        /// <param name="index">The index of the cell in the data.</param>
-        /// <param name="model">The model from which to select the cell value.</param>
-        public abstract ICell CreateCell(IndexPath index, TModel model);
+        /// <param name="row">The row containing the data.</param>
+        public abstract ICell CreateCell(HierarchicalRow<TModel> row);
 
         /// <summary>
         /// Gets the child models for a specified model.
         /// </summary>
         /// <param name="model">The model.</param>
         public abstract IEnumerable<TModel>? GetChildModels(TModel model);
-
-        public bool TryExpand(IExpander expander) => _owner.TryExpand(expander);
-        public void Collapse(IExpander expander) => _owner.Collapse(expander);
     }
 }

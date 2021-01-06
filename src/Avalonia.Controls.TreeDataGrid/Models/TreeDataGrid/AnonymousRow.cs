@@ -7,7 +7,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private int _index;
         [AllowNull] private TModel _model;
 
-        public override int Index => _index;
         public override object? Header => _index;
         public override TModel Model => _model;
 

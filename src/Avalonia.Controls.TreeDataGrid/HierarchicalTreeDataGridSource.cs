@@ -1,20 +1,22 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls
 {
-    public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource, IExpanderController
+    public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource
         where TModel : class
     {
         private readonly ItemsSourceView<TModel> _roots;
         private readonly ColumnList<TModel> _columns;
-        private readonly AutoRows _rows;
         private readonly Func<TModel, IEnumerable<TModel>?> _childSelector;
         private readonly Func<TModel, bool> _hasChildrenSelector;
+        private HierarchicalRows<TModel>? _rows;
         private CellList? _cells;
+        private Comparison<TModel>? _comparison;
 
         public HierarchicalTreeDataGridSource(
             TModel root,
@@ -31,14 +33,13 @@ namespace Avalonia.Controls
         {
             _roots = new ItemsSourceView<TModel>(roots);
             _columns = new ColumnList<TModel>();
-            _rows = new AutoRows();
             _childSelector = childSelector;
             _hasChildrenSelector = hasChildrenSelector;
         }
 
-        public ICells Cells => _cells ??= InitializeCells();
+        public ICells Cells => _cells ??= CreateCells();
+        public IRows Rows => _rows ??= CreateRows();
         public IColumns Columns => _columns;
-        public IRows Rows => _rows;
 
         public void AddColumn<TValue>(
             string header,
@@ -48,7 +49,6 @@ namespace Avalonia.Controls
             var columnWidth = width ?? new GridLength(1, GridUnitType.Star);
             var column = _columns.Count == 0 ?
                 (ColumnBase<TModel>)new ExpanderColumn<TModel, TValue>(
-                    this,
                     header,
                     selector,
                     _childSelector,
@@ -63,116 +63,111 @@ namespace Avalonia.Controls
 
         public void AddColumn(ColumnBase<TModel> column) => _columns.Add(column);
 
-        bool IExpanderController.TryExpand(IExpander expander)
+        public void Sort(Comparison<TModel>? comparison)
         {
-            if (_cells is null)
-                return false;
-
-            if (expander is ExpanderCellBase<TModel> cell &&
-                _columns.IndexOf(cell.Column) is var columnIndex &&
-                columnIndex != -1 &&
-                FindRowIndexForModelIndex(columnIndex, cell.ModelIndex) is var rowIndex &&
-                rowIndex != -1 &&
-                cell.GetChildModels() is IEnumerable<TModel> childModels)
-            {
-                return InsertRows(_cells, rowIndex + 1, cell.ModelIndex, childModels) > 0;
-            }
-
-            return false;
-        }
-
-        void IExpanderController.Collapse(IExpander expander)
-        {
-            if (_cells is null)
-                return;
-
-            if (expander is ExpanderCellBase<TModel> cell &&
-                _columns.IndexOf(cell.Column) is var columnIndex &&
-                columnIndex != -1 &&
-                FindRowIndexForModelIndex(columnIndex, cell.ModelIndex) is var rowIndex &&
-                rowIndex != -1)
-            {
-                var childRowCount = GetDescendentRowCount(columnIndex, rowIndex);
-                _cells.RemoveRows(++rowIndex, childRowCount);
-            }
+            _comparison = comparison;
+            _rows?.Sort(_comparison);
         }
 
         bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction) => false;
 
-        private CellList InitializeCells()
+        private HierarchicalRows<TModel> CreateRows()
         {
-            var result = new CellList(_columns.Count);
-
-            if (_columns is object)
-            {
-                _rows.Count = 0;
-                InsertRows(result, 0, default, _roots);
-            }
-
+            var result = new HierarchicalRows<TModel>(_roots, _comparison);
+            result.CollectionChanged += RowsCollectionChanged;
             return result;
         }
 
-        private int InsertRows(
-            CellList cells,
-            int rowIndex,
-            IndexPath parentModelIndex,
-            IEnumerable<TModel> models)
+        private CellList CreateCells()
         {
-            var childRowIndex = 0;
-
-            foreach (var row in models)
-            {
-                var modelIndex = parentModelIndex.CloneWithChildIndex(childRowIndex++);
-
-                cells.InsertRows(rowIndex++, row, (model, columnIndex) => _columns[columnIndex] switch
-                {
-                    ExpanderColumnBase<TModel> expander => expander.CreateCell(modelIndex, model),
-                    SelectorColumnBase<TModel> column => column.CreateCell(model),
-                    _ => throw new NotSupportedException("Unsupported column type"),
-                });
-
-                ++_rows.Count;
-            }
-
-            return childRowIndex;
+            var result = new CellList(_columns.Count);
+            Reset(result);
+            return result;
         }
 
-        private int FindRowIndexForModelIndex(int columnIndex, IndexPath modelIndex)
+        private ICell CreateCell(HierarchicalRow<TModel> row, int columnIndex)
+        {
+            return _columns[columnIndex] switch
+            {
+                ExpanderColumnBase<TModel> expander => expander.CreateCell(row),
+                SelectorColumnBase<TModel> column => column.CreateCell(row.Model),
+                _ => throw new NotSupportedException("Unsupported column type"),
+            };
+        }
+
+        private void Reset(CellList cells)
+        {
+            _rows ??= CreateRows();
+            cells.Clear();
+
+            foreach (var row in _rows)
+            {
+                var columnCount = _columns.Count;
+
+                for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
+                    cells.Add(CreateCell(row, columnIndex));
+            }
+        }
+
+
+        private void RowsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (_cells is null)
-                return -1;
+                return;
 
-            // TODO: Do this with an index or binary search or something.
-            for (var i = 0; i < _cells.RowCount; ++i)
+            void Add(int rowIndex, IList rows)
             {
-                if (_cells[columnIndex, i] is IExpanderCell cell && cell.ModelIndex == modelIndex)
+                var cellIndex = rowIndex * _columns.Count;
+                var columnCount = _columns.Count;
+
+                foreach (HierarchicalRow<TModel> row in rows)
                 {
-                    return i;
+                    for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
+                        _cells.Insert(cellIndex++, CreateCell(row, columnIndex));
                 }
             }
 
-            return -1;
-        }
-
-        private int GetDescendentRowCount(int columnIndex, int rowIndex)
-        {
-            if (_cells is null || (rowIndex + 1) >= _cells.RowCount)
-                return -1;
-
-            var parentCell = _cells[columnIndex, rowIndex] as IExpanderCell ??
-                throw new ArgumentException("Cannot count children of non-expander cell.");
-
-            var depth = parentCell.ModelIndex.GetSize();
-            var i = 1;
-
-            while (rowIndex + i < _cells.RowCount &&
-                _cells[columnIndex, rowIndex + i] is IExpanderCell cell &&
-                cell.ModelIndex.GetSize() > depth)
+            void Remove(int rowIndex, int rowCount)
             {
-                ++i;
+                _cells.RemoveRange(rowIndex * _columns.Count, rowCount * _columns.Count);
             }
 
-            return i - 1;
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    Add(e.NewStartingIndex, e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    Remove(e.OldStartingIndex, e.OldItems.Count);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    var cellIndex = e.NewStartingIndex * _columns.Count;
+                    var columnCount = _columns.Count;
+
+                    foreach (HierarchicalRow<TModel> row in e.NewItems)
+                    {
+                        for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
+                            _cells[cellIndex++] = CreateCell(row, columnIndex);
+                    }
+
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    Remove(e.OldStartingIndex, e.OldItems.Count);
+                    Add(e.NewStartingIndex, e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    Reset(_cells);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        private class Comparer : IComparer<TModel>
+        {
+            private readonly Func<TModel, TModel, int> _func;
+            public Comparer(Func<TModel, TModel, int> func) => _func = func;
+            public int Compare(TModel x, TModel y) => _func(x, y);
         }
     }
 }

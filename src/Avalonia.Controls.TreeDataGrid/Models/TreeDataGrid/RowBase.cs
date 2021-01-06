@@ -7,11 +7,6 @@
     public abstract class RowBase<TModel> : IRow
     {
         /// <summary>
-        /// Gets the row index.
-        /// </summary>
-        public abstract int Index { get; }
-
-        /// <summary>
         /// Gets or sets the height of the row.
         /// </summary>
         public abstract GridLength Height { get; set; }

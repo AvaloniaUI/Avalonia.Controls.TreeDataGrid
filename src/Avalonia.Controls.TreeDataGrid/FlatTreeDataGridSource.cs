@@ -11,7 +11,7 @@ namespace Avalonia.Controls
     {
         private readonly ItemsSourceView<TModel> _items;
         private readonly ColumnList<TModel> _columns;
-        private SortableRows<TModel>? _rows;
+        private AnonymousSortableRows<TModel>? _rows;
         private CellList? _cells;
         private IComparer<TModel>? _comparer;
 
@@ -22,8 +22,8 @@ namespace Avalonia.Controls
         }
 
         public IColumns Columns => _columns;
-        public IRows Rows => _rows ??= InitializeRows();
-        public ICells Cells => _cells ??= InitializeCells();
+        public IRows Rows => _rows ??= CreateRows();
+        public ICells Cells => _cells ??= CreateCells();
 
         public void AddColumn<TValue>(
             string header,
@@ -72,14 +72,14 @@ namespace Avalonia.Controls
             return false;
         }
 
-        private SortableRows<TModel> InitializeRows()
+        private AnonymousSortableRows<TModel> CreateRows()
         {
-            var result = new SortableRows<TModel>(_items, _comparer);
+            var result = new AnonymousSortableRows<TModel>(_items, _comparer);
             result.CollectionChanged += RowsCollectionChanged;
             return result;
         }
 
-        private CellList InitializeCells()
+        private CellList CreateCells()
         {
             var result = new CellList(_columns.Count);
             Reset(result);
@@ -97,7 +97,7 @@ namespace Avalonia.Controls
 
         private void Reset(CellList cells)
         {
-            _rows ??= InitializeRows();
+            _rows ??= CreateRows();
             cells.Clear();
 
             foreach (var row in _rows)

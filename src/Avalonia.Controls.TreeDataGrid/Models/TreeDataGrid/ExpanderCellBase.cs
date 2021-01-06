@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -10,17 +11,20 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         protected ExpanderCellBase(
             ExpanderColumnBase<TModel> column,
+            ExpanderRowBase<TModel> row,
             TModel model,
             IndexPath modelIndex,
             bool showExpander)
         {
             _model = model;
             Column = column;
+            Row = row;
             ModelIndex = modelIndex;
             ShowExpander = showExpander;
         }
 
         public ExpanderColumnBase<TModel> Column { get; }
+        public ExpanderRowBase<TModel> Row { get; }
         public IndexPath ModelIndex { get; }
 
         public bool ShowExpander 
@@ -36,32 +40,29 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             get => _isExpanded;
             set
             {
-                if (_isExpanded != value)
-                {
-                    _isExpanded = value;
+                if (value == _isExpanded)
+                    return;
 
-                    if (_isExpanded)
+                if (value)
+                {
+                    if (Column.GetChildModels(_model) is IEnumerable<TModel> childRows && childRows.Any())
                     {
-                        if (Column.TryExpand(this))
-                        {
-                            RaisePropertyChanged();
-                        }
-                        else
-                        {
-                            _isExpanded = false;
-                            ShowExpander = false;
-                        }
+                        Row.Expand(childRows);
+                        _isExpanded = true;
+                        ShowExpander = true;
                     }
                     else
                     {
-                        Column.Collapse(this);
-                        RaisePropertyChanged();
+                        ShowExpander = false;
                     }
+                }
+                else
+                {
+                    Row.Collapse();
+                    _isExpanded = false;
                 }
             }
         }
-
-        public IEnumerable<TModel>? GetChildModels() => Column.GetChildModels(_model);
 
         protected abstract object? GetUntypedValue();
     }

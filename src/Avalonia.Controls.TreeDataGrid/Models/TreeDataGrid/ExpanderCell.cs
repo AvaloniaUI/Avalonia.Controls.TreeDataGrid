@@ -4,11 +4,10 @@
     {
         public ExpanderCell(
             ExpanderColumnBase<TModel> column,
-            TModel model,
-            IndexPath modelIndex,
+            HierarchicalRow<TModel> row,
             TValue value,
             bool showExpander)
-            : base(column, model, modelIndex, showExpander)
+            : base(column, row, row.Model, row.Index, showExpander)
         {
             Value = value;
         }

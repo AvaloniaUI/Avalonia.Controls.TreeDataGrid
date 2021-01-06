@@ -6,14 +6,14 @@ using System.Linq;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    public class SortableRows<TModel> : IRows, IEnumerable<RowBase<TModel>>
+    public class AnonymousSortableRows<TModel> : IRows, IEnumerable<RowBase<TModel>>
     {
         private readonly ItemsSourceView<TModel> _items;
         private readonly AnonymousRow<TModel> _row;
         private IComparer<TModel>? _comparer;
         private List<TModel>? _sortedItems;
 
-        public SortableRows(ItemsSourceView<TModel> items, IComparer<TModel>? comparer)
+        public AnonymousSortableRows(ItemsSourceView<TModel> items, IComparer<TModel>? comparer)
         {
             _items = items;
             _items.CollectionChanged += OnItemsCollectionChanged;
@@ -53,9 +53,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             else
                 _sortedItems ??= new List<TModel>();
 
-            OnItemsCollectionChanged(
-                _items, 
-                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            OnItemsCollectionChanged(_items,  CollectionExtensions.ResetEvent);
         }
 
         IEnumerator<IRow> IEnumerable<IRow>.GetEnumerator() => GetEnumerator();
@@ -83,20 +81,20 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 NotifyCollectionChangedAction.Add => new NotifyCollectionChangedEventArgs(
                     e.Action,
-                    new RowItems<TModel>(e.NewItems),
+                    new AnonymousRowItems<TModel>(e.NewItems),
                     e.NewStartingIndex),
                 NotifyCollectionChangedAction.Remove => new NotifyCollectionChangedEventArgs(
                     e.Action,
-                    new RowItems<TModel>(e.OldItems),
+                    new AnonymousRowItems<TModel>(e.OldItems),
                     e.OldStartingIndex),
                 NotifyCollectionChangedAction.Replace => new NotifyCollectionChangedEventArgs(
                     e.Action,
-                    new RowItems<TModel>(e.NewItems),
-                    new RowItems<TModel>(e.OldItems),
+                    new AnonymousRowItems<TModel>(e.NewItems),
+                    new AnonymousRowItems<TModel>(e.OldItems),
                     e.OldStartingIndex),
                 NotifyCollectionChangedAction.Move => new NotifyCollectionChangedEventArgs(
                     e.Action,
-                    new RowItems<TModel>(e.NewItems),
+                    new AnonymousRowItems<TModel>(e.NewItems),
                     e.NewStartingIndex,
                     e.OldStartingIndex),
                 NotifyCollectionChangedAction.Reset => e,
