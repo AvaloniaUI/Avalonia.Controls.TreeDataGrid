@@ -6,7 +6,7 @@ namespace ProControlsDemo.ViewModels
 {
     internal class MainWindowViewModel
     {
-        private HierarchicalTreeDataGridSource<TreeNodeModel>? _files;
+        private HierarchicalTreeDataGridSource<FileTreeNodeModel>? _files;
         private ObservableCollection<Country>? _countryData;
         private FlatTreeDataGridSource<Country>? _countries;
 
@@ -29,14 +29,14 @@ namespace ProControlsDemo.ViewModels
             }
         }
 
-        public HierarchicalTreeDataGridSource<TreeNodeModel> Files
+        public HierarchicalTreeDataGridSource<FileTreeNodeModel> Files
         {
             get
             {
                 if (_files is null)
                 {
-                    var model = new TreeNodeModel(@"c:\", isDirectory: true, isRoot: true);
-                    var source = new HierarchicalTreeDataGridSource<TreeNodeModel>(model, x => x.Children, x => x.IsDirectory);
+                    var model = new FileTreeNodeModel(@"c:\", isDirectory: true, isRoot: true);
+                    var source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(model, x => x.Children, x => x.IsDirectory);
                     source.AddColumn("Name", x => x.Name);
                     source.AddColumn("Size", x => x.Size, GridLength.Auto);
                     source.AddColumn("Modified", x => x.Modified, GridLength.Auto);
