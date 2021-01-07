@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 yield return this[i];
         }
 
-        public void SetSort(IComparer<TModel>? comparer)
+        public void Sort(IComparer<TModel>? comparer)
         {
             _comparer = comparer;
 

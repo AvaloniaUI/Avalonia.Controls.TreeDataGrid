@@ -37,10 +37,10 @@ namespace Avalonia.Controls
 
         public void AddColumn(ColumnBase<TModel> column) => _columns.Add(column);
 
-        public void SetSort(Func<TModel, TModel, int>? comparer)
+        public void Sort(Comparison<TModel>? comparer)
         {
             _comparer = comparer is object ? new Comparer(comparer) : null;
-            _rows?.SetSort(_comparer);
+            _rows?.Sort(_comparer);
         }
 
         public bool SortBy(ColumnBase<TModel> column, ListSortDirection direction)
@@ -48,11 +48,11 @@ namespace Avalonia.Controls
             if (!_columns.Contains(column))
                 return false;
 
-            var comparer = column.GetComparer(direction);
+            var comparer = column.GetComparison(direction);
 
             if (comparer is object)
             {
-                SetSort(comparer);
+                Sort(comparer);
                 foreach (var c in _columns)
                     c.SortDirection = c == column ? (ListSortDirection?)direction : null;
                 return true;
@@ -164,8 +164,8 @@ namespace Avalonia.Controls
 
         private class Comparer : IComparer<TModel>
         {
-            private readonly Func<TModel, TModel, int> _func;
-            public Comparer(Func<TModel, TModel, int> func) => _func = func;
+            private readonly Comparison<TModel> _func;
+            public Comparer(Comparison<TModel> func) => _func = func;
             public int Compare(TModel x, TModel y) => _func(x, y);
         }
     }

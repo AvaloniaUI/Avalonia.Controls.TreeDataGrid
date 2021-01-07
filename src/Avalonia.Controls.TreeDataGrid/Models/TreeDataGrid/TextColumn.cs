@@ -27,7 +27,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return new TextCell<TValue>(_valueSelector(model));
         }
 
-        public override Func<TModel, TModel, int>? GetComparer(ListSortDirection direction)
+        public override Comparison<TModel>? GetComparison(ListSortDirection direction)
         {
             return (x, y) =>
             {

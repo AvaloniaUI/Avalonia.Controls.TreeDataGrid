@@ -46,13 +46,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
-        /// Gets a comparer function for the column.
+        /// Gets a comparison function for the column.
         /// </summary>
         /// <param name="direction">The sort direction.</param>
         /// <returns>
-        /// The comparer function or null if sorting cannot be performed on the column.
+        /// The comparison function or null if sorting cannot be performed on the column.
         /// </returns>
-        public virtual Func<TModel, TModel, int>? GetComparer(ListSortDirection direction) => null;
+        public virtual Comparison<TModel>? GetComparison(ListSortDirection direction) => null;
 
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {

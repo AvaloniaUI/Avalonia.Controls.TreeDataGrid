@@ -220,7 +220,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             private static FlatTreeDataGridSource<Row> CreateTarget(IEnumerable<Row> rows)
             {
                 var result = FlatTreeDataGridSourceTests.CreateTarget(rows);
-                result.SetSort((x, y) => y.Id - x.Id);
+                result.Sort((x, y) => y.Id - x.Id);
                 return result;
             }
 

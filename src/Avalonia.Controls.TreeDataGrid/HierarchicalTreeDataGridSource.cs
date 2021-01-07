@@ -162,12 +162,5 @@ namespace Avalonia.Controls
                     throw new NotSupportedException();
             }
         }
-
-        private class Comparer : IComparer<TModel>
-        {
-            private readonly Func<TModel, TModel, int> _func;
-            public Comparer(Func<TModel, TModel, int> func) => _func = func;
-            public int Compare(TModel x, TModel y) => _func(x, y);
-        }
     }
 }
