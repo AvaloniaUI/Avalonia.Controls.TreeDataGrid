@@ -58,18 +58,29 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             rows.Clear();
 
-            var items = (IReadOnlyList<TModel>)_items;
-
-            if (_comparison is object)
+            if (_comparison is null)
             {
-                var sorted = items.ToList();
-                sorted.Sort(_comparison);
-                items = sorted;
+                for (var i = 0; i < _items.Count; ++i)
+                {
+                    rows.Add(CreateRow(i, _items[i]));
+                }
             }
-
-            for (var i = 0; i < items.Count; ++i)
+            else
             {
-                rows.Add(CreateRow(i, items[i]));
+                var sorted = new (int index, TModel model)[_items.Count];
+                var c = _comparison;
+
+                for (var i = 0; i < _items.Count; ++i)
+                {
+                    sorted[i] = (i, _items[i]);
+                }
+
+                Array.Sort(sorted, (x, y) => c(x.model, y.model));
+
+                foreach (var i in sorted)
+                {
+                    rows.Add(CreateRow(i.index, i.model));
+                }
             }
         }
 
@@ -93,6 +104,21 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     _rows.Insert(index, CreateRow(index, model));
                     ++index;
                 }
+
+                while (index < _rows.Count)
+                {
+                    _rows[index++].UpdateModelIndex(items.Count);
+                }
+            }
+
+            void Remove(int index, int count)
+            {
+                _rows.RemoveRange(index, count);
+
+                while (index < _rows.Count)
+                {
+                    _rows[index++].UpdateModelIndex(-count);
+                }
             }
 
             switch (e.Action)
@@ -110,7 +136,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     {
                         var oldItems = CollectionChanged is object ?
                             _rows.Slice(e.OldStartingIndex, e.OldItems.Count) : null;
-                        _rows.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
+                        Remove(e.OldStartingIndex, e.OldItems.Count);
                         CollectionChanged?.Invoke(
                             this,
                             new NotifyCollectionChangedEventArgs(
@@ -140,7 +166,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     }
                     break;
                 case NotifyCollectionChangedAction.Move:
-                    _rows.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
+                    Remove(e.OldStartingIndex, e.OldItems.Count);
                     Add(e.NewStartingIndex, e.NewItems);
                     CollectionChanged?.Invoke(
                         this,
@@ -166,6 +192,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             void Add(int index, IList items)
             {
+                foreach (var row in _rows)
+                {
+                    if (row.ModelIndex >= index)
+                        row.UpdateModelIndex(items.Count);
+                }
+
                 foreach (TModel model in items)
                 {
                     var rowIndex = _rows.BinarySearch(model, _comparison!);
@@ -183,23 +215,29 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 }
             }
 
-            void Remove(IList items)
+            void Remove(int index, IList items)
             {
                 foreach (TModel model in items)
                 {
-                    var index = _rows.BinarySearch(model, _comparison!);
+                    var rowIndex = _rows.BinarySearch(model, _comparison!);
 
-                    if (index >= 0)
+                    if (rowIndex >= 0)
                     {
-                        var row = _rows[index];
-                        _rows.RemoveAt(index);
+                        var row = _rows[rowIndex];
+                        _rows.RemoveAt(rowIndex);
                         CollectionChanged?.Invoke(
                             this,
                             new NotifyCollectionChangedEventArgs(
                                 NotifyCollectionChangedAction.Remove,
                                 row,
-                                index));
+                                rowIndex));
                     }
+                }
+
+                foreach (var row in _rows)
+                {
+                    if (row.ModelIndex >= index)
+                        row.UpdateModelIndex(-items.Count);
                 }
             }
 
@@ -209,11 +247,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     Add(e.NewStartingIndex, e.NewItems);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    Remove(e.OldItems);
+                    Remove(e.OldStartingIndex, e.OldItems);
                     break;
                 case NotifyCollectionChangedAction.Replace:
                 case NotifyCollectionChangedAction.Move:
-                    Remove(e.OldItems);
+                    Remove(e.OldStartingIndex, e.OldItems);
                     Add(e.NewStartingIndex, e.NewItems);
                     break;
                 case NotifyCollectionChangedAction.Reset:

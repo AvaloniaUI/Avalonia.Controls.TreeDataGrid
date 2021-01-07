@@ -113,6 +113,9 @@ namespace Avalonia.Controls
 
         public IndexPath CloneWithChildIndex(int childIndex)
         {
+            if (childIndex < 0)
+                throw new ArgumentException("Invalid child index", nameof(childIndex));
+
             if (_path != null)
             {
                 return new IndexPath(_path, childIndex);

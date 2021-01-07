@@ -18,15 +18,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             TModel model,
             Comparison<TModel>? comparison)
         {
+            if (modelIndex.GetSize() == 0)
+                throw new ArgumentException("Invalid model index");
+
             _controller = controller;
             _comparison = comparison;
-            ModelIndex = modelIndex;
+            ModelIndexPath = modelIndex;
             Model = model;
         }
 
         public IReadOnlyList<HierarchicalRow<TModel>>? Children => _isExpanded ? _childRows : null;
-        public override object? Header => ModelIndex;
-        public IndexPath ModelIndex { get; }
+        public override object? Header => ModelIndexPath;
+        public override int ModelIndex => ModelIndexPath.GetLeaf()!.Value;
+        public IndexPath ModelIndexPath { get; private set; }
         public override bool IsExpanded => _isExpanded;
         public override TModel Model { get; }
 
@@ -66,6 +70,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _controller.OnChildCollectionChanged(this, CollectionExtensions.ResetEvent);
         }
 
+        public override void UpdateModelIndex(int delta)
+        {
+            ModelIndexPath = ModelIndexPath.GetParent().CloneWithChildIndex(ModelIndexPath.GetLeaf()!.Value + delta);
+        }
+
         private void OnChildCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (_isExpanded)
@@ -91,7 +100,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 return new HierarchicalRow<TModel>(
                     _owner._controller,
-                    _owner.ModelIndex.CloneWithChildIndex(modelIndex),
+                    _owner.ModelIndexPath.CloneWithChildIndex(modelIndex),
                     model,
                     _owner._comparison);
             }

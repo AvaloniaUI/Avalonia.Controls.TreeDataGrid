@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -9,6 +10,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public override object? Header => _index;
         public override TModel Model => _model;
+        public override int ModelIndex => _index;
 
         public override GridLength Height
         {
@@ -21,6 +23,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _index = index;
             _model = model;
             return this;
+        }
+
+        public override void UpdateModelIndex(int delta)
+        {
+            throw new NotSupportedException();
         }
     }
 }
