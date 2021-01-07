@@ -19,7 +19,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 var data = CreateData();
                 var target = CreateTarget(data, sorted);
 
-                AssertState(target, data, sorted);
+                AssertState(target, data, 5, sorted);
             }
 
             [Theory]
@@ -29,15 +29,11 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             {
                 var data = CreateData();
                 var target = CreateTarget(data, sorted);
+                var expander = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 0]);
 
-                var cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 0]);
-                cell0.IsExpanded = true;
+                expander.IsExpanded = true;
 
-                AssertState(
-                    target,
-                    data,
-                    sorted,
-                    expanded: !sorted ? new IndexPath(0) : new IndexPath(4));
+                AssertState(target, data, 10, sorted, expander.ModelIndexPath);
             }
 
             [Theory]
@@ -55,7 +51,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 expander.IsExpanded = false;
 
-                AssertState(target, data, sorted);
+                AssertState(target, data, 5, sorted);
             }
 
             [Theory]
@@ -74,7 +70,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 data.Add(new Node { Id = 100, Caption = "New Node 1" });
 
-                AssertState(target, data, sorted);
+                AssertState(target, data, 6, sorted);
             }
 
             [Theory]
@@ -93,7 +89,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 data.Insert(1, new Node { Id = 100, Caption = "New Node 1" });
 
-                AssertState(target, data, sorted);
+                AssertState(target, data, 6, sorted);
             }
 
             [Theory]
@@ -112,13 +108,10 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 var raised = 0;
                 target.Cells.CollectionChanged += (s, e) => ++raised;
 
-                data[0].Children!.Add(new Node { Id = 100, Caption = "New Node 1" });
+                var i = expander.ModelIndexPath.GetAt(0);
+                data[i].Children!.Add(new Node { Id = 100, Caption = "New Node 1" });
 
-                AssertState(
-                    target,
-                    data,
-                    sorted,
-                    expanded: !sorted ? new IndexPath(0) : new IndexPath(4));
+                AssertState(target, data, 11, sorted, expander.ModelIndexPath);
             }
 
             [Theory]
@@ -137,13 +130,10 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 var raised = 0;
                 target.Cells.CollectionChanged += (s, e) => ++raised;
 
-                data[0].Children!.Insert(1, new Node { Id = 100, Caption = "New Node 1" });
+                var i = expander.ModelIndexPath.GetAt(0);
+                data[i].Children!.Insert(1, new Node { Id = 100, Caption = "New Node 1" });
 
-                AssertState(
-                    target,
-                    data,
-                    sorted,
-                    expanded: !sorted ? new IndexPath(0) : new IndexPath(4));
+                AssertState(target, data, 11, sorted, expander.ModelIndexPath);
             }
 
             [Theory]
@@ -162,7 +152,29 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 data.RemoveAt(3);
 
-                AssertState(target, data, sorted);
+                AssertState(target, data, 4, sorted);
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Removes_Cells_For_Removed_Child_Row(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+                var expander = (IExpanderCell)target.Cells[0, 0];
+
+                expander.IsExpanded = true;
+                Assert.Equal(10, target.Rows.Count);
+                Assert.Equal(10, target.Cells.RowCount);
+
+                var raised = 0;
+                target.Cells.CollectionChanged += (s, e) => ++raised;
+
+                var i = expander.ModelIndexPath.GetAt(0);
+                data[i].Children!.RemoveAt(3);
+
+                AssertState(target, data, 9, sorted, expander.ModelIndexPath);
             }
 
             [Theory]
@@ -183,7 +195,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 data.RemoveRange(1, 3);
 
-                AssertState(target, data, sorted);
+                AssertState(target, data, 2, sorted);
             }
 
             [Theory]
@@ -202,7 +214,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 data[2] = new Node { Id = 100, Caption = "Replaced" };
 
-                AssertState(target, data, sorted);
+                AssertState(target, data, 5, sorted);
             }
 
             [Theory]
@@ -221,7 +233,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 data.Move(2, 4);
 
-                AssertState(target, data, sorted);
+                AssertState(target, data, 5, sorted);
             }
         }
 
@@ -335,10 +347,13 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
         private static void AssertState(
             HierarchicalTreeDataGridSource<Node> target,
             IList<Node> data,
+            int expectedRows,
             bool sorted,
             params IndexPath[] expanded)
         {
             Assert.Equal(2, target.Columns.Count);
+            Assert.Equal(expectedRows, target.Rows.Count);
+            Assert.Equal(expectedRows, target.Cells.RowCount);
 
             var rowIndex = 0;
 

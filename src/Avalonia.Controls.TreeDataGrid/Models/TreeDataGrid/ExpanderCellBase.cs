@@ -20,13 +20,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _isExpanded = row.IsExpanded;
             Column = column;
             Row = row;
-            ModelIndex = modelIndex;
+            ModelIndexPath = modelIndex;
             ShowExpander = showExpander;
         }
 
         public ExpanderColumnBase<TModel> Column { get; }
         public ExpanderRowBase<TModel> Row { get; }
-        public IndexPath ModelIndex { get; }
+        public IndexPath ModelIndexPath { get; }
 
         public bool ShowExpander 
         {
