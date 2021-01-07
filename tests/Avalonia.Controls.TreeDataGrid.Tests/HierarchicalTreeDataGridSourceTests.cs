@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -8,271 +9,81 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 {
     public class HierarchicalTreeDataGridSourceTests
     {
-        [Fact]
-        public void Creates_Cells_For_Root_Models()
+        public class RowsAndCells
         {
-            var data = CreateData();
-            var target = CreateTarget(data);
-
-            Assert.Equal(5, target.Rows.Count);
-            AssertCells(target.Cells, 5, 0, data);
-        }
-
-        [Fact]
-        public void Expanding_Root_Node_Creates_Child_Cells()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-
-            var cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 0]);
-            cell0.IsExpanded = true;
-
-            Assert.Equal(10, target.Rows.Count);
-            AssertCells(target.Cells, 10, 0, data.Take(1));
-            AssertCells(target.Cells, 10, 1, data[0].Children!);
-            AssertCells(target.Cells, 10, 6, data.Skip(1));
-        }
-
-        [Fact]
-        public void Expanding_Previously_Expanded_Node_Creates_Expanded_Descendent()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-
-            data[0].Children![0].Children = new AvaloniaList<Node> 
-            { 
-                new Node { Id = 100, Caption = "Grandchild" } 
-            };
-
-            // Expand first root node.
-            var cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 0]);
-            cell0.IsExpanded = true;
-
-            Assert.Equal(10, target.Rows.Count);
-
-            // Expand first child node.
-            var cell01 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 1]);
-            cell01.IsExpanded = true;
-
-            // Grandchild should now be visible.
-            Assert.Equal(11, target.Rows.Count);
-            var cell12 = Assert.IsType<TextCell<string>>(target.Cells[1, 2]);
-            Assert.Equal("Grandchild", cell12.Value);
-
-            // Collapse root node.
-            cell0.IsExpanded = false;
-            Assert.Equal(5, target.Rows.Count);
-
-            // And expand again. Grandchild should now be visible once more.
-            cell0.IsExpanded = true;
-            Assert.Equal(11, target.Rows.Count);
-        }
-
-        [Fact]
-        public void Attempting_To_Expand_Node_That_Has_No_Children_Hides_Expander()
-        {
-            var data = new Node { Id = 0, Caption = "Node 0" };
-
-            // Here we return true from hasChildren selector, but there are actually no children.
-            // This may happen if calculating the children is expensive.
-            var target = new HierarchicalTreeDataGridSource<Node>(data, x => x.Children, x => true);
-            CreateColumns(target);
-
-            var expander = (IExpanderCell)target.Cells[0, 0];
-            Assert.True(expander.ShowExpander);
-
-            expander.IsExpanded = true;
-
-            Assert.False(expander.ShowExpander);
-            Assert.False(expander.IsExpanded);
-        }
-
-        [Fact]
-        public void Collapsing_Root_Node_Removes_Child_Cells()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-            var expander = (IExpanderCell)target.Cells[0, 0];
-
-            expander.IsExpanded = true;
-            Assert.Equal(10, target.Rows.Count);
-            Assert.Equal(10, target.Cells.RowCount);
-
-            expander.IsExpanded = false;
-            Assert.Equal(5, target.Rows.Count);
-            AssertCells(target.Cells, 5, 0, data);
-        }
-
-        [Fact]
-        public void Creates_Cells_For_Added_Root_Row()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-
-            Assert.Equal(5, target.Rows.Count);
-            AssertCells(target.Cells, 5, 0, data);
-
-            var raised = 0;
-            target.Cells.CollectionChanged += (s, e) => ++raised;
-
-            data.Add(new Node { Id = 100, Caption = "New Node 1" });
-
-            Assert.Equal(6, target.Rows.Count);
-            AssertCells(target.Cells, 6, 0, data);
-            Assert.Equal(2, raised);
-        }
-
-        [Fact]
-        public void Creates_Cells_For_Added_Child_Row()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-            var expander = (IExpanderCell)target.Cells[0, 0];
-
-            expander.IsExpanded = true;
-            Assert.Equal(10, target.Rows.Count);
-            Assert.Equal(10, target.Cells.RowCount);
-
-            var raised = 0;
-            target.Cells.CollectionChanged += (s, e) => ++raised;
-
-            data[0].Children!.Add(new Node { Id = 100, Caption = "New Node 1" });
-
-            Assert.Equal(11, target.Rows.Count);
-            Assert.Equal(11, target.Cells.RowCount);
-            AssertCells(target.Cells, 11, 0, data.Take(1));
-            AssertCells(target.Cells, 11, 1, data[0].Children!);
-            AssertCells(target.Cells, 11, 7, data.Skip(1));
-            Assert.Equal(2, raised);
-        }
-
-        [Fact]
-        public void Removes_Cells_For_Removed_Root_Row()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-
-            Assert.Equal(5, target.Rows.Count);
-            AssertCells(target.Cells, 5, 0, data);
-
-            var raised = 0;
-            target.Cells.CollectionChanged += (s, e) => ++raised;
-
-            data.RemoveAt(3);
-
-            Assert.Equal(4, target.Rows.Count);
-            AssertCells(target.Cells, 4, 0, data);
-            Assert.Equal(1, raised);
-        }
-
-        [Fact]
-        public void Removes_Cells_For_Removed_Root_Rows_With_Expanded_Rows()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-            var expander = (IExpanderCell)target.Cells[0, 2];
-
-            expander.IsExpanded = true;
-            Assert.Equal(10, target.Rows.Count);
-            Assert.Equal(10, target.Cells.RowCount);
-
-            var raised = 0;
-            target.Cells.CollectionChanged += (s, e) => ++raised;
-
-            data.RemoveRange(1, 3);
-
-            Assert.Equal(2, target.Rows.Count);
-            AssertCells(target.Cells, 2, 0, data);
-            Assert.Equal(1, raised);
-        }
-
-        [Fact]
-        public void Updates_Cells_For_Replaced_Root_Row()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-
-            Assert.Equal(5, target.Rows.Count);
-            AssertCells(target.Cells, 5, 0, data);
-
-            var raised = 0;
-            target.Cells.CollectionChanged += (s, e) => ++raised;
-
-            data[2] = new Node { Id = 100, Caption = "Replaced" };
-
-            Assert.Equal(5, target.Rows.Count);
-            AssertCells(target.Cells, 5, 0, data);
-        }
-
-        [Fact]
-        public void Updates_Cells_For_Moved_Root_Row()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-
-            Assert.Equal(5, target.Rows.Count);
-            AssertCells(target.Cells, 5, 0, data);
-
-            var raised = 0;
-            target.Cells.CollectionChanged += (s, e) => ++raised;
-
-            data.Move(2, 4);
-
-            Assert.Equal(5, target.Rows.Count);
-            AssertCells(target.Cells, 5, 0, data);
-        }
-
-        public class Sorted
-        {
-            [Fact]
-            public void Creates_Cells_For_Root_Models()
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Creates_Cells_For_Root_Models(bool sorted)
             {
                 var data = CreateData();
-                var target = CreateTarget(data);
+                var target = CreateTarget(data, sorted);
 
-                Assert.Equal(5, target.Rows.Count);
-                AssertCells(target.Cells, 5, 0, data);
+                AssertState(target, data, sorted);
             }
 
-            [Fact]
-            public void Expanding_Root_Node_Creates_Child_Cells()
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Expanding_Root_Node_Creates_Child_Cells(bool sorted)
             {
                 var data = CreateData();
-                var target = CreateTarget(data);
+                var target = CreateTarget(data, sorted);
 
                 var cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 0]);
                 cell0.IsExpanded = true;
 
-                Assert.Equal(10, target.Rows.Count);
-                AssertCells(target.Cells, 10, 0, data.TakeLast(1));
-                AssertCells(target.Cells, 10, 1, data[4].Children!);
-                AssertCells(target.Cells, 10, 6, data.SkipLast(1));
+                AssertState(
+                    target,
+                    data,
+                    sorted,
+                    expanded: !sorted ? new IndexPath(0) : new IndexPath(4));
             }
 
-            [Fact]
-            public void Creates_Cells_For_Added_Root_Row()
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Collapsing_Root_Node_Removes_Child_Cells(bool sorted)
             {
                 var data = CreateData();
-                var target = CreateTarget(data);
+                var target = CreateTarget(data, sorted);
+                var expander = (IExpanderCell)target.Cells[0, 0];
+
+                expander.IsExpanded = true;
+                Assert.Equal(10, target.Rows.Count);
+                Assert.Equal(10, target.Cells.RowCount);
+
+                expander.IsExpanded = false;
+
+                AssertState(target, data, sorted);
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Creates_Cells_For_Added_Root_Row(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
 
                 Assert.Equal(5, target.Rows.Count);
-                AssertCells(target.Cells, 5, 0, data);
+                Assert.Equal(5, target.Cells.RowCount);
 
                 var raised = 0;
                 target.Cells.CollectionChanged += (s, e) => ++raised;
 
                 data.Add(new Node { Id = 100, Caption = "New Node 1" });
 
-                Assert.Equal(6, target.Rows.Count);
-                AssertCells(target.Cells, 6, 0, data);
-                Assert.Equal(2, raised);
+                AssertState(target, data, sorted);
             }
 
-            [Fact]
-            public void Creates_Cells_For_Added_Child_Row()
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Creates_Cells_For_Added_Child_Row(bool sorted)
             {
                 var data = CreateData();
-                var target = CreateTarget(data);
+                var target = CreateTarget(data, sorted);
                 var expander = (IExpanderCell)target.Cells[0, 0];
 
                 expander.IsExpanded = true;
@@ -282,40 +93,41 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 var raised = 0;
                 target.Cells.CollectionChanged += (s, e) => ++raised;
 
-                data[4].Children!.Add(new Node { Id = 100, Caption = "New Node 1" });
+                data[0].Children!.Add(new Node { Id = 100, Caption = "New Node 1" });
 
-                Assert.Equal(11, target.Rows.Count);
-                Assert.Equal(11, target.Cells.RowCount);
-                AssertCells(target.Cells, 11, 0, data.TakeLast(1));
-                AssertCells(target.Cells, 11, 1, data[4].Children!);
-                AssertCells(target.Cells, 11, 7, data.SkipLast(1));
-                Assert.Equal(2, raised);
+                AssertState(
+                    target,
+                    data,
+                    sorted,
+                    expanded: !sorted ? new IndexPath(0) : new IndexPath(4));
             }
 
-            [Fact]
-            public void Removes_Cells_For_Removed_Root_Row()
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Removes_Cells_For_Removed_Root_Row(bool sorted)
             {
                 var data = CreateData();
-                var target = CreateTarget(data);
+                var target = CreateTarget(data, sorted);
 
                 Assert.Equal(5, target.Rows.Count);
-                AssertCells(target.Cells, 5, 0, data);
+                Assert.Equal(5, target.Cells.RowCount);
 
                 var raised = 0;
                 target.Cells.CollectionChanged += (s, e) => ++raised;
 
                 data.RemoveAt(3);
 
-                Assert.Equal(4, target.Rows.Count);
-                AssertCells(target.Cells, 4, 0, data);
-                Assert.Equal(1, raised);
+                AssertState(target, data, sorted);
             }
 
-            [Fact]
-            public void Removes_Cells_For_Removed_Root_Rows_With_Expanded_Rows()
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Removes_Cells_For_Removed_Root_Rows_With_Expanded_Rows(bool sorted)
             {
                 var data = CreateData();
-                var target = CreateTarget(data);
+                var target = CreateTarget(data, sorted);
                 var expander = (IExpanderCell)target.Cells[0, 2];
 
                 expander.IsExpanded = true;
@@ -327,58 +139,102 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 data.RemoveRange(1, 3);
 
-                Assert.Equal(2, target.Rows.Count);
-                AssertCells(target.Cells, 2, 0, data);
-                Assert.Equal(3, raised);
+                AssertState(target, data, sorted);
             }
 
-            [Fact]
-            public void Updates_Cells_For_Replaced_Root_Row()
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Updates_Cells_For_Replaced_Root_Row(bool sorted)
             {
                 var data = CreateData();
-                var target = CreateTarget(data);
+                var target = CreateTarget(data, sorted);
 
                 Assert.Equal(5, target.Rows.Count);
-                AssertCells(target.Cells, 5, 0, data);
+                Assert.Equal(5, target.Cells.RowCount);
 
                 var raised = 0;
                 target.Cells.CollectionChanged += (s, e) => ++raised;
 
                 data[2] = new Node { Id = 100, Caption = "Replaced" };
 
-                Assert.Equal(5, target.Rows.Count);
-                AssertCells(target.Cells, 5, 0, data);
+                AssertState(target, data, sorted);
             }
 
-            [Fact]
-            public void Updates_Cells_For_Moved_Root_Row()
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Updates_Cells_For_Moved_Root_Row(bool sorted)
             {
                 var data = CreateData();
-                var target = CreateTarget(data);
+                var target = CreateTarget(data, sorted);
 
                 Assert.Equal(5, target.Rows.Count);
-                AssertCells(target.Cells, 5, 0, data);
+                Assert.Equal(5, target.Cells.RowCount);
 
                 var raised = 0;
                 target.Cells.CollectionChanged += (s, e) => ++raised;
 
                 data.Move(2, 4);
 
+                AssertState(target, data, sorted);
+            }
+        }
+
+        public class Expansion
+        {
+            [Fact]
+            public void Expanding_Previously_Expanded_Node_Creates_Expanded_Descendent()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, false);
+
+                data[0].Children![0].Children = new AvaloniaList<Node>
+                {
+                    new Node { Id = 100, Caption = "Grandchild" }
+                };
+
+                // Expand first root node.
+                var cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 0]);
+                cell0.IsExpanded = true;
+
+                Assert.Equal(10, target.Rows.Count);
+
+                // Expand first child node.
+                var cell01 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 1]);
+                cell01.IsExpanded = true;
+
+                // Grandchild should now be visible.
+                Assert.Equal(11, target.Rows.Count);
+                var cell12 = Assert.IsType<TextCell<string>>(target.Cells[1, 2]);
+                Assert.Equal("Grandchild", cell12.Value);
+
+                // Collapse root node.
+                cell0.IsExpanded = false;
                 Assert.Equal(5, target.Rows.Count);
-                AssertCells(target.Cells, 5, 0, data);
+
+                // And expand again. Grandchild should now be visible once more.
+                cell0.IsExpanded = true;
+                Assert.Equal(11, target.Rows.Count);
             }
 
-            private static HierarchicalTreeDataGridSource<Node> CreateTarget(IEnumerable<Node> rows)
+            [Fact]
+            public void Attempting_To_Expand_Node_That_Has_No_Children_Hides_Expander()
             {
-                var result = HierarchicalTreeDataGridSourceTests.CreateTarget(rows);
-                result.Sort((x, y) => y.Id - x.Id);
-                return result;
-            }
+                var data = new Node { Id = 0, Caption = "Node 0" };
 
-            private static void AssertCells(ICells cells, int totalRowCount, int startRowIndex, IEnumerable<Node> data)
-            {
-                var sortedData = data.OrderByDescending(x => x.Id).ToList();
-                HierarchicalTreeDataGridSourceTests.AssertCells(cells, totalRowCount, startRowIndex, sortedData);
+                // Here we return true from hasChildren selector, but there are actually no children.
+                // This may happen if calculating the children is expensive.
+                var target = new HierarchicalTreeDataGridSource<Node>(data, x => x.Children, x => true);
+                CreateColumns(target);
+
+                var expander = (IExpanderCell)target.Cells[0, 0];
+                Assert.True(expander.ShowExpander);
+
+                expander.IsExpanded = true;
+
+                Assert.False(expander.ShowExpander);
+                Assert.False(expander.IsExpanded);
             }
         }
 
@@ -412,23 +268,17 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             return result;
         }
 
-        private static HierarchicalTreeDataGridSource<Node> CreateTarget(Node root)
-        {
-            var result = new HierarchicalTreeDataGridSource<Node>(
-                root,
-                x => x.Children,
-                x => x.Children?.Count > 0);
-            CreateColumns(result);
-            return result;
-        }
-
-        private static HierarchicalTreeDataGridSource<Node> CreateTarget(IEnumerable<Node> roots)
+        private static HierarchicalTreeDataGridSource<Node> CreateTarget(IEnumerable<Node> roots, bool sorted)
         {
             var result = new HierarchicalTreeDataGridSource<Node>(
                 roots,
                 x => x.Children,
                 x => x.Children?.Count > 0);
             CreateColumns(result);
+
+            if (sorted)
+                result.Sort((x, y) => y.Id - x.Id);
+
             return result;
         }
 
@@ -438,28 +288,65 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             source.AddColumn("Caption", x => x.Caption);
         }
 
-        private static void AssertCells(ICells cells, int totalRowCount, int startRowIndex, IEnumerable<Node> data)
+        private static void AssertState(
+            HierarchicalTreeDataGridSource<Node> target,
+            IList<Node> data,
+            bool sorted,
+            params IndexPath[] expanded)
         {
-            Assert.Equal(2, cells.ColumnCount);
-            Assert.Equal(totalRowCount, cells.RowCount);
+            Assert.Equal(2, target.Columns.Count);
 
-            var rowIndex = startRowIndex;
-            var i = 0;
+            var rowIndex = 0;
 
-            foreach (var model in data)
+            void AssertLevel(IndexPath parent, IList<Node> levelData)
             {
-                var cell0 = Assert.IsType<ExpanderCell<Node, int>>(cells[0, rowIndex]);
-                var cell1 = Assert.IsType<TextCell<string>>(cells[1, rowIndex]);
+                for (var i = 0; i < levelData.Count; ++i)
+                {
+                    var modelIndex = parent.CloneWithChildIndex(!sorted ? i : levelData.Count - 1 - i);
+                    var model = GetModel(data, modelIndex);
+                    var row = Assert.IsType<HierarchicalRow<Node>>(target.Rows[rowIndex]);
 
-                Assert.Equal(model.Id, cell0.Value);
-                Assert.Equal(model.Children?.Count > 0, cell0.ShowExpander);
-                Assert.Equal(model.Caption, cell1.Value);
+                    Assert.Equal(modelIndex, row.ModelIndex);
+                    Assert.Equal(expanded.Contains(modelIndex), row.IsExpanded);
 
-                ++rowIndex;
+                    var cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, rowIndex]);
+                    var cell1 = Assert.IsType<TextCell<string>>(target.Cells[1, rowIndex]);
+
+                    Assert.Equal(model.Id, cell0.Value);
+                    Assert.Equal(model.Children?.Count > 0, cell0.ShowExpander);
+                    Assert.Equal(model.Caption, cell1.Value);
+
+                    ++rowIndex;
+
+                    if (row.IsExpanded)
+                    {
+                        Assert.NotNull(model.Children);
+                        AssertLevel(modelIndex, model.Children!);
+                    }
+                }
             }
+
+            AssertLevel(default, data);
         }
 
-        private class Node
+        private static Node GetModel(IList<Node> data, IndexPath path)
+        {
+            var depth = path.GetSize();
+            Node? node = null;
+
+            if (depth == 0)
+                throw new NotSupportedException();
+
+            for (var i = 0; i < depth; ++i)
+            {
+                var j = path.GetAt(i);
+                node = node is null ? data[j] : node.Children![j];
+            }
+
+            return node!;
+        }
+
+        internal class Node
         {
             public int Id { get; set; }
             public string? Caption { get; set; }

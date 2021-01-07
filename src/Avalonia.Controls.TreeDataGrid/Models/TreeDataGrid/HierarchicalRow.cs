@@ -14,19 +14,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public HierarchicalRow(
             IExpanderRowController<TModel> controller,
-            IndexPath index,
+            IndexPath modelIndex,
             TModel model,
             Comparison<TModel>? comparison)
         {
             _controller = controller;
             _comparison = comparison;
-            Index = index;
+            ModelIndex = modelIndex;
             Model = model;
         }
 
         public IReadOnlyList<HierarchicalRow<TModel>>? Children => _isExpanded ? _childRows : null;
-        public override object? Header => Index;
-        public IndexPath Index { get; }
+        public override object? Header => ModelIndex;
+        public IndexPath ModelIndex { get; }
         public override bool IsExpanded => _isExpanded;
         public override TModel Model { get; }
 
@@ -91,7 +91,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 return new HierarchicalRow<TModel>(
                     _owner._controller,
-                    _owner.Index.CloneWithChildIndex(modelIndex),
+                    _owner.ModelIndex.CloneWithChildIndex(modelIndex),
                     model,
                     _owner._comparison);
             }

@@ -7,7 +7,7 @@
             HierarchicalRow<TModel> row,
             TValue value,
             bool showExpander)
-            : base(column, row, row.Model, row.Index, showExpander)
+            : base(column, row, row.Model, row.ModelIndex, showExpander)
         {
             Value = value;
         }

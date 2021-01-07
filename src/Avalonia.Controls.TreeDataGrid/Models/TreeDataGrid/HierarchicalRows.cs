@@ -50,7 +50,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         void IExpanderRowController<TModel>.OnChildCollectionChanged(ExpanderRowBase<TModel> row, NotifyCollectionChangedEventArgs e)
         {
             if (row is HierarchicalRow<TModel> h)
-                OnCollectionChanged(h.Index, e);
+                OnCollectionChanged(h.ModelIndex, e);
             else
                 throw new NotSupportedException("Unexpected row type.");
         }
@@ -61,7 +61,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 for (var i = fromRowIndex; i < _rows.Count; ++i)
                 {
-                    if (index == _rows[i].Index)
+                    if (index == _rows[i].ModelIndex)
                         return i;
                 }
             }
@@ -153,10 +153,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             int GetDescendentRowCount(int rowIndex)
             {
                 var row = _rows[rowIndex];
-                var depth = row.Index.GetSize();
+                var depth = row.ModelIndex.GetSize();
                 var i = rowIndex + 1;
 
-                while (i < _rows.Count && _rows[i].Index.GetSize() > depth)
+                while (i < _rows.Count && _rows[i].ModelIndex.GetSize() > depth)
                     ++i;
 
                 return i - (rowIndex + 1);
