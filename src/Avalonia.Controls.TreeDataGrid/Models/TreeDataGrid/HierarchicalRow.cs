@@ -72,6 +72,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void SortChildren(Comparison<TModel>? comparison)
         {
+            _comparison = comparison;
+
             if (_childRows is null)
                 return;
 
@@ -102,8 +104,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             public ChildRows(
                 HierarchicalRow<TModel> owner,
                 ItemsSourceView<TModel> items,
-                Comparison<TModel>? comparer)
-                : base(items, comparer)
+                Comparison<TModel>? comparison)
+                : base(items, comparison)
             {
                 _owner = owner;
                 CollectionChanged += OnCollectionChanged;
