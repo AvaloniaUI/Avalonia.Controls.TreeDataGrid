@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -44,5 +45,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         public override IEnumerable<TModel>? GetChildModels(TModel model) => _childSelector(model);
+
+        public override Comparison<TModel>? GetComparison(ListSortDirection direction)
+        {
+            return (x, y) =>
+            {
+                var a = _valueSelector(x);
+                var b = _valueSelector(y);
+                var r = Comparer<TValue>.Default.Compare(a, b);
+                return direction == ListSortDirection.Descending ? -r : r;
+            };
+        }
     }
 }

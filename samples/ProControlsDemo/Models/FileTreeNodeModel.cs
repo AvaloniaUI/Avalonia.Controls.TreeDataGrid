@@ -46,7 +46,6 @@ namespace ProControlsDemo.Models
         public bool IsDirectory { get; }
         public long? Size { get; }
         public DateTimeOffset? Modified { get; }
-
         public IReadOnlyList<FileTreeNodeModel> Children => _children ??= LoadChildren();
 
         private ObservableCollection<FileTreeNodeModel> LoadChildren()

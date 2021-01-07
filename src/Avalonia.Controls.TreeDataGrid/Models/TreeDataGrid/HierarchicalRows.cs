@@ -19,7 +19,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _roots = new RootRows(this, roots, comparison);
             _roots.CollectionChanged += OnRootsCollectionChanged;
             _comparison = comparison;
-            _rows = new List<HierarchicalRow<TModel>>(_roots);
+            _rows = new List<HierarchicalRow<TModel>>();
+            InitializeRows();
         }
 
         public HierarchicalRow<TModel> this[int index] => _rows[index];
@@ -38,7 +39,15 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void Sort(Comparison<TModel>? comparison)
         {
-            throw new NotImplementedException();
+            _roots.Sort(comparison);
+            _rows.Clear();
+            InitializeRows();
+            CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
+
+            foreach (var row in _roots)
+            {
+                row.SortChildren(comparison);
+            }
         }
 
         public IEnumerator<HierarchicalRow<TModel>> GetEnumerator() => _rows.GetEnumerator();
@@ -69,24 +78,34 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return -1;
         }
 
-        private void OnCollectionChanged(IndexPath parentIndex, NotifyCollectionChangedEventArgs e)
+        private void InitializeRows()
         {
-            int AddRow(int index, HierarchicalRow<TModel> row)
+            var i = 0;
+
+            foreach (var model in _roots)
             {
-                var i = index;
-                _rows.Insert(i++, row);
+                i += AddRowsAndDescendants(i, model);
+            }
+        }
 
-                if (row.Children is object)
+        private int AddRowsAndDescendants(int index, HierarchicalRow<TModel> row)
+        {
+            var i = index;
+            _rows.Insert(i++, row);
+
+            if (row.Children is object)
+            {
+                foreach (var childRow in row.Children)
                 {
-                    foreach (var childRow in row.Children)
-                    {
-                        i += AddRow(i, childRow);
-                    }
+                    i += AddRowsAndDescendants(i, childRow);
                 }
-
-                return i - index;
             }
 
+            return i - index;
+        }
+
+        private void OnCollectionChanged(IndexPath parentIndex, NotifyCollectionChangedEventArgs e)
+        {
             void Add(int index, IEnumerable? items, bool raise)
             {
                 if (items is null)
@@ -96,7 +115,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
                 foreach (HierarchicalRow<TModel> row in items)
                 {
-                    index += AddRow(index, row);
+                    index += AddRowsAndDescendants(index, row);
                 }
 
                 if (raise && index > start)
@@ -152,6 +171,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             int GetDescendentRowCount(int rowIndex)
             {
+                if (rowIndex == -1)
+                    return _rows.Count;
+
                 var row = _rows[rowIndex];
                 var depth = row.ModelIndexPath.GetSize();
                 var i = rowIndex + 1;
@@ -201,10 +223,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 case NotifyCollectionChangedAction.Reset:
                     {
                         var parentRowIndex = GetRowIndex(parentIndex);
-                        var parentRow = _rows[parentRowIndex];
+                        var children = parentRowIndex >= 0 ? _rows[parentRowIndex].Children : _roots;
                         var count = GetDescendentRowCount(parentRowIndex);
                         Remove(parentRowIndex + 1, count, true);
-                        Add(parentRowIndex + 1, parentRow.Children, true);
+                        Add(parentRowIndex + 1, children, true);
                     }
                     break;
                 default:
@@ -218,7 +240,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         private class RootRows : SortableRowsBase<TModel, HierarchicalRow<TModel>>,
-            IEnumerable<HierarchicalRow<TModel>>
+            IReadOnlyList<HierarchicalRow<TModel>>
         {
             private readonly HierarchicalRows<TModel> _owner;
 

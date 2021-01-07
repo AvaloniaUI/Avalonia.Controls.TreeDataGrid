@@ -69,7 +69,20 @@ namespace Avalonia.Controls
             _rows?.Sort(_comparison);
         }
 
-        bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction) => false;
+        bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)
+        {
+            if (column is ColumnBase<TModel> columnBase &&
+                _columns.Contains(columnBase) &&
+                columnBase.GetComparison(direction) is Comparison<TModel> comparison)
+            {
+                Sort(comparison);
+                foreach (var c in _columns)
+                    c.SortDirection = c == column ? (ListSortDirection?)direction : null;
+                return true;
+            }
+
+            return false;
+        }
 
         private HierarchicalRows<TModel> CreateRows()
         {

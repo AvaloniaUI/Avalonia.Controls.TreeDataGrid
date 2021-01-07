@@ -235,6 +235,38 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 AssertState(target, data, 5, sorted);
             }
+
+            [Fact]
+            public void Setting_Sort_Updates_Cells()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, false);
+                var expander = (IExpanderCell)target.Cells[0, 0];
+
+                expander.IsExpanded = true;
+                Assert.Equal(10, target.Rows.Count);
+                Assert.Equal(10, target.Cells.RowCount);
+
+                target.Sort((x, y) => y.Id - x.Id);
+
+                AssertState(target, data, 10, true, new IndexPath(0));
+            }
+
+            [Fact]
+            public void Clearing_Sort_Updates_Cells()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, true);
+                var expander = (IExpanderCell)target.Cells[0, 0];
+
+                expander.IsExpanded = true;
+                Assert.Equal(10, target.Rows.Count);
+                Assert.Equal(10, target.Cells.RowCount);
+
+                target.Sort(null);
+
+                AssertState(target, data, 10, false, new IndexPath(4));
+            }
         }
 
         public class Expansion

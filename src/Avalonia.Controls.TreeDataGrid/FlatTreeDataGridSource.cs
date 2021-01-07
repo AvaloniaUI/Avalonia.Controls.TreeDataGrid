@@ -39,7 +39,7 @@ namespace Avalonia.Controls
 
         public void Sort(Comparison<TModel>? comparer)
         {
-            _comparer = comparer is object ? new Comparer(comparer) : null;
+            _comparer = comparer is object ? new FuncComparer<TModel>(comparer) : null;
             _rows?.Sort(_comparer);
         }
 
@@ -160,13 +160,6 @@ namespace Avalonia.Controls
                 default:
                     throw new NotSupportedException();
             }
-        }
-
-        private class Comparer : IComparer<TModel>
-        {
-            private readonly Comparison<TModel> _func;
-            public Comparer(Comparison<TModel> func) => _func = func;
-            public int Compare(TModel x, TModel y) => _func(x, y);
         }
     }
 }

@@ -23,7 +23,6 @@
             set => _width = value;
         }
 
-
         public abstract ICell CreateCell(TModel model);
     }
 }

@@ -70,6 +70,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _controller.OnChildCollectionChanged(this, CollectionExtensions.ResetEvent);
         }
 
+        public void SortChildren(Comparison<TModel>? comparison)
+        {
+            if (_childRows is null)
+                return;
+
+            _childRows.Sort(comparison);
+
+            foreach (var row in _childRows)
+            {
+                row.SortChildren(comparison);
+            }
+        }
+
         public override void UpdateModelIndex(int delta)
         {
             ModelIndexPath = ModelIndexPath.GetParent().CloneWithChildIndex(ModelIndexPath.GetLeaf()!.Value + delta);

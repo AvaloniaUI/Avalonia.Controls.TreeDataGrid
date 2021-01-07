@@ -39,8 +39,21 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public void Sort(Comparison<TModel>? comparison)
         {
             _comparison = comparison;
+
             if (_rows is object)
-                Reset(_rows);
+            {
+                if (comparison is object)
+                {
+                    var comparer = new FuncComparer<TModel>(comparison);
+                    _rows = _rows.OrderBy(x => x.Model, comparer).ToList();
+                }
+                else
+                {
+                    _rows.Sort((x, y) => x.ModelIndex.CompareTo(y.ModelIndex));
+                }
+
+                CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
