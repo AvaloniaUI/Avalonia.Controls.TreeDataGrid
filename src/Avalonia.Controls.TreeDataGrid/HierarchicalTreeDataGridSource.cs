@@ -42,7 +42,8 @@ namespace Avalonia.Controls
             Func<TModel, TValue> valueSelector,
             Func<TModel, IEnumerable<TModel>?> childSelector,
             Func<TModel, bool>? hasChildrenSelector = null,
-            GridLength? width = null)
+            GridLength? width = null,
+            ColumnOptions<TModel>? options = null)
         {
             var columnWidth = width ?? new GridLength(1, GridUnitType.Star);
             var column = new HierarchicalExpanderColumn<TModel, TValue>(
@@ -50,20 +51,23 @@ namespace Avalonia.Controls
                 valueSelector,
                 childSelector,
                 hasChildrenSelector,
-                columnWidth);
+                columnWidth,
+                options);
             AddColumn(column);
         }
 
         public void AddColumn<TValue>(
             string header,
             Func<TModel, TValue> selector,
-            GridLength? width = null)
+            GridLength? width = null,
+            ColumnOptions<TModel>? options = null)
         {
             var columnWidth = width ?? new GridLength(1, GridUnitType.Star);
             var column = new TextColumn<TModel, TValue>(
                 header,
                 columnWidth,
-                selector);
+                selector,
+                options);
             AddColumn(column);
         }
 

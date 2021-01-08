@@ -32,10 +32,11 @@ namespace Avalonia.Controls
         public void AddColumn<TValue>(
             string header,
             Func<TModel, TValue> selector,
-            GridLength? width = null)
+            GridLength? width = null,
+            ColumnOptions<TModel>? options = null)
         {
             var columnWidth = width ?? new GridLength(1, GridUnitType.Star);
-            var column = new TextColumn<TModel, TValue>(header, columnWidth, selector);
+            var column = new TextColumn<TModel, TValue>(header, columnWidth, selector, options);
             _columns.Add(column);
         }
 

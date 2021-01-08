@@ -11,6 +11,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The value type.</typeparam>
     public abstract class ColumnBase<TModel, TValue> : NotifyingBase, IColumn<TModel>
     {
+        private readonly Comparison<TModel>? _sortAscending;
+        private readonly Comparison<TModel>? _sortDescending;
         private GridLength _width;
         private object? _header;
         private ListSortDirection? _sortDirection;
@@ -20,11 +22,26 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         /// <param name="header">The column header.</param>
         /// <param name="width">The column width.</param>
-        public ColumnBase(object? header, GridLength width, Func<TModel, TValue> valueSelector)
+        public ColumnBase(
+            object? header,
+            GridLength width,
+            Func<TModel, TValue> valueSelector,
+            ColumnOptions<TModel>? options)
         {
             _header = header;
             _width = width;
             ValueSelector = valueSelector;
+
+            if (options?.UseDefaultComparison == false)
+            {
+                _sortAscending = options.CompareAscending;
+                _sortDescending = options.CompareDescending;
+            }
+            else
+            {
+                _sortAscending = DefaultSortAscending;
+                _sortDescending = DefaultSortDescending;
+            }
         }
 
         /// <summary>
@@ -73,13 +90,26 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public Comparison<TModel>? GetComparison(ListSortDirection direction)
         {
-            return (x, y) =>
+            return direction switch
             {
-                var a = ValueSelector(x);
-                var b = ValueSelector(y);
-                var r = Comparer<TValue>.Default.Compare(a, b);
-                return direction == ListSortDirection.Descending ? -r : r;
+                ListSortDirection.Ascending => _sortAscending,
+                ListSortDirection.Descending => _sortDescending,
+                _ => null,
             };
+        }
+
+        private int DefaultSortAscending(TModel x, TModel y)
+        {
+            var a = ValueSelector(x);
+            var b = ValueSelector(y);
+            return Comparer<TValue>.Default.Compare(a, b);
+        }
+
+        private int DefaultSortDescending(TModel x, TModel y)
+        {
+            var a = ValueSelector(x);
+            var b = ValueSelector(y);
+            return Comparer<TValue>.Default.Compare(b, a);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using Avalonia.Controls;
+using Avalonia.Controls.Models.TreeDataGrid;
 using ProControlsDemo.Models;
 
 namespace ProControlsDemo.ViewModels
@@ -37,9 +38,36 @@ namespace ProControlsDemo.ViewModels
                 {
                     var model = new FileTreeNodeModel(@"c:\", isDirectory: true, isRoot: true);
                     var source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(model);
-                    source.AddExpanderColumn("Name", x => x.Name, x => x.Children, x => x.IsDirectory);
-                    source.AddColumn("Size", x => x.Size, GridLength.Auto);
-                    source.AddColumn("Modified", x => x.Modified, GridLength.Auto);
+                    source.AddExpanderColumn(
+                        "Name",
+                        x => x.Name,
+                        x => x.Children,
+                        x => x.IsDirectory,
+                        new GridLength(1, GridUnitType.Star),
+                        new ColumnOptions<FileTreeNodeModel>
+                        {
+                            CompareAscending = FileTreeNodeModel.SortAscending(x => x.Name),
+                            CompareDescending = FileTreeNodeModel.SortDescending(x => x.Name),
+                        });
+                    source.AddColumn(
+                        "Size",
+                        x => x.Size,
+                        GridLength.Auto,
+                        new ColumnOptions<FileTreeNodeModel>
+                        {
+                            CompareAscending = FileTreeNodeModel.SortAscending(x => x.Size),
+                            CompareDescending = FileTreeNodeModel.SortDescending(x => x.Size),
+                        });
+                    source.AddColumn(
+                        "Modified",
+                        x => x.Modified,
+                        GridLength.Auto,
+                        new ColumnOptions<FileTreeNodeModel>
+                        {
+                            CompareAscending = FileTreeNodeModel.SortAscending(x => x.Modified),
+                            CompareDescending = FileTreeNodeModel.SortDescending(x => x.Modified),
+                        });
+
                     _files = source;
                 }
 

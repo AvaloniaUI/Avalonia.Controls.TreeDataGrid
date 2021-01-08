@@ -28,8 +28,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             Func<TModel, TValue> valueSelector,
             Func<TModel, IEnumerable<TModel>?> childSelector,
             Func<TModel, bool>? hasChildrenSelector,
-            GridLength width)
-            : base(header, width, valueSelector)
+            GridLength width,
+            ColumnOptions<TModel>? options = null)
+            : base(header, width, valueSelector, options)
         {
             _childSelector = childSelector;
             _hasChildrenSelector = hasChildrenSelector;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using Avalonia.Threading;
 using ReactiveUI;
@@ -80,6 +81,32 @@ namespace ProControlsDemo.Models
             _watcher.EnableRaisingEvents = true;
 
             return result;
+        }
+
+        public static Comparison<FileTreeNodeModel> SortAscending<T>(Func<FileTreeNodeModel, T> selector)
+        {
+            return (x, y) =>
+            {
+                if (x.IsDirectory == y.IsDirectory)
+                    return Comparer<T>.Default.Compare(selector(x), selector(y));
+                else if (x.IsDirectory)
+                    return -1;
+                else
+                    return 1;
+            };
+        }
+
+        public static Comparison<FileTreeNodeModel> SortDescending<T>(Func<FileTreeNodeModel, T> selector)
+        {
+            return (x, y) =>
+            {
+                if (x.IsDirectory == y.IsDirectory)
+                    return Comparer<T>.Default.Compare(selector(y), selector(x));
+                else if (x.IsDirectory)
+                    return -1;
+                else
+                    return 1;
+            };
         }
 
         private void OnCreated(object sender, FileSystemEventArgs e)

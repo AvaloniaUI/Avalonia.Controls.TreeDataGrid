@@ -12,8 +12,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public TextColumn(
             object? header,
             GridLength width,
-            Func<TModel, TValue> valueSelector)
-            : base(header, width, valueSelector)
+            Func<TModel, TValue> valueSelector,
+            ColumnOptions<TModel>? options = null)
+            : base(header, width, valueSelector, options)
         {
         }
 
