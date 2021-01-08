@@ -4,9 +4,17 @@ using System.Collections.Specialized;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    public class HierarchicalRow<TModel> : ExpanderRowBase<TModel>, IDisposable
+    /// <summary>
+    /// A row in a <see cref="HierarchicalTreeDataGridSource{TModel}"/>.
+    /// </summary>
+    /// <typeparam name="TModel">The model type.</typeparam>
+    public class HierarchicalRow<TModel> : NotifyingBase,
+        IExpanderRow<TModel>,
+        IIndentedRow,
+        IDisposable
     {
         private readonly IExpanderRowController<TModel> _controller;
+        private readonly IExpanderColumn<TModel> _expanderColumn;
         private Comparison<TModel>? _comparison;
         private IEnumerable<TModel>? _childModels;
         private ChildRows? _childRows;
@@ -14,6 +22,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public HierarchicalRow(
             IExpanderRowController<TModel> controller,
+            IExpanderColumn<TModel> expanderColumn,
             IndexPath modelIndex,
             TModel model,
             Comparison<TModel>? comparison)
@@ -22,55 +31,64 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 throw new ArgumentException("Invalid model index");
 
             _controller = controller;
+            _expanderColumn = expanderColumn;
             _comparison = comparison;
             ModelIndexPath = modelIndex;
             Model = model;
         }
 
+        /// <summary>
+        /// Gets the row's visible child rows.
+        /// </summary>
         public IReadOnlyList<HierarchicalRow<TModel>>? Children => _isExpanded ? _childRows : null;
-        public override object? Header => ModelIndexPath;
-        public override int ModelIndex => ModelIndexPath.GetLeaf()!.Value;
-        public IndexPath ModelIndexPath { get; private set; }
-        public override bool IsExpanded => _isExpanded;
-        public override TModel Model { get; }
 
-        public override GridLength Height 
+        /// <summary>
+        /// Gets the index of the model relative to its parent.
+        /// </summary>
+        /// <remarks>
+        /// To retrieve the index path to the model from the root data source, see
+        /// <see cref="ModelIndexPath"/>.
+        /// </remarks>
+        public int ModelIndex => ModelIndexPath.GetLeaf()!.Value;
+
+        /// <summary>
+        /// Gets the index path of the model in the data source.
+        /// </summary>
+        public IndexPath ModelIndexPath { get; private set; }
+
+        public object? Header => ModelIndexPath;
+        public int Indent => ModelIndexPath.GetSize() - 1;
+        public TModel Model { get; }
+
+        public GridLength Height 
         {
             get => GridLength.Auto;
             set { }
         }
 
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                if (_isExpanded != value)
+                {
+                    if (value)
+                        Expand();
+                    else
+                        Collapse();
+                }
+            }
+        }
+
         public void Dispose() => _childRows?.Dispose();
 
-        public override void Expand(IEnumerable<TModel> childModels)
+        public void UpdateModelIndex(int delta)
         {
-            if (_isExpanded)
-                throw new InvalidOperationException("Row is already expanded.");
-
-            if (_childModels != childModels)
-            {
-                _childModels = childModels;
-                _childRows?.Dispose();
-                _childRows = new ChildRows(
-                    this,
-                    ItemsSourceView<TModel>.GetOrCreate(childModels),
-                    _comparison);
-            }
-
-            _isExpanded = true;
-            _controller.OnChildCollectionChanged(this, CollectionExtensions.ResetEvent);
+            ModelIndexPath = ModelIndexPath.GetParent().CloneWithChildIndex(ModelIndexPath.GetLeaf()!.Value + delta);
         }
 
-        public override void Collapse()
-        {
-            if (!_isExpanded)
-                return;
-
-            _isExpanded = false;
-            _controller.OnChildCollectionChanged(this, CollectionExtensions.ResetEvent);
-        }
-
-        public void SortChildren(Comparison<TModel>? comparison)
+        internal void SortChildren(Comparison<TModel>? comparison)
         {
             _comparison = comparison;
 
@@ -85,9 +103,34 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             }
         }
 
-        public override void UpdateModelIndex(int delta)
+        private void Expand()
         {
-            ModelIndexPath = ModelIndexPath.GetParent().CloneWithChildIndex(ModelIndexPath.GetLeaf()!.Value + delta);
+            var childModels = _expanderColumn.GetChildModels(Model);
+
+            if (_childModels != childModels)
+            {
+                _childModels = childModels;
+                _childRows?.Dispose();
+                _childRows = new ChildRows(
+                    this,
+                    ItemsSourceView<TModel>.GetOrCreate(childModels),
+                    _comparison);
+            }
+
+            if (_childRows?.Count > 0)
+                _isExpanded = true;
+
+            _controller.OnChildCollectionChanged(this, CollectionExtensions.ResetEvent);
+
+            if (_childRows?.Count > 0)
+                RaisePropertyChanged(nameof(IsExpanded));
+        }
+
+        private void Collapse()
+        {
+            _isExpanded = false;
+            _controller.OnChildCollectionChanged(this, CollectionExtensions.ResetEvent);
+            RaisePropertyChanged(nameof(IsExpanded));
         }
 
         private void OnChildCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -115,6 +158,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 return new HierarchicalRow<TModel>(
                     _owner._controller,
+                    _owner._expanderColumn,
                     _owner.ModelIndexPath.CloneWithChildIndex(modelIndex),
                     model,
                     _owner._comparison);

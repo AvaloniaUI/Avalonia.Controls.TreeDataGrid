@@ -3,6 +3,9 @@ using Avalonia.Collections;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
+    /// <summary>
+    /// An implementation of <see cref="ICells"/> that stores its cells in a list.
+    /// </summary>
     public class CellList : AvaloniaList<ICell>, ICells
     {
         public CellList(int columnCount) => ColumnCount = columnCount;
@@ -15,18 +18,5 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         
         public int ColumnCount { get; }
         public int RowCount => ColumnCount > 0 ? Count / ColumnCount : 0;
-
-        public void InsertRows<TModel>(int index, TModel model, Func<TModel, int, ICell> selector)
-        {
-            if (index > RowCount)
-                throw new IndexOutOfRangeException();
-
-            var cellIndex = index * ColumnCount;
-
-            for (var columnIndex = 0; columnIndex < ColumnCount; ++columnIndex)
-                Insert(cellIndex++, selector(model, columnIndex));
-        }
-
-        public void RemoveRows(int index, int count) => RemoveRange(index * ColumnCount, count * ColumnCount);
     }
 }

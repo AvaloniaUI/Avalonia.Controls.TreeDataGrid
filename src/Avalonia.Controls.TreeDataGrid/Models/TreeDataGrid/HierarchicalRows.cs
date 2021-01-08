@@ -11,13 +11,18 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         IExpanderRowController<TModel>
     {
         private readonly RootRows _roots;
+        private readonly IExpanderColumn<TModel> _expanderColumn;
         private Comparison<TModel>? _comparison;
         private List<HierarchicalRow<TModel>> _rows;
 
-        public HierarchicalRows(ItemsSourceView<TModel> roots, Comparison<TModel>? comparison)
+        public HierarchicalRows(
+            ItemsSourceView<TModel> roots,
+            IExpanderColumn<TModel> expanderColumn,
+            Comparison<TModel>? comparison)
         {
             _roots = new RootRows(this, roots, comparison);
             _roots.CollectionChanged += OnRootsCollectionChanged;
+            _expanderColumn = expanderColumn;
             _comparison = comparison;
             _rows = new List<HierarchicalRow<TModel>>();
             InitializeRows();
@@ -56,7 +61,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-        void IExpanderRowController<TModel>.OnChildCollectionChanged(ExpanderRowBase<TModel> row, NotifyCollectionChangedEventArgs e)
+        void IExpanderRowController<TModel>.OnChildCollectionChanged(
+            IExpanderRow<TModel> row,
+            NotifyCollectionChangedEventArgs e)
         {
             if (row is HierarchicalRow<TModel> h)
                 OnCollectionChanged(h.ModelIndexPath, e);
@@ -255,7 +262,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             protected override HierarchicalRow<TModel> CreateRow(int modelIndex, TModel model)
             {
-                return new HierarchicalRow<TModel>(_owner, new IndexPath(modelIndex), model, _owner._comparison);
+                return new HierarchicalRow<TModel>(
+                    _owner,
+                    _owner._expanderColumn,
+                    new IndexPath(modelIndex),
+                    model,
+                    _owner._comparison);
             }
         }
     }

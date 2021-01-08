@@ -7,39 +7,52 @@ using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// A data source for a <see cref="TreeDataGrid"/> which displays a hierarchial tree where each
+    /// row may have multiple columns.
+    /// </summary>
+    /// <typeparam name="TModel">The model type.</typeparam>
     public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource
         where TModel : class
     {
         private readonly ItemsSourceView<TModel> _roots;
         private readonly ColumnList<TModel> _columns;
-        private readonly Func<TModel, IEnumerable<TModel>?> _childSelector;
-        private readonly Func<TModel, bool> _hasChildrenSelector;
+        private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
         private CellList? _cells;
         private Comparison<TModel>? _comparison;
 
-        public HierarchicalTreeDataGridSource(
-            TModel root,
-            Func<TModel, IEnumerable<TModel>?> childSelector,
-            Func<TModel, bool> hasChildrenSelector)
-            : this(new[] { root }, childSelector, hasChildrenSelector)
+        public HierarchicalTreeDataGridSource(TModel root)
+            : this(new[] { root })
         {
         }
 
-        public HierarchicalTreeDataGridSource(
-            IEnumerable<TModel> roots,
-            Func<TModel, IEnumerable<TModel>?> childSelector,
-            Func<TModel, bool> hasChildrenSelector)
+        public HierarchicalTreeDataGridSource(IEnumerable<TModel> roots)
         {
-            _roots = new ItemsSourceView<TModel>(roots);
+            _roots = ItemsSourceView<TModel>.GetOrCreate(roots);
             _columns = new ColumnList<TModel>();
-            _childSelector = childSelector;
-            _hasChildrenSelector = hasChildrenSelector;
         }
 
         public ICells Cells => _cells ??= CreateCells();
         public IRows Rows => _rows ??= CreateRows();
         public IColumns Columns => _columns;
+
+        public void AddExpanderColumn<TValue>(
+            string header,
+            Func<TModel, TValue> valueSelector,
+            Func<TModel, IEnumerable<TModel>?> childSelector,
+            Func<TModel, bool>? hasChildrenSelector = null,
+            GridLength? width = null)
+        {
+            var columnWidth = width ?? new GridLength(1, GridUnitType.Star);
+            var column = new HierarchicalExpanderColumn<TModel, TValue>(
+                header,
+                valueSelector,
+                childSelector,
+                hasChildrenSelector,
+                columnWidth);
+            AddColumn(column);
+        }
 
         public void AddColumn<TValue>(
             string header,
@@ -47,21 +60,18 @@ namespace Avalonia.Controls
             GridLength? width = null)
         {
             var columnWidth = width ?? new GridLength(1, GridUnitType.Star);
-            var column = _columns.Count == 0 ?
-                (ColumnBase<TModel>)new ExpanderColumn<TModel, TValue>(
-                    header,
-                    selector,
-                    _childSelector,
-                    columnWidth,
-                    _hasChildrenSelector) :
-                new TextColumn<TModel, TValue>(
-                    header,
-                    selector,
-                    columnWidth);
-            _columns.Add(column);
+            var column = new TextColumn<TModel, TValue>(
+                header,
+                columnWidth,
+                selector);
+            AddColumn(column);
         }
 
-        public void AddColumn(ColumnBase<TModel> column) => _columns.Add(column);
+        public void AddColumn(IColumn<TModel> column)
+        {
+            _columns.Add(column);
+            _expanderColumn ??= column as IExpanderColumn<TModel>;
+        }
 
         public void Sort(Comparison<TModel>? comparison)
         {
@@ -71,7 +81,7 @@ namespace Avalonia.Controls
 
         bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)
         {
-            if (column is ColumnBase<TModel> columnBase &&
+            if (column is IColumn<TModel> columnBase &&
                 _columns.Contains(columnBase) &&
                 columnBase.GetComparison(direction) is Comparison<TModel> comparison)
             {
@@ -86,7 +96,12 @@ namespace Avalonia.Controls
 
         private HierarchicalRows<TModel> CreateRows()
         {
-            var result = new HierarchicalRows<TModel>(_roots, _comparison);
+            if (_columns.Count == 0)
+                throw new InvalidOperationException("No columns defined.");
+            if (_expanderColumn is null)
+                throw new InvalidOperationException("No expander column defined.");
+
+            var result = new HierarchicalRows<TModel>(_roots, _expanderColumn, _comparison);
             result.CollectionChanged += RowsCollectionChanged;
             return result;
         }
@@ -100,12 +115,7 @@ namespace Avalonia.Controls
 
         private ICell CreateCell(HierarchicalRow<TModel> row, int columnIndex)
         {
-            return _columns[columnIndex] switch
-            {
-                ExpanderColumnBase<TModel> expander => expander.CreateCell(row),
-                SelectorColumnBase<TModel> column => column.CreateCell(row.Model),
-                _ => throw new NotSupportedException("Unsupported column type"),
-            };
+            return _columns[columnIndex].CreateCell(row);
         }
 
         private void Reset(CellList cells)

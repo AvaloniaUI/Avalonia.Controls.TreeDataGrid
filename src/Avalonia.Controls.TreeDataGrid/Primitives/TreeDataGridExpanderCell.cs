@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Primitives
                 nameof(ShowExpander),
                 o => o.ShowExpander);
 
-        public int Indent => Model?.ModelIndexPath.GetSize() - 1 ?? 0;
+        public int Indent => (Model?.Row as IIndentedRow)?.Indent ?? 0;
 
         public bool IsExpanded
         {

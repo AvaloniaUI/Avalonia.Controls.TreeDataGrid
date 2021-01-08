@@ -3,16 +3,25 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    internal class AnonymousRow<TModel> : RowBase<TModel>
+    /// <summary>
+    /// A row that can be reused for situations where creating a separate object for each row is
+    /// not necessary.
+    /// </summary>
+    /// <typeparam name="TModel">The model type.</typeparam>
+    /// <remarks>
+    /// In a flat grid where rows cannot be resized, it is not necessary to persist any information
+    /// about rows; the same row object can be updated and reused when a new row is requested.
+    /// </remarks>
+    internal class AnonymousRow<TModel> : IRow<TModel>
     {
         private int _index;
         [AllowNull] private TModel _model;
 
-        public override object? Header => _index;
-        public override TModel Model => _model;
-        public override int ModelIndex => _index;
+        public object? Header => _index;
+        public TModel Model => _model;
+        public int ModelIndex => _index;
 
-        public override GridLength Height
+        public GridLength Height
         {
             get => GridLength.Auto;
             set { }
@@ -25,7 +34,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return this;
         }
 
-        public override void UpdateModelIndex(int delta)
+        public void UpdateModelIndex(int delta)
         {
             throw new NotSupportedException();
         }

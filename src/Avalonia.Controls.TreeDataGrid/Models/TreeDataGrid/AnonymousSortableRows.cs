@@ -6,7 +6,15 @@ using System.Linq;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    public class AnonymousSortableRows<TModel> : IRows, IEnumerable<RowBase<TModel>>
+    /// <summary>
+    /// Exposes a sortable collection of models as anonymous rows.
+    /// </summary>
+    /// <typeparam name="TModel">The model type.</typeparam>
+    /// <remarks>
+    /// In a flat grid where rows cannot be resized, it is not necessary to persist any information
+    /// about rows; the same row object can be updated and reused when a new row is requested.
+    /// </remarks>
+    public class AnonymousSortableRows<TModel> : IRows, IEnumerable<IRow<TModel>>
     {
         private readonly ItemsSourceView<TModel> _items;
         private readonly AnonymousRow<TModel> _row;
@@ -21,7 +29,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _row = new AnonymousRow<TModel>();
         }
 
-        public RowBase<TModel> this[int index]
+        public IRow<TModel> this[int index]
         {
             get
             {
@@ -38,7 +46,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-        public IEnumerator<RowBase<TModel>> GetEnumerator()
+        public IEnumerator<IRow<TModel>> GetEnumerator()
         {
             for (var i = 0; i < Count; ++i)
                 yield return this[i];

@@ -9,10 +9,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public interface IExpanderCell : ICell, IExpander
     {
         /// <summary>
-        /// Gets the index of the row in the source data.
+        /// Gets the row that the cell belongs to.
         /// </summary>
-        [Obsolete("TODO: Find a better way to do this.")]
-        IndexPath ModelIndexPath { get; }
+        IRow Row { get; }
 
         /// <summary>
         /// Gets a value indicating whether the expander should be shown.

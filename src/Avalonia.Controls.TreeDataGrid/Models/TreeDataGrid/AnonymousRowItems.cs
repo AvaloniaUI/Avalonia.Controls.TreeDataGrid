@@ -3,6 +3,10 @@ using System.Collections;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
+    /// <summary>
+    /// Exposes a list of <typeparamref name="TModel"/> as anonymous rows.
+    /// </summary>
+    /// <typeparam name="TModel">The model type.</typeparam>
     internal class AnonymousRowItems<TModel> : IList
     {
         private readonly IList _items;

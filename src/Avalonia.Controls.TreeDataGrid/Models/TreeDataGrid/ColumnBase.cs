@@ -1,26 +1,49 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
     /// <summary>
-    /// Base class for columns with a model type.
+    /// Base class for columns which select cell values from a model.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public abstract class ColumnBase<TModel> : IColumn, INotifyPropertyChanged
+    /// <typeparam name="TModel">The value type.</typeparam>
+    public abstract class ColumnBase<TModel, TValue> : NotifyingBase, IColumn<TModel>
     {
+        private GridLength _width;
+        private object? _header;
         private ListSortDirection? _sortDirection;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ColumnBase{TModel, TValue}"/> class.
+        /// </summary>
+        /// <param name="header">The column header.</param>
+        /// <param name="width">The column width.</param>
+        public ColumnBase(object? header, GridLength width, Func<TModel, TValue> valueSelector)
+        {
+            _header = header;
+            _width = width;
+            ValueSelector = valueSelector;
+        }
 
         /// <summary>
         /// Gets or sets the width of the column.
         /// </summary>
-        public abstract GridLength Width { get; set; }
+        public GridLength Width 
+        {
+            get => _width;
+            set => RaiseAndSetIfChanged(ref _width, value);
+        }
 
         /// <summary>
-        /// Gets the column header.
+        /// Gets or sets the column header.
         /// </summary>
-        public abstract object? Header { get; }
+        public object? Header
+        {
+            get => _header;
+            set => RaiseAndSetIfChanged(ref _header, value);
+        }
 
         /// <summary>
         /// Gets or sets the sort direction indicator that will be displayed on the column.
@@ -30,33 +53,33 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// used to display a sort direction indicator. To sort data according to a column use
         /// <see cref="ITreeDataGridSource.SortBy(IColumn, ListSortDirection)"/>.
         /// </remarks>
-        public ListSortDirection? SortDirection 
+        public ListSortDirection? SortDirection
         {
             get => _sortDirection;
-            set
-            {
-                if (_sortDirection != value)
-                {
-                    _sortDirection = value;
-                    RaisePropertyChanged();
-                }
-            }
+            set => RaiseAndSetIfChanged(ref _sortDirection, value);
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        /// <summary>
+        /// Gets the function which selects the column value from the model.
+        /// </summary>
+        public Func<TModel, TValue> ValueSelector { get; }
 
         /// <summary>
-        /// Gets a comparison function for the column.
+        /// Creates a cell for this column on the specified row.
         /// </summary>
-        /// <param name="direction">The sort direction.</param>
-        /// <returns>
-        /// The comparison function or null if sorting cannot be performed on the column.
-        /// </returns>
-        public virtual Comparison<TModel>? GetComparison(ListSortDirection direction) => null;
+        /// <param name="row">The row.</param>
+        /// <returns>The cell.</returns>
+        public abstract ICell CreateCell(IRow<TModel> row);
 
-        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        public Comparison<TModel>? GetComparison(ListSortDirection direction)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            return (x, y) =>
+            {
+                var a = ValueSelector(x);
+                var b = ValueSelector(y);
+                var r = Comparer<TValue>.Default.Compare(a, b);
+                return direction == ListSortDirection.Descending ? -r : r;
+            };
         }
     }
 }

@@ -36,8 +36,8 @@ namespace ProControlsDemo.ViewModels
                 if (_files is null)
                 {
                     var model = new FileTreeNodeModel(@"c:\", isDirectory: true, isRoot: true);
-                    var source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(model, x => x.Children, x => x.IsDirectory);
-                    source.AddColumn("Name", x => x.Name);
+                    var source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(model);
+                    source.AddExpanderColumn("Name", x => x.Name, x => x.Children, x => x.IsDirectory);
                     source.AddColumn("Size", x => x.Size, GridLength.Auto);
                     source.AddColumn("Modified", x => x.Modified, GridLength.Auto);
                     _files = source;

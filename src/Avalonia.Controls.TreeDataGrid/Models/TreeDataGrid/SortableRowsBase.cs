@@ -6,8 +6,13 @@ using System.Linq;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
+    /// <summary>
+    /// An <see cref="IRows"/> collection which supports sorting.
+    /// </summary>
+    /// <typeparam name="TModel">The model type.</typeparam>
+    /// <typeparam name="TRow">The row type.</typeparam>
     public abstract class SortableRowsBase<TModel, TRow> : IRows, IDisposable
-        where TRow : RowBase<TModel>
+        where TRow : IRow<TModel>
     {
         private readonly ItemsSourceView<TModel> _items;
         private Comparison<TModel>? _comparison;

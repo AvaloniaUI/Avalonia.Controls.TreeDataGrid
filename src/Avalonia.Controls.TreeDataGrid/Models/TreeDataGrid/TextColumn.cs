@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -9,33 +7,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
     /// <typeparam name="TValue">The column data type.</typeparam>
-    public class TextColumn<TModel, TValue> : SelectorColumnBase<TModel>
+    public class TextColumn<TModel, TValue> : ColumnBase<TModel, TValue>
     {
-        private readonly Func<TModel, TValue> _valueSelector;
-
         public TextColumn(
             object? header,
-            Func<TModel, TValue> valueSelector,
-            GridLength width)
-            : base(header, width)
+            GridLength width,
+            Func<TModel, TValue> valueSelector)
+            : base(header, width, valueSelector)
         {
-            _valueSelector = valueSelector;
         }
 
-        public override ICell CreateCell(TModel model)
-        {
-            return new TextCell<TValue>(_valueSelector(model));
-        }
-
-        public override Comparison<TModel>? GetComparison(ListSortDirection direction)
-        {
-            return (x, y) =>
-            {
-                var a = _valueSelector(x);
-                var b = _valueSelector(y);
-                var r = Comparer<TValue>.Default.Compare(a, b);
-                return direction == ListSortDirection.Descending ? -r : r;
-            };
-        }
+        public override ICell CreateCell(IRow<TModel> row) => new TextCell<TValue>(ValueSelector(row.Model));
     }
 }

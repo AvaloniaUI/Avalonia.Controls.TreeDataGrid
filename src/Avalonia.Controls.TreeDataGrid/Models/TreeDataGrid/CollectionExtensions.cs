@@ -9,12 +9,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public static readonly NotifyCollectionChangedEventArgs ResetEvent =
             new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
 
-        public static int BinarySearch<TModel>(
-            this IReadOnlyList<RowBase<TModel>> items,
+        public static int BinarySearch<TRow, TModel>(
+            this IReadOnlyList<TRow> items,
             TModel model,
             Comparison<TModel> comparison,
             int from = 0,
             int to = -1)
+                where TRow : IRow<TModel>
         {
             to = to == -1 ? items.Count - 1 : to;
 

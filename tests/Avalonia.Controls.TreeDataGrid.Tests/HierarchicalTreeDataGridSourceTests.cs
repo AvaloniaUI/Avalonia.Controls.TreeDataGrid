@@ -33,7 +33,8 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 expander.IsExpanded = true;
 
-                AssertState(target, data, 10, sorted, expander.ModelIndexPath);
+                var expanderRow = (HierarchicalRow<Node>)expander.Row;
+                AssertState(target, data, 10, sorted, expanderRow.ModelIndexPath);
             }
 
             [Theory]
@@ -108,10 +109,11 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 var raised = 0;
                 target.Cells.CollectionChanged += (s, e) => ++raised;
 
-                var i = expander.ModelIndexPath.GetAt(0);
+                var expanderRow = (HierarchicalRow<Node>)expander.Row;
+                var i = expanderRow.ModelIndexPath.GetAt(0);
                 data[i].Children!.Add(new Node { Id = 100, Caption = "New Node 1" });
 
-                AssertState(target, data, 11, sorted, expander.ModelIndexPath);
+                AssertState(target, data, 11, sorted, expanderRow.ModelIndexPath);
             }
 
             [Theory]
@@ -130,10 +132,11 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 var raised = 0;
                 target.Cells.CollectionChanged += (s, e) => ++raised;
 
-                var i = expander.ModelIndexPath.GetAt(0);
+                var expanderRow = (HierarchicalRow<Node>)expander.Row;
+                var i = expanderRow.ModelIndexPath.GetAt(0);
                 data[i].Children!.Insert(1, new Node { Id = 100, Caption = "New Node 1" });
 
-                AssertState(target, data, 11, sorted, expander.ModelIndexPath);
+                AssertState(target, data, 11, sorted, expanderRow.ModelIndexPath);
             }
 
             [Theory]
@@ -171,10 +174,11 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 var raised = 0;
                 target.Cells.CollectionChanged += (s, e) => ++raised;
 
-                var i = expander.ModelIndexPath.GetAt(0);
+                var expanderRow = (HierarchicalRow<Node>)expander.Row;
+                var i = expanderRow.ModelIndexPath.GetAt(0);
                 data[i].Children!.RemoveAt(3);
 
-                AssertState(target, data, 9, sorted, expander.ModelIndexPath);
+                AssertState(target, data, 9, sorted, expanderRow.ModelIndexPath);
             }
 
             [Theory]
@@ -313,8 +317,10 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 // Here we return true from hasChildren selector, but there are actually no children.
                 // This may happen if calculating the children is expensive.
-                var target = new HierarchicalTreeDataGridSource<Node>(data, x => x.Children, x => true);
-                CreateColumns(target);
+                var target = new HierarchicalTreeDataGridSource<Node>(data);
+                
+                target.AddExpanderColumn("ID", x => x.Id, x => x.Children);
+                target.AddColumn("Caption", x => x.Caption);
 
                 var expander = (IExpanderCell)target.Cells[0, 0];
                 Assert.True(expander.ShowExpander);
@@ -358,10 +364,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
         private static HierarchicalTreeDataGridSource<Node> CreateTarget(IEnumerable<Node> roots, bool sorted)
         {
-            var result = new HierarchicalTreeDataGridSource<Node>(
-                roots,
-                x => x.Children,
-                x => x.Children?.Count > 0);
+            var result = new HierarchicalTreeDataGridSource<Node>(roots);
             CreateColumns(result);
 
             if (sorted)
@@ -372,7 +375,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
         private static void CreateColumns(HierarchicalTreeDataGridSource<Node> source)
         {
-            source.AddColumn("ID", x => x.Id);
+            source.AddExpanderColumn("ID", x => x.Id, x => x.Children, x => x.Children?.Count > 0);
             source.AddColumn("Caption", x => x.Caption);
         }
 

@@ -3,11 +3,11 @@
     public class ExpanderCell<TModel, TValue> : ExpanderCellBase<TModel>
     {
         public ExpanderCell(
-            ExpanderColumnBase<TModel> column,
-            HierarchicalRow<TModel> row,
+            IExpanderColumn<TModel> column,
+            IExpanderRow<TModel> row,
             TValue value,
             bool showExpander)
-            : base(column, row, row.Model, row.ModelIndexPath, showExpander)
+            : base(column, row, showExpander)
         {
             Value = value;
         }

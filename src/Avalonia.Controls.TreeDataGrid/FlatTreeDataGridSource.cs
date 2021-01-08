@@ -7,6 +7,10 @@ using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// A data source for a <see cref="TreeDataGrid"/> which displays a flat grid.
+    /// </summary>
+    /// <typeparam name="TModel">The model type.</typeparam>
     public class FlatTreeDataGridSource<TModel> : ITreeDataGridSource
     {
         private readonly ItemsSourceView<TModel> _items;
@@ -17,7 +21,7 @@ namespace Avalonia.Controls
 
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
-            _items = new ItemsSourceView<TModel>(items);
+            _items = ItemsSourceView<TModel>.GetOrCreate(items);
             _columns = new ColumnList<TModel>();
         }
 
@@ -31,11 +35,11 @@ namespace Avalonia.Controls
             GridLength? width = null)
         {
             var columnWidth = width ?? new GridLength(1, GridUnitType.Star);
-            var column = new TextColumn<TModel, TValue>(header, selector, columnWidth);
+            var column = new TextColumn<TModel, TValue>(header, columnWidth, selector);
             _columns.Add(column);
         }
 
-        public void AddColumn(ColumnBase<TModel> column) => _columns.Add(column);
+        public void AddColumn(IColumn<TModel> column) => _columns.Add(column);
 
         public void Sort(Comparison<TModel>? comparer)
         {
@@ -43,7 +47,7 @@ namespace Avalonia.Controls
             _rows?.Sort(_comparer);
         }
 
-        public bool SortBy(ColumnBase<TModel> column, ListSortDirection direction)
+        public bool SortBy(IColumn<TModel> column, ListSortDirection direction)
         {
             if (!_columns.Contains(column))
                 return false;
@@ -63,7 +67,7 @@ namespace Avalonia.Controls
 
         bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)
         {
-            if (column is ColumnBase<TModel> typedColumn)
+            if (column is IColumn<TModel> typedColumn)
             {
                 SortBy(typedColumn, direction);
                 return true;
@@ -86,13 +90,9 @@ namespace Avalonia.Controls
             return result;
         }
 
-        private ICell CreateCell(TModel model, int columnIndex)
+        private ICell CreateCell(IRow<TModel> row, int columnIndex)
         {
-            return _columns[columnIndex] switch
-            {
-                SelectorColumnBase<TModel> column => column.CreateCell(model),
-                _ => throw new NotSupportedException("Unsupported column type"),
-            };
+            return _columns[columnIndex].CreateCell(row);
         }
 
         private void Reset(CellList cells)
@@ -105,7 +105,7 @@ namespace Avalonia.Controls
                 var columnCount = _columns.Count;
 
                 for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
-                    cells.Add(CreateCell(row.Model, columnIndex));
+                    cells.Add(CreateCell(row, columnIndex));
             }
         }
 
@@ -119,10 +119,10 @@ namespace Avalonia.Controls
                 var cellIndex = rowIndex * _columns.Count;
                 var columnCount = _columns.Count;
 
-                foreach (RowBase<TModel> row in rows)
+                foreach (IRow<TModel> row in rows)
                 {
                     for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
-                        _cells.Insert(cellIndex++, CreateCell(row.Model, columnIndex));
+                        _cells.Insert(cellIndex++, CreateCell(row, columnIndex));
                 }
             }
 
@@ -143,10 +143,10 @@ namespace Avalonia.Controls
                     var cellIndex = e.NewStartingIndex * _columns.Count;
                     var columnCount = _columns.Count;
 
-                    foreach (RowBase<TModel> row in e.NewItems)
+                    foreach (IRow<TModel> row in e.NewItems)
                     {
                         for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
-                            _cells[cellIndex++] = CreateCell(row.Model, columnIndex);
+                            _cells[cellIndex++] = CreateCell(row, columnIndex);
                     }
 
                     break;

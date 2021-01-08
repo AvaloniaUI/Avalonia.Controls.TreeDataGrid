@@ -1,32 +1,22 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace Avalonia.Controls.Models.TreeDataGrid
+﻿namespace Avalonia.Controls.Models.TreeDataGrid
 {
     public abstract class ExpanderCellBase<TModel> : NotifyingBase, IExpanderCell
     {
-        private readonly TModel _model;
-        private bool _isExpanded;
         private bool _showExpander;
 
         protected ExpanderCellBase(
-            ExpanderColumnBase<TModel> column,
-            ExpanderRowBase<TModel> row,
-            TModel model,
-            IndexPath modelIndex,
+            IExpanderColumn<TModel> column,
+            IExpanderRow<TModel> row,
             bool showExpander)
         {
-            _model = model;
-            _isExpanded = row.IsExpanded;
             Column = column;
             Row = row;
-            ModelIndexPath = modelIndex;
             ShowExpander = showExpander;
         }
 
-        public ExpanderColumnBase<TModel> Column { get; }
-        public ExpanderRowBase<TModel> Row { get; }
-        public IndexPath ModelIndexPath { get; }
+        public IExpanderColumn<TModel> Column { get; }
+        public IExpanderRow<TModel> Row { get; }
+        IRow IExpanderCell.Row => Row;
 
         public bool ShowExpander 
         {
@@ -38,29 +28,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public bool IsExpanded
         {
-            get => _isExpanded;
+            get => Row.IsExpanded;
             set
             {
-                if (value == _isExpanded)
-                    return;
+                Row.IsExpanded = value;
 
-                if (value)
+                if (value == true && !Row.IsExpanded)
                 {
-                    if (Column.GetChildModels(_model) is IEnumerable<TModel> childRows && childRows.Any())
-                    {
-                        Row.Expand(childRows);
-                        _isExpanded = true;
-                        ShowExpander = true;
-                    }
-                    else
-                    {
-                        ShowExpander = false;
-                    }
-                }
-                else
-                {
-                    Row.Collapse();
-                    _isExpanded = false;
+                    ShowExpander = false;
                 }
             }
         }
