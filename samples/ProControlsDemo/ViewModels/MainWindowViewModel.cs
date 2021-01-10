@@ -9,14 +9,13 @@ using Avalonia.Layout;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ProControlsDemo.Models;
-using ReactiveUI;
 
 namespace ProControlsDemo.ViewModels
 {
     internal class MainWindowViewModel
     {
-        private static Bitmap _folderIcon;
-        private static Bitmap _fileIcon;
+        private static Bitmap? _folderIcon;
+        private static Bitmap? _fileIcon;
         private HierarchicalTreeDataGridSource<FileTreeNodeModel>? _files;
         private ObservableCollection<Country>? _countryData;
         private FlatTreeDataGridSource<Country>? _countries;
