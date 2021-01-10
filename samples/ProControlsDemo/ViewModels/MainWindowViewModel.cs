@@ -28,12 +28,17 @@ namespace ProControlsDemo.ViewModels
                 if (_countries is null)
                 {
                     _countryData ??= new ObservableCollection<Country>(Models.Countries.All);
-                    _countries = new FlatTreeDataGridSource<Country>(_countryData);
-                    _countries.AddColumn("Country", x => x.Name, new GridLength(6, GridUnitType.Star));
-                    _countries.AddColumn("Region", x => x.Region, new GridLength(4, GridUnitType.Star));
-                    _countries.AddColumn("Popuplation", x => x.Population, new GridLength(3, GridUnitType.Star));
-                    _countries.AddColumn("Area", x => x.Area, new GridLength(3, GridUnitType.Star));
-                    _countries.AddColumn("GDP", x => x.GDP, new GridLength(3, GridUnitType.Star));
+                    _countries = new FlatTreeDataGridSource<Country>(_countryData)
+                    {
+                        Columns =
+                        {
+                            new TextColumn<Country, string>("Country", x => x.Name, new GridLength(6, GridUnitType.Star)),
+                            new TextColumn<Country, string>("Region", x => x.Region, new GridLength(4, GridUnitType.Star)),
+                            new TextColumn<Country, int>("Population", x => x.Population, new GridLength(3, GridUnitType.Star)),
+                            new TextColumn<Country, int>("Area", x => x.Area, new GridLength(3, GridUnitType.Star)),
+                            new TextColumn<Country, int>("GDP", x => x.GDP, new GridLength(3, GridUnitType.Star)),
+                        }
+                    };
                 }
 
                 return _countries;

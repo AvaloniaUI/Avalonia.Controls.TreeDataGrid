@@ -14,7 +14,6 @@ namespace Avalonia.Controls
     public class FlatTreeDataGridSource<TModel> : ITreeDataGridSource
     {
         private readonly ItemsSourceView<TModel> _items;
-        private readonly ColumnList<TModel> _columns;
         private AnonymousSortableRows<TModel>? _rows;
         private CellList? _cells;
         private IComparer<TModel>? _comparer;
@@ -22,25 +21,13 @@ namespace Avalonia.Controls
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = ItemsSourceView<TModel>.GetOrCreate(items);
-            _columns = new ColumnList<TModel>();
+            Columns = new ColumnList<TModel>();
         }
 
-        public IColumns Columns => _columns;
+        public ColumnList<TModel> Columns { get; }
         public IRows Rows => _rows ??= CreateRows();
         public ICells Cells => _cells ??= CreateCells();
-
-        public void AddColumn<TValue>(
-            string header,
-            Func<TModel, TValue> selector,
-            GridLength? width = null,
-            ColumnOptions<TModel>? options = null)
-        {
-            var columnWidth = width ?? new GridLength(1, GridUnitType.Star);
-            var column = new TextColumn<TModel, TValue>(header, selector, columnWidth, options);
-            _columns.Add(column);
-        }
-
-        public void AddColumn(IColumn<TModel> column) => _columns.Add(column);
+        IColumns ITreeDataGridSource.Columns => Columns;
 
         public void Sort(Comparison<TModel>? comparer)
         {
@@ -50,7 +37,7 @@ namespace Avalonia.Controls
 
         public bool SortBy(IColumn<TModel> column, ListSortDirection direction)
         {
-            if (!_columns.Contains(column))
+            if (!Columns.Contains(column))
                 return false;
 
             var comparer = column.GetComparison(direction);
@@ -58,7 +45,7 @@ namespace Avalonia.Controls
             if (comparer is object)
             {
                 Sort(comparer);
-                foreach (var c in _columns)
+                foreach (var c in Columns)
                     c.SortDirection = c == column ? (ListSortDirection?)direction : null;
                 return true;
             }
@@ -86,14 +73,14 @@ namespace Avalonia.Controls
 
         private CellList CreateCells()
         {
-            var result = new CellList(_columns.Count);
+            var result = new CellList(Columns.Count);
             Reset(result);
             return result;
         }
 
         private ICell CreateCell(IRow<TModel> row, int columnIndex)
         {
-            return _columns[columnIndex].CreateCell(row);
+            return Columns[columnIndex].CreateCell(row);
         }
 
         private void Reset(CellList cells)
@@ -103,7 +90,7 @@ namespace Avalonia.Controls
 
             foreach (var row in _rows)
             {
-                var columnCount = _columns.Count;
+                var columnCount = Columns.Count;
 
                 for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
                     cells.Add(CreateCell(row, columnIndex));
@@ -117,8 +104,8 @@ namespace Avalonia.Controls
 
             void Add(int rowIndex, IList rows)
             {
-                var cellIndex = rowIndex * _columns.Count;
-                var columnCount = _columns.Count;
+                var cellIndex = rowIndex * Columns.Count;
+                var columnCount = Columns.Count;
 
                 foreach (IRow<TModel> row in rows)
                 {
@@ -129,7 +116,7 @@ namespace Avalonia.Controls
 
             void Remove(int rowIndex, int rowCount)
             {
-                _cells.RemoveRange(rowIndex * _columns.Count, rowCount * _columns.Count);
+                _cells.RemoveRange(rowIndex * Columns.Count, rowCount * Columns.Count);
             }
 
             switch (e.Action)
@@ -141,8 +128,8 @@ namespace Avalonia.Controls
                     Remove(e.OldStartingIndex, e.OldItems.Count);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    var cellIndex = e.NewStartingIndex * _columns.Count;
-                    var columnCount = _columns.Count;
+                    var cellIndex = e.NewStartingIndex * Columns.Count;
+                    var columnCount = Columns.Count;
 
                     foreach (IRow<TModel> row in e.NewItems)
                     {

@@ -234,15 +234,14 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
         private static FlatTreeDataGridSource<Row> CreateTarget(IEnumerable<Row> rows)
         {
-            var result = new FlatTreeDataGridSource<Row>(rows);
-            CreateColumns(result);
-            return result;
-        }
-
-        private static void CreateColumns(FlatTreeDataGridSource<Row> source)
-        {
-            source.AddColumn("ID", x => x.Id);
-            source.AddColumn("Caption", x => x.Caption);
+            return new FlatTreeDataGridSource<Row>(rows)
+            {
+                Columns =
+                {
+                    new TextColumn<Row, int>("ID", x => x.Id),
+                    new TextColumn<Row, string?>("Caption", x => x.Caption),
+                }
+            };
         }
 
         private static ObservableCollection<Row> CreateData()
