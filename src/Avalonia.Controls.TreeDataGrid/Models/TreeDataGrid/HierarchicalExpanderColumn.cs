@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -8,42 +9,51 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// expander to reveal nested data.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    /// <typeparam name="TValue">The column data type.</typeparam>
-    public class HierarchicalExpanderColumn<TModel, TValue> : ColumnBase<TModel, TValue>,
+    public class HierarchicalExpanderColumn<TModel> : IColumn<TModel>,
         IExpanderColumn<TModel>
     {
+        private readonly IColumn<TModel> _inner;
         private readonly Func<TModel, IEnumerable<TModel>?> _childSelector;
         private readonly Func<TModel, bool>? _hasChildrenSelector;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HierarchicalExpanderColumn{TModel}"/> class.
         /// </summary>
-        /// <param name="header">The column header.</param>
-        /// <param name="valueSelector">The cell value selector.</param>
+        /// <param name="inner">The inner column which defines how the column will be displayed.</param>
         /// <param name="childSelector">The model children selector.</param>
         /// <param name="hasChildrenSelector">The has model children selector.</param>
         /// <param name="width">The column width.</param>
         public HierarchicalExpanderColumn(
-            object? header,
-            Func<TModel, TValue> valueSelector,
+            IColumn<TModel> inner,
             Func<TModel, IEnumerable<TModel>?> childSelector,
-            Func<TModel, bool>? hasChildrenSelector,
-            GridLength width,
-            ColumnOptions<TModel>? options = null)
-            : base(header, width, valueSelector, options)
+            Func<TModel, bool>? hasChildrenSelector = null)
         {
+            _inner = inner;
             _childSelector = childSelector;
             _hasChildrenSelector = hasChildrenSelector;
         }
 
-        public override ICell CreateCell(IRow<TModel> row)
+        public object? Header => _inner.Header;
+
+        public GridLength Width
+        {
+            get => _inner.Width;
+            set => _inner.Width = value;
+        }
+
+        public ListSortDirection? SortDirection 
+        {
+            get => _inner.SortDirection;
+            set => _inner.SortDirection = value;
+        }
+
+        public ICell CreateCell(IRow<TModel> row)
         {
             if (row is HierarchicalRow<TModel> r)
             {
-                return new ExpanderCell<TModel, TValue>(
-                    this,
+                return new ExpanderCell<TModel>(
+                    _inner.CreateCell(r),
                     r,
-                    ValueSelector(r.Model),
                     _hasChildrenSelector?.Invoke(row.Model) ?? true);
             }
 
@@ -51,5 +61,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         public IEnumerable<TModel>? GetChildModels(TModel model) => _childSelector(model);
+
+        public Comparison<TModel>? GetComparison(ListSortDirection direction) => _inner.GetComparison(direction);
     }
 }

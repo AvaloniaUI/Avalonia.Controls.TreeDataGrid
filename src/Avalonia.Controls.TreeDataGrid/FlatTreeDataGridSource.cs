@@ -36,7 +36,7 @@ namespace Avalonia.Controls
             ColumnOptions<TModel>? options = null)
         {
             var columnWidth = width ?? new GridLength(1, GridUnitType.Star);
-            var column = new TextColumn<TModel, TValue>(header, columnWidth, selector, options);
+            var column = new TextColumn<TModel, TValue>(header, selector, columnWidth, options);
             _columns.Add(column);
         }
 

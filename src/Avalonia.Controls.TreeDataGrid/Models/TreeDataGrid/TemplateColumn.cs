@@ -1,15 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using Avalonia.Controls.Templates;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
     /// <summary>
-    /// Base class for columns which select cell values from a model.
+    /// A column in an <see cref="ITreeDataGridSource"/> which displays its values using a data
+    /// template.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    /// <typeparam name="TModel">The value type.</typeparam>
-    public abstract class ColumnBase<TModel, TValue> : NotifyingBase, IColumn<TModel>
+    /// <typeparam name="TValue">The column data type.</typeparam>
+    public class TemplateColumn<TModel> : NotifyingBase, IColumn<TModel>
     {
         private readonly Comparison<TModel>? _sortAscending;
         private readonly Comparison<TModel>? _sortDescending;
@@ -17,37 +18,28 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private object? _header;
         private ListSortDirection? _sortDirection;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ColumnBase{TModel, TValue}"/> class.
-        /// </summary>
-        /// <param name="header">The column header.</param>
-        /// <param name="width">The column width.</param>
-        public ColumnBase(
+        public TemplateColumn(
             object? header,
-            Func<TModel, TValue> valueSelector,
-            GridLength? width,
-            ColumnOptions<TModel>? options)
+            IDataTemplate cellTemplate,
+            GridLength width,
+            ColumnOptions<TModel>? options = null)
         {
             _header = header;
-            _width = width ?? GridLength.Auto;
-            ValueSelector = valueSelector;
-
-            if (options?.UseDefaultComparison == false)
-            {
-                _sortAscending = options.CompareAscending;
-                _sortDescending = options.CompareDescending;
-            }
-            else
-            {
-                _sortAscending = DefaultSortAscending;
-                _sortDescending = DefaultSortDescending;
-            }
+            _width = width;
+            _sortAscending = options?.CompareAscending;
+            _sortDescending = options?.CompareDescending;
+            CellTemplate = cellTemplate;
         }
+
+        /// <summary>
+        /// Gets the template to use to display the contents of a cell that is not in editing mode.
+        /// </summary>
+        public IDataTemplate? CellTemplate { get; }
 
         /// <summary>
         /// Gets or sets the width of the column.
         /// </summary>
-        public GridLength Width 
+        public GridLength Width
         {
             get => _width;
             set => RaiseAndSetIfChanged(ref _width, value);
@@ -77,16 +69,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         /// <summary>
-        /// Gets the function which selects the column value from the model.
-        /// </summary>
-        public Func<TModel, TValue> ValueSelector { get; }
-
-        /// <summary>
         /// Creates a cell for this column on the specified row.
         /// </summary>
         /// <param name="row">The row.</param>
         /// <returns>The cell.</returns>
-        public abstract ICell CreateCell(IRow<TModel> row);
+        public ICell CreateCell(IRow<TModel> row) => new TemplateCell(row.Model, CellTemplate);
 
         public Comparison<TModel>? GetComparison(ListSortDirection direction)
         {
@@ -96,20 +83,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 ListSortDirection.Descending => _sortDescending,
                 _ => null,
             };
-        }
-
-        private int DefaultSortAscending(TModel x, TModel y)
-        {
-            var a = ValueSelector(x);
-            var b = ValueSelector(y);
-            return Comparer<TValue>.Default.Compare(a, b);
-        }
-
-        private int DefaultSortDescending(TModel x, TModel y)
-        {
-            var a = ValueSelector(x);
-            var b = ValueSelector(y);
-            return Comparer<TValue>.Default.Compare(b, a);
         }
     }
 }

@@ -9,6 +9,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public interface IExpanderCell : ICell, IExpander
     {
         /// <summary>
+        /// Gets the cell content.
+        /// </summary>
+        object? Content { get; }
+
+        /// <summary>
         /// Gets the row that the cell belongs to.
         /// </summary>
         IRow Row { get; }

@@ -23,7 +23,7 @@
                                Items="{TemplateBinding Columns}">
                   <ItemsRepeater.Layout>
                     <TreeDataGridLayout Columns="{Binding Columns, RelativeSource={RelativeSource TemplatedParent}}"
-                                        SharedState="{Binding SharedState, RelativeSource={RelativeSource TemplatedParent}}}"/>
+                                        SharedState="{Binding SharedState, RelativeSource={RelativeSource TemplatedParent}}"/>
                   </ItemsRepeater.Layout>
                   <ItemsRepeater.ItemTemplate>
                     <DataTemplate>
@@ -44,7 +44,7 @@
                            VerticalCacheLength="0">
               <ItemsRepeaterHack.Layout>
                 <TreeDataGridLayout Columns="{Binding Columns, RelativeSource={RelativeSource TemplatedParent}}"
-                                    SharedState="{Binding SharedState, RelativeSource={RelativeSource TemplatedParent}}}"/>
+                                    SharedState="{Binding SharedState, RelativeSource={RelativeSource TemplatedParent}}"/>
               </ItemsRepeaterHack.Layout>
             </ItemsRepeaterHack>
           </ScrollViewer>
@@ -129,7 +129,7 @@
                           IsChecked="{Binding IsExpanded}"
                           IsVisible="{Binding ShowExpander}"/>
           </Border>
-          <TextBlock Text="{TemplateBinding Value}" VerticalAlignment="Center"/>
+          <Decorator Name="PART_Content"/>
         </DockPanel>
       </ControlTemplate>
     </Setter>
@@ -141,6 +141,22 @@
         <Border Padding="4 2">
           <TextBlock Text="{TemplateBinding Value}" VerticalAlignment="Center"/>
         </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TreeDataGridTemplateCell">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Content="{TemplateBinding Content}"
+                          Padding="{TemplateBinding Padding}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
       </ControlTemplate>
     </Setter>
   </Style>

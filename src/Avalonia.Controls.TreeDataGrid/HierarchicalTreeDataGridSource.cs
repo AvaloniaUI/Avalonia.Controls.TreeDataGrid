@@ -16,7 +16,6 @@ namespace Avalonia.Controls
         where TModel : class
     {
         private readonly ItemsSourceView<TModel> _roots;
-        private readonly ColumnList<TModel> _columns;
         private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
         private CellList? _cells;
@@ -30,52 +29,14 @@ namespace Avalonia.Controls
         public HierarchicalTreeDataGridSource(IEnumerable<TModel> roots)
         {
             _roots = ItemsSourceView<TModel>.GetOrCreate(roots);
-            _columns = new ColumnList<TModel>();
+            Columns = new ColumnList<TModel>();
+            Columns.CollectionChanged += OnColumnsCollectionChanged;
         }
 
         public ICells Cells => _cells ??= CreateCells();
         public IRows Rows => _rows ??= CreateRows();
-        public IColumns Columns => _columns;
-
-        public void AddExpanderColumn<TValue>(
-            string header,
-            Func<TModel, TValue> valueSelector,
-            Func<TModel, IEnumerable<TModel>?> childSelector,
-            Func<TModel, bool>? hasChildrenSelector = null,
-            GridLength? width = null,
-            ColumnOptions<TModel>? options = null)
-        {
-            var columnWidth = width ?? new GridLength(1, GridUnitType.Star);
-            var column = new HierarchicalExpanderColumn<TModel, TValue>(
-                header,
-                valueSelector,
-                childSelector,
-                hasChildrenSelector,
-                columnWidth,
-                options);
-            AddColumn(column);
-        }
-
-        public void AddColumn<TValue>(
-            string header,
-            Func<TModel, TValue> selector,
-            GridLength? width = null,
-            ColumnOptions<TModel>? options = null)
-        {
-            var columnWidth = width ?? new GridLength(1, GridUnitType.Star);
-            var column = new TextColumn<TModel, TValue>(
-                header,
-                columnWidth,
-                selector,
-                options);
-            AddColumn(column);
-        }
-
-        public void AddColumn(IColumn<TModel> column)
-        {
-            _columns.Add(column);
-            _expanderColumn ??= column as IExpanderColumn<TModel>;
-        }
+        public ColumnList<TModel> Columns { get; }
+        IColumns ITreeDataGridSource.Columns => Columns;
 
         public void Sort(Comparison<TModel>? comparison)
         {
@@ -86,11 +47,11 @@ namespace Avalonia.Controls
         bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)
         {
             if (column is IColumn<TModel> columnBase &&
-                _columns.Contains(columnBase) &&
+                Columns.Contains(columnBase) &&
                 columnBase.GetComparison(direction) is Comparison<TModel> comparison)
             {
                 Sort(comparison);
-                foreach (var c in _columns)
+                foreach (var c in Columns)
                     c.SortDirection = c == column ? (ListSortDirection?)direction : null;
                 return true;
             }
@@ -100,26 +61,26 @@ namespace Avalonia.Controls
 
         private HierarchicalRows<TModel> CreateRows()
         {
-            if (_columns.Count == 0)
+            if (Columns.Count == 0)
                 throw new InvalidOperationException("No columns defined.");
             if (_expanderColumn is null)
                 throw new InvalidOperationException("No expander column defined.");
 
             var result = new HierarchicalRows<TModel>(_roots, _expanderColumn, _comparison);
-            result.CollectionChanged += RowsCollectionChanged;
+            result.CollectionChanged += OnRowsCollectionChanged;
             return result;
         }
 
         private CellList CreateCells()
         {
-            var result = new CellList(_columns.Count);
+            var result = new CellList(Columns.Count);
             Reset(result);
             return result;
         }
 
         private ICell CreateCell(HierarchicalRow<TModel> row, int columnIndex)
         {
-            return _columns[columnIndex].CreateCell(row);
+            return Columns[columnIndex].CreateCell(row);
         }
 
         private void Reset(CellList cells)
@@ -129,23 +90,44 @@ namespace Avalonia.Controls
 
             foreach (var row in _rows)
             {
-                var columnCount = _columns.Count;
+                var columnCount = Columns.Count;
 
                 for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
                     cells.Add(CreateCell(row, columnIndex));
             }
         }
 
+        private void OnColumnsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    if (_expanderColumn is null)
+                    {
+                        foreach (var i in e.NewItems)
+                        {
+                            if (i is IExpanderColumn<TModel> expander)
+                            {
+                                _expanderColumn = expander;
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
 
-        private void RowsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnRowsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (_cells is null)
                 return;
 
             void Add(int rowIndex, IList rows)
             {
-                var cellIndex = rowIndex * _columns.Count;
-                var columnCount = _columns.Count;
+                var cellIndex = rowIndex * Columns.Count;
+                var columnCount = Columns.Count;
 
                 foreach (HierarchicalRow<TModel> row in rows)
                 {
@@ -156,7 +138,7 @@ namespace Avalonia.Controls
 
             void Remove(int rowIndex, int rowCount)
             {
-                _cells.RemoveRange(rowIndex * _columns.Count, rowCount * _columns.Count);
+                _cells.RemoveRange(rowIndex * Columns.Count, rowCount * Columns.Count);
             }
 
             switch (e.Action)
@@ -168,8 +150,8 @@ namespace Avalonia.Controls
                     Remove(e.OldStartingIndex, e.OldItems.Count);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    var cellIndex = e.NewStartingIndex * _columns.Count;
-                    var columnCount = _columns.Count;
+                    var cellIndex = e.NewStartingIndex * Columns.Count;
+                    var columnCount = Columns.Count;
 
                     foreach (HierarchicalRow<TModel> row in e.NewItems)
                     {

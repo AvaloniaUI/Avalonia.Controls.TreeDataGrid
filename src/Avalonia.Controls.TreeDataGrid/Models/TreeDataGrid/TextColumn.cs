@@ -3,7 +3,7 @@
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
     /// <summary>
-    /// A column in an <see cref="HierarchicalTreeDataGridSource{TModel}"/> which displays its values as text.
+    /// A column in an <see cref="ITreeDataGridSource"/> which displays its values as text.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
     /// <typeparam name="TValue">The column data type.</typeparam>
@@ -11,10 +11,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     {
         public TextColumn(
             object? header,
-            GridLength width,
             Func<TModel, TValue> valueSelector,
+            GridLength? width = null,
             ColumnOptions<TModel>? options = null)
-            : base(header, width, valueSelector, options)
+            : base(header, valueSelector, width, options)
         {
         }
 

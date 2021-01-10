@@ -29,7 +29,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             {
                 var data = CreateData();
                 var target = CreateTarget(data, sorted);
-                var expander = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 0]);
+                var expander = Assert.IsType<ExpanderCell<Node>>(target.Cells[0, 0]);
 
                 expander.IsExpanded = true;
 
@@ -287,13 +287,13 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 };
 
                 // Expand first root node.
-                var cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 0]);
+                var cell0 = Assert.IsType<ExpanderCell<Node>>(target.Cells[0, 0]);
                 cell0.IsExpanded = true;
 
                 Assert.Equal(10, target.Rows.Count);
 
                 // Expand first child node.
-                var cell01 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, 1]);
+                var cell01 = Assert.IsType<ExpanderCell<Node>>(target.Cells[0, 1]);
                 cell01.IsExpanded = true;
 
                 // Grandchild should now be visible.
@@ -317,10 +317,17 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 // Here we return true from hasChildren selector, but there are actually no children.
                 // This may happen if calculating the children is expensive.
-                var target = new HierarchicalTreeDataGridSource<Node>(data);
-                
-                target.AddExpanderColumn("ID", x => x.Id, x => x.Children);
-                target.AddColumn("Caption", x => x.Caption);
+                var target = new HierarchicalTreeDataGridSource<Node>(data)
+                {
+                    Columns =
+                    {
+                        new HierarchicalExpanderColumn<Node>(
+                            new TextColumn<Node, int>("ID", x => x.Id),
+                            x => x.Children,
+                            x => true),
+                        new TextColumn<Node, string?>("Caption", x => x.Caption),
+                    }
+                };
 
                 var expander = (IExpanderCell)target.Cells[0, 0];
                 Assert.True(expander.ShowExpander);
@@ -364,19 +371,22 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
         private static HierarchicalTreeDataGridSource<Node> CreateTarget(IEnumerable<Node> roots, bool sorted)
         {
-            var result = new HierarchicalTreeDataGridSource<Node>(roots);
-            CreateColumns(result);
+            var result = new HierarchicalTreeDataGridSource<Node>(roots)
+            {
+                Columns =
+                {
+                    new HierarchicalExpanderColumn<Node>(
+                        new TextColumn<Node, int>("ID", x => x.Id),
+                        x => x.Children,
+                        x => x.Children?.Count > 0),
+                    new TextColumn<Node, string?>("Caption", x => x.Caption),
+                }
+            };
 
             if (sorted)
                 result.Sort((x, y) => y.Id - x.Id);
 
             return result;
-        }
-
-        private static void CreateColumns(HierarchicalTreeDataGridSource<Node> source)
-        {
-            source.AddExpanderColumn("ID", x => x.Id, x => x.Children, x => x.Children?.Count > 0);
-            source.AddColumn("Caption", x => x.Caption);
         }
 
         private static void AssertState(
@@ -412,7 +422,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                     Assert.Equal(modelIndex, row.ModelIndexPath);
                     Assert.Equal(expanded.Contains(modelIndex), row.IsExpanded);
 
-                    var cell0 = Assert.IsType<ExpanderCell<Node, int>>(target.Cells[0, rowIndex]);
+                    var cell0 = Assert.IsType<ExpanderCell<Node>>(target.Cells[0, rowIndex]);
                     var cell1 = Assert.IsType<TextCell<string>>(target.Cells[1, rowIndex]);
 
                     Assert.Equal(model.Id, cell0.Value);

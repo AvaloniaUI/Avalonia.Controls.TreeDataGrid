@@ -1,19 +1,45 @@
 ﻿namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    public class ExpanderCell<TModel, TValue> : ExpanderCellBase<TModel>
+    public class ExpanderCell<TModel> : NotifyingBase, IExpanderCell
     {
+        private readonly ICell _inner;
+        private bool _showExpander;
+
         public ExpanderCell(
-            IExpanderColumn<TModel> column,
+            ICell inner,
             IExpanderRow<TModel> row,
-            TValue value,
             bool showExpander)
-            : base(column, row, showExpander)
         {
-            Value = value;
+            _inner = inner;
+            Row = row;
+            ShowExpander = showExpander;
         }
 
-        public TValue Value { get; }
+        public ICell Content => _inner;
+        public IExpanderRow<TModel> Row { get; }
+        object IExpanderCell.Content => Content;
+        IRow IExpanderCell.Row => Row;
 
-        protected override object? GetUntypedValue() => Value;
+        public bool ShowExpander 
+        {
+            get => _showExpander;
+            private set => RaiseAndSetIfChanged(ref _showExpander, value);
+        }
+
+        public object? Value => _inner.Value;
+
+        public bool IsExpanded
+        {
+            get => Row.IsExpanded;
+            set
+            {
+                Row.IsExpanded = value;
+
+                if (value == true && !Row.IsExpanded)
+                {
+                    ShowExpander = false;
+                }
+            }
+        }
     }
 }
