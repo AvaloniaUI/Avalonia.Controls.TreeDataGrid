@@ -57,6 +57,9 @@ namespace ProControlsDemo.ViewModels
                     {
                         Columns =
                         {
+                            new TemplateColumn<FileTreeNodeModel>(
+                                null,
+                                new FuncDataTemplate<FileTreeNodeModel>(FileCheckTemplate)),
                             new HierarchicalExpanderColumn<FileTreeNodeModel>(
                                 new TemplateColumn<FileTreeNodeModel>(
                                     "Name",
@@ -109,6 +112,15 @@ namespace ProControlsDemo.ViewModels
             }
         }
 
+        private IControl FileCheckTemplate(FileTreeNodeModel node, INameScope ns)
+        {
+            return new CheckBox
+            {
+                MinWidth = 0,
+                [!CheckBox.IsCheckedProperty] = new Binding(nameof(FileTreeNodeModel.IsChecked)),
+            };
+        }
+
         private IControl FileNameTemplate(FileTreeNodeModel node, INameScope ns)
         {
             return new StackPanel
@@ -125,7 +137,7 @@ namespace ProControlsDemo.ViewModels
                     },
                     new TextBlock 
                     { 
-                        [!TextBlock.TextProperty] = new Binding("Name"),
+                        [!TextBlock.TextProperty] = new Binding(nameof(FileTreeNodeModel.Name)),
                         VerticalAlignment = VerticalAlignment.Center,
                     }
                 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.IO;
 using Avalonia.Threading;
 using ReactiveUI;
@@ -44,6 +43,7 @@ namespace ProControlsDemo.Models
             set => this.RaiseAndSetIfChanged(ref _name, value);
         }
 
+        public bool IsChecked { get; set; }
         public bool IsDirectory { get; }
         public long? Size { get; }
         public DateTimeOffset? Modified { get; }
