@@ -1,8 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
+using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using SharedLayoutState = Avalonia.Controls.Primitives.TreeDataGridLayout.SharedLayoutState;
 
 namespace Avalonia.Controls
@@ -33,6 +38,12 @@ namespace Avalonia.Controls
                 o => o.ScrollOffset,
                 (o, v) => o.ScrollOffset = v);
 
+        public static readonly DirectProperty<TreeDataGrid, ISelectionModel?> SelectionProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGrid, ISelectionModel?>(
+                nameof(Selection),
+                o => o.Selection,
+                (o, v) => o.Selection = v);
+
         public static readonly DirectProperty<TreeDataGrid, SharedLayoutState> SharedStateProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, SharedLayoutState>(
                 nameof(SharedState),
@@ -48,6 +59,7 @@ namespace Avalonia.Controls
         private IReadOnlyList<ICell>? _cells;
         private IReadOnlyList<IColumn>? _columns;
         private Vector _scrollOffset;
+        private ISelectionModel? _selection;
         private IControl? _userSortColumn;
         private ListSortDirection _userSortDirection;
 
@@ -86,6 +98,31 @@ namespace Avalonia.Controls
             set => SetAndRaise(ScrollOffsetProperty, ref _scrollOffset, value);
         }
 
+        public ISelectionModel? Selection
+        {
+            get => _selection;
+            set
+            {
+                if (_selection != value)
+                {
+                    var oldValue = _selection;
+
+                    if (_selection is object)
+                        _selection.SelectionChanged -= OnSelectionChanged;
+
+                    _selection = value;
+
+                    if (_selection is object)
+                        _selection.SelectionChanged += OnSelectionChanged;
+
+                    RaisePropertyChanged(
+                        SelectionProperty,
+                        new Optional<ISelectionModel?>(oldValue),
+                        new BindingValue<ISelectionModel?>(_selection));
+                }
+            }
+        }
+
         public SharedLayoutState SharedState { get; }
 
         public ITreeDataGridSource? Source
@@ -108,7 +145,35 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
+
+            if (Repeater is object)
+            {
+                Repeater.ElementPrepared -= OnElementPrepared;
+            }
+
             Repeater = e.NameScope.Find<ItemsRepeater>("PART_Cells");
+
+            if (Repeater is object)
+            {
+                Repeater.ElementClearing += OnElementClearing;
+                Repeater.ElementPrepared += OnElementPrepared;
+            }
+        }
+
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+
+            if (Source is null || _selection is null || e.Handled)
+                return;
+
+            var cell = (e.Source as IVisual).FindAncestorOfType<ITreeDataGridCell>();
+            var rows = Source.Rows;
+
+            if (cell is null || cell.RowIndex < 0 || cell.RowIndex >= rows.Count)
+                return;
+
+            _selection.Select(cell.RowIndex);
         }
 
         private void OnClick(object sender, RoutedEventArgs e)
@@ -132,6 +197,37 @@ namespace Avalonia.Controls
                 }
 
                 _source.SortBy(columnHeader.Model, _userSortDirection);
+            }
+        }
+
+        private void OnElementPrepared(object sender, ItemsRepeaterElementPreparedEventArgs e)
+        {
+            if (Source is null || !(e.Element is ITreeDataGridCell cell))
+                return;
+
+            cell.ColumnIndex = e.Index % Source.Columns.Count;
+            cell.RowIndex = e.Index / Source.Columns.Count;
+            cell.IsSelected = _selection?.IsSelected(cell.RowIndex) ?? false;
+        }
+
+        private void OnElementClearing(object sender, ItemsRepeaterElementClearingEventArgs e)
+        {
+            if (!(e.Element is ITreeDataGridCell cell))
+                return;
+            cell.ColumnIndex = cell.RowIndex = -1;
+        }
+
+        private void OnSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+        {
+            if (_source is null || _selection is null || Repeater is null)
+                return;
+
+            foreach (var child in Repeater.Children)
+            {
+                if (child is ITreeDataGridCell cell)
+                {
+                    cell.IsSelected = _selection.IsSelected(cell.RowIndex);
+                }
             }
         }
     }

@@ -8,7 +8,7 @@ namespace ProControlsDemo.ViewModels
 {
     internal class CountriesPageViewModel
     {
-        private ObservableCollection<Country>? _data;
+        private ObservableCollection<Country> _data;
 
         public CountriesPageViewModel()
         {
@@ -30,7 +30,6 @@ namespace ProControlsDemo.ViewModels
         }
 
         public FlatTreeDataGridSource<Country> Source { get; }
-
         public SelectionModel<IRow> Selection { get; }
 
         public void AddCountry(Country country) => _data.Add(country);

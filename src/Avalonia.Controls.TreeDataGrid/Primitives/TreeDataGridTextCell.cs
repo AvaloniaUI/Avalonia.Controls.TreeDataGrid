@@ -3,7 +3,7 @@ using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TreeDataGridTextCell : TemplatedControl
+    public class TreeDataGridTextCell : TreeDataGridCell
     {
         public static readonly DirectProperty<TreeDataGridTextCell, string?> ValueProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridTextCell, string?>(
