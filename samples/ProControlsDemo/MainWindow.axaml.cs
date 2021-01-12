@@ -58,7 +58,7 @@ namespace ProControlsDemo
                 null,
                 null,
                 null);
-            ((MainWindowViewModel)DataContext!).AddCountry(country);
+            ((MainWindowViewModel)DataContext!).Countries.AddCountry(country);
         }
 
         private void UpdateRealizedCount()

@@ -22,19 +22,13 @@
           <TextBox Name="gdpTextBox">600000</TextBox>
           <Button Click="AddCountryClick">Add</Button>
         </StackPanel>
-        <TreeDataGrid Name="countries" Source="{Binding Countries}"/>
+        <TreeDataGrid Name="countries" Source="{Binding Countries.Source}"/>
       </DockPanel>
     </TabItem>
     <TabItem Header="Files">
       <DockPanel>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
-        <TreeDataGrid Name="fileViewer" Source="{Binding Files}"/>
-      </DockPanel>
-    </TabItem>
-    <TabItem Header="Spreadsheet">
-      <DockPanel>
-        <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
-        <TreeDataGrid Name="spreadsheet" Source="{Binding Spreadsheet}"/>
+        <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}"/>
       </DockPanel>
     </TabItem>
   </TabControl>
