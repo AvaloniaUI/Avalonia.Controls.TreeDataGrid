@@ -67,14 +67,16 @@ namespace ProControlsDemo.ViewModels
                         }
             };
 
-            Selection = new SelectionModel<IRow>(Source.Rows)
+            Selection = new HierarchicalSelectionModel<FileTreeNodeModel>(Source)
             {
                 SingleSelect = false,
             };
+
+            Selection.SelectionChanged += SelectionChanged;
         }
 
         public HierarchicalTreeDataGridSource<FileTreeNodeModel> Source { get; }
-        public SelectionModel<IRow> Selection { get; }
+        public HierarchicalSelectionModel<FileTreeNodeModel> Selection { get; }
 
         private IControl FileCheckTemplate(FileTreeNodeModel node, INameScope ns)
         {
@@ -106,6 +108,10 @@ namespace ProControlsDemo.ViewModels
                     }
                 }
             };
+        }
+
+        private void SelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs<FileTreeNodeModel> e)
+        {
         }
     }
 }
