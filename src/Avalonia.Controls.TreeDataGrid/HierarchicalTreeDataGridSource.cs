@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls
@@ -12,10 +13,10 @@ namespace Avalonia.Controls
     /// row may have multiple columns.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource
+    public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource,
+        IExpanderRowController<TModel>
         where TModel : class
     {
-        private readonly ItemsSourceView<TModel> _roots;
         private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
         private CellList? _cells;
@@ -28,20 +29,54 @@ namespace Avalonia.Controls
 
         public HierarchicalTreeDataGridSource(IEnumerable<TModel> roots)
         {
-            _roots = ItemsSourceView<TModel>.GetOrCreate(roots);
+            RootModels = ItemsSourceView<TModel>.GetOrCreate(roots);
             Columns = new ColumnList<TModel>();
             Columns.CollectionChanged += OnColumnsCollectionChanged;
         }
 
+        public ItemsSourceView<TModel> RootModels { get; }
         public ICells Cells => _cells ??= CreateCells();
         public IRows Rows => _rows ??= CreateRows();
         public ColumnList<TModel> Columns { get; }
         IColumns ITreeDataGridSource.Columns => Columns;
 
+        public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanding;
+        public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanded;
+        public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsing;
+        public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsed;
+
         public void Sort(Comparison<TModel>? comparison)
         {
             _comparison = comparison;
             _rows?.Sort(_comparison);
+        }
+
+        void IExpanderRowController<TModel>.OnBeginExpandCollapse(IExpanderRow<TModel> row)
+        {
+            if (row is HierarchicalRow<TModel> r)
+            {
+                if (!row.IsExpanded)
+                    RowExpanding?.Invoke(this, RowEventArgs.Create(r));
+                else
+                    RowCollapsing?.Invoke(this, RowEventArgs.Create(r));
+            }
+        }
+
+        void IExpanderRowController<TModel>.OnEndExpandCollapse(IExpanderRow<TModel> row, bool oldValue)
+        {
+            if (row is HierarchicalRow<TModel> r && r.IsExpanded != oldValue)
+            {
+                if (row.IsExpanded)
+                    RowExpanded?.Invoke(this, RowEventArgs.Create(r));
+                else
+                    RowCollapsed?.Invoke(this, RowEventArgs.Create(r));
+            }
+        }
+
+        void IExpanderRowController<TModel>.OnChildCollectionChanged(
+            IExpanderRow<TModel> row,
+            NotifyCollectionChangedEventArgs e)
+        {
         }
 
         bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)
@@ -59,6 +94,25 @@ namespace Avalonia.Controls
             return false;
         }
 
+        internal TModel GetModelAt(IndexPath index)
+        {
+            if (_expanderColumn is null)
+                throw new InvalidOperationException("No expander column defined.");
+
+            var items = (IEnumerable<TModel>?)RootModels;
+            var count = index.GetSize();
+
+            for (var depth = 0; depth < count - 1; ++depth)
+            {
+                items = _expanderColumn.GetChildModels(items.ElementAt(index.GetAt(depth)));
+            }
+
+            return items.ElementAt(index.GetLeaf()!.Value);
+        }
+
+        internal int GetRowIndex(IndexPath index, int fromRowIndex = 0) =>
+            _rows?.GetRowIndex(index, fromRowIndex) ?? -1;
+
         private HierarchicalRows<TModel> CreateRows()
         {
             if (Columns.Count == 0)
@@ -66,7 +120,7 @@ namespace Avalonia.Controls
             if (_expanderColumn is null)
                 throw new InvalidOperationException("No expander column defined.");
 
-            var result = new HierarchicalRows<TModel>(_roots, _expanderColumn, _comparison);
+            var result = new HierarchicalRows<TModel>(this, RootModels, _expanderColumn, _comparison);
             result.CollectionChanged += OnRowsCollectionChanged;
             return result;
         }

@@ -105,6 +105,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private void Expand()
         {
+            _controller.OnBeginExpandCollapse(this);
+
+            var oldExpanded = _isExpanded;
             var childModels = _expanderColumn.GetChildModels(Model);
 
             if (_childModels != childModels)
@@ -122,15 +125,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             _controller.OnChildCollectionChanged(this, CollectionExtensions.ResetEvent);
 
-            if (_childRows?.Count > 0)
+            if (_isExpanded != oldExpanded)
                 RaisePropertyChanged(nameof(IsExpanded));
+
+            _controller.OnEndExpandCollapse(this, oldExpanded);
         }
 
         private void Collapse()
         {
+            _controller.OnBeginExpandCollapse(this);
             _isExpanded = false;
             _controller.OnChildCollectionChanged(this, CollectionExtensions.ResetEvent);
             RaisePropertyChanged(nameof(IsExpanded));
+            _controller.OnEndExpandCollapse(this, true);
         }
 
         private void OnChildCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

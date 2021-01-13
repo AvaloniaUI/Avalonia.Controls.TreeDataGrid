@@ -10,16 +10,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         IDisposable,
         IExpanderRowController<TModel>
     {
+        private readonly IExpanderRowController<TModel> _controller;
         private readonly RootRows _roots;
         private readonly IExpanderColumn<TModel> _expanderColumn;
         private Comparison<TModel>? _comparison;
         private List<HierarchicalRow<TModel>> _rows;
 
         public HierarchicalRows(
+            IExpanderRowController<TModel> controller,
             ItemsSourceView<TModel> roots,
             IExpanderColumn<TModel> expanderColumn,
             Comparison<TModel>? comparison)
         {
+            _controller = controller;
             _roots = new RootRows(this, roots, comparison);
             _roots.CollectionChanged += OnRootsCollectionChanged;
             _expanderColumn = expanderColumn;
@@ -60,6 +63,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
+        void IExpanderRowController<TModel>.OnBeginExpandCollapse(IExpanderRow<TModel> row)
+        {
+            _controller.OnBeginExpandCollapse(row);
+        }
+
+        void IExpanderRowController<TModel>.OnEndExpandCollapse(IExpanderRow<TModel> row, bool oldValue)
+        {
+            _controller.OnEndExpandCollapse(row, oldValue);
+        }
+
         void IExpanderRowController<TModel>.OnChildCollectionChanged(
             IExpanderRow<TModel> row,
             NotifyCollectionChangedEventArgs e)
@@ -70,7 +83,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 throw new NotSupportedException("Unexpected row type.");
         }
 
-        private int GetRowIndex(IndexPath index, int fromRowIndex = 0)
+        internal int GetRowIndex(IndexPath index, int fromRowIndex = 0)
         {
             if (index.GetSize() > 0)
             {
