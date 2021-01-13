@@ -112,6 +112,10 @@ namespace ProControlsDemo.ViewModels
 
         private void SelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs<FileTreeNodeModel> e)
         {
+            foreach (var i in e.DeselectedItems)
+                System.Diagnostics.Trace.WriteLine($"Deselected '{i.Path}'");
+            foreach (var i in e.SelectedItems)
+                System.Diagnostics.Trace.WriteLine($"Selected '{i.Path}'");
         }
     }
 }

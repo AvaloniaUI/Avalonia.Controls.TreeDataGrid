@@ -94,7 +94,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        internal TModel GetModelAt(IndexPath index)
+        internal TModel GetModelAt(in IndexPath index)
         {
             if (_expanderColumn is null)
                 throw new InvalidOperationException("No expander column defined.");
@@ -110,7 +110,7 @@ namespace Avalonia.Controls
             return items.ElementAt(index.GetLeaf()!.Value);
         }
 
-        internal int GetRowIndex(IndexPath index, int fromRowIndex = 0) =>
+        internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0) =>
             _rows?.GetRowIndex(index, fromRowIndex) ?? -1;
 
         private HierarchicalRows<TModel> CreateRows()

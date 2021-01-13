@@ -32,7 +32,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public int Count { get; private set; }
 
-        public void Add(IndexPath index)
+        public void Add(in IndexPath index)
         {
             _ranges ??= new Dictionary<IndexPath, List<IndexRange>>();
 
@@ -48,7 +48,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             ++Count;
         }
 
-        public bool Remove(IndexPath index)
+        public bool Remove(in IndexPath index)
         {
             var parent = index.GetParent();
 
@@ -60,13 +60,27 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return false;
         }
 
-        public bool Contains(IndexPath index)
+        public bool Contains(in IndexPath index)
         {
             var parent = index.GetParent();
 
             if (_ranges is object && _ranges.TryGetValue(parent, out var ranges))
             {
                 return IndexRange.Contains(ranges, index.GetLeaf()!.Value);
+            }
+
+            return false;
+        }
+
+        public bool ContainsDescendents(in IndexPath index)
+        {
+            if (_ranges is object)
+            {
+                foreach (var i in _ranges.Keys)
+                {
+                    if (index == i || index.IsAncestorOf(i))
+                        return true;
+                }
             }
 
             return false;

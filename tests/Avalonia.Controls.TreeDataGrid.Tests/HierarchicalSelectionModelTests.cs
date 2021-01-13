@@ -44,20 +44,23 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 var source = CreateSource(data);
                 var target = CreateTarget(source);
                 var untyped = (ISelectionModel)target;
+                var raised = 0;
 
                 untyped.SelectedIndex = 3;
-
+                target.SelectionChanged += (s, e) => ++raised;
                 SetExpanded(source, new IndexPath(0), false);
 
                 Assert.Equal(new IndexPath(0, 2), target.SelectedIndexes.Single());
                 Assert.Equal("Node 0-2", target.SelectedItems.Single().Caption);
                 Assert.Empty(untyped.SelectedIndexes);
+                Assert.Equal(0, raised);
 
                 SetExpanded(source, new IndexPath(0), true);
 
                 Assert.Equal(new IndexPath(0, 2), target.SelectedIndexes.Single());
                 Assert.Equal("Node 0-2", target.SelectedItems.Single().Caption);
                 Assert.Equal(3, untyped.SelectedIndex);
+                Assert.Equal(0, raised);
             }
 
             [Fact]
@@ -67,6 +70,7 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 var source = CreateSource(data);
                 var target = CreateTarget(source);
                 var untyped = (ISelectionModel)target;
+                var raised = 0;
 
                 data[0].Children![0].Children = new AvaloniaList<Node>
                 {
@@ -77,18 +81,20 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 SetExpanded(source, new IndexPath(0, 0), true);
                 untyped.SelectedIndex = 3;
-
+                target.SelectionChanged += (s, e) => ++raised;
                 SetExpanded(source, new IndexPath(0), false);
 
                 Assert.Equal(new IndexPath(0, 0, 1), target.SelectedIndexes.Single());
                 Assert.Equal("Node 0-0-1", target.SelectedItems.Single().Caption);
                 Assert.Empty(untyped.SelectedIndexes);
+                Assert.Equal(0, raised);
 
                 SetExpanded(source, new IndexPath(0), true);
 
                 Assert.Equal(new IndexPath(0, 0, 1), target.SelectedIndexes.Single());
                 Assert.Equal("Node 0-0-1", target.SelectedItems.Single().Caption);
                 Assert.Equal(3, untyped.SelectedIndex);
+                Assert.Equal(0, raised);
             }
 
             private static HierarchicalSelectionModel<Node> CreateTarget(

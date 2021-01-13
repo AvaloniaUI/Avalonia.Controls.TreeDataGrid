@@ -83,7 +83,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 throw new NotSupportedException("Unexpected row type.");
         }
 
-        internal int GetRowIndex(IndexPath index, int fromRowIndex = 0)
+        internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0)
         {
             if (index.GetSize() > 0)
             {
@@ -123,7 +123,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return i - index;
         }
 
-        private void OnCollectionChanged(IndexPath parentIndex, NotifyCollectionChangedEventArgs e)
+        private void OnCollectionChanged(in IndexPath parentIndex, NotifyCollectionChangedEventArgs e)
         {
             void Add(int index, IEnumerable? items, bool raise)
             {
