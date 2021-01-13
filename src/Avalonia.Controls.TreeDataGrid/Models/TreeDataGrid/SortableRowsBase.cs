@@ -11,7 +11,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
     /// <typeparam name="TRow">The row type.</typeparam>
-    public abstract class SortableRowsBase<TModel, TRow> : IRows, IDisposable
+    public abstract class SortableRowsBase<TModel, TRow> : ReadOnlyListBase<TRow>, IDisposable
         where TRow : IRow<TModel>
     {
         private readonly ItemsSourceView<TModel> _items;
@@ -25,21 +25,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _comparison = comparison;
         }
 
-        public TRow this[int index] => Rows[index];
-        IRow IReadOnlyList<IRow>.this[int index] => Rows[index];
-        public int Count => _rows?.Count ?? _items.Count;
+        public override TRow this[int index] => Rows[index];
+        public override int Count => _rows?.Count ?? _items.Count;
         private List<TRow> Rows => _rows ??= CreateRows();
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         public void Dispose() => _items.CollectionChanged -= OnItemsCollectionChanged;
-        public IEnumerator<TRow> GetEnumerator() => Rows.GetEnumerator();
-
-        IEnumerator<IRow> IEnumerable<IRow>.GetEnumerator()
-        {
-            for (var i = 0; i < Count; ++i)
-                yield return this[i];
-        }
+        public override IEnumerator<TRow> GetEnumerator() => Rows.GetEnumerator();
 
         public void Sort(Comparison<TModel>? comparison)
         {
@@ -60,8 +53,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
             }
         }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         protected abstract TRow CreateRow(int modelIndex, TModel model);
 

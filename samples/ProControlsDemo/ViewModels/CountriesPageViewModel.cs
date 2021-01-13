@@ -26,7 +26,10 @@ namespace ProControlsDemo.ViewModels
                 }
             };
 
-            Selection = new SelectionModel<IRow>(Source.Rows);
+            Selection = new SelectionModel<IRow>(Source.Rows)
+            {
+                SingleSelect = false,
+            };
         }
 
         public FlatTreeDataGridSource<Country> Source { get; }

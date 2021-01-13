@@ -2,6 +2,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
@@ -65,9 +66,15 @@ namespace ProControlsDemo.ViewModels
                                 }),
                         }
             };
+
+            Selection = new SelectionModel<IRow>(Source.Rows)
+            {
+                SingleSelect = false,
+            };
         }
 
         public HierarchicalTreeDataGridSource<FileTreeNodeModel> Source { get; }
+        public SelectionModel<IRow> Selection { get; }
 
         private IControl FileCheckTemplate(FileTreeNodeModel node, INameScope ns)
         {

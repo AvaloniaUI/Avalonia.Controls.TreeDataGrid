@@ -5,9 +5,9 @@ using System.Collections.Specialized;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    public class HierarchicalRows<TModel> : IRows,
+    public class HierarchicalRows<TModel> : ReadOnlyListBase<HierarchicalRow<TModel>>,
+        IRows,
         IDisposable,
-        IEnumerable<HierarchicalRow<TModel>>,
         IExpanderRowController<TModel>
     {
         private readonly RootRows _roots;
@@ -28,9 +28,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             InitializeRows();
         }
 
-        public HierarchicalRow<TModel> this[int index] => _rows[index];
+        public override HierarchicalRow<TModel> this[int index] => _rows[index];
         IRow IReadOnlyList<IRow>.this[int index] => _rows[index];
-        public int Count => _rows.Count;
+        public override int Count => _rows.Count;
 
         public void Dispose()
         {
@@ -55,9 +55,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             }
         }
 
-        public IEnumerator<HierarchicalRow<TModel>> GetEnumerator() => _rows.GetEnumerator();
+        public override IEnumerator<HierarchicalRow<TModel>> GetEnumerator() => _rows.GetEnumerator();
         IEnumerator<IRow> IEnumerable<IRow>.GetEnumerator() => _rows.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => _rows.GetEnumerator();
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
@@ -138,6 +137,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             void Remove(int index, int count, bool raise)
             {
+                if (count == 0)
+                    return;
+
                 var oldItems = raise && CollectionChanged is object ?
                     new HierarchicalRow<TModel>[count] : null;
 

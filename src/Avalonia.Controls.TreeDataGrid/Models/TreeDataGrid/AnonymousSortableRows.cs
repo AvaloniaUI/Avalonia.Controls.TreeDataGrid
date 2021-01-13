@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// In a flat grid where rows cannot be resized, it is not necessary to persist any information
     /// about rows; the same row object can be updated and reused when a new row is requested.
     /// </remarks>
-    public class AnonymousSortableRows<TModel> : IRows, IEnumerable<IRow<TModel>>
+    public class AnonymousSortableRows<TModel> : ReadOnlyListBase<IRow<TModel>>, IRows
     {
         private readonly ItemsSourceView<TModel> _items;
         private readonly AnonymousRow<TModel> _row;
@@ -29,7 +29,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _row = new AnonymousRow<TModel>();
         }
 
-        public IRow<TModel> this[int index]
+        public override IRow<TModel> this[int index]
         {
             get
             {
@@ -42,11 +42,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         IRow IReadOnlyList<IRow>.this[int index] => this[index];
-        public int Count => _sortedItems?.Count ?? _items.Count;
+        public override int Count => _sortedItems?.Count ?? _items.Count;
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-        public IEnumerator<IRow<TModel>> GetEnumerator()
+        public override IEnumerator<IRow<TModel>> GetEnumerator()
         {
             for (var i = 0; i < Count; ++i)
                 yield return this[i];
@@ -65,7 +65,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         IEnumerator<IRow> IEnumerable<IRow>.GetEnumerator() => GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         private List<TModel> CreateSortedItems(IComparer<TModel> comparer)
         {

@@ -5,7 +5,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TreeDataGridExpanderCell : TemplatedControl
+    public class TreeDataGridExpanderCell : TreeDataGridCell
     {
         public static readonly DirectProperty<TreeDataGridExpanderCell, int> IndentProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridExpanderCell, int>(

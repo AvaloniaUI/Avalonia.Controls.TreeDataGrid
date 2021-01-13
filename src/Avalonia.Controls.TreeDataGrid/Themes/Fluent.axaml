@@ -126,6 +126,7 @@
                   Margin="4 0"
                   Width="12" Height="12">
             <ToggleButton Classes="ExpandCollapseChevron"
+                          Background="{TemplateBinding Background}"
                           Focusable="False"
                           IsChecked="{Binding IsExpanded}"
                           IsVisible="{Binding ShowExpander}"/>

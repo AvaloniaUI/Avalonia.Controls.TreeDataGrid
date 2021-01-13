@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -108,12 +108,18 @@ namespace Avalonia.Controls
                     var oldValue = _selection;
 
                     if (_selection is object)
+                    {
                         _selection.SelectionChanged -= OnSelectionChanged;
+                        _selection.IndexesChanged -= OnSelectionIndexesChanged;
+                    }
 
                     _selection = value;
 
                     if (_selection is object)
+                    {
                         _selection.SelectionChanged += OnSelectionChanged;
+                        _selection.IndexesChanged += OnSelectionIndexesChanged;
+                    }
 
                     RaisePropertyChanged(
                         SelectionProperty,
@@ -157,7 +163,27 @@ namespace Avalonia.Controls
             {
                 Repeater.ElementClearing += OnElementClearing;
                 Repeater.ElementPrepared += OnElementPrepared;
+                Repeater.ElementIndexChanged += OnElementIndexChanged;
             }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (!e.Handled)
+            {
+                var direction = e.Key.ToNavigationDirection();
+                var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
+                var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+
+                if (direction.HasValue && (!ctrl || shift))
+                {
+                    //e.Handled = MoveSelection(
+                    //    direction.Value,
+                    //    shift);
+                }
+            }
+
+            base.OnKeyDown(e);
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -167,13 +193,101 @@ namespace Avalonia.Controls
             if (Source is null || _selection is null || e.Handled)
                 return;
 
-            var cell = (e.Source as IVisual).FindAncestorOfType<ITreeDataGridCell>();
-            var rows = Source.Rows;
+            if (TryFindCell(e.Source, out var cell))
+            {
+                var point = e.GetCurrentPoint(this);
 
-            if (cell is null || cell.RowIndex < 0 || cell.RowIndex >= rows.Count)
+                UpdateSelection(
+                    cell.RowIndex,
+                    select: true,
+                    rangeModifier: e.KeyModifiers.HasFlag(KeyModifiers.Shift),
+                    toggleModifier: e.KeyModifiers.HasFlag(KeyModifiers.Control),
+                    rightButton: point.Properties.IsRightButtonPressed);
+            }
+        }
+
+        private bool TryFindCell(
+            IInteractive? element,
+            [MaybeNullWhen(returnValue: false)]  out ITreeDataGridCell result)
+        {
+            do
+            {
+                result = (element as IVisual)?.FindAncestorOfType<ITreeDataGridCell>();
+                if (result?.ColumnIndex >= 0 && result?.RowIndex >= 0)
+                    break;
+                element = result;
+            } while (result is object);
+
+            return result is object;
+        }
+
+        private void UpdateSelection(
+            int index,
+            bool select = true,
+            bool rangeModifier = false,
+            bool toggleModifier = false,
+            bool rightButton = false)
+        {
+            if (Source is null || _selection is null || index < 0 || index >= Source.Rows.Count)
+            {
+                return;
+            }
+
+            var mode = _selection.SingleSelect ? SelectionMode.Single : SelectionMode.Multiple;
+            var multi = (mode & SelectionMode.Multiple) != 0;
+            var toggle = (toggleModifier || (mode & SelectionMode.Toggle) != 0);
+            var range = multi && rangeModifier;
+
+            if (!select)
+            {
+                _selection.Deselect(index);
+            }
+            else if (rightButton)
+            {
+                if (_selection.IsSelected(index) == false)
+                {
+                    _selection.SelectedIndex = index;
+                }
+            }
+            else if (range)
+            {
+                using var operation = _selection.BatchUpdate();
+                _selection.Clear();
+                _selection.SelectRange(_selection.AnchorIndex, index);
+            }
+            else if (multi && toggle)
+            {
+                if (_selection.IsSelected(index) == true)
+                {
+                    _selection.Deselect(index);
+                }
+                else
+                {
+                    _selection.Select(index);
+                }
+            }
+            else if (toggle)
+            {
+                _selection.SelectedIndex = (_selection.SelectedIndex == index) ? -1 : index;
+            }
+            else
+            {
+                _selection.SelectedIndex = index;
+            }
+        }
+
+        private void UpdateSelection()
+        {
+            if (_source is null || _selection is null || Repeater is null)
                 return;
 
-            _selection.Select(cell.RowIndex);
+            foreach (var child in Repeater.Children)
+            {
+                if (child is ITreeDataGridCell cell)
+                {
+                    cell.IsSelected = _selection.IsSelected(cell.RowIndex);
+                }
+            }
         }
 
         private void OnClick(object sender, RoutedEventArgs e)
@@ -196,7 +310,8 @@ namespace Avalonia.Controls
                         ListSortDirection.Descending : ListSortDirection.Ascending;
                 }
 
-                _source.SortBy(columnHeader.Model, _userSortDirection);
+                if (_source.SortBy(columnHeader.Model, _userSortDirection))
+                    _selection?.Clear();
             }
         }
 
@@ -217,18 +332,24 @@ namespace Avalonia.Controls
             cell.ColumnIndex = cell.RowIndex = -1;
         }
 
-        private void OnSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+        private void OnElementIndexChanged(object sender, ItemsRepeaterElementIndexChangedEventArgs e)
         {
-            if (_source is null || _selection is null || Repeater is null)
+            if (Source is null || !(e.Element is ITreeDataGridCell cell))
                 return;
 
-            foreach (var child in Repeater.Children)
-            {
-                if (child is ITreeDataGridCell cell)
-                {
-                    cell.IsSelected = _selection.IsSelected(cell.RowIndex);
-                }
-            }
+            cell.ColumnIndex = e.NewIndex % Source.Columns.Count;
+            cell.RowIndex = e.NewIndex / Source.Columns.Count;
+            cell.IsSelected = _selection?.IsSelected(cell.RowIndex) ?? false;
+        }
+
+        private void OnSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+        {
+            UpdateSelection();
+        }
+
+        private void OnSelectionIndexesChanged(object sender, SelectionModelIndexesChangedEventArgs e)
+        {
+            UpdateSelection();
         }
     }
 }

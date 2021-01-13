@@ -12,6 +12,11 @@
         private int _rowIndex = -1;
         private bool _isSelected;
 
+        static TreeDataGridCell()
+        {
+            FocusableProperty.OverrideDefaultValue<TreeDataGridCell>(true);
+        }
+
         int ITreeDataGridCell.ColumnIndex
         {
             get => _columnIndex;
