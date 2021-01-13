@@ -54,7 +54,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             if (_ranges is object && _ranges.TryGetValue(parent, out var ranges))
             {
-                return IndexRange.Remove(ranges, new IndexRange(index.GetLeaf()!.Value)) > 0;
+                if (IndexRange.Remove(ranges, new IndexRange(index.GetLeaf()!.Value)) > 0)
+                {
+                    --Count;
+                    return true;
+                }
             }
 
             return false;

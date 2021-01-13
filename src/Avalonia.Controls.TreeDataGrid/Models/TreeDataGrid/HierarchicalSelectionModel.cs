@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private readonly IndexRanges _selectedIndexes;
         private ModelView? _selectedItems;
         private EventHandler<SelectionModelSelectionChangedEventArgs>? _untypedSelectedChanged;
-        private IndexPath? _rowExpandingCollapsing;
+        private int _rowExpandingCollapsing;
 
         public HierarchicalSelectionModel(HierarchicalTreeDataGridSource<TModel> source)
         {
@@ -116,23 +116,25 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             if (row.Children is null || !_selectedIndexes.ContainsDescendents(row.ModelIndexPath))
                 return;
 
+            var rowIndex = parentRowIndex + 1;
+
             for (var i = 0; i < row.Children.Count; ++i)
             {
                 var child = row.Children[i];
-                var index = parentRowIndex + 1 + i;
 
                 if (IsSelected(child.ModelIndexPath))
                 {
-                    _rowSelection.Select(index);
+                    _rowSelection.Select(rowIndex);
                 }
 
-                UpdateExpandedSelection(child, index);
+                UpdateExpandedSelection(child, rowIndex);
+                rowIndex += (child.Children?.Count ?? 0) + 1;
             }
         }
 
         private void OnRowExpanding(object sender, RowEventArgs<HierarchicalRow<TModel>> e)
         {
-            _rowExpandingCollapsing ??= e.Row.ModelIndexPath;
+            ++_rowExpandingCollapsing;
         }
         
         private void OnRowExpanded(object sender, RowEventArgs<HierarchicalRow<TModel>> e)
@@ -146,19 +148,17 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 UpdateExpandedSelection(e.Row, parentRowIndex);
             }
 
-            if (_rowExpandingCollapsing == e.Row.ModelIndexPath)
-                _rowExpandingCollapsing = null;
+            --_rowExpandingCollapsing;
         }
 
         private void OnRowCollapsing(object sender, RowEventArgs<HierarchicalRow<TModel>> e)
         {
-            _rowExpandingCollapsing ??= e.Row.ModelIndexPath;
+            ++_rowExpandingCollapsing;
         }
 
         private void OnRowCollapsed(object sender, RowEventArgs<HierarchicalRow<TModel>> e)
         {
-            if (_rowExpandingCollapsing == e.Row.ModelIndexPath)
-                _rowExpandingCollapsing = null;
+            --_rowExpandingCollapsing;
         }
 
         private void OnRowSelectionChanged(
@@ -175,13 +175,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 return new SelectionView<TModel>(rows, x => x.Model);
             }
 
-            if (_rowExpandingCollapsing.HasValue)
+            if (_rowExpandingCollapsing > 0)
             {
-                var i = e.DeselectedItems.FirstOrDefault()?.ModelIndexPath ??
-                        e.SelectedItems.FirstOrDefault()?.ModelIndexPath ??
-                        default;
-                if (_rowExpandingCollapsing == i || _rowExpandingCollapsing.Value.IsAncestorOf(i))
-                    return;
+                _untypedSelectedChanged?.Invoke(this, e);
+                return;
             }
 
             foreach (var row in e.SelectedItems)
