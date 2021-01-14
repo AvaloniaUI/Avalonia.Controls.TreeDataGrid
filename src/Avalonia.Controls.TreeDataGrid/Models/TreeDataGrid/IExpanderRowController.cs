@@ -26,7 +26,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// This method should always be called, even if expanding the row failed due to there
         /// being no children.
         /// </remarks>
-        void OnEndExpandCollapse(IExpanderRow<TModel> row, bool oldValue);
+        void OnEndExpandCollapse(IExpanderRow<TModel> row);
 
         /// <summary>
         /// Method called by a row when its children change.

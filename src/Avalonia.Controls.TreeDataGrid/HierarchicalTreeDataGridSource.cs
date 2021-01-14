@@ -62,9 +62,9 @@ namespace Avalonia.Controls
             }
         }
 
-        void IExpanderRowController<TModel>.OnEndExpandCollapse(IExpanderRow<TModel> row, bool oldValue)
+        void IExpanderRowController<TModel>.OnEndExpandCollapse(IExpanderRow<TModel> row)
         {
-            if (row is HierarchicalRow<TModel> r && r.IsExpanded != oldValue)
+            if (row is HierarchicalRow<TModel> r)
             {
                 if (row.IsExpanded)
                     RowExpanded?.Invoke(this, RowEventArgs.Create(r));

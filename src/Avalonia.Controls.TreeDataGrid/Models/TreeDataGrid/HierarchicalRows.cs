@@ -68,9 +68,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _controller.OnBeginExpandCollapse(row);
         }
 
-        void IExpanderRowController<TModel>.OnEndExpandCollapse(IExpanderRow<TModel> row, bool oldValue)
+        void IExpanderRowController<TModel>.OnEndExpandCollapse(IExpanderRow<TModel> row)
         {
-            _controller.OnEndExpandCollapse(row, oldValue);
+            _controller.OnEndExpandCollapse(row);
         }
 
         void IExpanderRowController<TModel>.OnChildCollectionChanged(
