@@ -9,7 +9,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// expander to reveal nested data.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public class HierarchicalExpanderColumn<TModel> : IColumn<TModel>,
+    public class HierarchicalExpanderColumn<TModel> : NotifyingBase,
+        IColumn<TModel>,
         IExpanderColumn<TModel>
     {
         private readonly IColumn<TModel> _inner;
@@ -29,6 +30,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             Func<TModel, bool>? hasChildrenSelector = null)
         {
             _inner = inner;
+            _inner.PropertyChanged += OnInnerPropertyChanged;
             _childSelector = childSelector;
             _hasChildrenSelector = hasChildrenSelector;
         }
@@ -63,5 +65,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public IEnumerable<TModel>? GetChildModels(TModel model) => _childSelector(model);
 
         public Comparison<TModel>? GetComparison(ListSortDirection direction) => _inner.GetComparison(direction);
+
+        private void OnInnerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Header) ||
+                e.PropertyName == nameof(Width) ||
+                e.PropertyName == nameof(SortDirection))
+                RaisePropertyChanged(e);
+        }
     }
 }

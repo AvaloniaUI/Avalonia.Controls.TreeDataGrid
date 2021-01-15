@@ -5,7 +5,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <summary>
     /// Represents a column in an <see cref="ITreeDataGridSource"/>.
     /// </summary>
-    public interface IColumn
+    public interface IColumn : INotifyPropertyChanged
     {
         /// <summary>
         /// Gets the column header.
