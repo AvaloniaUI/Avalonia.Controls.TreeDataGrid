@@ -59,49 +59,51 @@
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <DockPanel VerticalAlignment="Stretch">
-          <Thumb Name="PART_Resizer"
-                 DockPanel.Dock="Right"
-                 Background="Transparent"
-                 Cursor="SizeWestEast">
-            <Thumb.Template>
-              <ControlTemplate>
-                <Border Background="Transparent" Padding="1 0">
-                  <Rectangle Fill="{DynamicResource TreeDataGridGridLinesBrush}"
-                             VerticalAlignment="Stretch"
-                             Width="1"/>
-                </Border>
-              </ControlTemplate>
-            </Thumb.Template>
-          </Thumb>
-          <Path Name="SortIcon"
-                DockPanel.Dock="Right"
-                Fill="{TemplateBinding Foreground}"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Stretch="Uniform"
-                Height="12" />
-          <ContentPresenter Name="PART_ContentPresenter"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Content="{TemplateBinding Header}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Padding="{TemplateBinding Padding}"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
-        </DockPanel>
+        <Border Name="border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <DockPanel VerticalAlignment="Stretch">
+            <Thumb Name="PART_Resizer"
+                   DockPanel.Dock="Right"
+                   Background="Transparent"
+                   Cursor="SizeWestEast">
+              <Thumb.Template>
+                <ControlTemplate>
+                  <Border Padding="1 0">
+                    <Rectangle Fill="{DynamicResource TreeDataGridGridLinesBrush}"
+                               VerticalAlignment="Stretch"
+                               Width="1"/>
+                  </Border>
+                </ControlTemplate>
+              </Thumb.Template>
+            </Thumb>
+            <Path Name="SortIcon"
+                  DockPanel.Dock="Right"
+                  Fill="{TemplateBinding Foreground}"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Stretch="Uniform"
+                  Height="12" />
+            <ContentPresenter Name="PART_ContentPresenter"
+                              Content="{TemplateBinding Header}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Padding="{TemplateBinding Padding}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+          </DockPanel>
+        </Border>
       </ControlTemplate>
     </Setter>
   </Style>
 
-  <Style Selector="TreeDataGridColumnHeader:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+  <Style Selector="TreeDataGridColumnHeader:pointerover /template/ Border#border">
     <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
   </Style>
 
-  <Style Selector="TreeDataGridColumnHeader:pressed /template/ ContentPresenter#PART_ContentPresenter">
+  <Style Selector="TreeDataGridColumnHeader:pressed /template/ Border#border">
     <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundPressed}" />

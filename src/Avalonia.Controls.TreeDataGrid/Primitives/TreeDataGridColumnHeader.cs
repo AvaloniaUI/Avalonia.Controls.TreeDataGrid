@@ -65,6 +65,8 @@ namespace Avalonia.Controls.Primitives
                 if (oldModel?.SortDirection != newModel?.SortDirection)
                     RaisePropertyChanged(SortDirectionProperty, oldModel?.SortDirection, newModel?.SortDirection);
             }
+
+            base.OnPropertyChanged(change);
         }
 
         private void ModelPropertyChanged(object sender, PropertyChangedEventArgs e)
