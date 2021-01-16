@@ -11,6 +11,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The value type.</typeparam>
     public abstract class ColumnBase<TModel, TValue> : ColumnBase<TModel>
     {
+        private bool _canUserSort;
         private readonly Comparison<TModel>? _sortAscending;
         private readonly Comparison<TModel>? _sortDescending;
 
@@ -27,17 +28,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             : base(header, width, options)
         {
             ValueSelector = valueSelector;
-
-            if (options?.UseDefaultComparison == false)
-            {
-                _sortAscending = options.CompareAscending;
-                _sortDescending = options.CompareDescending;
-            }
-            else
-            {
-                _sortAscending = DefaultSortAscending;
-                _sortDescending = DefaultSortDescending;
-            }
+            _canUserSort = options?.CanUserSortColumn ?? true;
+            _sortAscending = options?.CompareAscending ?? DefaultSortAscending;
+            _sortDescending = options?.CompareDescending ?? DefaultSortDescending;
         }
 
         /// <summary>
@@ -47,6 +40,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public override Comparison<TModel>? GetComparison(ListSortDirection direction)
         {
+            if (!_canUserSort)
+                return null;
+            
             return direction switch
             {
                 ListSortDirection.Ascending => _sortAscending,
