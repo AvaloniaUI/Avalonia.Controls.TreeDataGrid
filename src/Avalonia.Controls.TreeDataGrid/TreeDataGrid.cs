@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -157,6 +158,70 @@ namespace Avalonia.Controls
 
         protected virtual IElementFactory CreateElementFactory() => new TreeListElementFactory();
 
+        protected bool MoveSelection(NavigationDirection direction, bool rangeModifier)
+        {
+            if (Source is null || Repeater is null)
+                return false;
+
+            var focus = FocusManager.Instance;
+            var currentColumnIndex = 0;
+            var currentRowIndex = Selection?.SelectedIndex ?? 0;
+
+            if (TryFindCell(focus.Current, out var focused))
+            {
+                currentColumnIndex = focused.ColumnIndex;
+                currentRowIndex = focused.RowIndex;
+            }
+
+            var newColumnIndex = currentColumnIndex;
+            var newRowIndex = currentRowIndex;
+
+            if (direction == NavigationDirection.First || direction == NavigationDirection.Last)
+            {
+                newRowIndex = direction == NavigationDirection.First ? 0 : Source.Rows.Count - 1;
+            }
+            else
+            {
+                (int x, int y) step = direction switch
+                {
+                    NavigationDirection.Up => (0, -1),
+                    NavigationDirection.Down => (0, 1),
+                    NavigationDirection.Left => (-1, 0),
+                    NavigationDirection.Right => (1, 0),
+                    _ => (0, 0)
+                };
+
+                newColumnIndex = Math.Max(0, Math.Min(currentColumnIndex + step.x, Source.Columns.Count - 1));
+                newRowIndex = Math.Max(0, Math.Min(currentRowIndex + step.y, Source.Rows.Count - 1));
+            }
+
+            if (newRowIndex != currentRowIndex)
+                UpdateSelection(newRowIndex, true, rangeModifier);
+            
+            if (newRowIndex != currentRowIndex || newColumnIndex != currentColumnIndex)
+            {
+                var cellIndex = (newRowIndex * Source.Columns.Count) + newColumnIndex;
+                var cell = Repeater.GetOrCreateElement(cellIndex);
+
+                if (cell is object)
+                {
+                    (VisualRoot as TopLevel)?.LayoutManager?.ExecuteLayoutPass();
+                    cell.BringIntoView();
+
+                    var method = direction <= NavigationDirection.Previous ?
+                        NavigationMethod.Tab :
+                        NavigationMethod.Directional;
+                    FocusManager.Instance?.Focus(cell, method);
+                }
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
@@ -186,9 +251,9 @@ namespace Avalonia.Controls
 
                 if (direction.HasValue && (!ctrl || shift))
                 {
-                    //e.Handled = MoveSelection(
-                    //    direction.Value,
-                    //    shift);
+                    e.Handled = MoveSelection(
+                        direction.Value,
+                        shift);
                 }
             }
 
@@ -219,6 +284,12 @@ namespace Avalonia.Controls
             IInteractive? element,
             [MaybeNullWhen(returnValue: false)]  out ITreeDataGridCell result)
         {
+            if (element is ITreeDataGridCell cell)
+            {
+                result = cell;
+                return true;
+            }
+
             do
             {
                 result = (element as IVisual)?.FindAncestorOfType<ITreeDataGridCell>();
