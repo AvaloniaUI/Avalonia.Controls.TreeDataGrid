@@ -8,6 +8,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public interface IColumn : INotifyPropertyChanged
     {
         /// <summary>
+        /// Gets a value indicating whether the user can resize the column.
+        /// </summary>
+        bool? CanUserResize { get; }
+
+        /// <summary>
         /// Gets the column header.
         /// </summary>
         object? Header { get; }

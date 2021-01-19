@@ -9,6 +9,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The model type.</typeparam>
     public abstract class ColumnBase<TModel> : NotifyingBase, IColumn<TModel>
     {
+        private bool? _canUserResize;
         private GridLength _width;
         private object? _header;
         private ListSortDirection? _sortDirection;
@@ -23,8 +24,18 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             GridLength? width,
             ColumnOptions<TModel>? options)
         {
+            _canUserResize = options?.CanUserResizeColumn;
             _header = header;
             _width = width ?? GridLength.Auto;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the user can resize the column.
+        /// </summary>
+        public bool? CanUserResize
+        {
+            get => _canUserResize;
+            set => RaiseAndSetIfChanged(ref _canUserResize, value);
         }
 
         /// <summary>

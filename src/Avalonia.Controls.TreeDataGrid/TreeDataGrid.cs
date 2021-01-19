@@ -14,8 +14,11 @@ namespace Avalonia.Controls
 {
     public class TreeDataGrid : TemplatedControl
     {
+        public static readonly StyledProperty<bool> CanUserResizeColumnsProperty =
+            AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(CanUserResizeColumns), true);
+
         public static readonly StyledProperty<bool> CanUserSortColumnsProperty =
-            AvaloniaProperty.Register<TreeDataGridPanel, bool>(nameof(CanUserSortColumns), true);
+            AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(CanUserSortColumns), true);
 
         public static readonly DirectProperty<TreeDataGrid, IReadOnlyList<ICell>?> CellsProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, IReadOnlyList<ICell>?>(
@@ -68,6 +71,12 @@ namespace Avalonia.Controls
             ElementFactory = CreateElementFactory();
             SharedState = new SharedLayoutState();
             AddHandler(TreeDataGridColumnHeader.ClickEvent, OnClick);
+        }
+
+        public bool CanUserResizeColumns
+        {
+            get => GetValue(CanUserResizeColumnsProperty);
+            set => SetValue(CanUserResizeColumnsProperty, value);
         }
 
         public bool CanUserSortColumns
@@ -292,11 +301,9 @@ namespace Avalonia.Controls
 
         private void OnClick(object sender, RoutedEventArgs e)
         {
-            if (_source is null)
-                return;
-
-            if (e.Source is TreeDataGridColumnHeader columnHeader &&
-                columnHeader.Model is object &&
+            if (_source is object &&
+                e.Source is TreeDataGridColumnHeader columnHeader &&
+                columnHeader.DataContext is IColumn column &&
                 CanUserSortColumns)
             {
                 if (_userSortColumn != columnHeader)
@@ -310,7 +317,7 @@ namespace Avalonia.Controls
                         ListSortDirection.Descending : ListSortDirection.Ascending;
                 }
 
-                if (_source.SortBy(columnHeader.Model, _userSortDirection))
+                if (_source.SortBy(column, _userSortDirection))
                     _selection?.Clear();
             }
         }

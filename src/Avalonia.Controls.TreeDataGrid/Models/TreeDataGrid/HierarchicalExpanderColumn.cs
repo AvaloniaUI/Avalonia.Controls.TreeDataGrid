@@ -35,18 +35,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _hasChildrenSelector = hasChildrenSelector;
         }
 
+        public bool? CanUserResize => _inner.CanUserResize;
         public object? Header => _inner.Header;
+
+        public ListSortDirection? SortDirection
+        {
+            get => _inner.SortDirection;
+            set => _inner.SortDirection = value;
+        }
 
         public GridLength Width
         {
             get => _inner.Width;
             set => _inner.Width = value;
-        }
-
-        public ListSortDirection? SortDirection 
-        {
-            get => _inner.SortDirection;
-            set => _inner.SortDirection = value;
         }
 
         public ICell CreateCell(IRow<TModel> row)
@@ -68,9 +69,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private void OnInnerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(Header) ||
-                e.PropertyName == nameof(Width) ||
-                e.PropertyName == nameof(SortDirection))
+            if (e.PropertyName == nameof(CanUserResize) ||
+                e.PropertyName == nameof(Header) ||
+                e.PropertyName == nameof(SortDirection) ||
+                e.PropertyName == nameof(Width))
                 RaisePropertyChanged(e);
         }
     }

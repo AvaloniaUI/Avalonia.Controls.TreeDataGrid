@@ -64,20 +64,25 @@
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
           <DockPanel VerticalAlignment="Stretch">
-            <Thumb Name="PART_Resizer"
-                   DockPanel.Dock="Right"
-                   Background="Transparent"
-                   Cursor="SizeWestEast">
-              <Thumb.Template>
-                <ControlTemplate>
-                  <Border Padding="1 0">
-                    <Rectangle Fill="{DynamicResource TreeDataGridGridLinesBrush}"
-                               VerticalAlignment="Stretch"
-                               Width="1"/>
-                  </Border>
-                </ControlTemplate>
-              </Thumb.Template>
-            </Thumb>
+            <Panel DockPanel.Dock="Right">
+              <Rectangle Fill="{DynamicResource TreeDataGridGridLinesBrush}"
+                         HorizontalAlignment="Right"
+                         Width="1"/>
+              <Thumb Name="PART_Resizer"
+                     DockPanel.Dock="Right"
+                     Background="Transparent"
+                     Cursor="SizeWestEast"
+                     IsVisible="{TemplateBinding CanUserResize}"
+                     Width="5">
+                <Thumb.Template>
+                  <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            VerticalAlignment="Stretch"
+                            Width="1"/>
+                  </ControlTemplate>
+                </Thumb.Template>
+              </Thumb>
+            </Panel>
             <Path Name="SortIcon"
                   DockPanel.Dock="Right"
                   Fill="{TemplateBinding Foreground}"

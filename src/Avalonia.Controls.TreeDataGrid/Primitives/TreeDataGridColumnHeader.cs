@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Input;
 using Avalonia.Utilities;
@@ -9,8 +8,10 @@ namespace Avalonia.Controls.Primitives
 {
     public class TreeDataGridColumnHeader : Button
     {
-        public static readonly StyledProperty<bool> CanUserSortProperty =
-            AvaloniaProperty.Register<TreeDataGridColumnHeader, bool>(nameof(CanUserSort), true);
+        public static readonly DirectProperty<TreeDataGridColumnHeader, bool> CanUserResizeProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridColumnHeader, bool>(
+                nameof(CanUserResize),
+                x => x.CanUserResize);
 
         public static readonly DirectProperty<TreeDataGridColumnHeader, object?> HeaderProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridColumnHeader, object?>(
@@ -22,18 +23,31 @@ namespace Avalonia.Controls.Primitives
                 nameof(SortDirection),
                 o => o.SortDirection);
 
+        private bool _canUserResize;
+        private object? _header;
+        private ListSortDirection? _sortDirection;
+        private TreeDataGrid? _owner;
         private Thumb? _resizer;
 
-        public bool CanUserSort
+        public bool CanUserResize
         {
-            get => GetValue(CanUserSortProperty);
-            set => SetValue(CanUserSortProperty, value);
+            get => _canUserResize;
+            private set => SetAndRaise(CanUserResizeProperty, ref _canUserResize, value);
         }
 
-        public object? Header => Model?.Header;
-        public ListSortDirection? SortDirection => Model?.SortDirection;
+        public object? Header
+        {
+            get => _header;
+            private set => SetAndRaise(HeaderProperty, ref _header, value);
+        }
 
-        internal IColumn? Model => (IColumn?)DataContext;
+        public ListSortDirection? SortDirection
+        {
+            get => _sortDirection;
+            private set => SetAndRaise(SortDirectionProperty, ref _sortDirection, value);
+        }
+
+        private IColumn? Model => (IColumn?)DataContext;
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
@@ -49,30 +63,49 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (change.Property == DataContextProperty)
+            if (change.Property == CanUserResizeProperty)
             {
-                var oldValue = change.OldValue.GetValueOrDefault<object?>();
-                var newValue = change.NewValue.GetValueOrDefault<object?>();
-                var oldModel = oldValue as IColumn;
-                var newModel = newValue as IColumn;
+                PseudoClasses.Set(":resizable", change.NewValue.GetValueOrDefault<bool>());
+            }
+            else if (change.Property == DataContextProperty)
+            {
+                var oldModel = change.OldValue.GetValueOrDefault<object?>() as IColumn;
+                var newModel = change.NewValue.GetValueOrDefault<object?>() as IColumn;
 
                 if (oldModel is INotifyPropertyChanged oldInpc)
-                    oldInpc.PropertyChanged -= ModelPropertyChanged;
+                    oldInpc.PropertyChanged -= OnModelPropertyChanged;
                 if (newModel is INotifyPropertyChanged newInpc)
-                    newInpc.PropertyChanged += ModelPropertyChanged;
-                if (!Equals(oldModel?.Header, newModel?.Header))
-                    RaisePropertyChanged(HeaderProperty, oldModel?.Header, newModel?.Header);
-                if (oldModel?.SortDirection != newModel?.SortDirection)
-                    RaisePropertyChanged(SortDirectionProperty, oldModel?.SortDirection, newModel?.SortDirection);
+                    newInpc.PropertyChanged += OnModelPropertyChanged;
+
+                UpdatePropertiesFromModel();
+            }
+            else if (change.Property == ParentProperty)
+            {
+                if (_owner is object)
+                    _owner.PropertyChanged -= OnOwnerPropertyChanged;
+                _owner = change.NewValue.GetValueOrDefault<IControl>()?.TemplatedParent as TreeDataGrid;
+                if (_owner is object)
+                    _owner.PropertyChanged += OnOwnerPropertyChanged;
+                UpdatePropertiesFromModel();
             }
 
             base.OnPropertyChanged(change);
         }
 
-        private void ModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(IColumn.SortDirection))
-                RaisePropertyChanged(SortDirectionProperty, default, SortDirection);
+            if (e.PropertyName == nameof(IColumn.CanUserResize) ||
+                e.PropertyName == nameof(IColumn.Header) ||
+                e.PropertyName == nameof(IColumn.SortDirection))
+                UpdatePropertiesFromModel();
+        }
+
+        private void OnOwnerPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (_owner is null)
+                return;
+            if (e.Property == TreeDataGrid.CanUserResizeColumnsProperty)
+                CanUserResize = Model?.CanUserResize ?? _owner.CanUserResizeColumns;
         }
 
         private void ResizerDragDelta(object? sender, VectorEventArgs e)
@@ -88,6 +121,14 @@ namespace Avalonia.Controls.Primitives
             Model.Width = new GridLength(width + e.Vector.X, GridUnitType.Pixel);
 
             this.FindAncestorOfType<TreeDataGridPanel>()?.InvalidateAll();
+        }
+
+        private void UpdatePropertiesFromModel()
+        {
+            var model = Model;
+            CanUserResize = model?.CanUserResize ?? _owner?.CanUserResizeColumns ?? false;
+            Header = model?.Header;
+            SortDirection = model?.SortDirection;
         }
     }
 }
