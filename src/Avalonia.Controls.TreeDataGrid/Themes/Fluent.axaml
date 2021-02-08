@@ -55,6 +55,7 @@
 
   <Style Selector="TreeDataGridColumnHeader">
     <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="MinHeight" Value="25"/>
     <Setter Property="Padding" Value="4 2"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Template">
@@ -171,6 +172,7 @@
 
   <Style Selector=":is(TreeDataGridCell)">
     <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="MinHeight" Value="25"/>
   </Style>
 
   <Style Selector=":is(TreeDataGridCell):selected">
