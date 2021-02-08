@@ -7,9 +7,6 @@ namespace Avalonia.Controls.Primitives
 {
     public class TreeDataGridLayout : VirtualizingLayout
     {
-        // HACK: Using a fixed row height for now.
-        private const double RowHeight = 25;
-
         public static readonly DirectProperty<TreeDataGridLayout, IReadOnlyList<IColumn>?> ColumnsProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridLayout, IReadOnlyList<IColumn>?>(
                 nameof(Columns),
@@ -55,12 +52,18 @@ namespace Avalonia.Controls.Primitives
             var minWidth = 0.0;
             var remainingWidth = availableSize.Width;
             var totalStars = 0.0;
+            var rowHeight = state.RowHeight;
+
+            if (double.IsNaN(rowHeight))
+            {
+                rowHeight = state.RowHeight = CalculateRowHeight(context, availableSize);
+            }
 
             state.FirstRealizedRow = Math.Max(
-                (int)(context.RealizationRect.Y / RowHeight) - 1,
+                (int)(context.RealizationRect.Y / rowHeight) - 1,
                 0);
             state.LastRealizedRow = Math.Min(
-                (int)(context.RealizationRect.Bottom / RowHeight) + 1,
+                (int)(context.RealizationRect.Bottom / rowHeight) + 1,
                 (context.ItemCount - columnCount) / columnCount);
 
             if (!(SharedState.ColumnWidths?.Length == columnCount))
@@ -95,7 +98,7 @@ namespace Avalonia.Controls.Primitives
                         var index = (rowIndex * columnCount) + columnIndex;
                         var container = context.GetOrCreateElementAt(index);
 
-                        container.Measure(new Size(availableWidth, RowHeight));
+                        container.Measure(new Size(availableWidth, rowHeight));
                         minColumnWidth = Math.Max(minColumnWidth, container.DesiredSize.Width);
                     }
 
@@ -114,7 +117,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            return new Size(minWidth, rowCount * RowHeight);
+            return new Size(minWidth, rowCount * rowHeight);
         }
 
         protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
@@ -126,6 +129,7 @@ namespace Avalonia.Controls.Primitives
             var columnCount = _columns.Count;
             var remainingWidth = finalSize.Width;
             var totalStars = 0.0;
+            var rowHeight = state.RowHeight;
             var x = 0.0;
 
             for (var i = 0; i < _columns.Count; ++i)
@@ -150,7 +154,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     var index = (rowIndex * columnCount) + columnIndex;
                     var container = context.GetOrCreateElementAt(index);
-                    var rect = new Rect(x, rowIndex * RowHeight, columnWidth, RowHeight);
+                    var rect = new Rect(x, rowIndex * rowHeight, columnWidth, rowHeight);
                     container.Arrange(rect);
                 }
 
@@ -161,8 +165,21 @@ namespace Avalonia.Controls.Primitives
             return finalSize;
         }
 
+        private double CalculateRowHeight(VirtualizingLayoutContext context, Size availableSize)
+        {
+            if (context.ItemCount > 0)
+            {
+                var element0 = context.GetOrCreateElementAt(0);
+                element0.Measure(availableSize);
+                return element0.DesiredSize.Height;
+            }
+
+            return double.NaN;
+        }
+
         private class TreeListLayoutState
         {
+            public double RowHeight { get; set; } = double.NaN;
             public int FirstRealizedRow { get; set; }
             public int LastRealizedRow { get; set; }
         }
