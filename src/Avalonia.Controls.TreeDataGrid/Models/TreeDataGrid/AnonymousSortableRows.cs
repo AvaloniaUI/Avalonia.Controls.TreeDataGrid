@@ -17,11 +17,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public class AnonymousSortableRows<TModel> : ReadOnlyListBase<IRow<TModel>>, IRows, IDisposable
     {
         private readonly AnonymousRow<TModel> _row;
-        private ItemsSourceView<TModel> _items;
+        private ItemsSourceViewFix<TModel> _items;
         private IComparer<TModel>? _comparer;
         private List<TModel>? _sortedItems;
 
-        public AnonymousSortableRows(ItemsSourceView<TModel> items, IComparer<TModel>? comparer)
+        public AnonymousSortableRows(ItemsSourceViewFix<TModel> items, IComparer<TModel>? comparer)
         {
             _items = items;
             _items.CollectionChanged += OnItemsCollectionChanged;
@@ -57,7 +57,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 yield return this[i];
         }
 
-        public void SetItems(ItemsSourceView<TModel> itemsView)
+        public void SetItems(ItemsSourceViewFix<TModel> itemsView)
         {
             _items.CollectionChanged -= OnItemsCollectionChanged;
             _items = itemsView;

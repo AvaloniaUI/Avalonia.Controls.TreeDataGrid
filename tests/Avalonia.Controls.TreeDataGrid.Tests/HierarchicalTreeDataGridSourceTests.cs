@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Diagnostics;
 using Xunit;
 
 namespace Avalonia.Controls.TreeDataGrid.Tests
@@ -271,6 +272,27 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 target.Sort(null);
 
                 AssertState(target, data, 10, false, new IndexPath(4));
+            }
+
+            [Fact]
+            public void Disposing_Releases_Listeners_On_Items()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, false);
+                var expander = Assert.IsType<ExpanderCell<Node>>(target.Cells[0, 0]);
+                var debug = (INotifyCollectionChangedDebug)data;
+                var debug0 = (INotifyCollectionChangedDebug)data[0].Children!;
+
+                expander.IsExpanded = true;
+
+                Assert.Equal(10, target.Rows.Count);
+                Assert.Equal(1, debug.GetCollectionChangedSubscribers()?.Length ?? 0);
+                Assert.Equal(1, debug0.GetCollectionChangedSubscribers()?.Length ?? 0);
+
+                target.Dispose();
+
+                Assert.Equal(0, debug.GetCollectionChangedSubscribers()?.Length ?? 0);
+                Assert.Equal(0, debug0.GetCollectionChangedSubscribers()?.Length ?? 0);
             }
 
             [Fact]

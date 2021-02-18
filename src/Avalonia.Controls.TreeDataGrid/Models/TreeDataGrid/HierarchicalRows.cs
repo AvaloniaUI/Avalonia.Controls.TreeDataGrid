@@ -18,7 +18,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public HierarchicalRows(
             IExpanderRowController<TModel> controller,
-            ItemsSourceView<TModel> items,
+            ItemsSourceViewFix<TModel> items,
             IExpanderColumn<TModel> expanderColumn,
             Comparison<TModel>? comparison)
         {
@@ -46,7 +46,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _roots.Dispose();
         }
 
-        public void SetItems(ItemsSourceView<TModel> items)
+        public void SetItems(ItemsSourceViewFix<TModel> items)
         {
             _roots.SetItems(items);
         }
@@ -275,7 +275,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             public RootRows(
                 HierarchicalRows<TModel> owner,
-                ItemsSourceView<TModel> items,
+                ItemsSourceViewFix<TModel> items,
                 Comparison<TModel>? comparison)
                 : base(items, comparison)
             {

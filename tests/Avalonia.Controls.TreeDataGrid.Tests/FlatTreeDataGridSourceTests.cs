@@ -2,7 +2,9 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Diagnostics;
 using Xunit;
 
 namespace Avalonia.Controls.TreeDataGrid.Tests
@@ -117,17 +119,19 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             AssertCells(target.Cells, data);
         }
 
-        [Fact(Skip = "ItemsSourceView CollectionChanged handling is broken, re-enable this after it's fixed")]
+        [Fact]
         public void Disposing_Releases_Listeners_On_Items()
         {
             var data = CreateData();
             var target = CreateTarget(data);
+            var debug = (INotifyCollectionChangedDebug)data;
 
-            Assert.Equal(1, TestUtils.GetEventSubscriberCount(data, nameof(data.CollectionChanged)));
+            Assert.Equal(10, target.Rows.Count);
+            Assert.Equal(1, debug.GetCollectionChangedSubscribers()?.Length ?? 0);
 
             target.Dispose();
 
-            Assert.Equal(0, TestUtils.GetEventSubscriberCount(data, nameof(data.CollectionChanged)));
+            Assert.Equal(0, debug.GetCollectionChangedSubscribers()?.Length ?? 0);
         }
 
         [Fact]
@@ -287,10 +291,10 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             };
         }
 
-        private static ObservableCollection<Row> CreateData(int count = 10)
+        private static AvaloniaList<Row> CreateData(int count = 10)
         {
             var rows = Enumerable.Range(0, count).Select(x => new Row { Id = x, Caption = $"Row {x}" });
-            return new ObservableCollection<Row>(rows);
+            return new AvaloniaList<Row>(rows);
         }
 
         private static void AssertCells(ICells cells, IList<Row> data)

@@ -14,11 +14,12 @@ namespace Avalonia.Controls
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
     public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource,
+        IDisposable,
         IExpanderRowController<TModel>
         where TModel : class
     {
         private IEnumerable<TModel> _items;
-        private ItemsSourceView<TModel> _itemsView;
+        private ItemsSourceViewFix<TModel> _itemsView;
         private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
         private CellList? _cells;
@@ -32,7 +33,7 @@ namespace Avalonia.Controls
         public HierarchicalTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = items;
-            _itemsView = ItemsSourceView<TModel>.GetOrCreate(items);
+            _itemsView = ItemsSourceViewFix<TModel>.GetOrCreate(items);
             Columns = new ColumnList<TModel>();
             Columns.CollectionChanged += OnColumnsCollectionChanged;
         }
@@ -45,8 +46,7 @@ namespace Avalonia.Controls
                 if (_items != value)
                 {
                     _items = value;
-                    _itemsView.Dispose();
-                    _itemsView = ItemsSourceView<TModel>.GetOrCreate(value);
+                    _itemsView = ItemsSourceViewFix<TModel>.GetOrCreate(value);
                     _rows?.SetItems(_itemsView);
                 }
             }
@@ -61,6 +61,11 @@ namespace Avalonia.Controls
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanded;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsing;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsed;
+
+        public void Dispose()
+        {
+            _rows?.Dispose();
+        }
 
         public void Sort(Comparison<TModel>? comparison)
         {

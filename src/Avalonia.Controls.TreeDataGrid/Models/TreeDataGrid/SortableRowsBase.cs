@@ -14,11 +14,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public abstract class SortableRowsBase<TModel, TRow> : ReadOnlyListBase<TRow>, IDisposable
         where TRow : IRow<TModel>
     {
-        private ItemsSourceView<TModel> _items;
+        private ItemsSourceViewFix<TModel> _items;
         private Comparison<TModel>? _comparison;
         private List<TRow>? _rows;
 
-        public SortableRowsBase(ItemsSourceView<TModel> items, Comparison<TModel>? comparison)
+        public SortableRowsBase(ItemsSourceViewFix<TModel> items, Comparison<TModel>? comparison)
         {
             _items = items;
             _items.CollectionChanged += OnItemsCollectionChanged;
@@ -34,7 +34,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public void Dispose() => _items.CollectionChanged -= OnItemsCollectionChanged;
         public override IEnumerator<TRow> GetEnumerator() => Rows.GetEnumerator();
 
-        public void SetItems(ItemsSourceView<TModel> items)
+        public void SetItems(ItemsSourceViewFix<TModel> items)
         {
             _items.CollectionChanged -= OnItemsCollectionChanged;
             _items = items;
