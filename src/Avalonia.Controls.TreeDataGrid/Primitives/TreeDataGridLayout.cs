@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Layout;
 
@@ -165,6 +166,24 @@ namespace Avalonia.Controls.Primitives
             return finalSize;
         }
 
+        protected override void OnItemsChangedCore(
+            VirtualizingLayoutContext context,
+            object source,
+            NotifyCollectionChangedEventArgs args)
+        {
+            var state = (TreeListLayoutState)context.LayoutState;
+
+            if (state.FirstRealizedRow >= 0)
+            {
+                for (var i = state.FirstRealizedRow; i <= state.LastRealizedRow && i < context.ItemCount; ++i)
+                {
+                    context.RecycleElement(context.GetOrCreateElementAt(i));
+                }
+
+                state.FirstRealizedRow = state.LastRealizedRow = -1;
+            }
+        }
+
         private double CalculateRowHeight(VirtualizingLayoutContext context, Size availableSize)
         {
             if (context.ItemCount > 0)
@@ -180,8 +199,8 @@ namespace Avalonia.Controls.Primitives
         private class TreeListLayoutState
         {
             public double RowHeight { get; set; } = double.NaN;
-            public int FirstRealizedRow { get; set; }
-            public int LastRealizedRow { get; set; }
+            public int FirstRealizedRow { get; set; } = -1;
+            public int LastRealizedRow { get; set; } = -1;
         }
 
         public class SharedLayoutState
