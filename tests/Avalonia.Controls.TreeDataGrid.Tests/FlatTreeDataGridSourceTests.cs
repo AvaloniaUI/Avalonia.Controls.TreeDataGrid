@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls.Models;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Diagnostics;
 using Xunit;
@@ -117,6 +118,19 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             Assert.Equal(1, raised);
 
             AssertCells(target.Cells, data);
+        }
+
+        [Fact]
+        public void Updates_Cells_On_Property_Change()
+        {
+            var data = CreateData();
+            var target = CreateTarget(data);
+
+            Assert.Equal("Row 0", target.Cells[1, 0].Value);
+
+            data[0].Caption = "Modified";
+
+            Assert.Equal("Modified", target.Cells[1, 0].Value);
         }
 
         [Fact]
@@ -278,7 +292,6 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             }
         }
 
-
         private static FlatTreeDataGridSource<Row> CreateTarget(IEnumerable<Row> rows)
         {
             return new FlatTreeDataGridSource<Row>(rows)
@@ -311,10 +324,22 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             }
         }
 
-        private class Row
+        private class Row : NotifyingBase
         {
-            public int Id { get; set; }
-            public string? Caption { get; set; }
+            private int _id;
+            private string? _caption;
+
+            public int Id 
+            {
+                get => _id;
+                set => RaiseAndSetIfChanged(ref _id, value);
+            }
+
+            public string? Caption 
+            {
+                get => _caption;
+                set => RaiseAndSetIfChanged(ref _caption, value);
+            }
         }
     }
 }
