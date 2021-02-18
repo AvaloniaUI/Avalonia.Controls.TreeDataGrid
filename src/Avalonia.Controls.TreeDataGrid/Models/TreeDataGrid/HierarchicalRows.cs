@@ -13,17 +13,17 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private readonly IExpanderRowController<TModel> _controller;
         private readonly RootRows _roots;
         private readonly IExpanderColumn<TModel> _expanderColumn;
+        private readonly List<HierarchicalRow<TModel>> _rows;
         private Comparison<TModel>? _comparison;
-        private List<HierarchicalRow<TModel>> _rows;
 
         public HierarchicalRows(
             IExpanderRowController<TModel> controller,
-            ItemsSourceView<TModel> roots,
+            ItemsSourceView<TModel> items,
             IExpanderColumn<TModel> expanderColumn,
             Comparison<TModel>? comparison)
         {
             _controller = controller;
-            _roots = new RootRows(this, roots, comparison);
+            _roots = new RootRows(this, items, comparison);
             _roots.CollectionChanged += OnRootsCollectionChanged;
             _expanderColumn = expanderColumn;
             _comparison = comparison;
@@ -43,10 +43,17 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             }
 
             _roots.CollectionChanged -= OnRootsCollectionChanged;
+            _roots.Dispose();
+        }
+
+        public void SetItems(ItemsSourceView<TModel> items)
+        {
+            _roots.SetItems(items);
         }
 
         public void Sort(Comparison<TModel>? comparison)
         {
+            _comparison = comparison;
             _roots.Sort(comparison);
             _rows.Clear();
             InitializeRows();

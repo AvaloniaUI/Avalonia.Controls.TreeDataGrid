@@ -17,24 +17,41 @@ namespace Avalonia.Controls
         IExpanderRowController<TModel>
         where TModel : class
     {
+        private IEnumerable<TModel> _items;
+        private ItemsSourceView<TModel> _itemsView;
         private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
         private CellList? _cells;
         private Comparison<TModel>? _comparison;
 
-        public HierarchicalTreeDataGridSource(TModel root)
-            : this(new[] { root })
+        public HierarchicalTreeDataGridSource(TModel item)
+            : this(new[] { item })
         {
         }
 
-        public HierarchicalTreeDataGridSource(IEnumerable<TModel> roots)
+        public HierarchicalTreeDataGridSource(IEnumerable<TModel> items)
         {
-            RootModels = ItemsSourceView<TModel>.GetOrCreate(roots);
+            _items = items;
+            _itemsView = ItemsSourceView<TModel>.GetOrCreate(items);
             Columns = new ColumnList<TModel>();
             Columns.CollectionChanged += OnColumnsCollectionChanged;
         }
 
-        public ItemsSourceView<TModel> RootModels { get; }
+        public IEnumerable<TModel> Items 
+        {
+            get => _itemsView;
+            set
+            {
+                if (_items != value)
+                {
+                    _items = value;
+                    _itemsView.Dispose();
+                    _itemsView = ItemsSourceView<TModel>.GetOrCreate(value);
+                    _rows?.SetItems(_itemsView);
+                }
+            }
+        }
+
         public ICells Cells => _cells ??= CreateCells();
         public IRows Rows => _rows ??= CreateRows();
         public ColumnList<TModel> Columns { get; }
@@ -99,7 +116,7 @@ namespace Avalonia.Controls
             if (_expanderColumn is null)
                 throw new InvalidOperationException("No expander column defined.");
 
-            var items = (IEnumerable<TModel>?)RootModels;
+            var items = (IEnumerable<TModel>?)Items;
             var count = index.GetSize();
 
             for (var depth = 0; depth < count - 1; ++depth)
@@ -120,7 +137,7 @@ namespace Avalonia.Controls
             if (_expanderColumn is null)
                 throw new InvalidOperationException("No expander column defined.");
 
-            var result = new HierarchicalRows<TModel>(this, RootModels, _expanderColumn, _comparison);
+            var result = new HierarchicalRows<TModel>(this, _itemsView, _expanderColumn, _comparison);
             result.CollectionChanged += OnRowsCollectionChanged;
             return result;
         }

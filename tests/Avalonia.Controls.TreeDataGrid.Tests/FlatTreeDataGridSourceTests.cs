@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Xunit;
@@ -114,6 +115,48 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             Assert.Equal(1, raised);
 
             AssertCells(target.Cells, data);
+        }
+
+        [Fact(Skip = "ItemsSourceView CollectionChanged handling is broken, re-enable this after it's fixed")]
+        public void Disposing_Releases_Listeners_On_Items()
+        {
+            var data = CreateData();
+            var target = CreateTarget(data);
+
+            Assert.Equal(1, TestUtils.GetEventSubscriberCount(data, nameof(data.CollectionChanged)));
+
+            target.Dispose();
+
+            Assert.Equal(0, TestUtils.GetEventSubscriberCount(data, nameof(data.CollectionChanged)));
+        }
+
+        [Fact]
+        public void Can_Reassign_Items()
+        {
+            var data = CreateData();
+            var target = CreateTarget(data);
+            var rowsResetRaised = 0;
+            var cellsResetRaised = 0;
+
+            Assert.Equal(10, target.Rows.Count);
+
+            target.Cells.CollectionChanged += (s, e) =>
+            {
+                if (e.Action == NotifyCollectionChangedAction.Reset)
+                    ++cellsResetRaised;
+            };
+
+            target.Rows.CollectionChanged += (s, e) =>
+            {
+                if (e.Action == NotifyCollectionChangedAction.Reset)
+                    ++rowsResetRaised;
+            };
+
+            target.Items = CreateData(20);
+
+            Assert.Equal(20, target.Rows.Count);
+            Assert.Equal(1, cellsResetRaised);
+            Assert.Equal(1, rowsResetRaised);
         }
 
         public class Sorted
@@ -244,9 +287,9 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             };
         }
 
-        private static ObservableCollection<Row> CreateData()
+        private static ObservableCollection<Row> CreateData(int count = 10)
         {
-            var rows = Enumerable.Range(0, 10).Select(x => new Row { Id = x, Caption = $"Row {x}" });
+            var rows = Enumerable.Range(0, count).Select(x => new Row { Id = x, Caption = $"Row {x}" });
             return new ObservableCollection<Row>(rows);
         }
 

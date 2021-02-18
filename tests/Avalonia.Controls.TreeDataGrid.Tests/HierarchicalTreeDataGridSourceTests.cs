@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -271,6 +272,44 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 AssertState(target, data, 10, false, new IndexPath(4));
             }
+
+            [Fact]
+            public void Can_Reassign_Items()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, false);
+                var cellsAddedRaised = 0;
+                var cellsRemovedRaised = 0;
+                var rowsAddedRaised = 0;
+                var rowsRemovedRaised = 0;
+
+                Assert.Equal(5, target.Rows.Count);
+                Assert.Equal(5, target.Cells.RowCount);
+
+                target.Cells.CollectionChanged += (s, e) =>
+                {
+                    if (e.Action == NotifyCollectionChangedAction.Add)
+                        cellsAddedRaised += e.NewItems.Count;
+                    else if (e.Action == NotifyCollectionChangedAction.Remove)
+                        cellsRemovedRaised += e.OldItems.Count;
+                };
+
+                target.Rows.CollectionChanged += (s, e) =>
+                {
+                    if (e.Action == NotifyCollectionChangedAction.Add)
+                        rowsAddedRaised += e.NewItems.Count;
+                    else if (e.Action == NotifyCollectionChangedAction.Remove)
+                        rowsRemovedRaised += e.OldItems.Count;
+                };
+
+                target.Items = CreateData(10);
+
+                Assert.Equal(10, target.Rows.Count);
+                Assert.Equal(10, cellsRemovedRaised);
+                Assert.Equal(20, cellsAddedRaised);
+                Assert.Equal(5, rowsRemovedRaised);
+                Assert.Equal(10, rowsAddedRaised);
+            }
         }
 
         public class Expansion
@@ -339,12 +378,12 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             }
         }
 
-        private static AvaloniaList<Node> CreateData()
+        private static AvaloniaList<Node> CreateData(int count = 5)
         {
             var id = 0;
             var result = new AvaloniaList<Node>();
 
-            for (var i = 0; i < 5; ++i)
+            for (var i = 0; i < count; ++i)
             {
                 var node = new Node
                 {

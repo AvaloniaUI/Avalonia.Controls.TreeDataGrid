@@ -11,16 +11,18 @@ namespace Avalonia.Controls
     /// A data source for a <see cref="TreeDataGrid"/> which displays a flat grid.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public class FlatTreeDataGridSource<TModel> : ITreeDataGridSource
+    public class FlatTreeDataGridSource<TModel> : ITreeDataGridSource, IDisposable
     {
-        private readonly ItemsSourceView<TModel> _items;
+        private IEnumerable<TModel> _items;
+        private ItemsSourceView<TModel> _itemsView;
         private AnonymousSortableRows<TModel>? _rows;
         private CellList? _cells;
         private IComparer<TModel>? _comparer;
 
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
-            _items = ItemsSourceView<TModel>.GetOrCreate(items);
+            _items = items;
+            _itemsView = ItemsSourceView<TModel>.GetOrCreate(items);
             Columns = new ColumnList<TModel>();
         }
 
@@ -28,6 +30,23 @@ namespace Avalonia.Controls
         public IRows Rows => _rows ??= CreateRows();
         public ICells Cells => _cells ??= CreateCells();
         IColumns ITreeDataGridSource.Columns => Columns;
+
+        public IEnumerable<TModel> Items
+        {
+            get => _items;
+            set
+            {
+                if (_items != value)
+                {
+                    _items = value;
+                    _itemsView.Dispose();
+                    _itemsView = ItemsSourceView<TModel>.GetOrCreate(value);
+                    _rows?.SetItems(_itemsView);
+                }
+            }
+        }
+
+        public void Dispose() => _rows?.Dispose();
 
         public void Sort(Comparison<TModel>? comparer)
         {
@@ -66,7 +85,7 @@ namespace Avalonia.Controls
 
         private AnonymousSortableRows<TModel> CreateRows()
         {
-            var result = new AnonymousSortableRows<TModel>(_items, _comparer);
+            var result = new AnonymousSortableRows<TModel>(_itemsView, _comparer);
             result.CollectionChanged += RowsCollectionChanged;
             return result;
         }

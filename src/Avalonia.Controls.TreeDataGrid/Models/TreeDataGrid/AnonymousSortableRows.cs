@@ -14,10 +14,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// In a flat grid where rows cannot be resized, it is not necessary to persist any information
     /// about rows; the same row object can be updated and reused when a new row is requested.
     /// </remarks>
-    public class AnonymousSortableRows<TModel> : ReadOnlyListBase<IRow<TModel>>, IRows
+    public class AnonymousSortableRows<TModel> : ReadOnlyListBase<IRow<TModel>>, IRows, IDisposable
     {
-        private readonly ItemsSourceView<TModel> _items;
         private readonly AnonymousRow<TModel> _row;
+        private ItemsSourceView<TModel> _items;
         private IComparer<TModel>? _comparer;
         private List<TModel>? _sortedItems;
 
@@ -46,10 +46,23 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
+        public void Dispose()
+        {
+            _items.CollectionChanged -= OnItemsCollectionChanged;
+        }
+
         public override IEnumerator<IRow<TModel>> GetEnumerator()
         {
             for (var i = 0; i < Count; ++i)
                 yield return this[i];
+        }
+
+        public void SetItems(ItemsSourceView<TModel> itemsView)
+        {
+            _items.CollectionChanged -= OnItemsCollectionChanged;
+            _items = itemsView;
+            _items.CollectionChanged += OnItemsCollectionChanged;
+            OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
         }
 
         public void Sort(IComparer<TModel>? comparer)
@@ -71,7 +84,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return _items.OrderBy(x => x, comparer).ToList();
         }
 
-        private void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (_comparer is null)
                 OnItemsCollectionChangedUnsorted(e);
