@@ -8,8 +8,6 @@
                 o => o.IsSelected,
                 (o, v) => o.IsSelected = v);
 
-        private int _columnIndex = -1;
-        private int _rowIndex = -1;
         private bool _isSelected;
 
         static TreeDataGridCell()
@@ -17,16 +15,19 @@
             FocusableProperty.OverrideDefaultValue<TreeDataGridCell>(true);
         }
 
+        public int ColumnIndex { get; private set; } = -1;
+        public int RowIndex { get; private set; } = -1;
+
         int ITreeDataGridCell.ColumnIndex
         {
-            get => _columnIndex;
-            set => _columnIndex = value;
+            get => ColumnIndex;
+            set => ColumnIndex = value;
         }
 
         int ITreeDataGridCell.RowIndex
         {
-            get => _rowIndex;
-            set => _rowIndex = value;
+            get => RowIndex;
+            set => RowIndex = value;
         }
 
         public bool IsSelected
