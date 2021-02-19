@@ -150,7 +150,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}" Padding="4 2">
-          <TextBlock Text="{TemplateBinding Value}" VerticalAlignment="Center"/>
+          <TextBlock Text="{Binding DataContext.Value, RelativeSource={RelativeSource TemplatedParent}}" VerticalAlignment="Center"/>
         </Border>
       </ControlTemplate>
     </Setter>
