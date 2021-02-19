@@ -171,16 +171,21 @@ namespace Avalonia.Controls.Primitives
             object source,
             NotifyCollectionChangedEventArgs args)
         {
-            var state = (TreeListLayoutState)context.LayoutState;
+            base.OnItemsChangedCore(context, source, args);
 
-            if (state.FirstRealizedRow >= 0)
+            if (args.Action == NotifyCollectionChangedAction.Reset)
             {
-                for (var i = state.FirstRealizedRow; i <= state.LastRealizedRow && i < context.ItemCount; ++i)
-                {
-                    context.RecycleElement(context.GetOrCreateElementAt(i));
-                }
+                var state = (TreeListLayoutState)context.LayoutState;
 
-                state.FirstRealizedRow = state.LastRealizedRow = -1;
+                if (state.FirstRealizedRow >= 0)
+                {
+                    for (var i = state.FirstRealizedRow; i <= state.LastRealizedRow && i < context.ItemCount; ++i)
+                    {
+                        context.RecycleElement(context.GetOrCreateElementAt(i));
+                    }
+
+                    state.FirstRealizedRow = state.LastRealizedRow = -1;
+                }
             }
         }
 
