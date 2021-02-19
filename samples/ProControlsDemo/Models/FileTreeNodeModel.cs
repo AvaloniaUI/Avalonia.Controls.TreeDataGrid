@@ -11,6 +11,8 @@ namespace ProControlsDemo.Models
     {
         private string _path;
         private string _name;
+        private long? _size;
+        private DateTimeOffset? _modified;
         private FileSystemWatcher? _watcher;
         private ObservableCollection<FileTreeNodeModel>? _children;
 
@@ -34,19 +36,29 @@ namespace ProControlsDemo.Models
         public string Path 
         {
             get => _path;
-            set => this.RaiseAndSetIfChanged(ref _path, value);
+            private set => this.RaiseAndSetIfChanged(ref _path, value);
         }
 
         public string Name 
         {
             get => _name;
-            set => this.RaiseAndSetIfChanged(ref _name, value);
+            private set => this.RaiseAndSetIfChanged(ref _name, value);
+        }
+
+        public long? Size 
+        {
+            get => _size;
+            private set => this.RaiseAndSetIfChanged(ref _size, value);
+        }
+
+        public DateTimeOffset? Modified 
+        {
+            get => _modified;
+            private set => this.RaiseAndSetIfChanged(ref _modified, value);
         }
 
         public bool IsChecked { get; set; }
         public bool IsDirectory { get; }
-        public long? Size { get; }
-        public DateTimeOffset? Modified { get; }
         public IReadOnlyList<FileTreeNodeModel> Children => _children ??= LoadChildren();
 
         private ObservableCollection<FileTreeNodeModel> LoadChildren()
@@ -75,6 +87,7 @@ namespace ProControlsDemo.Models
                 NotifyFilter = NotifyFilters.FileName | NotifyFilters.Size | NotifyFilters.LastWrite,
             };
 
+            _watcher.Changed += OnChanged;
             _watcher.Created += OnCreated;
             _watcher.Deleted += OnDeleted;
             _watcher.Renamed += OnRenamed;
@@ -109,6 +122,29 @@ namespace ProControlsDemo.Models
             };
         }
 
+        private void OnChanged(object sender, FileSystemEventArgs e)
+        {
+            if (e.ChangeType == WatcherChangeTypes.Changed && File.Exists(e.FullPath))
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    foreach (var child in _children!)
+                    {
+                        if (child.Path == e.FullPath)
+                        {
+                            if (!child.IsDirectory)
+                            {
+                                var info = new FileInfo(e.FullPath);
+                                child.Size = info.Length;
+                                child.Modified = info.LastWriteTimeUtc;
+                            }
+                            break;
+                        }
+                    }
+                });
+            }
+        }
+
         private void OnCreated(object sender, FileSystemEventArgs e)
         {
             Dispatcher.UIThread.Post(() =>
@@ -139,7 +175,7 @@ namespace ProControlsDemo.Models
         {
             Dispatcher.UIThread.Post(() =>
             {
-                foreach (var child in _children)
+                foreach (var child in _children!)
                 {
                     if (child.Path == e.FullPath)
                     {
