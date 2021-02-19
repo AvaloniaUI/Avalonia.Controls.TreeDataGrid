@@ -134,35 +134,6 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
         }
 
         [Fact]
-        public void Disposing_Releases_Listeners_On_Items()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-            var debug = (INotifyCollectionChangedDebug)data;
-
-            Assert.Equal(10, target.Rows.Count);
-            Assert.Equal(1, debug.GetCollectionChangedSubscribers()?.Length ?? 0);
-
-            target.Dispose();
-
-            Assert.Equal(0, debug.GetCollectionChangedSubscribers()?.Length ?? 0);
-        }
-
-        [Fact]
-        public void Disposing_Releases_Listeners_On_Models()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-
-            Assert.Equal(20, target.Cells.Count);
-            Assert.Equal(2, data[0].PropertyChangedSubscriberCount);
-
-            target.Dispose();
-
-            Assert.Equal(0, data[0].PropertyChangedSubscriberCount);
-        }
-
-        [Fact]
         public void Can_Reassign_Items()
         {
             var data = CreateData();
@@ -189,6 +160,33 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             Assert.Equal(20, target.Rows.Count);
             Assert.Equal(1, cellsResetRaised);
             Assert.Equal(1, rowsResetRaised);
+        }
+
+        [Fact]
+        public void Disposing_Releases_Listeners_On_Items()
+        {
+            var data = CreateData();
+            var target = CreateTarget(data);
+
+            Assert.Equal(10, target.Rows.Count);
+            Assert.Equal(20, target.Cells.Count);
+            Assert.Equal(1, data.CollectionChangedSubscriberCount());
+
+            foreach (var item in data)
+            {
+                Assert.Equal(2, item.PropertyChangedSubscriberCount());
+            }
+
+            target.Dispose();
+
+            Assert.Equal(0, target.Rows.Count);
+            Assert.Equal(0, target.Cells.Count);
+            Assert.Equal(0, data.CollectionChangedSubscriberCount());
+
+            foreach (var item in data)
+            {
+                Assert.Equal(0, item.PropertyChangedSubscriberCount());
+            }
         }
 
         public class Sorted

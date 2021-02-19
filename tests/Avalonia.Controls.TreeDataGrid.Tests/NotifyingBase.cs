@@ -4,13 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Avalonia.Controls.TreeDataGrid.Tests
 {
-    public class NotifyingBase : INotifyPropertyChanged
+    internal class NotifyingBase : INotifyPropertyChanged
     {
-        public int PropertyChangedSubscriberCount
-        {
-            get => PropertyChanged?.GetInvocationList().Length ?? 0;
-        }
-
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected bool RaiseAndSetIfChanged<T>(
@@ -26,6 +21,11 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             }
 
             return false;
+        }
+
+        public int PropertyChangedSubscriberCount()
+        {
+            return PropertyChanged?.GetInvocationList().Length ?? 0;
         }
 
         protected void RaisePropertyChanged([CallerMemberName] string? propertyName = null)

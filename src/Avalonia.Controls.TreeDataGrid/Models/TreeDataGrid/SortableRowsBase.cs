@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The model type.</typeparam>
     /// <typeparam name="TRow">The row type.</typeparam>
     public abstract class SortableRowsBase<TModel, TRow> : ReadOnlyListBase<TRow>, IDisposable
-        where TRow : IRow<TModel>
+        where TRow : IRow<TModel>, IDisposable
     {
         private ItemsSourceViewFix<TModel> _items;
         private Comparison<TModel>? _comparison;
@@ -31,14 +31,17 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-        public void Dispose() => _items.CollectionChanged -= OnItemsCollectionChanged;
+        public virtual void Dispose() => SetItems(ItemsSourceViewFix<TModel>.Empty);
         public override IEnumerator<TRow> GetEnumerator() => Rows.GetEnumerator();
 
         public void SetItems(ItemsSourceViewFix<TModel> items)
         {
             _items.CollectionChanged -= OnItemsCollectionChanged;
             _items = items;
-            _items.CollectionChanged += OnItemsCollectionChanged;
+
+            if (!ReferenceEquals(items, ItemsSourceViewFix<TModel>.Empty))
+                _items.CollectionChanged += OnItemsCollectionChanged;
+
             OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
         }
 
@@ -73,6 +76,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private void Reset(List<TRow> rows)
         {
+            foreach (var row in rows)
+            {
+                row.Dispose();
+            }
+
             rows.Clear();
 
             if (_comparison is null)
@@ -130,6 +138,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             void Remove(int index, int count)
             {
+                for (var i = index; i < index + count; ++i)
+                {
+                    _rows[i].Dispose();
+                }
+
                 _rows.RemoveRange(index, count);
 
                 while (index < _rows.Count)
@@ -241,6 +254,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     if (rowIndex >= 0)
                     {
                         var row = _rows[rowIndex];
+                        row.Dispose();
                         _rows.RemoveAt(rowIndex);
                         CollectionChanged?.Invoke(
                             this,

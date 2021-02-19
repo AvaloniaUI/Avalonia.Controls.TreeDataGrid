@@ -1,6 +1,8 @@
-﻿namespace Avalonia.Controls.Models.TreeDataGrid
+﻿using System;
+
+namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    public class ExpanderCell<TModel> : NotifyingBase, IExpanderCell
+    public class ExpanderCell<TModel> : NotifyingBase, IExpanderCell, IDisposable
     {
         private readonly ICell _inner;
         private bool _showExpander;
@@ -41,5 +43,7 @@
                 }
             }
         }
+
+        public void Dispose() => (_inner as IDisposable)?.Dispose();
     }
 }

@@ -35,16 +35,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         IRow IReadOnlyList<IRow>.this[int index] => _rows[index];
         public override int Count => _rows.Count;
 
-        public void Dispose()
-        {
-            foreach (var row in _rows)
-            {
-                row.Dispose();
-            }
-
-            _roots.CollectionChanged -= OnRootsCollectionChanged;
-            _roots.Dispose();
-        }
+        public void Dispose() => _roots.Dispose();
 
         public void SetItems(ItemsSourceViewFix<TModel> items)
         {
@@ -166,7 +157,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 for (var i = 0; i < count; ++i)
                 {
                     var row = _rows[i + index];
-                    row.Dispose();
                     if (oldItems is object)
                         oldItems[i] = row;
                 }

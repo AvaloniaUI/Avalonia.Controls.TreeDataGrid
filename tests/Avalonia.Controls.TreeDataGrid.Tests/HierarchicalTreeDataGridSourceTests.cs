@@ -163,6 +163,34 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             [Theory]
             [InlineData(false)]
             [InlineData(true)]
+            public void Unsubscribes_From_Removed_Expanded_Root_Row(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+                var toRemove = data[3];
+                var expander = GetExpander(target, toRemove);
+
+                expander.IsExpanded = true;
+
+                Assert.Equal(10, target.Rows.Count);
+                Assert.Equal(10, target.Cells.RowCount);
+
+                var raised = 0;
+                target.Cells.CollectionChanged += (s, e) => ++raised;
+
+                Assert.Equal(2, toRemove.PropertyChangedSubscriberCount());
+                Assert.Equal(1, toRemove.Children!.CollectionChangedSubscriberCount());
+
+                data.RemoveAt(3);
+
+                AssertState(target, data, 4, sorted);
+                Assert.Equal(0, toRemove.PropertyChangedSubscriberCount());
+                Assert.Equal(0, toRemove.Children!.CollectionChangedSubscriberCount());
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
             public void Removes_Cells_For_Removed_Child_Row(bool sorted)
             {
                 var data = CreateData();
@@ -200,6 +228,47 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 target.Cells.CollectionChanged += (s, e) => ++raised;
 
                 data.RemoveRange(1, 3);
+
+                AssertState(target, data, 2, sorted);
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Unsubscribes_From_Removed_Root_Rows_With_Expanded_Rows(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+                var expanded = data[2];
+                var expander = GetExpander(target, expanded);
+                
+                var toRemove = new List<Node> { data[1], data[2], data[3] };
+                toRemove.AddRange(expanded.Children!);
+
+                expander.IsExpanded = true;
+                Assert.Equal(10, target.Rows.Count);
+                Assert.Equal(10, target.Cells.RowCount);
+
+                foreach (var row in toRemove)
+                {
+                    Assert.Equal(2, row.PropertyChangedSubscriberCount());
+                }
+
+                foreach (var row in data)
+                {
+                    Assert.Equal(row == data[2] ? 1 : 0, row.Children!.CollectionChangedSubscriberCount());
+                }
+
+                var raised = 0;
+                target.Cells.CollectionChanged += (s, e) => ++raised;
+
+                data.RemoveRange(1, 3);
+
+                foreach (var row in toRemove)
+                {
+                    Assert.Equal(0, row.PropertyChangedSubscriberCount());
+                    Assert.Equal(0, row.Children!.CollectionChangedSubscriberCount()); 
+                }
 
                 AssertState(target, data, 2, sorted);
             }
@@ -274,25 +343,19 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 AssertState(target, data, 10, false, new IndexPath(4));
             }
 
-            [Fact]
-            public void Disposing_Releases_Listeners_On_Items()
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Updates_Cells_On_Property_Change(bool sorted)
             {
                 var data = CreateData();
-                var target = CreateTarget(data, false);
-                var expander = Assert.IsType<ExpanderCell<Node>>(target.Cells[0, 0]);
-                var debug = (INotifyCollectionChangedDebug)data;
-                var debug0 = (INotifyCollectionChangedDebug)data[0].Children!;
+                var target = CreateTarget(data, sorted);
 
-                expander.IsExpanded = true;
+                Assert.Equal(sorted? "Node 4" : "Node 0", target.Cells[1, 0].Value);
 
-                Assert.Equal(10, target.Rows.Count);
-                Assert.Equal(1, debug.GetCollectionChangedSubscribers()?.Length ?? 0);
-                Assert.Equal(1, debug0.GetCollectionChangedSubscribers()?.Length ?? 0);
+                data[sorted ? 4 : 0].Caption = "Modified";
 
-                target.Dispose();
-
-                Assert.Equal(0, debug.GetCollectionChangedSubscribers()?.Length ?? 0);
-                Assert.Equal(0, debug0.GetCollectionChangedSubscribers()?.Length ?? 0);
+                Assert.Equal("Modified", target.Cells[1, 0].Value);
             }
 
             [Fact]
@@ -331,6 +394,48 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 Assert.Equal(20, cellsAddedRaised);
                 Assert.Equal(5, rowsRemovedRaised);
                 Assert.Equal(10, rowsAddedRaised);
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Disposing_Releases_Listeners_On_Items(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+                var expander = Assert.IsType<ExpanderCell<Node>>(target.Cells[0, 0]);
+                var expanded = expander.Row.Model;
+
+                expander.IsExpanded = true;
+
+                Assert.Equal(10, target.Rows.Count);
+                Assert.Equal(1, data.CollectionChangedSubscriberCount());
+                Assert.Equal(1, expanded.Children!.CollectionChangedSubscriberCount());
+
+                foreach (var node in data)
+                {
+                    Assert.Equal(2, node.PropertyChangedSubscriberCount());
+                }
+
+                foreach (var node in expanded.Children!)
+                {
+                    Assert.Equal(2, node.PropertyChangedSubscriberCount());
+                }
+
+                target.Dispose();
+
+                Assert.Equal(0, data.CollectionChangedSubscriberCount());
+                Assert.Equal(0, expanded.Children!.CollectionChangedSubscriberCount());
+
+                foreach (var node in data)
+                {
+                    Assert.Equal(0, node.PropertyChangedSubscriberCount());
+                }
+
+                foreach (var node in expanded.Children!)
+                {
+                    Assert.Equal(0, node.PropertyChangedSubscriberCount());
+                }
             }
         }
 
@@ -503,6 +608,22 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             AssertLevel(default, data);
         }
 
+        private static IExpanderCell GetExpander<TModel>(
+            HierarchicalTreeDataGridSource<TModel> target,
+            TModel data)
+                where TModel : class
+        {
+            for (var i = 0; i < target.Rows.Count; ++i)
+            {
+                if (((IRow<TModel>)target.Rows[i]).Model == data)
+                {
+                    return (IExpanderCell)target.Cells[0, i];
+                }
+            }
+
+            throw new KeyNotFoundException();
+        }
+
         private static Node GetModel(IList<Node> data, IndexPath path)
         {
             var depth = path.GetSize();
@@ -520,10 +641,23 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             return node!;
         }
 
-        internal class Node
+        internal class Node : NotifyingBase
         {
-            public int Id { get; set; }
-            public string? Caption { get; set; }
+            private int _id;
+            private string? _caption;
+
+            public int Id
+            {
+                get => _id;
+                set => RaiseAndSetIfChanged(ref _id, value);
+            }
+
+            public string? Caption
+            {
+                get => _caption;
+                set => RaiseAndSetIfChanged(ref _caption, value);
+            }
+
             public AvaloniaList<Node>? Children { get; set; }
         }
     }
