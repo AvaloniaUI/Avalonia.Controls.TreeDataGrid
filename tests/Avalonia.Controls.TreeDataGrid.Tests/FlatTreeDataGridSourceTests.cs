@@ -149,6 +149,20 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
         }
 
         [Fact]
+        public void Disposing_Releases_Listeners_On_Models()
+        {
+            var data = CreateData();
+            var target = CreateTarget(data);
+
+            Assert.Equal(20, target.Cells.Count);
+            Assert.Equal(2, data[0].PropertyChangedSubscriberCount);
+
+            target.Dispose();
+
+            Assert.Equal(0, data[0].PropertyChangedSubscriberCount);
+        }
+
+        [Fact]
         public void Can_Reassign_Items()
         {
             var data = CreateData();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -8,16 +9,20 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The model type.</typeparam>
     /// <typeparam name="TValue">The column data type.</typeparam>
     public class TextColumn<TModel, TValue> : ColumnBase<TModel, TValue>
+        where TModel : class
     {
         public TextColumn(
             object? header,
-            Func<TModel, TValue> valueSelector,
+            Expression<Func<TModel, TValue>> valueSelector,
             GridLength? width = null,
             ColumnOptions<TModel>? options = null)
             : base(header, valueSelector, width, options)
         {
         }
 
-        public override ICell CreateCell(IRow<TModel> row) => new TextCell<TValue>(ValueSelector(row.Model));
+        public override ICell CreateCell(IRow<TModel> row)
+        {
+            return new TextCell<TValue>(CreateBindingExpression(row.Model));
+        }
     }
 }

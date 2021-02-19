@@ -46,10 +46,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-        public void Dispose()
-        {
-            _items.CollectionChanged -= OnItemsCollectionChanged;
-        }
+        public void Dispose() => SetItems(ItemsSourceViewFix<TModel>.Empty);
 
         public override IEnumerator<IRow<TModel>> GetEnumerator()
         {
@@ -57,11 +54,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 yield return this[i];
         }
 
-        public void SetItems(ItemsSourceViewFix<TModel> itemsView)
+        public void SetItems(ItemsSourceViewFix<TModel> items)
         {
             _items.CollectionChanged -= OnItemsCollectionChanged;
-            _items = itemsView;
-            _items.CollectionChanged += OnItemsCollectionChanged;
+            _items = items;
+
+            if (!ReferenceEquals(items, ItemsSourceViewFix<TModel>.Empty))
+                _items.CollectionChanged += OnItemsCollectionChanged;
+
             OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
         }
 

@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq.Expressions;
+using Avalonia.Experimental.Data;
+using Avalonia.Experimental.Data.Core;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -10,6 +14,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The model type.</typeparam>
     /// <typeparam name="TModel">The value type.</typeparam>
     public abstract class ColumnBase<TModel, TValue> : ColumnBase<TModel>
+        where TModel : class
     {
         private bool _canUserSort;
         private readonly Comparison<TModel>? _sortAscending;
@@ -22,12 +27,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <param name="width">The column width.</param>
         public ColumnBase(
             object? header,
-            Func<TModel, TValue> valueSelector,
+            Expression<Func<TModel, TValue>> valueSelector,
             GridLength? width,
             ColumnOptions<TModel>? options)
             : base(header, width, options)
         {
-            ValueSelector = valueSelector;
+            ValueSelector = valueSelector.Compile();
+            Binding = TypedBinding<TModel>.OneWay(valueSelector);
             _canUserSort = options?.CanUserSortColumn ?? true;
             _sortAscending = options?.CompareAscending ?? DefaultSortAscending;
             _sortDescending = options?.CompareDescending ?? DefaultSortDescending;
@@ -37,6 +43,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets the function which selects the column value from the model.
         /// </summary>
         public Func<TModel, TValue> ValueSelector { get; }
+
+        /// <summary>
+        /// Gets a binding which selects the column value from the model.
+        /// </summary>
+        public TypedBinding<TModel, TValue> Binding { get; }
 
         public override Comparison<TModel>? GetComparison(ListSortDirection direction)
         {
@@ -49,6 +60,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 ListSortDirection.Descending => _sortDescending,
                 _ => null,
             };
+        }
+
+        protected TypedBindingExpression<TModel, TValue> CreateBindingExpression(TModel model)
+        {
+            return new TypedBindingExpression<TModel, TValue>(
+                ObservableEx.SingleValue(model),
+                Binding.Read!,
+                Binding.Write,
+                Binding.Links!,
+                default);
         }
 
         private int DefaultSortAscending(TModel x, TModel y)
