@@ -28,7 +28,9 @@
     <TabItem Header="Files">
       <DockPanel>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
-        <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}" Selection="{Binding Files.Selection}"/>
+        <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}" Selection="{Binding Files.Selection}"
+                      PointerPressed="FilesPointerPressed">
+        </TreeDataGrid>
       </DockPanel>
     </TabItem>
   </TabControl>

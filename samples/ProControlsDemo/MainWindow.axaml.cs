@@ -2,6 +2,9 @@
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
@@ -59,6 +62,44 @@ namespace ProControlsDemo
                 null,
                 null);
             ((MainWindowViewModel)DataContext!).Countries.AddCountry(country);
+        }
+
+        private void FilesPointerPressed(object sender, PointerPressedEventArgs e)
+        {
+            // We're only interested in right clicks.
+            if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+                return;
+
+            // Sender will contain the TreeDataGrid control.
+            var treeDataGrid = (TreeDataGrid)sender;
+            
+            // e.Source will contain the clicked control, we can use TryGetRowModel to return
+            // the model for the row that control is part of.
+            if (e.Source is Control source &&
+                treeDataGrid.TryGetRowModel<FileTreeNodeModel>(source, out var row))
+            {
+                // Create the context menu.
+                var contextMenu = new ContextMenu();
+
+                // And customize according to its contents.
+                if (row.IsDirectory)
+                {
+                    contextMenu.Items = new[] 
+                    { 
+                        new MenuItem { Header = "Open Directory" } 
+                    };
+                }
+                else
+                {
+                    contextMenu.Items = new[]
+                    {
+                        new MenuItem { Header = "Open File" }
+                    };
+                }
+
+                // Show the menu.
+                contextMenu.Open(source);
+            }
         }
 
         private void UpdateRealizedCount()
