@@ -156,6 +156,40 @@ namespace Avalonia.Controls
             }
         }
 
+        private bool TryGetCell(IControl? element, [MaybeNullWhen(false)] out ITreeDataGridCell result)
+        {
+            if (element is ITreeDataGridCell cell && cell.RowIndex >= 0)
+            {
+                result = cell;
+                return true;
+            }
+
+            do
+            {
+                result = (element as IVisual)?.FindAncestorOfType<ITreeDataGridCell>();
+                if (result?.ColumnIndex >= 0 && result?.RowIndex >= 0)
+                    break;
+                element = result;
+            } while (result is object);
+
+            return result is object;
+        }
+
+        public bool TryGetRowModel<TModel>(IControl element, [MaybeNullWhen(false)] out TModel result)
+        {
+            if (Source is object &&
+                TryGetCell(element, out var cell) &&
+                cell.RowIndex < Source.Rows.Count &&
+                Source.Rows[cell.RowIndex] is IRow<TModel> row)
+            {
+                result = row.Model;
+                return true;
+            }
+
+            result = default;
+            return false;
+        }
+
         protected virtual IElementFactory CreateElementFactory() => new TreeListElementFactory();
 
         protected bool MoveSelection(NavigationDirection direction, bool rangeModifier)
@@ -167,14 +201,14 @@ namespace Avalonia.Controls
             var currentColumnIndex = 0;
             var currentRowIndex = Selection?.SelectedIndex ?? 0;
 
-            if (TryFindCell(focus.Current, out var focused))
+            if (focus.Current is IControl current && TryGetCell(current, out var focused))
             {
                 currentColumnIndex = focused.ColumnIndex;
                 currentRowIndex = focused.RowIndex;
             }
 
             var newColumnIndex = currentColumnIndex;
-            var newRowIndex = currentRowIndex;
+            int newRowIndex;
 
             if (direction == NavigationDirection.First || direction == NavigationDirection.Last)
             {
@@ -267,7 +301,7 @@ namespace Avalonia.Controls
             if (Source is null || _selection is null || e.Handled)
                 return;
 
-            if (TryFindCell(e.Source, out var cell))
+            if (e.Source is IControl source && TryGetCell(source, out var cell))
             {
                 var point = e.GetCurrentPoint(this);
 
@@ -278,27 +312,6 @@ namespace Avalonia.Controls
                     toggleModifier: e.KeyModifiers.HasFlag(KeyModifiers.Control),
                     rightButton: point.Properties.IsRightButtonPressed);
             }
-        }
-
-        private bool TryFindCell(
-            IInteractive? element,
-            [MaybeNullWhen(returnValue: false)]  out ITreeDataGridCell result)
-        {
-            if (element is ITreeDataGridCell cell)
-            {
-                result = cell;
-                return true;
-            }
-
-            do
-            {
-                result = (element as IVisual)?.FindAncestorOfType<ITreeDataGridCell>();
-                if (result?.ColumnIndex >= 0 && result?.RowIndex >= 0)
-                    break;
-                element = result;
-            } while (result is object);
-
-            return result is object;
         }
 
         private void UpdateSelection(
