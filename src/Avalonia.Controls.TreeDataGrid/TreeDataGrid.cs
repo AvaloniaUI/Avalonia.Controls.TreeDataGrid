@@ -262,7 +262,9 @@ namespace Avalonia.Controls
 
             if (Repeater is object)
             {
+                Repeater.ElementClearing -= OnElementClearing;
                 Repeater.ElementPrepared -= OnElementPrepared;
+                Repeater.ElementIndexChanged -= OnElementIndexChanged;
             }
 
             Repeater = e.NameScope.Find<ItemsRepeater>("PART_Cells");
