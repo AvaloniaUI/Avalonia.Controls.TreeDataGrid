@@ -11,6 +11,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             Value = value;
         }
 
+        public bool CanEdit => false;
         public IDataTemplate? CellTemplate { get; }
         public object? Value { get; }
     }

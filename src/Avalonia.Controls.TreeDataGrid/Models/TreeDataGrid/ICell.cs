@@ -7,6 +7,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// </summary>
     public interface ICell
     {
+        bool CanEdit { get; }
+
         /// <summary>
         /// Gets the value of the cell.
         /// </summary>

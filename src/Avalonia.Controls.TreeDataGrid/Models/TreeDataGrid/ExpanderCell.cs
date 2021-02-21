@@ -17,6 +17,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             ShowExpander = showExpander;
         }
 
+        public bool CanEdit => _inner.CanEdit;
         public ICell Content => _inner;
         public IExpanderRow<TModel> Row { get; }
         object IExpanderCell.Content => Content;

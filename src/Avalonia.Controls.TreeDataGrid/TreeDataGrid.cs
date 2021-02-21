@@ -311,6 +311,7 @@ namespace Avalonia.Controls
                     rangeModifier: e.KeyModifiers.HasFlag(KeyModifiers.Shift),
                     toggleModifier: e.KeyModifiers.HasFlag(KeyModifiers.Control),
                     rightButton: point.Properties.IsRightButtonPressed);
+                e.Handled = true;
             }
         }
 

@@ -24,16 +24,29 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Initializes a new instance of the <see cref="ColumnBase{TModel, TValue}"/> class.
         /// </summary>
         /// <param name="header">The column header.</param>
-        /// <param name="width">The column width.</param>
+        /// <param name="getter">
+        /// An expression which given a row model, returns a cell value for the column.
+        /// </param>
+        /// <param name="setter">
+        /// A method which given a row model and a cell value, writes the cell value to the
+        /// row model. If null, the column will be read-only.
+        /// </param>
+        /// <param name="width">
+        /// The column width. If null defaults to <see cref="GridLength.Auto"/>.
+        /// </param>
+        /// <param name="options">Additional column options.</param>
         public ColumnBase(
             object? header,
-            Expression<Func<TModel, TValue>> valueSelector,
+            Expression<Func<TModel, TValue>> getter,
+            Action<TModel, TValue>? setter,
             GridLength? width,
             ColumnOptions<TModel>? options)
             : base(header, width, options)
         {
-            ValueSelector = valueSelector.Compile();
-            Binding = TypedBinding<TModel>.OneWay(valueSelector);
+            ValueSelector = getter.Compile();
+            Binding = setter is null ? 
+                TypedBinding<TModel>.OneWay(getter) :
+                TypedBinding<TModel>.TwoWay(getter, setter);
             _canUserSort = options?.CanUserSortColumn ?? true;
             _sortAscending = options?.CompareAscending ?? DefaultSortAscending;
             _sortDescending = options?.CompareDescending ?? DefaultSortDescending;

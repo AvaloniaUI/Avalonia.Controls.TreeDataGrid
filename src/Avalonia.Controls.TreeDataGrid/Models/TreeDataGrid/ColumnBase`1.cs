@@ -18,7 +18,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Initializes a new instance of the <see cref="ColumnBase{TModel, TValue}"/> class.
         /// </summary>
         /// <param name="header">The column header.</param>
-        /// <param name="width">The column width.</param>
+        /// <param name="width">
+        /// The column width. If null defaults to <see cref="GridLength.Auto"/>.
+        /// </param>
+        /// <param name="options">Additional column options.</param>
         public ColumnBase(
             object? header,
             GridLength? width,

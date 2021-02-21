@@ -150,7 +150,23 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}" Padding="4 2">
-          <TextBlock Text="{Binding DataContext.Value, RelativeSource={RelativeSource TemplatedParent}}" VerticalAlignment="Center"/>
+          <TextBlock Text="{Binding DataContext.Value, RelativeSource={RelativeSource TemplatedParent}}"
+                     VerticalAlignment="Center"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TreeDataGridTextCell:editing">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}" Padding="4 2">
+          <TextBox Name="PART_Edit"
+                   Background="Transparent"
+                   MinHeight="25"
+                   Padding="10,3,6,3"
+                   Text="{Binding DataContext.Value, RelativeSource={RelativeSource TemplatedParent}}"
+                   VerticalAlignment="Center"/>
         </Border>
       </ControlTemplate>
     </Setter>
