@@ -1,8 +1,6 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Avalonia.Controls.Metadata;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.Primitives
 {

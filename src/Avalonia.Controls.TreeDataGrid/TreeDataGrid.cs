@@ -156,25 +156,6 @@ namespace Avalonia.Controls
             }
         }
 
-        private bool TryGetCell(IControl? element, [MaybeNullWhen(false)] out ITreeDataGridCell result)
-        {
-            if (element is ITreeDataGridCell cell && cell.RowIndex >= 0)
-            {
-                result = cell;
-                return true;
-            }
-
-            do
-            {
-                result = (element as IVisual)?.FindAncestorOfType<ITreeDataGridCell>();
-                if (result?.ColumnIndex >= 0 && result?.RowIndex >= 0)
-                    break;
-                element = result;
-            } while (result is object);
-
-            return result is object;
-        }
-
         public bool TryGetRowModel<TModel>(IControl element, [MaybeNullWhen(false)] out TModel result)
         {
             if (Source is object &&
@@ -194,66 +175,7 @@ namespace Avalonia.Controls
 
         protected bool MoveSelection(NavigationDirection direction, bool rangeModifier)
         {
-            if (Source is null || Repeater is null)
-                return false;
-
-            var focus = FocusManager.Instance;
-            var currentColumnIndex = 0;
-            var currentRowIndex = Selection?.SelectedIndex ?? 0;
-
-            if (focus.Current is IControl current && TryGetCell(current, out var focused))
-            {
-                currentColumnIndex = focused.ColumnIndex;
-                currentRowIndex = focused.RowIndex;
-            }
-
-            var newColumnIndex = currentColumnIndex;
-            int newRowIndex;
-
-            if (direction == NavigationDirection.First || direction == NavigationDirection.Last)
-            {
-                newRowIndex = direction == NavigationDirection.First ? 0 : Source.Rows.Count - 1;
-            }
-            else
-            {
-                (int x, int y) step = direction switch
-                {
-                    NavigationDirection.Up => (0, -1),
-                    NavigationDirection.Down => (0, 1),
-                    NavigationDirection.Left => (-1, 0),
-                    NavigationDirection.Right => (1, 0),
-                    _ => (0, 0)
-                };
-
-                newColumnIndex = Math.Max(0, Math.Min(currentColumnIndex + step.x, Source.Columns.Count - 1));
-                newRowIndex = Math.Max(0, Math.Min(currentRowIndex + step.y, Source.Rows.Count - 1));
-            }
-
-            if (newRowIndex != currentRowIndex)
-                UpdateSelection(newRowIndex, true, rangeModifier);
-            
-            if (newRowIndex != currentRowIndex || newColumnIndex != currentColumnIndex)
-            {
-                var cellIndex = (newRowIndex * Source.Columns.Count) + newColumnIndex;
-                var cell = Repeater.GetOrCreateElement(cellIndex);
-
-                if (cell is object)
-                {
-                    (VisualRoot as TopLevel)?.LayoutManager?.ExecuteLayoutPass();
-                    cell.BringIntoView();
-
-                    var method = direction <= NavigationDirection.Previous ?
-                        NavigationMethod.Tab :
-                        NavigationMethod.Directional;
-                    FocusManager.Instance?.Focus(cell, method);
-                }
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return MoveSelection(direction, rangeModifier, GetFocusedCell());
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -285,11 +207,19 @@ namespace Avalonia.Controls
                 var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
                 var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
 
-                if (direction.HasValue && (!ctrl || shift))
+                if (direction.HasValue)
                 {
-                    e.Handled = MoveSelection(
-                        direction.Value,
-                        shift);
+                    var focused = GetFocusedCell();
+
+                    if (focused is object && !ctrl)
+                    {
+                        e.Handled = TryKeyExpandCollapse(direction.Value, focused);
+                    }
+
+                    if (!e.Handled && (!ctrl || shift))
+                    {
+                        e.Handled = MoveSelection(direction.Value, shift, focused);
+                    }
                 }
             }
 
@@ -315,6 +245,114 @@ namespace Avalonia.Controls
                     rightButton: point.Properties.IsRightButtonPressed);
                 e.Handled = true;
             }
+        }
+
+        private ITreeDataGridCell? GetFocusedCell()
+        {
+            var focus = FocusManager.Instance;
+            ITreeDataGridCell? focused = null;
+            if (focus.Current is IControl current)
+                TryGetCell(current, out focused);
+            return focused;
+        }
+
+        private bool MoveSelection(NavigationDirection direction, bool rangeModifier, ITreeDataGridCell? focused)
+        {
+            if (Source is null || Repeater is null)
+                return false;
+
+            var currentColumnIndex = focused?.ColumnIndex ?? 0;
+            var currentRowIndex = focused?.RowIndex ?? Selection?.SelectedIndex ?? 0;
+            var newColumnIndex = currentColumnIndex;
+            int newRowIndex;
+
+            if (direction == NavigationDirection.First || direction == NavigationDirection.Last)
+            {
+                newRowIndex = direction == NavigationDirection.First ? 0 : Source.Rows.Count - 1;
+            }
+            else
+            {
+                (int x, int y) step = direction switch
+                {
+                    NavigationDirection.Up => (0, -1),
+                    NavigationDirection.Down => (0, 1),
+                    NavigationDirection.Left => (-1, 0),
+                    NavigationDirection.Right => (1, 0),
+                    _ => (0, 0)
+                };
+
+                newColumnIndex = Math.Max(0, Math.Min(currentColumnIndex + step.x, Source.Columns.Count - 1));
+                newRowIndex = Math.Max(0, Math.Min(currentRowIndex + step.y, Source.Rows.Count - 1));
+            }
+
+            if (newRowIndex != currentRowIndex)
+                UpdateSelection(newRowIndex, true, rangeModifier);
+
+            if (newRowIndex != currentRowIndex || newColumnIndex != currentColumnIndex)
+            {
+                var cellIndex = (newRowIndex * Source.Columns.Count) + newColumnIndex;
+                var cell = Repeater.GetOrCreateElement(cellIndex);
+
+                if (cell is object)
+                {
+                    (VisualRoot as TopLevel)?.LayoutManager?.ExecuteLayoutPass();
+                    cell.BringIntoView();
+
+                    var method = direction <= NavigationDirection.Previous ?
+                        NavigationMethod.Tab :
+                        NavigationMethod.Directional;
+                    FocusManager.Instance?.Focus(cell, method);
+                }
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private bool TryKeyExpandCollapse(NavigationDirection direction, ITreeDataGridCell focused)
+        {
+            if (Source is null || Repeater is null || focused.RowIndex < 0)
+                return false;
+
+            var row = Source.Rows[focused.RowIndex];
+
+            if (row is IExpander expander)
+            {
+                if (direction == NavigationDirection.Right && !expander.IsExpanded)
+                {
+                    expander.IsExpanded = true;
+                    return true;
+                }
+                else if (direction == NavigationDirection.Left && expander.IsExpanded)
+                {
+                    expander.IsExpanded = false;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool TryGetCell(IControl? element, [MaybeNullWhen(false)] out ITreeDataGridCell result)
+        {
+            if (element is ITreeDataGridCell cell && cell.RowIndex >= 0)
+            {
+                result = cell;
+                return true;
+            }
+
+            do
+            {
+                result = (element as IVisual)?.FindAncestorOfType<ITreeDataGridCell>();
+                if (result?.ColumnIndex >= 0 && result?.RowIndex >= 0)
+                    break;
+                element = result;
+            } while (result is object);
+
+            return result is object;
         }
 
         private void UpdateSelection(
