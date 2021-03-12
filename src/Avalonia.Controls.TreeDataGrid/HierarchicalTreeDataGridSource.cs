@@ -73,6 +73,21 @@ namespace Avalonia.Controls
             _rows?.Sort(_comparison);
         }
 
+        public bool SortBy(IColumn? column, ListSortDirection direction)
+        {
+            if (column is IColumn<TModel> columnBase &&
+                Columns.Contains(columnBase) &&
+                columnBase.GetComparison(direction) is Comparison<TModel> comparison)
+            {
+                Sort(comparison);
+                foreach (var c in Columns)
+                    c.SortDirection = c == column ? (ListSortDirection?)direction : null;
+                return true;
+            }
+
+            return false;
+        }
+
         void IExpanderRowController<TModel>.OnBeginExpandCollapse(IExpanderRow<TModel> row)
         {
             if (row is HierarchicalRow<TModel> r)
@@ -99,21 +114,6 @@ namespace Avalonia.Controls
             IExpanderRow<TModel> row,
             NotifyCollectionChangedEventArgs e)
         {
-        }
-
-        bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)
-        {
-            if (column is IColumn<TModel> columnBase &&
-                Columns.Contains(columnBase) &&
-                columnBase.GetComparison(direction) is Comparison<TModel> comparison)
-            {
-                Sort(comparison);
-                foreach (var c in Columns)
-                    c.SortDirection = c == column ? (ListSortDirection?)direction : null;
-                return true;
-            }
-
-            return false;
         }
 
         internal TModel GetModelAt(in IndexPath index)
