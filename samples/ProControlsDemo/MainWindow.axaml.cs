@@ -29,6 +29,14 @@ namespace ProControlsDemo
                 UpdateRealizedCount();
                 return true;
             }, TimeSpan.FromMilliseconds(500));
+
+            Activated += MainWindow_Activated;
+        }
+
+        private void MainWindow_Activated(object? sender, EventArgs e)
+        {
+            Program.Stopwatch!.Stop();
+            System.Diagnostics.Debug.WriteLine("Startup time: " + Program.Stopwatch.Elapsed);
         }
 
         private void InitializeComponent()
