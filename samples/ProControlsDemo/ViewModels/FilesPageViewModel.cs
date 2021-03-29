@@ -32,43 +32,43 @@ namespace ProControlsDemo.ViewModels
             Source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(_root)
             {
                 Columns =
+                {
+                    new TemplateColumn<FileTreeNodeModel>(
+                        null,
+                        new FuncDataTemplate<FileTreeNodeModel>(FileCheckTemplate),
+                        options: new ColumnOptions<FileTreeNodeModel>
                         {
-                            new TemplateColumn<FileTreeNodeModel>(
-                                null,
-                                new FuncDataTemplate<FileTreeNodeModel>(FileCheckTemplate),
-                                options: new ColumnOptions<FileTreeNodeModel>
-                                {
-                                    CanUserResizeColumn = false,
-                                }),
-                            new HierarchicalExpanderColumn<FileTreeNodeModel>(
-                                new TemplateColumn<FileTreeNodeModel>(
-                                    "Name",
-                                    new FuncDataTemplate<FileTreeNodeModel>(FileNameTemplate),
-                                    new GridLength(1, GridUnitType.Star),
-                                    new ColumnOptions<FileTreeNodeModel>
-                                    {
-                                        CompareAscending = FileTreeNodeModel.SortAscending(x => x.Name),
-                                        CompareDescending = FileTreeNodeModel.SortDescending(x => x.Name),
-                                    }),
-                                x => x.Children,
-                                x => x.IsDirectory),
-                            new TextColumn<FileTreeNodeModel, long?>(
-                                "Size",
-                                x => x.Size,
-                                options: new ColumnOptions<FileTreeNodeModel>
-                                {
-                                    CompareAscending = FileTreeNodeModel.SortAscending(x => x.Size),
-                                    CompareDescending = FileTreeNodeModel.SortDescending(x => x.Size),
-                                }),
-                            new TextColumn<FileTreeNodeModel, DateTimeOffset?>(
-                                "Modified",
-                                x => x.Modified,
-                                options: new ColumnOptions<FileTreeNodeModel>
-                                {
-                                    CompareAscending = FileTreeNodeModel.SortAscending(x => x.Modified),
-                                    CompareDescending = FileTreeNodeModel.SortDescending(x => x.Modified),
-                                }),
-                        }
+                            CanUserResizeColumn = false,
+                        }),
+                    new HierarchicalExpanderColumn<FileTreeNodeModel>(
+                        new TemplateColumn<FileTreeNodeModel>(
+                            "Name",
+                            new FuncDataTemplate<FileTreeNodeModel>(FileNameTemplate),
+                            new GridLength(1, GridUnitType.Star),
+                            new ColumnOptions<FileTreeNodeModel>
+                            {
+                                CompareAscending = FileTreeNodeModel.SortAscending(x => x.Name),
+                                CompareDescending = FileTreeNodeModel.SortDescending(x => x.Name),
+                            }),
+                        x => x.Children,
+                        x => x.IsDirectory),
+                    new TextColumn<FileTreeNodeModel, long?>(
+                        "Size",
+                        x => x.Size,
+                        options: new ColumnOptions<FileTreeNodeModel>
+                        {
+                            CompareAscending = FileTreeNodeModel.SortAscending(x => x.Size),
+                            CompareDescending = FileTreeNodeModel.SortDescending(x => x.Size),
+                        }),
+                    new TextColumn<FileTreeNodeModel, DateTimeOffset?>(
+                        "Modified",
+                        x => x.Modified,
+                        options: new ColumnOptions<FileTreeNodeModel>
+                        {
+                            CompareAscending = FileTreeNodeModel.SortAscending(x => x.Modified),
+                            CompareDescending = FileTreeNodeModel.SortDescending(x => x.Modified),
+                        }),
+                }
             };
 
             Selection = new HierarchicalSelectionModel<FileTreeNodeModel>(Source)
