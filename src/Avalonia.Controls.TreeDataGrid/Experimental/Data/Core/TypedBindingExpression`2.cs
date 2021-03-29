@@ -31,7 +31,7 @@ namespace Avalonia.Experimental.Data.Core
         private readonly Optional<TOut> _fallbackValue;
         private IDisposable? _rootSourceSubsciption;
         private WeakReference<TIn>? _root;
-        private bool _rootHasFired;
+        private Flags _flags;
         private int _publishCount;
 
         public TypedBindingExpression(
@@ -69,7 +69,8 @@ namespace Avalonia.Experimental.Data.Core
                 try
                 {
                     var c = _publishCount;
-                    _write.Invoke(root, value.Value);
+                    if ((_flags & Flags.Initialized) != 0)
+                        _write.Invoke(root, value.Value);
                     if (_publishCount == c)
                         PublishValue();
                 }
@@ -90,8 +91,9 @@ namespace Avalonia.Experimental.Data.Core
 
         protected override void Initialize()
         {
-            _rootHasFired = false;
+            _flags &= ~Flags.RootHasFired;
             _rootSourceSubsciption = _rootSource.Subscribe(RootChanged);
+            _flags |= Flags.Initialized;
         }
 
         protected override void Deinitialize()
@@ -99,6 +101,7 @@ namespace Avalonia.Experimental.Data.Core
             StopListeningToChain(0);
             _rootSourceSubsciption?.Dispose();
             _rootSourceSubsciption = null;
+            _flags &= ~Flags.Initialized;
         }
 
         protected override void Subscribed(IObserver<BindingValue<TOut>> observer, bool first)
@@ -119,7 +122,7 @@ namespace Avalonia.Experimental.Data.Core
         private void RootChanged(TIn value)
         {
             _root = new WeakReference<TIn>(value);
-            _rootHasFired = true;
+            _flags |= Flags.RootHasFired;
             StopListeningToChain(0);
             ListenToChain(0);
             PublishValue();
@@ -152,11 +155,18 @@ namespace Avalonia.Experimental.Data.Core
                 {
                     // Broken expression chain.
                 }
+                finally
+                {
+                    _flags |= Flags.ListeningToChain;
+                }
             }
         }
 
         private void StopListeningToChain(int from)
         {
+            if ((_flags & Flags.ListeningToChain) == 0)
+                return;
+
             if (_chain != null && _root != null && _root.TryGetTarget(out _))
             {
                 for (var i = from; i < _chain.Length; ++i)
@@ -169,6 +179,8 @@ namespace Avalonia.Experimental.Data.Core
                     }
                 }
             }
+
+            _flags &= ~Flags.ListeningToChain;
         }
 
         private bool SubscribeToChanges(object o)
@@ -254,7 +266,7 @@ namespace Avalonia.Experimental.Data.Core
                     return BindingValue<TOut>.BindingError(e, _fallbackValue);
                 }
             }
-            else if (_rootHasFired)
+            else if ((_flags & Flags.RootHasFired) != 0)
             {
                 return BindingValue<TOut>.BindingError(new NullReferenceException(), _fallbackValue);
             }
@@ -322,6 +334,14 @@ namespace Avalonia.Experimental.Data.Core
 
             public Func<TIn, object> Eval;
             public WeakReference<object>? Value;
+        }
+
+        [Flags]
+        private enum Flags
+        {
+            Initialized = 0x01,
+            RootHasFired = 0x02,
+            ListeningToChain = 0x04,
         }
     }
 }
