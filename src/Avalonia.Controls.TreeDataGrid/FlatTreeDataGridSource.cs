@@ -104,15 +104,19 @@ namespace Avalonia.Controls
         private void Reset(CellList cells)
         {
             _rows ??= CreateRows();
-            cells.Clear();
 
-            foreach (var row in _rows)
+            cells.Reset(x =>
             {
-                var columnCount = Columns.Count;
+                x.Clear();
 
-                for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
-                    cells.Add(CreateCell(row, columnIndex));
-            }
+                foreach (var row in _rows)
+                {
+                    var columnCount = Columns.Count;
+
+                    for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
+                        x.Add(CreateCell(row, columnIndex));
+                }
+            });
         }
 
         private void RowsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

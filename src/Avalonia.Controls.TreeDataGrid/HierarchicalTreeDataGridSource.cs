@@ -162,15 +162,19 @@ namespace Avalonia.Controls
         private void Reset(CellList cells)
         {
             _rows ??= CreateRows();
-            cells.Clear();
-
-            foreach (var row in _rows)
+            
+            cells.Reset(x =>
             {
-                var columnCount = Columns.Count;
+                x.Clear();
 
-                for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
-                    cells.Add(CreateCell(row, columnIndex));
-            }
+                foreach (var row in _rows)
+                {
+                    var columnCount = Columns.Count;
+
+                    for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
+                        x.Add(CreateCell(row, columnIndex));
+                }
+            });
         }
 
         private void OnColumnsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -205,11 +209,14 @@ namespace Avalonia.Controls
                 var cellIndex = rowIndex * Columns.Count;
                 var columnCount = Columns.Count;
 
-                foreach (HierarchicalRow<TModel> row in rows)
+                _cells.InsertRange(cellIndex, insert =>
                 {
-                    for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
-                        _cells.Insert(cellIndex++, CreateCell(row, columnIndex));
-                }
+                    foreach (HierarchicalRow<TModel> row in rows)
+                    {
+                        for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
+                            insert(CreateCell(row, columnIndex));
+                    }
+                });
             }
 
             void Remove(int rowIndex, int rowCount)
