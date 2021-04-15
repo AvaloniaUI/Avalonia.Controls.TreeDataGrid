@@ -67,19 +67,19 @@ namespace Avalonia.Controls.Primitives
             return ((IRows)Items!).GetRowAt(position);
         }
 
-        protected override void Realize(IControl element, IRow rowModel, int index)
+        protected override void RealizeElement(IControl element, IRow rowModel, int index)
         {
             var row = (TreeDataGridRow)element;
             row.Realize(ElementFactory, Columns, (IRows?)Items, index);
             row.IsSelected = _selection?.IsSelected(index) == true;
         }
 
-        protected override void UpdateIndex(IControl element, int index)
+        protected override void UpdateElementIndex(IControl element, int index)
         {
             ((TreeDataGridRow)element).UpdateIndex(index);
         }
 
-        protected override void Unrealize(IControl element)
+        protected override void UnrealizeElement(IControl element)
         {
             ((TreeDataGridRow)element).Unrealize();
         }

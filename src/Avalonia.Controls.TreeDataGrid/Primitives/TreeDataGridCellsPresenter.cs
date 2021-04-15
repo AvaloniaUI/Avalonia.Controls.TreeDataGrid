@@ -90,15 +90,7 @@ namespace Avalonia.Controls.Primitives
             return ((IColumns)Items!).GetColumnAt(position);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
-        {
-            base.OnPropertyChanged(change);
-
-            if (change.Property == BackgroundProperty)
-                InvalidateVisual();
-        }
-
-        protected override void Realize(IControl element, IColumn column, int index)
+        protected override void RealizeElement(IControl element, IColumn column, int index)
         {
             var cell = (TreeDataGridCell)element;
 
@@ -117,11 +109,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void UpdateIndex(IControl element, int index)
-        {
-        }
-
-        protected override void Unrealize(IControl element)
+        protected override void UnrealizeElement(IControl element)
         {
             var cell = (TreeDataGridCell)element;
             var columnIndex = cell.ColumnIndex;
@@ -129,6 +117,18 @@ namespace Avalonia.Controls.Primitives
             
             cell.Unrealize();
             _rows!.UnrealizeCell(cell.Model!, columnIndex, rowIndex);
+        }
+
+        protected override void UpdateElementIndex(IControl element, int index)
+        {
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == BackgroundProperty)
+                InvalidateVisual();
         }
     }
 }

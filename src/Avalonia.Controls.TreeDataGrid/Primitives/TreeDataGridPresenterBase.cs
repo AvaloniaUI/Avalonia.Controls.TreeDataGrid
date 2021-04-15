@@ -138,9 +138,9 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual (int index, double position) GetElementAt(double position) => (-1, -1);
         protected virtual double GetElementPosition(int index) => -1;
-        protected abstract void Realize(IControl element, TItem item, int index);
-        protected abstract void UpdateIndex(IControl element, int index);
-        protected abstract void Unrealize(IControl element);
+        protected abstract void RealizeElement(IControl element, TItem item, int index);
+        protected abstract void UpdateElementIndex(IControl element, int index);
+        protected abstract void UnrealizeElement(IControl element);
 
         protected override Size MeasureOverride(Size availableSize)
         {
@@ -326,7 +326,7 @@ namespace Avalonia.Controls.Primitives
             var item = Items![index];
             var e = GetElementFromFactory(item, index);
             e.IsVisible = true;
-            Realize(e, item, index);
+            RealizeElement(e, item, index);
             if (e.Parent is null)
                 _children.Add(e);
             return e;
@@ -383,7 +383,7 @@ namespace Avalonia.Controls.Primitives
 
         private void RecycleElement(IControl element)
         {
-            Unrealize(element);
+            UnrealizeElement(element);
             element.IsVisible = false;
             ElementFactory!.RecycleElement(new ElementFactoryRecycleArgs
             {
@@ -485,7 +485,7 @@ namespace Avalonia.Controls.Primitives
                     for (var i = insertPoint; i < _realizedElements.Count; ++i)
                     {
                         if (_realizedElements.Elements[i] is IControl element)
-                            UpdateIndex(element, first + i + count);
+                            UpdateElementIndex(element, first + i + count);
                     }
 
                     _realizedElements.InsertSpace(insertPoint, count);
@@ -513,7 +513,7 @@ namespace Avalonia.Controls.Primitives
                     for (var i = removePoint; i < _realizedElements.Count; ++i)
                     {
                         if (_realizedElements.Elements[i] is IControl element)
-                            UpdateIndex(element, first + i);
+                            UpdateElementIndex(element, first + i);
                     }
                 }
             }

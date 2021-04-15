@@ -29,16 +29,16 @@ namespace Avalonia.Controls.Primitives
             return ((IColumns)Items!).GetColumnAt(position);
         }
 
-        protected override void Realize(IControl element, IColumn column, int index)
+        protected override void RealizeElement(IControl element, IColumn column, int index)
         {
             ((TreeDataGridColumnHeader)element).Realize((IColumns)Items!, index);
         }
 
-        protected override void UpdateIndex(IControl element, int index)
+        protected override void UpdateElementIndex(IControl element, int index)
         {
         }
 
-        protected override void Unrealize(IControl element)
+        protected override void UnrealizeElement(IControl element)
         {
             ((TreeDataGridColumnHeader)element).Unrealize();
         }
