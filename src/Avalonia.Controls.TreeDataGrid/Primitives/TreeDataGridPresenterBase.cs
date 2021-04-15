@@ -342,6 +342,7 @@ namespace Avalonia.Controls.Primitives
         private double EstimateElementSizeU()
         {
             var count = _realizedElements.Count;
+            var divisor = count;
             var total = 0.0;
 
             for (var i = 0; i < count; ++i)
@@ -349,10 +350,10 @@ namespace Avalonia.Controls.Primitives
                 if (_realizedElements.Elements[i] is object)
                     total += _realizedElements.SizeU[i];
                 else
-                    --count;
+                    --divisor;
             }
 
-            return count > 0 ? total / count : 25;
+            return count > 0 ? total / divisor : 25;
         }
 
         private Rect EstimateViewport()
