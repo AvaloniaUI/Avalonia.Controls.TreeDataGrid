@@ -11,44 +11,22 @@
   <Style Selector="TreeDataGrid">
     <Setter Property="Template">
       <ControlTemplate>
-        <TreeDataGridPanel>
-          <TreeDataGridPanel.Header>
-            <ScrollViewer HorizontalScrollBarVisibility="Hidden"
-                          VerticalScrollBarVisibility="Hidden"
-                          Offset="{TemplateBinding ScrollOffset}">
-              <Border DockPanel.Dock="Top"
-                      BorderThickness="0 0 0 1"
-                      BorderBrush="{DynamicResource TreeDataGridGridLinesBrush}">
-                <ItemsRepeater Name="PART_Header"
-                               Items="{TemplateBinding Columns}">
-                  <ItemsRepeater.Layout>
-                    <TreeDataGridLayout Columns="{Binding Columns, RelativeSource={RelativeSource TemplatedParent}}"
-                                        SharedState="{Binding SharedState, RelativeSource={RelativeSource TemplatedParent}}"/>
-                  </ItemsRepeater.Layout>
-                  <ItemsRepeater.ItemTemplate>
-                    <DataTemplate>
-                      <TreeDataGridColumnHeader/>
-                    </DataTemplate>
-                  </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-              </Border>
-            </ScrollViewer>
-          </TreeDataGridPanel.Header>
-
-          <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                        Offset="{TemplateBinding ScrollOffset, Mode=TwoWay}">
-            <ItemsRepeaterHack Name="PART_Cells"
-                           Items="{TemplateBinding Cells}"
-                           ItemTemplate="{TemplateBinding ElementFactory}"
-                           HorizontalCacheLength="0"
-                           VerticalCacheLength="0">
-              <ItemsRepeaterHack.Layout>
-                <TreeDataGridLayout Columns="{Binding Columns, RelativeSource={RelativeSource TemplatedParent}}"
-                                    SharedState="{Binding SharedState, RelativeSource={RelativeSource TemplatedParent}}"/>
-              </ItemsRepeaterHack.Layout>
-            </ItemsRepeaterHack>
+        <DockPanel>
+          <Border DockPanel.Dock="Top"
+                  BorderThickness="0 0 0 1"
+                  BorderBrush="{DynamicResource TreeDataGridGridLinesBrush}">
+            <TreeDataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter"
+                                                ElementFactory="{TemplateBinding ElementFactory}"
+                                                Items="{TemplateBinding Columns}"/>
+          </Border>
+          <ScrollViewer HorizontalScrollBarVisibility="Auto">
+            <TreeDataGridRowsPresenter Name="PART_RowsPresenter"
+                                       Columns="{TemplateBinding Columns}"
+                                       ElementFactory="{TemplateBinding ElementFactory}"
+                                       Items="{TemplateBinding Rows}"
+                                       Selection="{TemplateBinding Selection}"/>
           </ScrollViewer>
-        </TreeDataGridPanel>
+        </DockPanel>
       </ControlTemplate>
     </Setter>
   </Style>
@@ -136,8 +114,8 @@
                     Width="12" Height="12">
               <ToggleButton Classes="ExpandCollapseChevron"
                             Focusable="False"
-                            IsChecked="{Binding IsExpanded}"
-                            IsVisible="{Binding ShowExpander}"/>
+                            IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                            IsVisible="{TemplateBinding ShowExpander}"/>
             </Border>
             <Decorator Name="PART_Content"/>
           </DockPanel>
@@ -146,11 +124,23 @@
     </Setter>
   </Style>
 
+  <Style Selector="TreeDataGridRow">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <TreeDataGridCellsPresenter Name="PART_CellsPresenter"
+                                    Background="{TemplateBinding Background}"
+                                    ElementFactory="{TemplateBinding ElementFactory}"
+                                    Items="{TemplateBinding Columns}"
+                                    Rows="{TemplateBinding Rows}"/>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  
   <Style Selector="TreeDataGridTextCell">
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}" Padding="4 2">
-          <TextBlock Text="{Binding DataContext.Value, RelativeSource={RelativeSource TemplatedParent}}"
+          <TextBlock Text="{TemplateBinding Value}"
                      VerticalAlignment="Center"/>
         </Border>
       </ControlTemplate>
@@ -184,6 +174,10 @@
                           Padding="{TemplateBinding Padding}"/>
       </ControlTemplate>
     </Setter>
+  </Style>
+
+  <Style Selector="TreeDataGridRow:selected">
+    <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
   </Style>
 
   <Style Selector=":is(TreeDataGridCell)">

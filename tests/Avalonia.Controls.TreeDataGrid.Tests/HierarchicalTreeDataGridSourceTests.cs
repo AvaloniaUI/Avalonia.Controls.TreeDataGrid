@@ -6,8 +6,8 @@ using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Diagnostics;
 using Xunit;
-
-namespace Avalonia.Controls.TreeDataGrid.Tests
+#if false
+namespace Avalonia.Controls.TreeDataGridTests
 {
     public class HierarchicalTreeDataGridSourceTests
     {
@@ -662,3 +662,4 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
         }
     }
 }
+#endif

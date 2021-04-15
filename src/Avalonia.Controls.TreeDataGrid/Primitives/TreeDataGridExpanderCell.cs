@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.VisualTree;
 
@@ -25,61 +24,104 @@ namespace Avalonia.Controls.Primitives
 
         private Decorator? _contentContainer;
         private Type? _contentType;
+        private IElementFactory? _factory;
+        private int _indent;
+        private bool _isExpanded;
+        private IExpanderCell? _model;
+        private bool _showExpander;
 
-        public int Indent => (Model?.Row as IIndentedRow)?.Indent ?? 0;
+        public int Indent
+        {
+            get => _indent;
+            private set => SetAndRaise(IndentProperty, ref _indent, value);
+        }
 
         public bool IsExpanded
         {
-            get => Model?.IsExpanded ?? false;
+            get => _isExpanded;
             set
             {
-                if (Model is IExpanderCell model)
-                    model.IsExpanded = value;
+                if (SetAndRaise(IsExpandedProperty, ref _isExpanded, value) && _model is object)
+                    _model.IsExpanded = value;
             }
         }
 
-        public bool ShowExpander => Model?.ShowExpander ?? false;
+        public bool ShowExpander
+        {
+            get => _showExpander;
+            private set => SetAndRaise(ShowExpanderProperty, ref _showExpander, value);
+        }
 
-        private IExpanderCell? Model => (IExpanderCell?)DataContext;
+        public override void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        {
+            if (_model is object)
+                throw new InvalidOperationException("Cell is already realized.");
+
+            if (model is IExpanderCell expanderModel)
+            {
+                _factory = factory;
+                _model = expanderModel;
+                Indent = (_model.Row as IIndentedRow)?.Indent ?? 0;
+                IsExpanded = _model.IsExpanded;
+                ShowExpander = _model.ShowExpander;
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid cell model.");
+            }
+
+            base.Realize(factory, model, columnIndex, rowIndex);
+            UpdateContent(_factory);
+        }
+
+        public override void Unrealize()
+        {
+            _model = null;
+            base.Unrealize();
+            if (_factory is object)
+                UpdateContent(_factory);
+        }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _contentContainer = e.NameScope.Find<Decorator>("PART_Content");
-            UpdateContent();
+            if (_factory is object)
+                UpdateContent(_factory);
         }
 
-        protected override void OnDataContextChanged(EventArgs e)
+        private void UpdateContent(IElementFactory factory)
         {
-            base.OnDataContextChanged(e);
-            RaisePropertyChanged(IndentProperty, default, default);
-            RaisePropertyChanged(IsExpandedProperty, default, default);
-            RaisePropertyChanged(ShowExpanderProperty, default, default);
-            UpdateContent();
-        }
-
-        private void UpdateContent()
-        {
-            if (_contentContainer is null)
+            if (_contentContainer is null || _model is null)
                 return;
 
-            var content = Model?.Content;
-
-            if (content is object)
+            if (_model?.Content is ICell innerModel)
             {
-                var contentType = content.GetType();
+                var contentType = innerModel.GetType();
 
                 if (contentType != _contentType)
                 {
-                    var owner = this.FindAncestorOfType<TreeDataGrid>();
+                    var element = factory.GetElement(new ElementFactoryGetArgs
+                    {
+                        Data = innerModel,
+                        Index = ColumnIndex,
+                    });
 
-                    if (owner is null)
-                        return;
-                    
-                    _contentContainer.Child = owner.ElementFactory.Build(content);
+                    element.IsVisible = true;
+                    _contentContainer.Child = element;
                     _contentType = contentType;
                 }
 
-                _contentContainer.Child.DataContext = content;
+                if (_contentContainer.Child is ITreeDataGridCell innerCell)
+                    innerCell.Realize(factory, innerModel, ColumnIndex, RowIndex);
+            }
+            else
+            {
+                var element = _contentContainer.Child;
+                _contentContainer.Child = null;
+                factory.RecycleElement(new ElementFactoryRecycleArgs
+                {
+                    Element = element,
+                });
             }
         }
     }
