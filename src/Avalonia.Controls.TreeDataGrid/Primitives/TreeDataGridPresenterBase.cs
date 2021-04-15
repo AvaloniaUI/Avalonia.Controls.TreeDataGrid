@@ -524,6 +524,9 @@ namespace Avalonia.Controls.Primitives
                 case NotifyCollectionChangedAction.Remove:
                     Remove(e.OldStartingIndex, e.OldItems.Count);
                     break;
+                case NotifyCollectionChangedAction.Reset:
+                    RecycleAllElements();
+                    break;
             }
 
             InvalidateMeasure();

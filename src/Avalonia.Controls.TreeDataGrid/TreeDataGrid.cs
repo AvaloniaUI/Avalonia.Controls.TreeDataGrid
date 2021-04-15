@@ -354,7 +354,8 @@ namespace Avalonia.Controls
         {
             if (_source is object &&
                 e.Source is TreeDataGridColumnHeader columnHeader &&
-                columnHeader.DataContext is IColumn column &&
+                columnHeader.ColumnIndex >= 0 &&
+                columnHeader.ColumnIndex < _source.Columns.Count &&
                 CanUserSortColumns)
             {
                 if (_userSortColumn != columnHeader)
@@ -368,6 +369,7 @@ namespace Avalonia.Controls
                         ListSortDirection.Descending : ListSortDirection.Ascending;
                 }
 
+                var column = _source.Columns[columnHeader.ColumnIndex];
                 if (_source.SortBy(column, _userSortDirection))
                     _selection?.Clear();
             }
