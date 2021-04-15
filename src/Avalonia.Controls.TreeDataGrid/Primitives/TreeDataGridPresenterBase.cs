@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
+using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Presenters;
 using Avalonia.Data;
 using Avalonia.Layout;
@@ -617,16 +619,8 @@ namespace Avalonia.Controls.Primitives
                 if (Count == 0)
                     return;
 
-                for (var i = 0; i < count; ++i)
-                {
-                    _elements!.Insert(index, null);
-                    _sizes!.Insert(index, 0);
-                }
-
-                if (index == 0)
-                {
-                    _firstIndex -= count;
-                }
+                _elements!.InsertMany(index, null, count);
+                _sizes!.InsertMany(index, 0.0, count);
             }
 
             public void RemoveRange(int index, int count)
