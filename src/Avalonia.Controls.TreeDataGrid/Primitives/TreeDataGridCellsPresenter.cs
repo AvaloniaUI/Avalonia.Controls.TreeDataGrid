@@ -75,13 +75,8 @@ namespace Avalonia.Controls.Primitives
         protected override IControl GetElementFromFactory(IColumn column, int index)
         {
             var model = _rows!.RealizeCell(column, index, RowIndex);
-            var cell = (TreeDataGridCell)ElementFactory!.GetElement(new ElementFactoryGetArgs
-            {
-                Data = model,
-                Index = index,
-                Parent = this,
-            });
-            cell.Realize(ElementFactory, model, index, RowIndex);
+            var cell = (TreeDataGridCell)GetElementFromFactory(model, index, this);
+            cell.Realize(ElementFactory!, model, index, RowIndex);
             return cell;
         }
 

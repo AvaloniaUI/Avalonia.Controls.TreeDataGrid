@@ -25,9 +25,11 @@ namespace Avalonia.Controls.Primitives
         private Decorator? _contentContainer;
         private Type? _contentType;
         private IElementFactory? _factory;
+        private ElementFactoryGetArgs? _getArgs;
         private int _indent;
         private bool _isExpanded;
         private IExpanderCell? _model;
+        private ElementFactoryRecycleArgs? _recycleArgs;
         private bool _showExpander;
 
         public int Indent
@@ -100,11 +102,11 @@ namespace Avalonia.Controls.Primitives
 
                 if (contentType != _contentType)
                 {
-                    var element = factory.GetElement(new ElementFactoryGetArgs
-                    {
-                        Data = innerModel,
-                        Index = ColumnIndex,
-                    });
+                    _getArgs ??= new ElementFactoryGetArgs();
+                    _getArgs.Data = innerModel;
+                    _getArgs.Index = ColumnIndex;
+
+                    var element = factory.GetElement(_getArgs);
 
                     element.IsVisible = true;
                     _contentContainer.Child = element;
@@ -118,10 +120,9 @@ namespace Avalonia.Controls.Primitives
             {
                 var element = _contentContainer.Child;
                 _contentContainer.Child = null;
-                factory.RecycleElement(new ElementFactoryRecycleArgs
-                {
-                    Element = element,
-                });
+                _recycleArgs ??= new ElementFactoryRecycleArgs();
+                _recycleArgs.Element = element;
+                factory.RecycleElement(_recycleArgs);
             }
         }
     }

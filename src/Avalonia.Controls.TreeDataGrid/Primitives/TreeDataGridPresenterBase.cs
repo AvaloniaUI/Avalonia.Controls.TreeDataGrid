@@ -31,10 +31,12 @@ namespace Avalonia.Controls.Primitives
         private IControl? _anchorElement;
         private readonly Controls _children = new Controls();
         private IElementFactory? _elementFactory;
+        private ElementFactoryGetArgs? _getArgs;
         private bool _isWaitingForViewportUpdate;
         private IReadOnlyList<TItem>? _items;
         private RealizedElementList _measureElements = new RealizedElementList();
         private RealizedElementList _realizedElements = new RealizedElementList();
+        private ElementFactoryRecycleArgs? _recycleArgs;
 
         public TreeDataGridPresenterBase()
         {
@@ -128,12 +130,17 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual IControl GetElementFromFactory(TItem item, int index)
         {
-            return _elementFactory!.GetElement(new ElementFactoryGetArgs
-            {
-                Data = item,
-                Index = index,
-                Parent = this,
-            });
+            return GetElementFromFactory(item!, index, this);
+        }
+
+        protected IControl GetElementFromFactory(object data, int index, IControl parent)
+        {
+            _getArgs ??= new ElementFactoryGetArgs();
+            _getArgs.Data = data;
+            _getArgs.Index = index;
+            _getArgs.Parent = parent;
+
+            return _elementFactory!.GetElement(_getArgs);
         }
 
         protected virtual (int index, double position) GetElementAt(double position) => (-1, -1);
@@ -385,11 +392,11 @@ namespace Avalonia.Controls.Primitives
         {
             UnrealizeElement(element);
             element.IsVisible = false;
-            ElementFactory!.RecycleElement(new ElementFactoryRecycleArgs
-            {
-                Element = element,
-                Parent = this,
-            });
+
+            _recycleArgs ??= new ElementFactoryRecycleArgs();
+            _recycleArgs.Element = element;
+            _recycleArgs.Parent = this;
+            ElementFactory!.RecycleElement(_recycleArgs);
         }
 
         private void RecycleElementsAfter(int index)
