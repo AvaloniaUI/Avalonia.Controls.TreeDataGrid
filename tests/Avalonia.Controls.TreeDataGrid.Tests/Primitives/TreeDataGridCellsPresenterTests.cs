@@ -128,8 +128,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 ElementFactory = new TreeDataGridElementFactory(),
                 Items = columns,
                 Rows = rows,
-                RowIndex = 0,
             };
+
+            target.Realize(0);
 
             var scrollViewer = new ScrollViewer
             {

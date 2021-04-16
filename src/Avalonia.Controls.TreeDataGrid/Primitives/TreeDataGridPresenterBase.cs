@@ -8,6 +8,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -74,12 +75,12 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        public IReadOnlyList<IControl?> RealizedElements => _realizedElements.Elements;
+
         Controls IPanel.Children => _children;
 
         protected abstract Orientation Orientation { get; }
         protected Rect Viewport { get; private set; } = s_invalidViewport;
-
-        internal IEnumerable<IControl?> RealizedElements => _realizedElements.Elements;
 
         public void BringIntoView(int index)
         {
@@ -164,18 +165,15 @@ namespace Avalonia.Controls.Primitives
             // - Vertical layouts: U = vertical, V = horizontal
             var viewport = CalculateMeasureViewport();
 
-            // Recycle elements that we expect to be outside the viewport. Doing this before the
-            // measure means we don't have to create more elements than necessary.
-            if (IntersectsRealizedRange(viewport.firstIndex, viewport.estimatedLastIndex))
-                RecycleElementsBefore(viewport.firstIndex);
-            else
-                RecycleAllElements();
+            // Recycle elements outside of the expected range.
+            RecycleElementsBefore(viewport.firstIndex);
+            RecycleElementsAfter(viewport.estimatedLastIndex);
 
             // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
             // write to _realizedElements yet, only _measureElements.
             GenerateElements(availableSize, ref viewport);
 
-            // Now we know what fits, recycle anything left over.
+            // Now we know what definitely fits, recycle anything left over.
             RecycleElementsAfter(_measureElements.LastIndex);
 
             // And swap the measureElements and realizedElements collection.
@@ -186,9 +184,6 @@ namespace Avalonia.Controls.Primitives
 
             // Return the estimated size of all items based on the elements currently realized.
             var estimatedSize = EstimateElementSizeU() * Items.Count;
-
-            // Clear the anchor.
-            _anchorIndex = -1;
 
             return Orientation == Orientation.Horizontal ?
                 new Size(estimatedSize, viewport.measuredV) :
@@ -277,11 +272,12 @@ namespace Avalonia.Controls.Primitives
             var (firstIndex, firstIndexU) = GetElementAt(viewportStart);
             var (lastIndex, _) = GetElementAt(viewportEnd);
             var estimatedElementSize = -1.0;
+            var itemCount = Items?.Count ?? 0;
 
             if (firstIndex == -1)
             {
                 estimatedElementSize = EstimateElementSizeU();
-                firstIndex = Math.Min((int)(viewportStart / estimatedElementSize), Items!.Count - 1);
+                firstIndex = (int)(viewportStart / estimatedElementSize);
                 firstIndexU = firstIndex * estimatedElementSize;
             }
 
@@ -294,8 +290,8 @@ namespace Avalonia.Controls.Primitives
 
             return new MeasureViewport
             {
-                firstIndex = firstIndex,
-                estimatedLastIndex = lastIndex,
+                firstIndex = MathUtilities.Clamp(firstIndex, 0, itemCount),
+                estimatedLastIndex = MathUtilities.Clamp(lastIndex, 0, itemCount),
                 viewportUStart = viewportStart,
                 viewportUEnd = viewportEnd,
                 startU = firstIndexU,
@@ -353,7 +349,7 @@ namespace Avalonia.Controls.Primitives
                     --divisor;
             }
 
-            return count > 0 ? total / divisor : 25;
+            return count > 0 && total > 0 ? total / divisor : 25;
         }
 
         private Rect EstimateViewport()
@@ -377,18 +373,6 @@ namespace Avalonia.Controls.Primitives
             return viewport;
         }
 
-        private bool IntersectsRealizedRange(int firstIndex, double lastIndex)
-        {
-            if (_realizedElements.Count == 0)
-                return false;
-
-            var first = _realizedElements.FirstIndex;
-            var last = _realizedElements.LastIndex;
-
-            return (firstIndex >= first && firstIndex <= last) ||
-                   (lastIndex > first && lastIndex <= last);
-        }
-
         private void RecycleElement(IControl element)
         {
             UnrealizeElement(element);
@@ -402,29 +386,28 @@ namespace Avalonia.Controls.Primitives
 
         private void RecycleElementsAfter(int index)
         {
-            var first = _realizedElements.FirstIndex;
-            var last = _realizedElements.LastIndex;
+            if (index > _realizedElements.LastIndex)
+                return;
 
-            for (var i = last; i > index && i >= first; --i)
+            var start = Math.Max(index - _realizedElements.FirstIndex + 1, 0);
+
+            for (var i = start; i < _realizedElements.Count; ++i)
             {
-                if (_realizedElements.Elements[i - first] is IControl e)
+                if (_realizedElements.Elements[i] is IControl e)
                     RecycleElement(e);
             }
 
-            // No need to adjust the _realizedElements collection here as this will be called at the
-            // end of the measure process.
+            _realizedElements.RemoveRange(start, _realizedElements.Count - start);
         }
 
         private void RecycleElementsBefore(int index)
         {
-            var first = _realizedElements.FirstIndex;
-
-            if (index < first)
+            if (index <= _realizedElements.FirstIndex)
                 return;
 
-            var count = index - first;
+            var count = Math.Min(index - _realizedElements.FirstIndex, _realizedElements.Count);
 
-            for (var i = 0; i < count && i < _realizedElements.Count; ++i)
+            for (var i = 0; i < count; ++i)
             {
                 if (_realizedElements.Elements[i] is IControl e)
                     RecycleElement(e);

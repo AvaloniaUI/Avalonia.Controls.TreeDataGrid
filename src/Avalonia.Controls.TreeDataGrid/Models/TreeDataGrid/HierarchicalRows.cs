@@ -38,6 +38,21 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void Dispose() => _roots.Dispose();
 
+        public void Expand(IndexPath index)
+        {
+            if (index.GetSize() != 1)
+                throw new NotImplementedException();
+
+            foreach (var row in _roots)
+            {
+                if (row.ModelIndex == index.GetAt(0))
+                {
+                    row.IsExpanded = true;
+                    break;
+                }
+            }
+        }
+
         public (int index, double y) GetRowAt(double y)
         {
             if (MathUtilities.IsZero(y))

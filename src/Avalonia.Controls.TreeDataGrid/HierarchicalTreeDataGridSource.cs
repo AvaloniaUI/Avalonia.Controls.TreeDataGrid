@@ -65,6 +65,8 @@ namespace Avalonia.Controls
             _rows?.Dispose();
         }
 
+        public void Expand(IndexPath index) => _rows?.Expand(index);
+
         public void Sort(Comparison<TModel>? comparison)
         {
             _comparison = comparison;
@@ -141,11 +143,6 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("No expander column defined.");
 
             return new HierarchicalRows<TModel>(this, _itemsView, _expanderColumn, _comparison);
-        }
-
-        private ICell CreateCell(HierarchicalRow<TModel> row, int columnIndex)
-        {
-            return Columns[columnIndex].CreateCell(row);
         }
 
         private void OnColumnsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

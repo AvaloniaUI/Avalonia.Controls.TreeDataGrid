@@ -76,15 +76,13 @@ namespace Avalonia.Controls.Primitives
         public void UpdateIndex(int index)
         {
             RowIndex = index;
-            if (CellsPresenter is object)
-                CellsPresenter.RowIndex = index;
+            CellsPresenter?.UpdateIndex(index);
         }
 
         public void Unrealize()
         {
             RowIndex = -1;
-            if (CellsPresenter is object)
-                CellsPresenter.RowIndex = -1;
+            CellsPresenter?.Unrealize();
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -92,8 +90,8 @@ namespace Avalonia.Controls.Primitives
             base.OnApplyTemplate(e);
             CellsPresenter = e.NameScope.Find<TreeDataGridCellsPresenter>("PART_CellsPresenter");
 
-            if (CellsPresenter is object)
-                CellsPresenter.RowIndex = RowIndex;
+            if (RowIndex >= 0)
+                CellsPresenter?.Realize(RowIndex);
         }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)

@@ -16,7 +16,6 @@ namespace Avalonia.Controls.Primitives
                 o => o.Rows,
                 (o, v) => o.Rows = v);
 
-        private int _rowIndex = -1;
         private IRows? _rows;
 
         public IBrush Background
@@ -25,27 +24,23 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(BackgroundProperty, value);
         }
 
-        public int RowIndex
-        {
-            get => _rowIndex;
-            set
-            {
-                if (_rowIndex != value)
-                {
-                    _rowIndex = value;
-                    RecycleAllElements();
-                    InvalidateMeasure();
-                }
-            }
-        }
-
         public IRows? Rows
         {
             get => _rows;
             set => SetAndRaise(RowsProperty, ref _rows, value);
         }
 
+        public int RowIndex { get; private set; } = -1;
+
         protected override Orientation Orientation => Orientation.Horizontal;
+
+        public void Realize(int index)
+        {
+            if (RowIndex != -1)
+                throw new InvalidOperationException("Row is already realized.");
+            UpdateIndex(index);
+            InvalidateMeasure();
+        }
 
         public override void Render(DrawingContext context)
         {
@@ -55,6 +50,21 @@ namespace Avalonia.Controls.Primitives
             {
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
+        }
+
+        public void Unrealize()
+        {
+            if (RowIndex == -1)
+                throw new InvalidOperationException("Row is not realized.");
+            RowIndex = -1;
+            RecycleAllElements();
+        }
+
+        public void UpdateIndex(int index)
+        {
+            if (index < 0 || Rows is null || index >= Rows.Count)
+                throw new ArgumentOutOfRangeException(nameof(index));
+            RowIndex = index;
         }
 
         protected override Size MeasureElement(int index, IControl element, Size availableSize)
