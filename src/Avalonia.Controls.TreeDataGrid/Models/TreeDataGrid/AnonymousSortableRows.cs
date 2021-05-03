@@ -151,8 +151,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private void OnItemsCollectionChangedSorted(NotifyCollectionChangedEventArgs e)
         {
+            // If the rows have not yet been read then the type of collection change shouldn't be
+            // important; the only thing we need to do is inform the presenter that the collection
+            // has changed so that it can display the new items if the previous items were empty.
             if (_sortedItems is null)
+            {
+                CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
                 return;
+            }
 
             void Add(IList items)
             {

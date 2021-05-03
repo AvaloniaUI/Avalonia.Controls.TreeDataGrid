@@ -8,12 +8,11 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Diagnostics;
 using Xunit;
 
-#if false
-
 namespace Avalonia.Controls.TreeDataGridTests
 {
     public class FlatTreeDataGridSourceTests
     {
+#if false
         [Fact]
         public void Creates_Initial_Cells()
         {
@@ -190,9 +189,11 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, item.PropertyChangedSubscriberCount());
             }
         }
+#endif
 
         public class Sorted
         {
+#if false
             [Fact]
             public void Sorts_Initial_Cells()
             {
@@ -291,6 +292,25 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 AssertCells(target.Cells, data);
             }
+#endif
+
+            [Fact]
+            void Raises_Rows_Reset_When_Reassigning_Items()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var raised = 0;
+
+                target.Rows.CollectionChanged += (s, e) =>
+                {
+                    if (e.Action == NotifyCollectionChangedAction.Reset)
+                        ++raised;
+                };
+
+                target.Items = CreateData();
+
+                Assert.Equal(1, raised);
+            }
 
             private static FlatTreeDataGridSource<Row> CreateTarget(IEnumerable<Row> rows)
             {
@@ -299,11 +319,13 @@ namespace Avalonia.Controls.TreeDataGridTests
                 return result;
             }
 
+#if false
             private static void AssertCells(ICells cells, IList<Row> data)
             {
                 var sortedData = data.OrderByDescending(x => x.Id).ToList();
                 FlatTreeDataGridSourceTests.AssertCells(cells, sortedData);
             }
+#endif
         }
 
         private static FlatTreeDataGridSource<Row> CreateTarget(IEnumerable<Row> rows)
@@ -323,7 +345,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             var rows = Enumerable.Range(0, count).Select(x => new Row { Id = x, Caption = $"Row {x}" });
             return new AvaloniaList<Row>(rows);
         }
-
+#if false
         private static void AssertCells(ICells cells, IList<Row> data)
         {
             Assert.Equal(data.Count, cells.RowCount);
@@ -337,7 +359,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(data[i].Caption, cell1.Value);
             }
         }
-
+#endif
         private class Row : NotifyingBase
         {
             private int _id;
@@ -357,4 +379,3 @@ namespace Avalonia.Controls.TreeDataGridTests
         }
     }
 }
-#endif
