@@ -221,7 +221,7 @@ namespace Avalonia.Controls
 
         private bool MoveSelection(NavigationDirection direction, bool rangeModifier, ITreeDataGridCell? focused)
         {
-            if (Source is null || RowsPresenter is null)
+            if (Source is null || RowsPresenter is null || Source.Columns.Count == 0 || Source.Rows.Count == 0)
                 return false;
 
             var currentColumnIndex = focused?.ColumnIndex ?? 0;
