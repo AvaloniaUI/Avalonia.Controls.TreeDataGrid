@@ -56,8 +56,7 @@
                 <Thumb.Template>
                   <ControlTemplate>
                     <Border Background="{TemplateBinding Background}"
-                            VerticalAlignment="Stretch"
-                            Width="1"/>
+                            VerticalAlignment="Stretch"/>
                   </ControlTemplate>
                 </Thumb.Template>
               </Thumb>
