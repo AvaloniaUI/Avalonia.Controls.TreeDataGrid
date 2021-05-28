@@ -1,50 +1,49 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
     public class ExpanderCell<TModel> : NotifyingBase, IExpanderCell, IDisposable
     {
         private readonly ICell _inner;
-        private bool _showExpander;
 
         public ExpanderCell(
             ICell inner,
-            IExpanderRow<TModel> row,
-            bool showExpander)
+            IExpanderRow<TModel> row)
         {
             _inner = inner;
             Row = row;
-            ShowExpander = showExpander;
+            row.PropertyChanged += RowPropertyChanged;
         }
 
         public bool CanEdit => _inner.CanEdit;
         public ICell Content => _inner;
         public IExpanderRow<TModel> Row { get; }
-        object IExpanderCell.Content => Content;
-        IRow IExpanderCell.Row => Row;
-
-        public bool ShowExpander 
-        {
-            get => _showExpander;
-            private set => RaiseAndSetIfChanged(ref _showExpander, value);
-        }
-
+        public bool ShowExpander => Row.ShowExpander;
         public object? Value => _inner.Value;
 
         public bool IsExpanded
         {
             get => Row.IsExpanded;
-            set
-            {
-                Row.IsExpanded = value;
-
-                if (value == true && !Row.IsExpanded)
-                {
-                    ShowExpander = false;
-                }
-            }
+            set => Row.IsExpanded = value;
         }
 
-        public void Dispose() => (_inner as IDisposable)?.Dispose();
+        object IExpanderCell.Content => Content;
+        IRow IExpanderCell.Row => Row;
+
+        public void Dispose()
+        {
+            Row.PropertyChanged -= RowPropertyChanged;
+            (_inner as IDisposable)?.Dispose();
+        }
+
+        private void RowPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Row.IsExpanded) ||
+                e.PropertyName == nameof(Row.ShowExpander))
+            {
+                RaisePropertyChanged(e.PropertyName);
+            }
+        }
     }
 }

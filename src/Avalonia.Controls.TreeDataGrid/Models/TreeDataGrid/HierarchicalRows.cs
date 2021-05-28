@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -37,6 +38,80 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void Dispose() => _roots.Dispose();
 
+        public void Expand(IndexPath index)
+        {
+            var count = index.GetSize();
+            var rows = (IReadOnlyList<HierarchicalRow<TModel>>?)_roots;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (rows is null)
+                    break;
+
+                var modelIndex = index.GetAt(i);
+                var found = false;
+
+                foreach (var row in rows)
+                {
+                    if (row.ModelIndex == modelIndex)
+                    {
+                        row.IsExpanded = true;
+                        rows = row.Children;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    break;
+            }
+        }
+
+        public void Collapse(IndexPath index)
+        {
+            var count = index.GetSize();
+            var rows = (IReadOnlyList<HierarchicalRow<TModel>>?)_roots;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (rows is null)
+                    break;
+
+                var modelIndex = index.GetAt(i);
+                var found = false;
+
+                foreach (var row in rows)
+                {
+                    if (row.ModelIndex == modelIndex)
+                    {
+                        if (i == count - 1)
+                            row.IsExpanded = false;
+                        rows = row.Children;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    break;
+            }
+        }
+
+        public (int index, double y) GetRowAt(double y)
+        {
+            if (MathUtilities.IsZero(y))
+                return (0, 0);
+            return (-1, -1);
+        }
+
+        public ICell RealizeCell(IColumn column, int columnIndex, int rowIndex)
+        {
+            if (column is IColumn<TModel> c)
+                return c.CreateCell(this[rowIndex]);
+            else
+                throw new InvalidOperationException("Invalid column.");
+        }
+
         public void SetItems(ItemsSourceViewFix<TModel> items)
         {
             _roots.SetItems(items);
@@ -54,6 +129,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 row.SortChildren(comparison);
             }
+        }
+
+        public void UnrealizeCell(ICell cell, int rowIndex, int columnIndex)
+        {
+            (cell as IDisposable)?.Dispose();
         }
 
         public override IEnumerator<HierarchicalRow<TModel>> GetEnumerator() => _rows.GetEnumerator();

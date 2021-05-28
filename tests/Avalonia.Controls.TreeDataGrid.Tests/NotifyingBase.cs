@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Avalonia.Controls.TreeDataGrid.Tests
+namespace Avalonia.Controls.TreeDataGridTests
 {
     internal class NotifyingBase : INotifyPropertyChanged
     {

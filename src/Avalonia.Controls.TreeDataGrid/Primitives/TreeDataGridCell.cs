@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Input;
 
 namespace Avalonia.Controls.Primitives
@@ -23,23 +25,29 @@ namespace Avalonia.Controls.Primitives
 
         public int ColumnIndex { get; private set; } = -1;
         public int RowIndex { get; private set; } = -1;
-
-        int ITreeDataGridCell.ColumnIndex
-        {
-            get => ColumnIndex;
-            set => ColumnIndex = value;
-        }
-
-        int ITreeDataGridCell.RowIndex
-        {
-            get => RowIndex;
-            set => RowIndex = value;
-        }
+        public ICell? Model { get; private set; }
 
         public bool IsSelected
         {
             get => _isSelected;
             set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
+        }
+
+        public virtual void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        {
+            if (columnIndex < 0)
+                throw new IndexOutOfRangeException("Invalid column index.");
+            if (rowIndex < 0)
+                throw new IndexOutOfRangeException("Invalid row index.");
+
+            ColumnIndex = columnIndex;
+            RowIndex = rowIndex;
+            Model = model;
+        }
+
+        public virtual void Unrealize()
+        {
+            ColumnIndex = RowIndex = -1;
         }
 
         protected virtual bool CanEdit => false;

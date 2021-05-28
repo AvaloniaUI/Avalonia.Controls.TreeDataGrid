@@ -22,7 +22,6 @@ namespace Avalonia.Controls
         private ItemsSourceViewFix<TModel> _itemsView;
         private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
-        private CellList? _cells;
         private Comparison<TModel>? _comparison;
 
         public HierarchicalTreeDataGridSource(TModel item)
@@ -40,7 +39,7 @@ namespace Avalonia.Controls
 
         public IEnumerable<TModel> Items 
         {
-            get => _itemsView;
+            get => _items;
             set
             {
                 if (_items != value)
@@ -52,8 +51,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public ICells Cells => _cells ??= CreateCells();
-        public IRows Rows => _rows ??= CreateRows();
+        public IRows Rows => GetOrCreateRows();
         public ColumnList<TModel> Columns { get; }
         IColumns ITreeDataGridSource.Columns => Columns;
 
@@ -62,10 +60,9 @@ namespace Avalonia.Controls
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsing;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsed;
 
-        public void Dispose()
-        {
-            _rows?.Dispose();
-        }
+        public void Dispose() => _rows?.Dispose();
+        public void Expand(IndexPath index) => GetOrCreateRows().Expand(index);
+        public void Collapse(IndexPath index) => GetOrCreateRows().Collapse(index);
 
         public void Sort(Comparison<TModel>? comparison)
         {
@@ -135,46 +132,18 @@ namespace Avalonia.Controls
         internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0) =>
             _rows?.GetRowIndex(index, fromRowIndex) ?? -1;
 
-        private HierarchicalRows<TModel> CreateRows()
+        private HierarchicalRows<TModel> GetOrCreateRows()
         {
-            if (Columns.Count == 0)
-                throw new InvalidOperationException("No columns defined.");
-            if (_expanderColumn is null)
-                throw new InvalidOperationException("No expander column defined.");
-
-            var result = new HierarchicalRows<TModel>(this, _itemsView, _expanderColumn, _comparison);
-            result.CollectionChanged += OnRowsCollectionChanged;
-            return result;
-        }
-
-        private CellList CreateCells()
-        {
-            var result = new CellList(Columns.Count);
-            Reset(result);
-            return result;
-        }
-
-        private ICell CreateCell(HierarchicalRow<TModel> row, int columnIndex)
-        {
-            return Columns[columnIndex].CreateCell(row);
-        }
-
-        private void Reset(CellList cells)
-        {
-            _rows ??= CreateRows();
-            
-            cells.Reset(x =>
+            if (_rows is null)
             {
-                x.Clear();
+                if (Columns.Count == 0)
+                    throw new InvalidOperationException("No columns defined.");
+                if (_expanderColumn is null)
+                    throw new InvalidOperationException("No expander column defined.");
+                _rows = new HierarchicalRows<TModel>(this, _itemsView, _expanderColumn, _comparison);
+            }
 
-                foreach (var row in _rows)
-                {
-                    var columnCount = Columns.Count;
-
-                    for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
-                        x.Add(CreateCell(row, columnIndex));
-                }
-            });
+            return _rows;
         }
 
         private void OnColumnsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -196,62 +165,6 @@ namespace Avalonia.Controls
                     break;
                 default:
                     throw new NotImplementedException();
-            }
-        }
-
-        private void OnRowsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (_cells is null)
-                return;
-
-            void Add(int rowIndex, IList rows)
-            {
-                var cellIndex = rowIndex * Columns.Count;
-                var columnCount = Columns.Count;
-
-                _cells.InsertRange(cellIndex, insert =>
-                {
-                    foreach (HierarchicalRow<TModel> row in rows)
-                    {
-                        for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
-                            insert(CreateCell(row, columnIndex));
-                    }
-                });
-            }
-
-            void Remove(int rowIndex, int rowCount)
-            {
-                _cells.RemoveRange(rowIndex * Columns.Count, rowCount * Columns.Count);
-            }
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    Add(e.NewStartingIndex, e.NewItems);
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    Remove(e.OldStartingIndex, e.OldItems.Count);
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    var cellIndex = e.NewStartingIndex * Columns.Count;
-                    var columnCount = Columns.Count;
-
-                    foreach (HierarchicalRow<TModel> row in e.NewItems)
-                    {
-                        for (var columnIndex = 0; columnIndex < columnCount; ++columnIndex)
-                            _cells[cellIndex++] = CreateCell(row, columnIndex);
-                    }
-
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    Remove(e.OldStartingIndex, e.OldItems.Count);
-                    Add(e.NewStartingIndex, e.NewItems);
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    Reset(_cells);
-                    break;
-                default:
-                    throw new NotSupportedException();
             }
         }
     }

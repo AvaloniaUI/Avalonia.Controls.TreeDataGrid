@@ -30,6 +30,18 @@ namespace Avalonia.Controls.Primitives
             set => SetAndRaise(ContentTemplateProperty, ref _contentTemplate, value);
         }
 
+        public override void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        {
+            DataContext = model;
+            base.Realize(factory, model, columnIndex, rowIndex);
+        }
+
+        public override void Unrealize()
+        {
+            DataContext = null;
+            base.Unrealize();
+        }
+
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);

@@ -8,6 +8,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public interface IColumn : INotifyPropertyChanged
     {
         /// <summary>
+        /// Gets the actual width of the column after measurement.
+        /// </summary>
+        public double ActualWidth { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the user can resize the column.
         /// </summary>
         bool? CanUserResize { get; }
@@ -20,7 +25,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets the width of the column.
         /// </summary>
-        GridLength Width { get; set; }
+        /// <remarks>
+        /// To set the column width use <see cref="IColumns.SetColumnWidth(int, GridLength)"/>.
+        /// </remarks>
+        GridLength Width { get; }
 
         /// <summary>
         /// Gets or sets the sort direction indicator that will be displayed on the column.

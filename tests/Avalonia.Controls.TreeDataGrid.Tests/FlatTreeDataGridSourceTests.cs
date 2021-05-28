@@ -1,29 +1,25 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
-using Avalonia.Controls.Models;
 using Avalonia.Controls.Models.TreeDataGrid;
-using Avalonia.Diagnostics;
 using Xunit;
 
-namespace Avalonia.Controls.TreeDataGrid.Tests
+namespace Avalonia.Controls.TreeDataGridTests
 {
     public class FlatTreeDataGridSourceTests
     {
         [Fact]
-        public void Creates_Initial_Cells()
+        public void Creates_Initial_Rows()
         {
             var data = CreateData();
             var target = CreateTarget(data);
 
-            Assert.Equal(10, target.Rows.Count);
-            AssertCells(target.Cells, data);
+            AssertRows(target.Rows, data);
         }
 
         [Fact]
-        public void Creates_Cells_For_Added_Row()
+        public void Supports_Adding_Row()
         {
             var data = CreateData();
             var target = CreateTarget(data);
@@ -31,18 +27,23 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             Assert.Equal(10, target.Rows.Count);
 
             var raised = 0;
-            target.Cells.CollectionChanged += (s, e) => ++raised;
+            target.Rows.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Add, e.Action);
+                Assert.Equal(10, e.NewStartingIndex);
+                ++raised;
+            };
 
             data.Add(new Row { Id = 10, Caption = "New Row 10" });
 
             Assert.Equal(11, target.Rows.Count);
-            Assert.Equal(2, raised);
+            Assert.Equal(1, raised);
 
-            AssertCells(target.Cells, data);
+            AssertRows(target.Rows, data);
         }
 
         [Fact]
-        public void Removes_Cells_For_Removed_Row()
+        public void Supports_Removing_Row()
         {
             var data = CreateData();
             var target = CreateTarget(data);
@@ -50,18 +51,21 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             Assert.Equal(10, target.Rows.Count);
 
             var raised = 0;
-            target.Cells.CollectionChanged += (s, e) => ++raised;
+            target.Rows.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                Assert.Equal(5, e.OldStartingIndex);
+                ++raised;
+            };
 
             data.RemoveAt(5);
 
-            Assert.Equal(9, target.Rows.Count);
             Assert.Equal(1, raised);
-
-            AssertCells(target.Cells, data);
+            AssertRows(target.Rows, data);
         }
 
         [Fact]
-        public void Updates_Cells_For_Replaced_Row()
+        public void Supports_Replacing_Row()
         {
             var data = CreateData();
             var target = CreateTarget(data);
@@ -69,21 +73,22 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             Assert.Equal(10, target.Rows.Count);
 
             var raised = 0;
-            target.Cells.CollectionChanged += (s, e) => ++raised;
+            target.Rows.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Replace, e.Action);
+                Assert.Equal(5, e.NewStartingIndex);
+                Assert.Equal(5, e.OldStartingIndex);
+                ++raised;
+            };
 
             data[5] = new Row { Id = 10, Caption = "New Row 10" };
 
-            Assert.Equal(10, target.Rows.Count);
-            Assert.Equal(2, raised);
-
-            var cell0 = Assert.IsType<TextCell<int>>(target.Cells[0, 5]);
-            var cell1 = Assert.IsType<TextCell<string>>(target.Cells[1, 5]);
-
-            AssertCells(target.Cells, data);
+            Assert.Equal(1, raised);
+            AssertRows(target.Rows, data);
         }
 
         [Fact]
-        public void Updates_Cells_For_Moved_Row()
+        public void Supports_Moving_Row()
         {
             var data = CreateData();
             var target = CreateTarget(data);
@@ -91,18 +96,22 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             Assert.Equal(10, target.Rows.Count);
 
             var raised = 0;
-            target.Cells.CollectionChanged += (s, e) => ++raised;
+            target.Rows.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Move, e.Action);
+                Assert.Equal(8, e.NewStartingIndex);
+                Assert.Equal(5, e.OldStartingIndex);
+                ++raised;
+            };
 
             data.Move(5, 8);
 
-            Assert.Equal(10, target.Rows.Count);
-            Assert.Equal(3, raised);
-
-            AssertCells(target.Cells, data);
+            Assert.Equal(1, raised);
+            AssertRows(target.Rows, data);
         }
 
         [Fact]
-        public void Updates_Cells_For_Clear()
+        public void Supports_Clearing_Rows()
         {
             var data = CreateData();
             var target = CreateTarget(data);
@@ -110,27 +119,16 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             Assert.Equal(10, target.Rows.Count);
 
             var raised = 0;
-            target.Cells.CollectionChanged += (s, e) => ++raised;
+            target.Rows.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+                ++raised;
+            };
 
             data.Clear();
 
-            Assert.Equal(0, target.Rows.Count);
             Assert.Equal(1, raised);
-
-            AssertCells(target.Cells, data);
-        }
-
-        [Fact]
-        public void Updates_Cells_On_Property_Change()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-
-            Assert.Equal("Row 0", target.Cells[1, 0].Value);
-
-            data[0].Caption = "Modified";
-
-            Assert.Equal("Modified", target.Cells[1, 0].Value);
+            AssertRows(target.Rows, data);
         }
 
         [Fact]
@@ -138,55 +136,38 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
         {
             var data = CreateData();
             var target = CreateTarget(data);
-            var rowsResetRaised = 0;
-            var cellsResetRaised = 0;
+            var raised = 0;
 
-            Assert.Equal(10, target.Rows.Count);
+            AssertRows(target.Rows, data);
 
-            target.Cells.CollectionChanged += (s, e) =>
+            target.Rows.CollectionChanged += (s, e) =>
             {
-                if (e.Action == NotifyCollectionChangedAction.Reset)
-                    ++cellsResetRaised;
+                Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+                ++raised;
             };
+
+            target.Items = data = CreateData(20);
+
+            Assert.Equal(1, raised);
+            AssertRows(target.Rows, data);
+        }
+
+        [Fact]
+        public void Raises_Rows_Reset_When_Reassigning_Items_But_Rows_Not_Yet_Read()
+        {
+            var data = CreateData();
+            var target = CreateTarget(data);
+            var raised = 0;
 
             target.Rows.CollectionChanged += (s, e) =>
             {
                 if (e.Action == NotifyCollectionChangedAction.Reset)
-                    ++rowsResetRaised;
+                    ++raised;
             };
 
-            target.Items = CreateData(20);
+            target.Items = CreateData();
 
-            Assert.Equal(20, target.Rows.Count);
-            Assert.Equal(1, cellsResetRaised);
-            Assert.Equal(1, rowsResetRaised);
-        }
-
-        [Fact]
-        public void Disposing_Releases_Listeners_On_Items()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-
-            Assert.Equal(10, target.Rows.Count);
-            Assert.Equal(20, target.Cells.Count);
-            Assert.Equal(1, data.CollectionChangedSubscriberCount());
-
-            foreach (var item in data)
-            {
-                Assert.Equal(2, item.PropertyChangedSubscriberCount());
-            }
-
-            target.Dispose();
-
-            Assert.Equal(0, target.Rows.Count);
-            Assert.Equal(0, target.Cells.Count);
-            Assert.Equal(0, data.CollectionChangedSubscriberCount());
-
-            foreach (var item in data)
-            {
-                Assert.Equal(0, item.PropertyChangedSubscriberCount());
-            }
+            Assert.Equal(1, raised);
         }
 
         public class Sorted
@@ -199,95 +180,165 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
 
                 Assert.Equal(10, target.Rows.Count);
 
-                AssertCells(target.Cells, data);
+                AssertRows(target.Rows, data);
             }
 
             [Fact]
-            public void Creates_Cells_For_Added_Row()
+            public void Supports_Adding_Row()
             {
                 var data = CreateData();
                 var target = CreateTarget(data);
 
-                AssertCells(target.Cells, data);
+                AssertRows(target.Rows, data);
+
+                var raised = 0;
+                target.Rows.CollectionChanged += (s, e) =>
+                {
+                    Assert.Equal(NotifyCollectionChangedAction.Add, e.Action);
+                    Assert.Equal(0, e.NewStartingIndex);
+                    ++raised;
+                };
 
                 data.Add(new Row { Id = 10, Caption = "New Row 10" });
 
                 Assert.Equal(11, target.Rows.Count);
-                AssertCells(target.Cells, data);
+                Assert.Equal(1, raised);
+
+                AssertRows(target.Rows, data);
             }
 
             [Fact]
-            public void Removes_Cells_For_Removed_Row()
+            public void Supports_Removing_Row()
             {
                 var data = CreateData();
                 var target = CreateTarget(data);
 
-                AssertCells(target.Cells, data);
+                AssertRows(target.Rows, data);
+
+                var raised = 0;
+                target.Rows.CollectionChanged += (s, e) =>
+                {
+                    Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                    Assert.Equal(4, e.OldStartingIndex);
+                    ++raised;
+                };
 
                 data.RemoveAt(5);
 
-                Assert.Equal(9, target.Rows.Count);
-                AssertCells(target.Cells, data);
+                Assert.Equal(1, raised);
+                AssertRows(target.Rows, data);
             }
 
             [Fact]
-            public void Updates_Cells_For_Replaced_Row()
+            public void Supports_Replacing_Row()
             {
                 var data = CreateData();
                 var target = CreateTarget(data);
 
-                Assert.Equal(10, target.Rows.Count);
+                AssertRows(target.Rows, data);
 
                 var raised = 0;
-                target.Cells.CollectionChanged += (s, e) => ++raised;
-                
+                target.Rows.CollectionChanged += (s, e) =>
+                {
+                    if (e.Action == NotifyCollectionChangedAction.Remove)
+                        Assert.Equal(4, e.OldStartingIndex);
+                    else if (e.Action == NotifyCollectionChangedAction.Add)
+                        Assert.Equal(0, e.NewStartingIndex);
+                    else
+                        Assert.True(false, "Unexpected collection change");
+                    ++raised;
+                };
+
                 data[5] = new Row { Id = 10, Caption = "New Row 10" };
 
-                Assert.Equal(10, target.Rows.Count);
-                Assert.Equal(3, raised);
-
-                var cell0 = Assert.IsType<TextCell<int>>(target.Cells[0, 5]);
-                var cell1 = Assert.IsType<TextCell<string>>(target.Cells[1, 5]);
-
-                AssertCells(target.Cells, data);
+                Assert.Equal(2, raised);
+                AssertRows(target.Rows, data);
             }
 
             [Fact]
-            public void Updates_Cells_For_Moved_Row()
+            public void Supports_Moving_Row()
             {
                 var data = CreateData();
                 var target = CreateTarget(data);
 
-                Assert.Equal(10, target.Rows.Count);
+                AssertRows(target.Rows, data);
 
                 var raised = 0;
-                target.Cells.CollectionChanged += (s, e) => ++raised;
+                target.Rows.CollectionChanged += (s, e) =>
+                {
+                    if (e.Action == NotifyCollectionChangedAction.Remove)
+                        Assert.Equal(4, e.OldStartingIndex);
+                    else if (e.Action == NotifyCollectionChangedAction.Add)
+                        Assert.Equal(4, e.NewStartingIndex);
+                    else
+                        Assert.True(false, "Unexpected collection change");
+                    ++raised;
+                };
 
                 data.Move(5, 8);
 
-                Assert.Equal(10, target.Rows.Count);
-                Assert.Equal(3, raised);
-
-                AssertCells(target.Cells, data);
+                Assert.Equal(2, raised);
+                AssertRows(target.Rows, data);
             }
 
             [Fact]
-            public void Updates_Cells_For_Clear()
+            public void Supports_Clearing_Rows()
             {
                 var data = CreateData();
                 var target = CreateTarget(data);
 
-                Assert.Equal(10, target.Rows.Count);
+                AssertRows(target.Rows, data);
 
                 var raised = 0;
-                target.Cells.CollectionChanged += (s, e) => ++raised;
+                target.Rows.CollectionChanged += (s, e) =>
+                {
+                    Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+                    ++raised;
+                };
 
                 data.Clear();
 
-                Assert.Equal(0, target.Rows.Count);
                 Assert.Equal(1, raised);
+                AssertRows(target.Rows, data);
+            }
 
-                AssertCells(target.Cells, data);
+            [Fact]
+            public void Can_Reassign_Items()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var raised = 0;
+
+                AssertRows(target.Rows, data);
+
+                target.Rows.CollectionChanged += (s, e) =>
+                {
+                    Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+                    ++raised;
+                };
+
+                target.Items = data = CreateData(20);
+
+                Assert.Equal(1, raised);
+                AssertRows(target.Rows, data);
+            }
+
+            [Fact]
+            public void Raises_Rows_Reset_When_Reassigning_Items_But_Rows_Not_Yet_Read()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var raised = 0;
+
+                target.Rows.CollectionChanged += (s, e) =>
+                {
+                    if (e.Action == NotifyCollectionChangedAction.Reset)
+                        ++raised;
+                };
+
+                target.Items = CreateData();
+
+                Assert.Equal(1, raised);
             }
 
             private static FlatTreeDataGridSource<Row> CreateTarget(IEnumerable<Row> rows)
@@ -297,10 +348,10 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
                 return result;
             }
 
-            private static void AssertCells(ICells cells, IList<Row> data)
+            private static void AssertRows(IRows rows, IList<Row> data)
             {
                 var sortedData = data.OrderByDescending(x => x.Id).ToList();
-                FlatTreeDataGridSourceTests.AssertCells(cells, sortedData);
+                FlatTreeDataGridSourceTests.AssertRows(rows, sortedData);
             }
         }
 
@@ -322,17 +373,15 @@ namespace Avalonia.Controls.TreeDataGrid.Tests
             return new AvaloniaList<Row>(rows);
         }
 
-        private static void AssertCells(ICells cells, IList<Row> data)
+        private static void AssertRows(IRows rows, IList<Row> data)
         {
-            Assert.Equal(data.Count, cells.RowCount);
-            Assert.Equal(data.Count * cells.ColumnCount, cells.Count);
+            Assert.Equal(data.Count, rows.Count);
 
             for (var i = 0; i < data.Count; ++i)
             {
-                var cell0 = Assert.IsType<TextCell<int>>(cells[0, i]);
-                var cell1 = Assert.IsType<TextCell<string>>(cells[1, i]);
-                Assert.Equal(data[i].Id, cell0.Value);
-                Assert.Equal(data[i].Caption, cell1.Value);
+                var row = (IRow<Row>)rows[i];
+                Assert.Same(row.Model, data[i]);
+                Assert.Equal(i, row.ModelIndex);
             }
         }
 

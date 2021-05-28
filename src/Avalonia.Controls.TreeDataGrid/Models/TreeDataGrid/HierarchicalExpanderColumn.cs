@@ -11,11 +11,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The model type.</typeparam>
     public class HierarchicalExpanderColumn<TModel> : NotifyingBase,
         IColumn<TModel>,
-        IExpanderColumn<TModel>
+        IExpanderColumn<TModel>,
+        ISetColumnLayout
     {
         private readonly IColumn<TModel> _inner;
         private readonly Func<TModel, IEnumerable<TModel>?> _childSelector;
         private readonly Func<TModel, bool>? _hasChildrenSelector;
+        private double _actualWidth;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HierarchicalExpanderColumn{TModel}"/> class.
@@ -35,6 +37,15 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _hasChildrenSelector = hasChildrenSelector;
         }
 
+        /// <summary>
+        /// Gets or sets the actual width of the column after measurement.
+        /// </summary>
+        public double ActualWidth
+        {
+            get => _actualWidth;
+            private set => RaiseAndSetIfChanged(ref _actualWidth, value);
+        }
+
         public bool? CanUserResize => _inner.CanUserResize;
         public object? Header => _inner.Header;
 
@@ -44,28 +55,24 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             set => _inner.SortDirection = value;
         }
 
-        public GridLength Width
-        {
-            get => _inner.Width;
-            set => _inner.Width = value;
-        }
+        public GridLength Width => _inner.Width;
 
         public ICell CreateCell(IRow<TModel> row)
         {
             if (row is HierarchicalRow<TModel> r)
             {
-                return new ExpanderCell<TModel>(
-                    _inner.CreateCell(r),
-                    r,
-                    _hasChildrenSelector?.Invoke(row.Model) ?? true);
+                return new ExpanderCell<TModel>(_inner.CreateCell(r), r);
             }
 
             throw new NotSupportedException();
         }
 
+        public bool HasChildren(TModel model) => _hasChildrenSelector?.Invoke(model) ?? true;
         public IEnumerable<TModel>? GetChildModels(TModel model) => _childSelector(model);
-
         public Comparison<TModel>? GetComparison(ListSortDirection direction) => _inner.GetComparison(direction);
+
+        void ISetColumnLayout.SetActualWidth(double width) => ActualWidth = width;
+        void ISetColumnLayout.SetWidth(GridLength width) => ((ISetColumnLayout)_inner).SetWidth(width);
 
         private void OnInnerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {

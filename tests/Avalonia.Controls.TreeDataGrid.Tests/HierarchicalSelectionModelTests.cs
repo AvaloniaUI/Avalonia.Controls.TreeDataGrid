@@ -6,7 +6,7 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Xunit;
 
-namespace Avalonia.Controls.TreeDataGrid.Tests
+namespace Avalonia.Controls.TreeDataGridTests
 {
     public class HierarchicalSelectionModelTests
     {

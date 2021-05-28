@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -21,7 +22,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private IComparer<TModel>? _comparer;
         private List<TModel>? _sortedItems;
 
-        public AnonymousSortableRows(ItemsSourceViewFix<TModel> items, IComparer<TModel>? comparer)
+        public AnonymousSortableRows(
+            ItemsSourceViewFix<TModel> items,
+            IComparer<TModel>? comparer)
         {
             _items = items;
             _items.CollectionChanged += OnItemsCollectionChanged;
@@ -48,10 +51,27 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void Dispose() => SetItems(ItemsSourceViewFix<TModel>.Empty);
 
+        public (int index, double y) GetRowAt(double y)
+        {
+            // Rows in an AnonymousSortableRows collection have Auto height so we only
+            // know the start position of the first row.
+            if (MathUtilities.IsZero(y))
+                return (0, 0);
+            return (-1, -1);
+        }
+
         public override IEnumerator<IRow<TModel>> GetEnumerator()
         {
             for (var i = 0; i < Count; ++i)
                 yield return this[i];
+        }
+
+        public ICell RealizeCell(IColumn column, int columnIndex, int rowIndex)
+        {
+            if (column is IColumn<TModel> c)
+                return c.CreateCell(this[rowIndex]);
+            else
+                throw new InvalidOperationException("Invalid column.");
         }
 
         public void SetItems(ItemsSourceViewFix<TModel> items)
@@ -75,6 +95,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 _sortedItems ??= new List<TModel>();
 
             OnItemsCollectionChanged(_items,  CollectionExtensions.ResetEvent);
+        }
+
+        public void UnrealizeCell(ICell cell, int columnIndex, int rowIndex)
+        {
+            (cell as IDisposable)?.Dispose();
         }
 
         IEnumerator<IRow> IEnumerable<IRow>.GetEnumerator() => GetEnumerator();
@@ -126,8 +151,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private void OnItemsCollectionChangedSorted(NotifyCollectionChangedEventArgs e)
         {
+            // If the rows have not yet been read then the type of collection change shouldn't be
+            // important; the only thing we need to do is inform the presenter that the collection
+            // has changed so that it can display the new items if the previous items were empty.
             if (_sortedItems is null)
+            {
+                CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
                 return;
+            }
 
             void Add(IList items)
             {

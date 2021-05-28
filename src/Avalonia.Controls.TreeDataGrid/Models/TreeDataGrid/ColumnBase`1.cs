@@ -7,8 +7,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// Base class for columns which select cell values from a model.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public abstract class ColumnBase<TModel> : NotifyingBase, IColumn<TModel>
+    public abstract class ColumnBase<TModel> : NotifyingBase, IColumn<TModel>, ISetColumnLayout
     {
+        private double _actualWidth;
         private bool? _canUserResize;
         private GridLength _width;
         private object? _header;
@@ -29,7 +30,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             _canUserResize = options?.CanUserResizeColumn;
             _header = header;
-            _width = width ?? GridLength.Auto;
+            SetWidth(width ?? GridLength.Auto);
+        }
+
+        /// <summary>
+        /// Gets the actual width of the column after measurement.
+        /// </summary>
+        public double ActualWidth
+        {
+            get => _actualWidth;
+            private set => RaiseAndSetIfChanged(ref _actualWidth, value);
         }
 
         /// <summary>
@@ -42,12 +52,15 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         /// <summary>
-        /// Gets or sets the width of the column.
+        /// Gets the width of the column.
         /// </summary>
+        /// <remarks>
+        /// To set the column width use <see cref="IColumns.SetColumnWidth(int, GridLength)"/>.
+        /// </remarks>
         public GridLength Width 
         {
             get => _width;
-            set => RaiseAndSetIfChanged(ref _width, value);
+            private set => RaiseAndSetIfChanged(ref _width, value);
         }
 
         /// <summary>
@@ -81,5 +94,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public abstract ICell CreateCell(IRow<TModel> row);
 
         public abstract Comparison<TModel>? GetComparison(ListSortDirection direction);
+
+        void ISetColumnLayout.SetActualWidth(double width) => ActualWidth = width;
+        void ISetColumnLayout.SetWidth(GridLength width) => SetWidth(width);
+
+        private void SetWidth(GridLength width)
+        {
+            _width = width;
+
+            if (width.IsAbsolute)
+                ActualWidth = width.Value;
+        }
     }
 }

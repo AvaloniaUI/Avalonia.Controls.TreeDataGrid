@@ -1,5 +1,5 @@
 ﻿using System;
-using Avalonia;
+using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.VisualTree;
 
@@ -25,62 +25,122 @@ namespace Avalonia.Controls.Primitives
 
         private Decorator? _contentContainer;
         private Type? _contentType;
+        private IElementFactory? _factory;
+        private ElementFactoryGetArgs? _getArgs;
+        private int _indent;
+        private bool _isExpanded;
+        private IExpanderCell? _model;
+        private ElementFactoryRecycleArgs? _recycleArgs;
+        private bool _showExpander;
 
-        public int Indent => (Model?.Row as IIndentedRow)?.Indent ?? 0;
+        public int Indent
+        {
+            get => _indent;
+            private set => SetAndRaise(IndentProperty, ref _indent, value);
+        }
 
         public bool IsExpanded
         {
-            get => Model?.IsExpanded ?? false;
-            set
-            {
-                if (Model is IExpanderCell model)
-                    model.IsExpanded = value;
-            }
+            get => _isExpanded;
+            set { if (_model is object) _model.IsExpanded = value; }
         }
 
-        public bool ShowExpander => Model?.ShowExpander ?? false;
+        public bool ShowExpander
+        {
+            get => _showExpander;
+            private set => SetAndRaise(ShowExpanderProperty, ref _showExpander, value);
+        }
 
-        private IExpanderCell? Model => (IExpanderCell?)DataContext;
+        public override void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        {
+            if (_model is object)
+                throw new InvalidOperationException("Cell is already realized.");
+
+            if (model is IExpanderCell expanderModel)
+            {
+                _factory = factory;
+                _model = expanderModel;
+                Indent = (_model.Row as IIndentedRow)?.Indent ?? 0;
+                ShowExpander = _model.ShowExpander;
+
+                // We can't go via the `IsExpanded` property here as that contains the implementation
+                // for changing the expanded state by user action; it signals to the model that the
+                // state is changed but here we need to update our state from the model.
+                SetAndRaise(IsExpandedProperty, ref _isExpanded, _model.IsExpanded);
+
+                if (expanderModel is INotifyPropertyChanged inpc)
+                    inpc.PropertyChanged += ModelPropertyChanged;
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid cell model.");
+            }
+
+            base.Realize(factory, model, columnIndex, rowIndex);
+            UpdateContent(_factory);
+        }
+
+        public override void Unrealize()
+        {
+            if (_model is INotifyPropertyChanged inpc)
+                inpc.PropertyChanged += ModelPropertyChanged;
+            _model = null;
+            base.Unrealize();
+            if (_factory is object)
+                UpdateContent(_factory);
+        }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _contentContainer = e.NameScope.Find<Decorator>("PART_Content");
-            UpdateContent();
+            if (_factory is object)
+                UpdateContent(_factory);
         }
 
-        protected override void OnDataContextChanged(EventArgs e)
+        private void UpdateContent(IElementFactory factory)
         {
-            base.OnDataContextChanged(e);
-            RaisePropertyChanged(IndentProperty, default, default);
-            RaisePropertyChanged(IsExpandedProperty, default, default);
-            RaisePropertyChanged(ShowExpanderProperty, default, default);
-            UpdateContent();
-        }
-
-        private void UpdateContent()
-        {
-            if (_contentContainer is null)
+            if (_contentContainer is null || _model is null)
                 return;
 
-            var content = Model?.Content;
-
-            if (content is object)
+            if (_model?.Content is ICell innerModel)
             {
-                var contentType = content.GetType();
+                var contentType = innerModel.GetType();
 
                 if (contentType != _contentType)
                 {
-                    var owner = this.FindAncestorOfType<TreeDataGrid>();
+                    _getArgs ??= new ElementFactoryGetArgs();
+                    _getArgs.Data = innerModel;
+                    _getArgs.Index = ColumnIndex;
 
-                    if (owner is null)
-                        return;
-                    
-                    _contentContainer.Child = owner.ElementFactory.Build(content);
+                    var element = factory.GetElement(_getArgs);
+
+                    element.IsVisible = true;
+                    _contentContainer.Child = element;
                     _contentType = contentType;
                 }
 
-                _contentContainer.Child.DataContext = content;
+                if (_contentContainer.Child is ITreeDataGridCell innerCell)
+                    innerCell.Realize(factory, innerModel, ColumnIndex, RowIndex);
             }
+            else
+            {
+                var element = _contentContainer.Child;
+                _contentContainer.Child = null;
+                _recycleArgs ??= new ElementFactoryRecycleArgs();
+                _recycleArgs.Element = element;
+                factory.RecycleElement(_recycleArgs);
+            }
+        }
+
+        private void ModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (_model is null)
+                return;
+
+            if (e.PropertyName == nameof(_model.IsExpanded))
+                SetAndRaise(IsExpandedProperty, ref _isExpanded, _model.IsExpanded);
+            if (e.PropertyName == nameof(_model.ShowExpander))
+                ShowExpander = _model.ShowExpander;
         }
     }
 }

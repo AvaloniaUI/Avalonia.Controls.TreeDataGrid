@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -19,6 +20,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private IEnumerable<TModel>? _childModels;
         private ChildRows? _childRows;
         private bool _isExpanded;
+        private bool? _showExpander;
 
         public HierarchicalRow(
             IExpanderRowController<TModel> controller,
@@ -81,6 +83,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             }
         }
 
+        public bool ShowExpander
+        {
+            get => _showExpander ??= _expanderColumn.HasChildren(Model);
+            private set => RaiseAndSetIfChanged(ref _showExpander, value);
+        }
+
         public void Dispose() => _childRows?.Dispose();
 
         public void UpdateModelIndex(int delta)
@@ -122,6 +130,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             if (_childRows?.Count > 0)
                 _isExpanded = true;
+            else
+                ShowExpander = false;
 
             _controller.OnChildCollectionChanged(this, CollectionExtensions.ResetEvent);
 
@@ -138,12 +148,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _controller.OnChildCollectionChanged(this, CollectionExtensions.ResetEvent);
             RaisePropertyChanged(nameof(IsExpanded));
             _controller.OnEndExpandCollapse(this);
-        }
-
-        private void OnChildCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (_isExpanded)
-                _controller.OnChildCollectionChanged(this, e);
         }
 
         private class ChildRows : SortableRowsBase<TModel, HierarchicalRow<TModel>>,

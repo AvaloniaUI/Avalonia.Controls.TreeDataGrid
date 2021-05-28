@@ -20,6 +20,7 @@ namespace ProControlsDemo
         {
             InitializeComponent();
             this.AttachDevTools();
+            Renderer.DrawFps = true;
             DataContext = new MainWindowViewModel();
 
             _tabs = this.FindControl<TabControl>("tabs");
@@ -76,9 +77,10 @@ namespace ProControlsDemo
                 .FirstOrDefault(x => x is TreeDataGrid tl);
             var textBlock = (TextBlock)((Control)tabItem.Content).GetLogicalDescendants()
                 .FirstOrDefault(x => x is TextBlock tb && tb.Classes.Contains("realized-count"));
-            var repeater = (IVisual)treeDataGrid.Repeater!;
-            var rows = repeater!.VisualChildren.Count / treeDataGrid.Columns?.Count;
-            textBlock.Text = $"{rows} rows realized";
+            var rows = treeDataGrid.RowsPresenter!;
+            var realizedRowCount = rows.RealizedElements.Count;
+            var unrealizedRowCount = ((ILogical)rows).LogicalChildren.Count - realizedRowCount;
+            textBlock.Text = $"{realizedRowCount} rows realized ({unrealizedRowCount} unrealized)";
         }
     }
 }

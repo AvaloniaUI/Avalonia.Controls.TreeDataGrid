@@ -19,11 +19,6 @@ namespace Avalonia.Controls
         IRows Rows { get; }
 
         /// <summary>
-        /// Gets the cells to be displayed.
-        /// </summary>
-        ICells Cells { get; }
-
-        /// <summary>
         /// Requests to sort the source by the specified column.
         /// </summary>
         /// <param name="column">The column.</param>

@@ -9,6 +9,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public interface IExpanderColumn<TModel> : IColumn<TModel>
     {
         /// <summary>
+        /// Gets a value indicating whether the column has nested data.
+        /// </summary>
+        /// <param name="model">The parent model.</param>
+        bool HasChildren(TModel model);
+
+        /// <summary>
         /// Gets the child models which represent the nested data for this column.
         /// </summary>
         /// <param name="model">The parent model.</param>

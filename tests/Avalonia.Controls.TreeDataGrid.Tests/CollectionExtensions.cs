@@ -1,7 +1,7 @@
 ﻿using Avalonia.Collections;
 using Avalonia.Diagnostics;
 
-namespace Avalonia.Controls.TreeDataGrid.Tests
+namespace Avalonia.Controls.TreeDataGridTests
 {
     internal static class CollectionExtensions
     {

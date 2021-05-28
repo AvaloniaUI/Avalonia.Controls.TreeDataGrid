@@ -17,10 +17,5 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets the row that the cell belongs to.
         /// </summary>
         IRow Row { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the expander should be shown.
-        /// </summary>
-        bool ShowExpander { get; }
     }
 }
