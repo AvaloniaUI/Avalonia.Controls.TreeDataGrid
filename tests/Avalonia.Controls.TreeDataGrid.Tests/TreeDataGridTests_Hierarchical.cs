@@ -44,8 +44,7 @@ namespace Avalonia.Controls.TreeDataGridTests
         {
             using var app = App();
 
-            var (target, _) = CreateTarget();
-            var source = (HierarchicalTreeDataGridSource<Model>)target.Source!;
+            var (target, source) = CreateTarget();
 
             Assert.NotNull(target.RowsPresenter);
             Assert.Equal(2, target.RowsPresenter!.RealizedElements.Count());
@@ -63,7 +62,25 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(10, target.RowsPresenter!.GetLogicalChildren().Count());
         }
 
-        private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget()
+        [Fact]
+        public void Should_Hide_Expander_When_Node_With_No_Children_Expanded()
+        {
+            using var app = App();
+
+            var (target, source) = CreateTarget();
+            var cell = target.TryGetCell(0, 1);
+            var expander = Assert.IsType<TreeDataGridExpanderCell>(cell);
+
+            Assert.False(expander.IsExpanded);
+            Assert.True(expander.ShowExpander);
+
+            expander.IsExpanded = true;
+
+            Assert.False(expander.IsExpanded);
+            Assert.False(expander.ShowExpander);
+        }
+
+        private static (TreeDataGrid, HierarchicalTreeDataGridSource<Model>) CreateTarget()
         {
             var items = new AvaloniaList<Model>
             {
@@ -82,12 +99,6 @@ namespace Avalonia.Controls.TreeDataGridTests
                 {
                     Id = 1,
                     Title = "Root 1",
-                    Children = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
-                        new Model
-                        {
-                            Id = 100 + x,
-                            Title = "Item 1-" + x,
-                        }))
                 },
             };
 
@@ -96,7 +107,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 new HierarchicalExpanderColumn<Model>(
                     new TextColumn<Model, int>("ID", x => x.Id),
                     x => x.Children,
-                    x => x.Children is object));
+                    x => true));
             source.Columns.Add(new TextColumn<Model, string?>("Title", x => x.Title));
 
             var target = new TreeDataGrid
@@ -128,7 +139,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             };
 
             root.LayoutManager.ExecuteInitialLayoutPass();
-            return (target, items);
+            return (target, source);
         }
 
         private static void Layout(TreeDataGrid target)

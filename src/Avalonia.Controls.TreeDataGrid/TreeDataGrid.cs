@@ -116,6 +116,17 @@ namespace Avalonia.Controls
             }
         }
 
+        public IControl? TryGetCell(int columnIndex, int rowIndex)
+        {
+            if (TryGetRow(rowIndex) is TreeDataGridRow row &&
+                row.TryGetCell(columnIndex) is IControl cell)
+            {
+                return cell;
+            }
+
+            return null;
+        }
+
         public TreeDataGridRow? TryGetRow(int rowIndex)
         {
             return RowsPresenter?.TryGetElement(rowIndex) as TreeDataGridRow;

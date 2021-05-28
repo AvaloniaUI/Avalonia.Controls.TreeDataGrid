@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.VisualTree;
 
@@ -41,11 +42,7 @@ namespace Avalonia.Controls.Primitives
         public bool IsExpanded
         {
             get => _isExpanded;
-            set
-            {
-                if (SetAndRaise(IsExpandedProperty, ref _isExpanded, value) && _model is object)
-                    _model.IsExpanded = value;
-            }
+            set { if (_model is object) _model.IsExpanded = value; }
         }
 
         public bool ShowExpander
@@ -64,8 +61,15 @@ namespace Avalonia.Controls.Primitives
                 _factory = factory;
                 _model = expanderModel;
                 Indent = (_model.Row as IIndentedRow)?.Indent ?? 0;
-                IsExpanded = _model.IsExpanded;
                 ShowExpander = _model.ShowExpander;
+
+                // We can't go via the `IsExpanded` property here as that contains the implementation
+                // for changing the expanded state by user action; it signals to the model that the
+                // state is changed but here we need to update our state from the model.
+                SetAndRaise(IsExpandedProperty, ref _isExpanded, _model.IsExpanded);
+
+                if (expanderModel is INotifyPropertyChanged inpc)
+                    inpc.PropertyChanged += ModelPropertyChanged;
             }
             else
             {
@@ -78,6 +82,8 @@ namespace Avalonia.Controls.Primitives
 
         public override void Unrealize()
         {
+            if (_model is INotifyPropertyChanged inpc)
+                inpc.PropertyChanged += ModelPropertyChanged;
             _model = null;
             base.Unrealize();
             if (_factory is object)
@@ -124,6 +130,17 @@ namespace Avalonia.Controls.Primitives
                 _recycleArgs.Element = element;
                 factory.RecycleElement(_recycleArgs);
             }
+        }
+
+        private void ModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (_model is null)
+                return;
+
+            if (e.PropertyName == nameof(_model.IsExpanded))
+                SetAndRaise(IsExpandedProperty, ref _isExpanded, _model.IsExpanded);
+            if (e.PropertyName == nameof(_model.ShowExpander))
+                ShowExpander = _model.ShowExpander;
         }
     }
 }

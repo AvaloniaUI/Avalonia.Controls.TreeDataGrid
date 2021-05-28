@@ -73,6 +73,11 @@ namespace Avalonia.Controls.Primitives
             UpdateIndex(rowIndex);
         }
 
+        public IControl? TryGetCell(int columnIndex)
+        {
+            return CellsPresenter?.TryGetElement(columnIndex) as ITreeDataGridCell;
+        }
+
         public void UpdateIndex(int index)
         {
             RowIndex = index;
