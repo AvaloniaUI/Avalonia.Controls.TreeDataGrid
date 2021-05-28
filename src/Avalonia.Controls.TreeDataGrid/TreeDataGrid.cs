@@ -116,6 +116,8 @@ namespace Avalonia.Controls
             }
         }
 
+        public event CancelEventHandler SelectionChanging;
+
         public IControl? TryGetCell(int columnIndex, int rowIndex)
         {
             if (TryGetRow(rowIndex) is TreeDataGridRow row &&
@@ -325,40 +327,54 @@ namespace Avalonia.Controls
 
             if (!select)
             {
-                _selection.Deselect(index);
+                if (_selection.IsSelected(index) && !SelectionCanceled())
+                    _selection.Deselect(index);
             }
             else if (rightButton)
             {
-                if (_selection.IsSelected(index) == false)
+                if (_selection.IsSelected(index) == false && !SelectionCanceled())
                 {
                     _selection.SelectedIndex = index;
                 }
             }
             else if (range)
             {
-                using var operation = _selection.BatchUpdate();
-                _selection.Clear();
-                _selection.SelectRange(_selection.AnchorIndex, index);
+                if (!SelectionCanceled())
+                {
+                    using var operation = _selection.BatchUpdate();
+                    _selection.Clear();
+                    _selection.SelectRange(_selection.AnchorIndex, index);
+                }
             }
             else if (multi && toggle)
             {
-                if (_selection.IsSelected(index) == true)
+                if (!SelectionCanceled())
                 {
-                    _selection.Deselect(index);
-                }
-                else
-                {
-                    _selection.Select(index);
+                    if (_selection.IsSelected(index) == true)
+                        _selection.Deselect(index);
+                    else
+                        _selection.Select(index);
                 }
             }
             else if (toggle)
             {
-                _selection.SelectedIndex = (_selection.SelectedIndex == index) ? -1 : index;
+                if (!SelectionCanceled())
+                    _selection.SelectedIndex = (_selection.SelectedIndex == index) ? -1 : index;
             }
-            else
+            else if (_selection.SelectedIndex != index || _selection.Count > 1)
             {
-                _selection.SelectedIndex = index;
+                if (!SelectionCanceled())
+                    _selection.SelectedIndex = index;
             }
+        }
+
+        private bool SelectionCanceled()
+        {
+            if (SelectionChanging is null)
+                return false;
+            var e = new CancelEventArgs();
+            SelectionChanging(this, e);
+            return e.Cancel;
         }
 
         private void OnClick(object sender, RoutedEventArgs e)
