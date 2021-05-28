@@ -84,6 +84,9 @@ namespace Avalonia.Controls.Primitives
 
         public void BringIntoView(int index)
         {
+            if (_items is null || index < 0 || index >= _items.Count)
+                return;
+
             if (GetRealizedElement(index) is IControl element)
             {
                 element.BringIntoView();
