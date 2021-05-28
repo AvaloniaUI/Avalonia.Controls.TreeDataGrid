@@ -61,17 +61,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             if (row is HierarchicalRow<TModel> r)
             {
-                return new ExpanderCell<TModel>(
-                    _inner.CreateCell(r),
-                    r,
-                    _hasChildrenSelector?.Invoke(row.Model) ?? true);
+                return new ExpanderCell<TModel>(_inner.CreateCell(r), r);
             }
 
             throw new NotSupportedException();
         }
 
+        public bool HasChildren(TModel model) => _hasChildrenSelector?.Invoke(model) ?? true;
         public IEnumerable<TModel>? GetChildModels(TModel model) => _childSelector(model);
-
         public Comparison<TModel>? GetComparison(ListSortDirection direction) => _inner.GetComparison(direction);
 
         void ISetColumnLayout.SetActualWidth(double width) => ActualWidth = width;

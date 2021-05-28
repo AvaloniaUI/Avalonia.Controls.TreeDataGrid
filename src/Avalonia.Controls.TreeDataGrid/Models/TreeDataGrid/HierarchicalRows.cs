@@ -40,16 +40,60 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void Expand(IndexPath index)
         {
-            if (index.GetSize() != 1)
-                throw new NotImplementedException();
+            var count = index.GetSize();
+            var rows = (IReadOnlyList<HierarchicalRow<TModel>>?)_roots;
 
-            foreach (var row in _roots)
+            for (var i = 0; i < count; ++i)
             {
-                if (row.ModelIndex == index.GetAt(0))
-                {
-                    row.IsExpanded = true;
+                if (rows is null)
                     break;
+
+                var modelIndex = index.GetAt(i);
+                var found = false;
+
+                foreach (var row in rows)
+                {
+                    if (row.ModelIndex == modelIndex)
+                    {
+                        row.IsExpanded = true;
+                        rows = row.Children;
+                        found = true;
+                        break;
+                    }
                 }
+
+                if (!found)
+                    break;
+            }
+        }
+
+        public void Collapse(IndexPath index)
+        {
+            var count = index.GetSize();
+            var rows = (IReadOnlyList<HierarchicalRow<TModel>>?)_roots;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (rows is null)
+                    break;
+
+                var modelIndex = index.GetAt(i);
+                var found = false;
+
+                foreach (var row in rows)
+                {
+                    if (row.ModelIndex == modelIndex)
+                    {
+                        if (i == count - 1)
+                            row.IsExpanded = false;
+                        rows = row.Children;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    break;
             }
         }
 
