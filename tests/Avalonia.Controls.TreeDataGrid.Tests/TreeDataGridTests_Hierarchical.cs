@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -60,6 +62,120 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             Assert.Equal(10, target.RowsPresenter!.RealizedElements.Count());
             Assert.Equal(10, target.RowsPresenter!.GetLogicalChildren().Count());
+        }
+
+        [Fact]
+        public void Should_Display_Added_Root_Node()
+        {
+            using var app = App();
+
+            var (target, source) = CreateTarget();
+            var items = (IList<Model>)source.Items;
+
+            Layout(target);
+            items.Add(new Model { Id = -1, Title = "Added" });
+            Layout(target);
+
+            Assert.Equal(3, target.RowsPresenter!.RealizedElements.Count());
+            Assert.Equal(3, target.RowsPresenter!.GetLogicalChildren().Count());
+        }
+
+        [Fact]
+        public void Should_Display_Added_Child_Node()
+        {
+            using var app = App();
+
+            var (target, source) = CreateTarget();
+            var items = (IList<Model>)source.Items;
+            var children = items[1].Children = new AvaloniaList<Model>
+            {
+                new Model { Id = -1, Title = "First" }
+            };
+
+            Layout(target);
+            source.Expand(new IndexPath(1));
+            Layout(target);
+            children.Add(new Model { Id = -2, Title = "Second" });
+            Layout(target);
+
+            Assert.Equal(4, target.RowsPresenter!.RealizedElements.Count());
+            Assert.Equal(4, target.RowsPresenter!.GetLogicalChildren().Count());
+        }
+
+        [Fact]
+        public void Should_Subscribe_To_Models_For_Initial_Rows()
+        {
+            using var app = App();
+
+            var (target, source) = CreateTarget();
+            var items = (IList<Model>)source.Items;
+
+            for (var i = 0; i < items.Count; ++i)
+            {
+                Assert.Equal(2, items[i].PropertyChangedSubscriberCount());
+            }
+        }
+
+        [Fact]
+        public void Should_Subscribe_To_Models_For_Expanded_Rows()
+        {
+            using var app = App();
+
+            var (target, source) = CreateTarget();
+            var items = (IList<Model>)source.Items;
+
+            source.Expand(new IndexPath(0));
+            Layout(target);
+
+            Assert.Equal(2, items[0].PropertyChangedSubscriberCount());
+            Assert.Equal(0, items[1].PropertyChangedSubscriberCount());
+
+            var children = items[0].Children!;
+            for (var i = 0; i < children.Count; ++i)
+            {
+                var expected = i < 9 ? 2 : 0;
+                Assert.Equal(expected, children[i].PropertyChangedSubscriberCount());
+            }
+        }
+
+        [Fact]
+        public void Should_Subscribe_To_Correct_Models_After_Scrolling_Down_One_Row()
+        {
+            using var app = App();
+
+            var (target, source) = CreateTarget();
+            var items = (IList<Model>)source.Items;
+
+            source.Expand(new IndexPath(0));
+            Layout(target);
+            target.Scroll!.Offset = new Vector(0, 10);
+            Layout(target);
+
+            Assert.Equal(0, items[0].PropertyChangedSubscriberCount());
+            Assert.Equal(0, items[1].PropertyChangedSubscriberCount());
+
+            var children = items[0].Children!;
+            for (var i = 0; i < children.Count; ++i)
+            {
+                var expected = i < 10 ? 2 : 0;
+                Assert.Equal(expected, children[i].PropertyChangedSubscriberCount());
+            }
+        }
+
+        [Fact]
+        public void Should_Unsubscribe_From_Models_When_Detached_From_Logical_Tree()
+        {
+            using var app = App();
+
+            var (target, source) = CreateTarget();
+            var items = (IList<Model>)source.Items;
+
+            ((TestRoot)target.Parent).Child = null;
+
+            for (var i = 0; i < items.Count; ++i)
+            {
+                Assert.Equal(0, items[i].PropertyChangedSubscriberCount());
+            }
         }
 
         [Fact]

@@ -39,7 +39,7 @@ namespace Avalonia.Controls
 
         public IEnumerable<TModel> Items 
         {
-            get => _itemsView;
+            get => _items;
             set
             {
                 if (_items != value)
