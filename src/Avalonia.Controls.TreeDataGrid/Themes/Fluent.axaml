@@ -11,22 +11,26 @@
   <Style Selector="TreeDataGrid">
     <Setter Property="Template">
       <ControlTemplate>
-        <DockPanel>
-          <Border DockPanel.Dock="Top"
-                  BorderThickness="0 0 0 1"
-                  BorderBrush="{DynamicResource TreeDataGridGridLinesBrush}">
-            <TreeDataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter"
-                                                ElementFactory="{TemplateBinding ElementFactory}"
-                                                Items="{TemplateBinding Columns}"/>
-          </Border>
-          <ScrollViewer HorizontalScrollBarVisibility="Auto">
-            <TreeDataGridRowsPresenter Name="PART_RowsPresenter"
-                                       Columns="{TemplateBinding Columns}"
-                                       ElementFactory="{TemplateBinding ElementFactory}"
-                                       Items="{TemplateBinding Rows}"
-                                       Selection="{TemplateBinding Selection}"/>
-          </ScrollViewer>
-        </DockPanel>
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}">
+          <DockPanel>
+            <Border DockPanel.Dock="Top"
+                    BorderThickness="0 0 0 1"
+                    BorderBrush="{DynamicResource TreeDataGridGridLinesBrush}">
+              <TreeDataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter"
+                                                  ElementFactory="{TemplateBinding ElementFactory}"
+                                                  Items="{TemplateBinding Columns}"/>
+            </Border>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto">
+              <TreeDataGridRowsPresenter Name="PART_RowsPresenter"
+                                         Columns="{TemplateBinding Columns}"
+                                         ElementFactory="{TemplateBinding ElementFactory}"
+                                         Items="{TemplateBinding Rows}"
+                                         Selection="{TemplateBinding Selection}"/>
+            </ScrollViewer>
+          </DockPanel>
+        </Border>
       </ControlTemplate>
     </Setter>
   </Style>
