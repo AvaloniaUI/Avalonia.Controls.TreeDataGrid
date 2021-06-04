@@ -36,6 +36,9 @@ namespace Avalonia.Controls
                 o => o.Rows,
                 (o, v) => o.Rows = v);
 
+        public static readonly StyledProperty<bool> ShowColumnHeadersProperty =
+            AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(ShowColumnHeaders), true);
+
         public static readonly DirectProperty<TreeDataGrid, ISelectionModel?> SelectionProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, ISelectionModel?>(
                 nameof(Selection),
@@ -90,6 +93,12 @@ namespace Avalonia.Controls
         public TreeDataGridColumnHeadersPresenter? ColumnHeadersPresenter { get; private set; }
         public TreeDataGridRowsPresenter? RowsPresenter { get; private set; }
         public IScrollable? Scroll { get; private set; }
+
+        public bool ShowColumnHeaders
+        {
+            get => GetValue(ShowColumnHeadersProperty);
+            set => SetValue(ShowColumnHeadersProperty, value);
+        }
 
         public ISelectionModel? Selection
         {

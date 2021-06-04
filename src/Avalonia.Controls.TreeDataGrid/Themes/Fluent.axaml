@@ -17,7 +17,8 @@
           <DockPanel>
             <Border DockPanel.Dock="Top"
                     BorderThickness="0 0 0 1"
-                    BorderBrush="{DynamicResource TreeDataGridGridLinesBrush}">
+                    BorderBrush="{DynamicResource TreeDataGridGridLinesBrush}"
+                    IsVisible="{TemplateBinding ShowColumnHeaders}">
               <TreeDataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter"
                                                   ElementFactory="{TemplateBinding ElementFactory}"
                                                   Items="{TemplateBinding Columns}"/>
