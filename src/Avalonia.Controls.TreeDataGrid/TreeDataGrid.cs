@@ -57,6 +57,7 @@ namespace Avalonia.Controls
         private ISelectionModel? _selection;
         private IControl? _userSortColumn;
         private ListSortDirection _userSortDirection;
+        private TreeDataGridCellEventArgs? _cellArgs;
 
         public TreeDataGrid()
         {
@@ -124,6 +125,9 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        public event EventHandler<TreeDataGridCellEventArgs>? CellClearing;
+        public event EventHandler<TreeDataGridCellEventArgs>? CellPrepared;
 
         public IControl? TryGetCell(int columnIndex, int rowIndex)
         {
@@ -367,6 +371,28 @@ namespace Avalonia.Controls
             else
             {
                 _selection.SelectedIndex = index;
+            }
+        }
+
+        internal void RaiseCellClearing(TreeDataGridCell cell, int columnIndex, int rowIndex)
+        {
+            if (CellClearing is object)
+            {
+                _cellArgs ??= new TreeDataGridCellEventArgs();
+                _cellArgs.Update(cell, columnIndex, rowIndex);
+                CellClearing(this, _cellArgs);
+                _cellArgs.Update(null, -1, -1);
+            }
+        }
+
+        internal void RaiseCellPrepared(TreeDataGridCell cell, int columnIndex, int rowIndex)
+        {
+            if (CellPrepared is object)
+            {
+                _cellArgs ??= new TreeDataGridCellEventArgs();
+                _cellArgs.Update(cell, columnIndex, rowIndex);
+                CellPrepared(this, _cellArgs);
+                _cellArgs.Update(null, -1, -1);
             }
         }
 
