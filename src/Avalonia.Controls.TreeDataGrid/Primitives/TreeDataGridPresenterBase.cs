@@ -293,8 +293,8 @@ namespace Avalonia.Controls.Primitives
 
             return new MeasureViewport
             {
-                firstIndex = MathUtilities.Clamp(firstIndex, 0, itemCount),
-                estimatedLastIndex = MathUtilities.Clamp(lastIndex, 0, itemCount),
+                firstIndex = MathUtilities.Clamp(firstIndex, 0, itemCount - 1),
+                estimatedLastIndex = MathUtilities.Clamp(lastIndex, 0, itemCount - 1),
                 viewportUStart = viewportStart,
                 viewportUEnd = viewportEnd,
                 startU = firstIndexU,
