@@ -35,7 +35,7 @@ namespace ProControlsDemo.ViewModels
                 {
                     new TemplateColumn<FileTreeNodeModel>(
                         null,
-                        new FuncDataTemplate<FileTreeNodeModel>(FileCheckTemplate),
+                        new FuncDataTemplate<FileTreeNodeModel>(FileCheckTemplate, true),
                         options: new ColumnOptions<FileTreeNodeModel>
                         {
                             CanUserResizeColumn = false,

@@ -46,8 +46,15 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDataContextChanged(e);
             var cell = DataContext as TemplateCell;
-            Content = cell?.Value;
-            ContentTemplate = cell?.CellTemplate;
+
+            // If DataContext is null, we're unrealized. Don't clear the content and content template
+            // for unrealized cells because this will mean that when the cell is realized again the
+            // template will need to be rebuilt, slowing everything down.
+            if (cell is object)
+            {
+                Content = cell.Value;
+                ContentTemplate = cell.CellTemplate;
+            }
         }
     }
 }
