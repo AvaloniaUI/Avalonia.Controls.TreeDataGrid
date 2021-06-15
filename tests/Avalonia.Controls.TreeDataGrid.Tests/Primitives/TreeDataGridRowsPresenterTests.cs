@@ -168,6 +168,28 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         }
 
         [Fact]
+        public void Handles_Removing_Row_Range_That_Invalidates_Current_Viewport()
+        {
+            using var app = App();
+
+            var (target, scroll, items) = CreateTarget();
+
+            // Scroll down ten items.
+            scroll.Offset = new Vector(0, 100);
+            Layout(target);
+
+            Assert.Equal(10, target.RealizedElements.Count());
+
+            // Remove all but the first five items.
+            items.RemoveRange(5, 95);
+
+            Layout(target);
+
+            // The target bounds should be updated, which will cause the scrollviewer to scroll back up.
+            Assert.Equal(new Size(100, 100), target.Bounds.Size);
+        }
+
+        [Fact]
         public void Updates_Star_Column_ActualWidth()
         {
             using var app = App();
