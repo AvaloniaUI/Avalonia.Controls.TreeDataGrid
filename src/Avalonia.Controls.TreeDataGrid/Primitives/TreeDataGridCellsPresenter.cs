@@ -70,8 +70,7 @@ namespace Avalonia.Controls.Primitives
         protected override Size MeasureElement(int index, IControl element, Size availableSize)
         {
             element.Measure(availableSize);
-            ((IColumns)Items!).CellMeasured(index, RowIndex, element.DesiredSize);
-            return element.DesiredSize;
+            return ((IColumns)Items!).CellMeasured(index, RowIndex, element.DesiredSize);
         }
 
         protected override Rect ArrangeElement(int index, IControl element, Rect rect)

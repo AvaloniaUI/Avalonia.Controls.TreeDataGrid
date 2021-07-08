@@ -14,15 +14,28 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public event EventHandler? LayoutInvalidated;
 
-        public void CellMeasured(int columnIndex, int rowIndex, Size size)
+        public Size CellMeasured(int columnIndex, int rowIndex, Size size)
         {
             var column = this[columnIndex];
 
-            if (column.Width.IsAuto && size.Width > column.ActualWidth)
+            if (column.Width.IsAuto)
             {
-                _sizeStarColumnsAtEndOfMeasure = true;
-                ((ISetColumnLayout)column).SetActualWidth(size.Width);
-                LayoutInvalidated?.Invoke(this, EventArgs.Empty);
+                if (size.Width > column.ActualWidth)
+                {
+                    _sizeStarColumnsAtEndOfMeasure = true;
+                    ((ISetColumnLayout)column).SetActualWidth(size.Width);
+                    LayoutInvalidated?.Invoke(this, EventArgs.Empty);
+                }
+
+                return size;
+            }
+            else if (column.Width.GridUnitType == GridUnitType.Pixel)
+            {
+                return new Size(column.ActualWidth, size.Height);
+            }
+            else
+            {
+                return size;
             }
         }
 

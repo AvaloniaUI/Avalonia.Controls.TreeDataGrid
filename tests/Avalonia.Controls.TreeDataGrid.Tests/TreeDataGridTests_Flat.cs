@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -101,8 +102,25 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, items[i].PropertyChangedSubscriberCount());
             }
         }
+        
+        [Fact]
+        public void Desired_Width_Should_Be_Total_Of_Fixed_Width_Columns()
+        {
+            using var app = App();
 
-        private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget()
+            var (target, items) = CreateTarget(
+                columns: new IColumn<Model>[]
+                {
+                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(10, GridUnitType.Pixel)),
+                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(14, GridUnitType.Pixel))
+                }
+            );
+
+            Assert.Equal(24, target.DesiredSize.Width);
+        }
+
+        private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(
+            IEnumerable<IColumn<Model>>? columns = null)
         {
             var items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
                 new Model
@@ -112,8 +130,17 @@ namespace Avalonia.Controls.TreeDataGridTests
                 }));
 
             var source = new FlatTreeDataGridSource<Model>(items);
-            source.Columns.Add(new TextColumn<Model, int>("ID", x => x.Id));
-            source.Columns.Add(new TextColumn<Model, string?>("Title", x => x.Title));
+
+            if (columns is object)
+            {
+                foreach (var column in columns)
+                    source.Columns.Add(column);
+            }
+            else
+            {
+                source.Columns.Add(new TextColumn<Model, int>("ID", x => x.Id));
+                source.Columns.Add(new TextColumn<Model, string?>("Title", x => x.Title));
+            }
 
             var target = new TreeDataGrid
             {

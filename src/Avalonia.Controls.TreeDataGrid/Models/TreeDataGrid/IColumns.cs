@@ -22,7 +22,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <param name="columnIndex">The cell column index or -1 for a row header.</param>
         /// <param name="rowIndex">The cell row index or -1 for a column header.</param>
         /// <param name="size">The measured size.</param>
-        void CellMeasured(int columnIndex, int rowIndex, Size size);
+        /// <returns>
+        /// The desired size of the cell after column sizing has been applied.
+        /// </returns>
+        Size CellMeasured(int columnIndex, int rowIndex, Size size);
 
         /// <summary>
         /// Gets the index and X position of the column at the specified X position, if it can be

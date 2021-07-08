@@ -12,8 +12,7 @@ namespace Avalonia.Controls.Primitives
         {
             var columns = (IColumns)Items!;
             element.Measure(availableSize);
-            columns.CellMeasured(index, -1, element.DesiredSize);
-            return new Size(columns[index].ActualWidth, element.DesiredSize.Height);
+            return columns.CellMeasured(index, -1, element.DesiredSize);
         }
 
         protected override Rect ArrangeElement(int index, IControl element, Rect rect)
