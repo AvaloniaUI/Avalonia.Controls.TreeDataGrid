@@ -41,9 +41,17 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public (int index, double x) GetColumnAt(double x)
         {
-            // TODO: Implement properly.
-            if (MathUtilities.IsZero(x))
-                return (0, 0);
+            var start = 0.0;
+
+            for (var i = 0; i < Count; ++i)
+            {
+                var column = this[i];
+                var end = start + column.ActualWidth;
+                if (x >= start && x < end)
+                    return (i, start);
+                start += column.ActualWidth;
+            }
+
             return (-1, -1);
         }
 

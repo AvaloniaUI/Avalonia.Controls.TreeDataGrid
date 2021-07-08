@@ -230,7 +230,7 @@ namespace Avalonia.Controls.Primitives
                     var rect = orientation == Orientation.Horizontal ?
                         new Rect(u, 0, sizeU, finalSize.Height) :
                         new Rect(0, u, finalSize.Width, sizeU);
-                    rect = ArrangeElement(i, e, rect);
+                    rect = ArrangeElement(i + _realizedElements.FirstIndex, e, rect);
                     u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
                 }
             }
