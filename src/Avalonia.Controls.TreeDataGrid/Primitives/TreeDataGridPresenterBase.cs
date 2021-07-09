@@ -153,7 +153,7 @@ namespace Avalonia.Controls.Primitives
         protected abstract void UpdateElementIndex(IControl element, int index);
         protected abstract void UnrealizeElement(IControl element);
 
-        protected virtual double CalculateSizeU()
+        protected virtual double CalculateSizeU(Size availableSize)
         {
             if (Items is null)
                 return 0;
@@ -194,7 +194,10 @@ namespace Avalonia.Controls.Primitives
             _measureElements = tmp;
             _measureElements.Clear();
 
-            var sizeU = CalculateSizeU();
+            var sizeU = CalculateSizeU(availableSize);
+
+            if (double.IsInfinity(sizeU) || double.IsNaN(sizeU))
+                throw new InvalidOperationException("Invalid calculated size.");
 
             return Orientation == Orientation.Horizontal ?
                 new Size(sizeU, viewport.measuredV) :

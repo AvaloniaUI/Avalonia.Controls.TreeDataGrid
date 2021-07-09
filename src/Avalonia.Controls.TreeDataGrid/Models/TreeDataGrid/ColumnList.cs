@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -9,7 +8,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// </summary>
     public class ColumnList<TModel> : NotifyingListBase<IColumn<TModel>>, IColumns
     {
-        private bool _sizeStarColumnsAtEndOfMeasure;
+        private bool _sizeStarColumnsAtEndOfMeasure = true;
         private double _viewportWidth;
 
         public event EventHandler? LayoutInvalidated;
@@ -33,17 +32,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 return new Size(column.Width.Value, size.Height);
             }
-            else
-            {
-                if (!column.ActualWidth.HasValue ||
-                    !MathUtilities.AreClose(size.Width, column.ActualWidth.Value))
-                {
-                    ((ISetColumnLayout)column).SetActualWidth(size.Width);
-                    LayoutInvalidated?.Invoke(this, EventArgs.Empty);
-                }
 
-                return size;
-            }
+            return size;
         }
 
         public (int index, double x) GetColumnAt(double x)
@@ -64,10 +54,47 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return (-1, -1);
         }
 
+        public double GetEstimatedWidth(double constraint)
+        {
+            var hasStar = false;
+            var totalMeasured = 0.0;
+            var measuredCount = 0;
+            var unmeasuredCount = 0;
+
+            foreach (var column in this)
+            {
+                if (column.Width.IsStar)
+                    hasStar = true;
+                else if (column.ActualWidth.HasValue)
+                {
+                    totalMeasured += column.ActualWidth.Value;
+                    ++measuredCount;
+                }
+                else
+                    ++unmeasuredCount;
+            }
+
+            // If there are star columns, and all measured columns fit within the available space
+            // then we will fill the available space.
+            if (hasStar && !double.IsInfinity(constraint) && totalMeasured < constraint)
+                return constraint;
+
+            // If there are a mix of measured and unmeasured columns then use the measured columns
+            // to estimate the size of the unmeasured columns.
+            if (measuredCount > 0 && unmeasuredCount > 0)
+            {
+                var estimated = (totalMeasured / measuredCount) * unmeasuredCount;
+                return totalMeasured + estimated;
+            }
+
+            return totalMeasured;
+        }
+
         public void MeasureFinished()
         {
             if (_sizeStarColumnsAtEndOfMeasure)
                 SizeStarColumns();
+            _sizeStarColumnsAtEndOfMeasure = false;
         }
 
         public void SetColumnWidth(int columnIndex, GridLength width)

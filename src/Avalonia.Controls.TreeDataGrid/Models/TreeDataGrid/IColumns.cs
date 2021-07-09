@@ -21,6 +21,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         /// <param name="columnIndex">The cell column index or -1 for a row header.</param>
         /// <param name="rowIndex">The cell row index or -1 for a column header.</param>
+        /// <param name="availableSize">The measure constraint.</param>
         /// <param name="size">The measured size.</param>
         /// <returns>
         /// The desired size of the cell after column sizing has been applied.
@@ -37,6 +38,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// column could not be calculated.
         /// </returns>
         (int index, double x) GetColumnAt(double x);
+
+        /// <summary>
+        /// Gets the estimated total width of all columns.
+        /// </summary>
+        /// <param name="constraint">
+        /// The available viewport width.
+        /// </param>
+        double GetEstimatedWidth(double constraint);
 
         /// <summary>
         /// Called by the <see cref="TreeDataGrid"/> when a measure pass has completed.

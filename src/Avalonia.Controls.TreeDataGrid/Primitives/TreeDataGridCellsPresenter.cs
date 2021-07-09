@@ -131,6 +131,14 @@ namespace Avalonia.Controls.Primitives
         {
         }
 
+        protected override double CalculateSizeU(Size availableSize)
+        {
+            if (Items is null)
+                return 0;
+
+            return ((IColumns)Items).GetEstimatedWidth(availableSize.Width);
+        }
+
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             base.OnPropertyChanged(change);

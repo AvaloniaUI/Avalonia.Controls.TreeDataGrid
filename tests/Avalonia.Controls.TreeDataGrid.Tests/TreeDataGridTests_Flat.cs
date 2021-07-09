@@ -119,6 +119,38 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(24, target.DesiredSize.Width);
         }
 
+        [Fact]
+        public void Should_Size_Star_Columns()
+        {
+            using var app = App();
+
+            var (target, items) = CreateTarget(
+                columns: new IColumn<Model>[]
+                {
+                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(1, GridUnitType.Star)),
+                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(3, GridUnitType.Star))
+                }
+            );
+
+            var rows = target.RowsPresenter
+                .GetLogicalChildren()
+                .Cast<TreeDataGridRow>()
+                .ToList();
+
+            Assert.Equal(10, rows.Count);
+
+            foreach (var row in rows)
+            {
+                var cells = row.CellsPresenter
+                    .GetLogicalChildren()
+                    .Cast<TreeDataGridCell>()
+                    .ToList();
+                Assert.Equal(2, cells.Count);
+                Assert.Equal(25, cells[0].Bounds.Width);
+                Assert.Equal(75, cells[1].Bounds.Width);
+            }
+        }
+
         private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(
             IEnumerable<IColumn<Model>>? columns = null)
         {
