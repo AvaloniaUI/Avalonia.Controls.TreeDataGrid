@@ -153,6 +153,15 @@ namespace Avalonia.Controls.Primitives
         protected abstract void UpdateElementIndex(IControl element, int index);
         protected abstract void UnrealizeElement(IControl element);
 
+        protected virtual double CalculateSizeU()
+        {
+            if (Items is null)
+                return 0;
+
+            // Return the estimated size of all items based on the elements currently realized.
+            return EstimateElementSizeU() * Items.Count;
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             if (Items is null || Items.Count == 0 || !IsEffectivelyVisible)
@@ -185,12 +194,11 @@ namespace Avalonia.Controls.Primitives
             _measureElements = tmp;
             _measureElements.Clear();
 
-            // Return the estimated size of all items based on the elements currently realized.
-            var estimatedSize = EstimateElementSizeU() * Items.Count;
+            var sizeU = CalculateSizeU();
 
             return Orientation == Orientation.Horizontal ?
-                new Size(estimatedSize, viewport.measuredV) :
-                new Size(viewport.measuredV, estimatedSize);
+                new Size(sizeU, viewport.measuredV) :
+                new Size(viewport.measuredV, sizeU);
         }
 
         private void GenerateElements(Size availableSize, ref MeasureViewport viewport)
