@@ -9,7 +9,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The model type.</typeparam>
     public abstract class ColumnBase<TModel> : NotifyingBase, IColumn<TModel>, ISetColumnLayout
     {
-        private double _actualWidth;
+        private double? _actualWidth;
         private bool? _canUserResize;
         private GridLength _width;
         private object? _header;
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets the actual width of the column after measurement.
         /// </summary>
-        public double ActualWidth
+        public double? ActualWidth
         {
             get => _actualWidth;
             private set => RaiseAndSetIfChanged(ref _actualWidth, value);

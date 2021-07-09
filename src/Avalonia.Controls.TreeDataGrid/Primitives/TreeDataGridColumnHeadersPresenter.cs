@@ -18,7 +18,8 @@ namespace Avalonia.Controls.Primitives
         protected override Rect ArrangeElement(int index, IControl element, Rect rect)
         {
             var column = ((IColumns)Items!)[index];
-            rect = rect.WithWidth(column.ActualWidth);
+            if (!column.ActualWidth.HasValue)
+                throw new AvaloniaInternalException("Attempt to arrange cell before measure.");
             element.Arrange(rect);
             return rect;
         }

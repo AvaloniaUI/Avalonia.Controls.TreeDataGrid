@@ -20,21 +20,28 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             if (column.Width.IsAuto)
             {
-                if (size.Width > column.ActualWidth)
+                if (!column.ActualWidth.HasValue || size.Width > column.ActualWidth)
                 {
                     _sizeStarColumnsAtEndOfMeasure = true;
                     ((ISetColumnLayout)column).SetActualWidth(size.Width);
                     LayoutInvalidated?.Invoke(this, EventArgs.Empty);
                 }
 
-                return size;
+                return new Size(column.ActualWidth!.Value, size.Height);
             }
-            else if (column.Width.GridUnitType == GridUnitType.Pixel)
+            else if (column.Width.IsAbsolute)
             {
-                return new Size(column.ActualWidth, size.Height);
+                return new Size(column.Width.Value, size.Height);
             }
             else
             {
+                if (!column.ActualWidth.HasValue ||
+                    !MathUtilities.AreClose(size.Width, column.ActualWidth.Value))
+                {
+                    ((ISetColumnLayout)column).SetActualWidth(size.Width);
+                    LayoutInvalidated?.Invoke(this, EventArgs.Empty);
+                }
+
                 return size;
             }
         }
@@ -49,7 +56,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 var end = start + column.ActualWidth;
                 if (x >= start && x < end)
                     return (i, start);
-                start += column.ActualWidth;
+                if (!column.ActualWidth.HasValue)
+                    return (-1, -1);
+                start += column.ActualWidth.Value;
             }
 
             return (-1, -1);
@@ -94,8 +103,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 if (column.Width.IsStar)
                     totalStars += column.Width.Value;
-                else
-                    availableSpace -= column.ActualWidth;
+                else if (column.ActualWidth.HasValue)
+                    availableSpace -= column.ActualWidth.Value;
             }
 
             if (totalStars == 0)
