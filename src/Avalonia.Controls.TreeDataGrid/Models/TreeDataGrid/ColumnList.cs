@@ -17,23 +17,27 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             var column = this[columnIndex];
 
-            if (column.Width.IsAuto)
+            switch (column.Width.GridUnitType)
             {
-                if (!column.ActualWidth.HasValue || size.Width > column.ActualWidth)
-                {
-                    _sizeStarColumnsAtEndOfMeasure = true;
-                    ((ISetColumnLayout)column).SetActualWidth(size.Width);
-                    LayoutInvalidated?.Invoke(this, EventArgs.Empty);
-                }
+                case GridUnitType.Auto:
+                    if (!column.ActualWidth.HasValue || size.Width > column.ActualWidth)
+                    {
+                        _sizeStarColumnsAtEndOfMeasure = true;
+                        ((ISetColumnLayout)column).SetActualWidth(size.Width);
+                        LayoutInvalidated?.Invoke(this, EventArgs.Empty);
+                    }
 
-                return new Size(column.ActualWidth!.Value, size.Height);
+                    return new Size(column.ActualWidth!.Value, size.Height);
+                case GridUnitType.Pixel:
+                    return new Size(column.Width.Value, size.Height);
+                case GridUnitType.Star:
+                    if (column.ActualWidth.HasValue)
+                        return new Size(column.ActualWidth.Value, size.Height);
+                    else
+                        return size;
+                default:
+                    throw new InvalidOperationException("Invalid column width.");
             }
-            else if (column.Width.IsAbsolute)
-            {
-                return new Size(column.Width.Value, size.Height);
-            }
-
-            return size;
         }
 
         public (int index, double x) GetColumnAt(double x)
