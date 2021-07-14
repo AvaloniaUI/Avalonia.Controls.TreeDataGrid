@@ -71,7 +71,11 @@ namespace Avalonia.Controls.Primitives
         {
             var row = (TreeDataGridRow)element;
             row.Realize(ElementFactory, Columns, (IRows?)Items, index);
-            row.IsSelected = _selection?.IsSelected(index) == true;
+
+            if (_selection is { } selection)
+            {
+                row.IsSelected = selection.IsSelected(index);
+            }
         }
 
         protected override void UpdateElementIndex(IControl element, int index)
