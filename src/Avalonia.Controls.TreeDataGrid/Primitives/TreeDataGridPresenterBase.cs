@@ -633,8 +633,8 @@ namespace Avalonia.Controls.Primitives
                 _elements?.RemoveRange(index, count);
                 _sizes?.RemoveRange(index, count);
 
-                if (index == 0)
-                    _firstIndex += count;
+                if (_firstIndex >= index)
+                    _firstIndex -= count;
             }
 
             public void Clear()
