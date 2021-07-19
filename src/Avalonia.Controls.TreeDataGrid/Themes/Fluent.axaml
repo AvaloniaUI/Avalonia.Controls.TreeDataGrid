@@ -5,8 +5,8 @@
     <SolidColorBrush x:Key="TreeDataGridGridLinesBrush"
                      Color="{StaticResource SystemBaseMediumLowColor}"
                      Opacity="0.4" />
-    <StreamGeometry x:Key="TreeDataGridGridSortIconAscendingPath">M1875 1011l-787 787v-1798h-128v1798l-787 -787l-90 90l941 941l941 -941z</StreamGeometry>
-    <StreamGeometry x:Key="TreeDataGridGridSortIconDescendingPath">M1965 947l-941 -941l-941 941l90 90l787 -787v1798h128v-1798l787 787z</StreamGeometry>
+    <StreamGeometry x:Key="TreeDataGridGridSortIconDescendingPath">M1875 1011l-787 787v-1798h-128v1798l-787 -787l-90 90l941 941l941 -941z</StreamGeometry>
+    <StreamGeometry x:Key="TreeDataGridGridSortIconAscendingPath">M1965 947l-941 -941l-941 941l90 90l787 -787v1798h128v-1798l787 787z</StreamGeometry>
   </Styles.Resources>
   <Style Selector="TreeDataGrid">
     <Setter Property="Template">
