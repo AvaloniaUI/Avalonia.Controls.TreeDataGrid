@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -144,11 +143,11 @@ namespace Avalonia.Controls
         public bool TryGetRowModel<TModel>(IControl element, [MaybeNullWhen(false)] out TModel result)
         {
             if (Source is object &&
-                TryGetCell(element, out var cell) &&
-                cell.RowIndex < Source.Rows.Count &&
-                Source.Rows[cell.RowIndex] is IRow<TModel> row)
+                TryGetRow(element, out var row) &&
+                row.RowIndex < Source.Rows.Count &&
+                Source.Rows[row.RowIndex] is IRow<TModel> rowWithModel)
             {
-                result = row.Model;
+                result = rowWithModel.Model;
                 return true;
             }
 
@@ -205,12 +204,12 @@ namespace Avalonia.Controls
             if (Source is null || _selection is null || e.Handled)
                 return;
 
-            if (e.Source is IControl source && TryGetCell(source, out var cell))
+            if (e.Source is IControl source && TryGetRow(source, out var row))
             {
                 var point = e.GetCurrentPoint(this);
 
                 UpdateSelection(
-                    cell.RowIndex,
+                    row.RowIndex,
                     select: true,
                     rangeModifier: e.KeyModifiers.HasFlag(KeyModifiers.Shift),
                     toggleModifier: e.KeyModifiers.HasFlag(KeyModifiers.Control),
@@ -219,23 +218,21 @@ namespace Avalonia.Controls
             }
         }
 
-        private ITreeDataGridCell? GetFocusedCell()
+        private TreeDataGridRow? GetFocusedCell()
         {
             var focus = FocusManager.Instance;
-            ITreeDataGridCell? focused = null;
+            TreeDataGridRow? focused = null;
             if (focus.Current is IControl current)
-                TryGetCell(current, out focused);
+                TryGetRow(current, out focused);
             return focused;
         }
 
-        private bool MoveSelection(NavigationDirection direction, bool rangeModifier, ITreeDataGridCell? focused)
+        private bool MoveSelection(NavigationDirection direction, bool rangeModifier, TreeDataGridRow? focused)
         {
             if (Source is null || RowsPresenter is null || Source.Columns.Count == 0 || Source.Rows.Count == 0)
                 return false;
 
-            var currentColumnIndex = focused?.ColumnIndex ?? 0;
             var currentRowIndex = focused?.RowIndex ?? Selection?.SelectedIndex ?? 0;
-            var newColumnIndex = currentColumnIndex;
             int newRowIndex;
 
             if (direction == NavigationDirection.First || direction == NavigationDirection.Last)
@@ -253,14 +250,13 @@ namespace Avalonia.Controls
                     _ => (0, 0)
                 };
 
-                newColumnIndex = Math.Max(0, Math.Min(currentColumnIndex + step.x, Source.Columns.Count - 1));
                 newRowIndex = Math.Max(0, Math.Min(currentRowIndex + step.y, Source.Rows.Count - 1));
             }
 
             if (newRowIndex != currentRowIndex)
                 UpdateSelection(newRowIndex, true, rangeModifier);
 
-            if (newRowIndex != currentRowIndex || newColumnIndex != currentColumnIndex)
+            if (newRowIndex != currentRowIndex)
             {
                 RowsPresenter?.BringIntoView(newRowIndex);
                 TryGetRow(newRowIndex)?.Focus();
@@ -272,7 +268,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private bool TryKeyExpandCollapse(NavigationDirection direction, ITreeDataGridCell focused)
+        private bool TryKeyExpandCollapse(NavigationDirection direction, TreeDataGridRow focused)
         {
             if (Source is null || RowsPresenter is null || focused.RowIndex < 0)
                 return false;
@@ -296,18 +292,18 @@ namespace Avalonia.Controls
             return false;
         }
 
-        private bool TryGetCell(IControl? element, [MaybeNullWhen(false)] out ITreeDataGridCell result)
+        private bool TryGetRow(IControl? element, [MaybeNullWhen(false)] out TreeDataGridRow result)
         {
-            if (element is ITreeDataGridCell cell && cell.RowIndex >= 0)
+            if (element is TreeDataGridRow row && row.RowIndex >= 0)
             {
-                result = cell;
+                result = row;
                 return true;
             }
 
             do
             {
-                result = element?.FindAncestorOfType<ITreeDataGridCell>();
-                if (result?.ColumnIndex >= 0 && result?.RowIndex >= 0)
+                result = element?.FindAncestorOfType<TreeDataGridRow>();
+                if (result?.RowIndex >= 0)
                     break;
                 element = result;
             } while (result is object);

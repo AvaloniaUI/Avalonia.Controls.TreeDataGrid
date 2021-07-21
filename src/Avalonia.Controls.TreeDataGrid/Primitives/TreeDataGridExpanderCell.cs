@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -51,7 +50,7 @@ namespace Avalonia.Controls.Primitives
             private set => SetAndRaise(ShowExpanderProperty, ref _showExpander, value);
         }
 
-        public override void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        public override void Realize(IElementFactory factory, ICell model, int columnIndex)
         {
             if (_model is object)
                 throw new InvalidOperationException("Cell is already realized.");
@@ -76,7 +75,7 @@ namespace Avalonia.Controls.Primitives
                 throw new InvalidOperationException("Invalid cell model.");
             }
 
-            base.Realize(factory, model, columnIndex, rowIndex);
+            base.Realize(factory, model, columnIndex);
             UpdateContent(_factory);
         }
 
@@ -120,7 +119,7 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 if (_contentContainer.Child is ITreeDataGridCell innerCell)
-                    innerCell.Realize(factory, innerModel, ColumnIndex, RowIndex);
+                    innerCell.Realize(factory, innerModel, ColumnIndex);
             }
             else
             {
