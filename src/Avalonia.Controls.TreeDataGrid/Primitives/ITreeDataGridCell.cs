@@ -5,9 +5,8 @@ namespace Avalonia.Controls.Primitives
     internal interface ITreeDataGridCell : IControl, ISelectable
     {
         int ColumnIndex { get; }
-        int RowIndex { get; }
 
-        void Realize(IElementFactory factory, ICell model, int columnIndex, int RowIndex);
+        void Realize(IElementFactory factory, ICell model, int columnIndex);
         void Unrealize();
     }
 }
