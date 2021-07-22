@@ -159,7 +159,7 @@ namespace Avalonia.Controls
 
         protected bool MoveSelection(NavigationDirection direction, bool rangeModifier)
         {
-            return MoveSelection(direction, rangeModifier, GetFocusedCell());
+            return MoveSelection(direction, rangeModifier, GetFocusedRow());
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -180,7 +180,7 @@ namespace Avalonia.Controls
 
                 if (direction.HasValue)
                 {
-                    var focused = GetFocusedCell();
+                    var focused = GetFocusedRow();
 
                     if (focused is object && !ctrl)
                     {
@@ -218,7 +218,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private TreeDataGridRow? GetFocusedCell()
+        private TreeDataGridRow? GetFocusedRow()
         {
             var focus = FocusManager.Instance;
             TreeDataGridRow? focused = null;
