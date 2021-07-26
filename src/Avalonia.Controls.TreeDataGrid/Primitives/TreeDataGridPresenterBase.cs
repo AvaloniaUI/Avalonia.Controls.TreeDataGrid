@@ -411,7 +411,7 @@ namespace Avalonia.Controls.Primitives
                     RecycleElement(e);
             }
 
-            _realizedElements.RemoveRange(start, _realizedElements.Count - start);
+            _realizedElements.RecycleRange(start, _realizedElements.Count - start);
         }
 
         private void RecycleElementsBefore(int index)
@@ -427,7 +427,7 @@ namespace Avalonia.Controls.Primitives
                     RecycleElement(e);
             }
 
-            _realizedElements.RemoveRange(0, count);
+            _realizedElements.RecycleRange(0, count);
         }
 
         private void OnChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -635,6 +635,15 @@ namespace Avalonia.Controls.Primitives
 
                 if (_firstIndex >= index)
                     _firstIndex -= count;
+            }
+
+            public void RecycleRange(int index, int count)
+            {
+                _elements?.RemoveRange(index, count);
+                _sizes?.RemoveRange(index, count);
+
+                if (index == 0)
+                    _firstIndex += count;
             }
 
             public void Clear()
