@@ -1,13 +1,13 @@
-﻿using System;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using Avalonia.Controls.Models.TreeDataGrid;
+﻿using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using System;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Controls
 {
@@ -386,8 +386,9 @@ namespace Avalonia.Controls
                 }
 
                 var column = _source.Columns[columnHeader.ColumnIndex];
-                if (_source.SortBy(column, _userSortDirection))
-                    _selection?.Clear();
+                _source.SortBy(column, _userSortDirection, _selection);
+                RowsPresenter.RecycleAllElements();
+                RowsPresenter.InvalidateMeasure();
             }
         }
     }

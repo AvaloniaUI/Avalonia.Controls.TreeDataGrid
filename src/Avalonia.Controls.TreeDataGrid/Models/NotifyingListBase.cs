@@ -106,7 +106,7 @@ namespace Avalonia.Controls.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(IndexerName));
             using var monitor = BlockReentrancy();
-            CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
+            CollectionChanged?.Invoke(this, TreeDataGrid.CollectionExtensions.ResetEvent);
         }
 
         protected override void ClearItems()
@@ -119,7 +119,7 @@ namespace Avalonia.Controls.Models
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(IndexerName));
                 using var monitor = BlockReentrancy();
-                CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
+                CollectionChanged?.Invoke(this, TreeDataGrid.CollectionExtensions.ResetEvent);
             }
             else if (_batchUpdate != BatchUpdateType.Reset)
             {

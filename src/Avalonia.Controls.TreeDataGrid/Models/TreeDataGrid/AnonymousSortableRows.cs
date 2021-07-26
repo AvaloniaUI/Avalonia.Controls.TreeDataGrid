@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Controls.Selection;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
@@ -85,16 +86,18 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
         }
 
-        public void Sort(IComparer<TModel>? comparer)
+        public void Sort(IComparer<TModel>? comparer, ISelectionModel selection)
         {
             _comparer = comparer;
 
-            if (_comparer is null && _sortedItems is object)
-                _sortedItems = null;
-            else
-                _sortedItems ??= new List<TModel>();
+            //if (_comparer is null && _sortedItems is object)
+            //    _sortedItems = null;
+            //else
+            //    _sortedItems ??= new List<TModel>();
 
-            OnItemsCollectionChanged(_items,  CollectionExtensions.ResetEvent);
+            _sortedItems = _items.OrderByWithSelectionPreserving(x => x, comparer,selection).ToList();
+
+           // OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
         }
 
         public void UnrealizeCell(ICell cell, int columnIndex, int rowIndex)

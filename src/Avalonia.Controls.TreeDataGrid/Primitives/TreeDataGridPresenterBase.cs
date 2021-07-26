@@ -238,7 +238,7 @@ namespace Avalonia.Controls.Primitives
             return finalSize;
         }
 
-        protected void RecycleAllElements()
+        public void RecycleAllElements()
         {
             foreach (var e in _realizedElements.Elements)
             {

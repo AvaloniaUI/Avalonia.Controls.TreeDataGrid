@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 
 namespace Avalonia.Controls
 {
@@ -15,7 +16,7 @@ namespace Avalonia.Controls
         private ItemsSourceViewFix<TModel> _itemsView;
         private AnonymousSortableRows<TModel>? _rows;
         private IComparer<TModel>? _comparer;
-
+        private ISelectionModel _selection;
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = items;
@@ -46,7 +47,7 @@ namespace Avalonia.Controls
         public void Sort(Comparison<TModel>? comparer)
         {
             _comparer = comparer is object ? new FuncComparer<TModel>(comparer) : null;
-            _rows?.Sort(_comparer);
+            _rows?.Sort(_comparer, _selection);
         }
 
         public bool SortBy(IColumn<TModel> column, ListSortDirection direction)
@@ -67,10 +68,11 @@ namespace Avalonia.Controls
             return false;
         }
 
-        bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)
+        bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction, ISelectionModel selection)
         {
             if (column is IColumn<TModel> typedColumn)
             {
+                _selection = selection;
                 SortBy(typedColumn, direction);
                 return true;
             }
