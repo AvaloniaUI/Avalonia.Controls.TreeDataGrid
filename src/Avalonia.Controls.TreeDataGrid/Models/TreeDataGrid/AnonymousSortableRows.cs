@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Avalonia.Controls.Selection;
+using Avalonia.Utilities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using Avalonia.Controls.Selection;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -95,9 +95,17 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             //else
             //    _sortedItems ??= new List<TModel>();
 
-            _sortedItems = _items.OrderByWithSelectionPreserving(x => x, comparer,selection).ToList();
+            if (_sortedItems != null)
+            {
+                _sortedItems = _sortedItems.OrderByWithSelectionPreserving(x => x, comparer, selection).ToList();
+            }
+            else
+            {
+                _sortedItems = _items.OrderByWithSelectionPreserving(x => x, comparer, selection).ToList();
+            }
 
-           // OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
+
+            // OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
         }
 
         public void UnrealizeCell(ICell cell, int columnIndex, int rowIndex)
@@ -124,7 +132,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             if (CollectionChanged is null)
                 return;
-            
+
             var ev = e.Action switch
             {
                 NotifyCollectionChangedAction.Add => new NotifyCollectionChangedEventArgs(
@@ -148,7 +156,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 NotifyCollectionChangedAction.Reset => e,
                 _ => throw new NotSupportedException(),
             };
-            
+
             CollectionChanged(this, ev);
         }
 

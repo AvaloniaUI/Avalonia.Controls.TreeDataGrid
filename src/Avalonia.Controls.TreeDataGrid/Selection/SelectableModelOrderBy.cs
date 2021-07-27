@@ -170,16 +170,16 @@ namespace Avalonia.Controls.Selection
                 int[] map = SortedMap(buffer);
                 if (selection.SelectedIndexes.Count > 0)
                 {
-                    var count = selection.SelectedIndexes.Count;
                     var indexes = selection.SelectedIndexes.ToList();
-                    for (int i = 0; i < count; i++)
+                    for (int i = 0; i < selection.SelectedIndexes.Count; i++)
                     {
                         for (int j = 0; j < map.Length; j++)
                         {
                             if (map[j] == indexes[i])
                             {
-                                var temp = ((IList)selection.Source)[indexes[i]];
+                                var temp = _source.ToList()[indexes[i]];
                                 var t2 = buffer._items[map[j]];
+                                
                                 selection.Deselect(indexes[i]);
                                 selection.Select(j);
                             }
