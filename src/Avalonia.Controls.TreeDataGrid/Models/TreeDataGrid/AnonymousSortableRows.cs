@@ -90,10 +90,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             _comparer = comparer;
 
-            //When you sort for the first time _sortedItems field would be null mecause we obviously didnt sorted anything
+            //When you sort for the first time _sortedItems field would be null because we obviously didn't sorted anything.
             //When you sort for the second time we use _sortedItems for ordering because in OrderByWithSelectionPreserving
-            //we compare the selection.SelectedIndexes(which are already in some order) to incoming collection(which would not be ordered if you would pass _items field)
-            //and that would cause the selection corruption
+            //we compare the selection.SelectedIndexes(which are already in some order) to incoming collection
+            //(which would not be ordered if you would pass _items field) and that would cause the selection corruption.
             if (selection != null)
             {
                 if (_sortedItems != null)

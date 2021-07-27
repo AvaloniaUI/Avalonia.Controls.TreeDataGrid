@@ -386,9 +386,9 @@ namespace Avalonia.Controls
                 }
 
                 var column = _source.Columns[columnHeader.ColumnIndex];
-                _source.SortBy(column, _userSortDirection, _selection);
-                RowsPresenter.RecycleAllElements();
-                RowsPresenter.InvalidateMeasure();
+                _source.SortBy(column, _userSortDirection, _selection!);
+                RowsPresenter?.RecycleAllElements();
+                RowsPresenter?.InvalidateMeasure();
             }
         }
     }
