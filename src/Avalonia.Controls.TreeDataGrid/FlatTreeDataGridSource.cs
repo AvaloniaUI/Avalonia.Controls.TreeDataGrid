@@ -43,31 +43,22 @@ namespace Avalonia.Controls
 
         public void Dispose() => _rows?.Dispose();
 
-
-        public bool SortBy(IColumn<TModel> column, ListSortDirection direction, ISelectionModel selection)
-        {
-            if (!Columns.Contains(column))
-                return false;
-
-            var comparer = column.GetComparison(direction);
-
-            if (comparer is object)
-            {
-                _comparer = comparer is object ? new FuncComparer<TModel>(comparer) : null;
-                _rows?.Sort(_comparer, selection);
-                foreach (var c in Columns)
-                    c.SortDirection = c == column ? (ListSortDirection?)direction : null;
-                return true;
-            }
-
-            return false;
-        }
-
         bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction, ISelectionModel selection)
         {
             if (column is IColumn<TModel> typedColumn)
             {
-                SortBy(typedColumn, direction, selection);
+                if (!Columns.Contains(typedColumn))
+                    return true;
+
+                var comparer = typedColumn.GetComparison(direction);
+
+                if (comparer is object)
+                {
+                    _comparer = comparer is object ? new FuncComparer<TModel>(comparer) : null;
+                    _rows?.Sort(_comparer, selection);
+                    foreach (var c in Columns)
+                        c.SortDirection = c == column ? direction : null;
+                }
                 return true;
             }
 
