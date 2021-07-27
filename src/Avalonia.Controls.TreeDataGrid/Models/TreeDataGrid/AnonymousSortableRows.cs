@@ -90,11 +90,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             _comparer = comparer;
 
-            //if (_comparer is null && _sortedItems is object)
-            //    _sortedItems = null;
-            //else
-            //    _sortedItems ??= new List<TModel>();
-
+            //When you sort for the first time _sortedItems field would be null mecause we obviously didnt sorted anything
+            //When you sort for the second time we use _sortedItems for ordering because in OrderByWithSelectionPreserving
+            //we compare the selection.SelectedIndexes(which are already in some order) to incoming collection(which would not be ordered if you would pass _items field)
+            //and that would cause the selection corruption
             if (_sortedItems != null)
             {
                 _sortedItems = _sortedItems.OrderByWithSelectionPreserving(x => x, comparer, selection).ToList();
@@ -104,8 +103,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 _sortedItems = _items.OrderByWithSelectionPreserving(x => x, comparer, selection).ToList();
             }
 
-
-            // OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
         }
 
         public void UnrealizeCell(ICell cell, int columnIndex, int rowIndex)

@@ -237,23 +237,6 @@ namespace ProControlsDemo.Models
             yield return new Country("Zimbabwe", "SUB-SAHARAN AFRICA", 12236805, 390580, 31.3, 0, 0, 67.69, 1900, 90.7, 26.8, 28.01, 21.84);
         }
 
-        public static IReadOnlyList<Country> All
-        {
-            get
-            {
-                if (_all == null)
-                {
-                    var temp = GetCountries().ToList();
-                    temp.Insert(0, temp[0]);
-                    temp.Insert(0, temp[0]);
-                    temp.Insert(0, temp[0]);
-                    _all = temp.AsReadOnly();
-                }
-
-
-                return _all;
-            }
-
-        }
+        public static IReadOnlyList<Country> All => _all ??= GetCountries().ToList();
     }
 }

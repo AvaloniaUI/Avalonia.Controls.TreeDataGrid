@@ -11,20 +11,9 @@ namespace Avalonia.Controls.Selection
 
     public static partial class Enumerable
     {
-        //public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) =>
-        //    new OrderedEnumerable<TSource, TKey>(source, keySelector, null, false, null);
-
         public static IOrderedEnumerable<TSource> OrderByWithSelectionPreserving<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer,
             ISelectionModel selection) =>
             new OrderedEnumerable<TSource, TKey>(source, keySelector, comparer, false, null, selection);
-
-        //public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) =>
-        //    new OrderedEnumerable<TSource, TKey>(source, keySelector, null, true, null);
-
-        //public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer) =>
-        //    new OrderedEnumerable<TSource, TKey>(source, keySelector, comparer, true, null);
-
-
     }
     /// <summary>
     /// An iterator that can produce an array or <see cref="List{TElement}"/> through an optimized path.
@@ -170,6 +159,7 @@ namespace Avalonia.Controls.Selection
                 int[] map = SortedMap(buffer);
                 if (selection.SelectedIndexes.Count > 0)
                 {
+                    //take the copy of SelectedIndexes collection because it could be modified at the runtime
                     var indexes = selection.SelectedIndexes.ToList();
                     for (int i = 0; i < selection.SelectedIndexes.Count; i++)
                     {
@@ -177,9 +167,6 @@ namespace Avalonia.Controls.Selection
                         {
                             if (map[j] == indexes[i])
                             {
-                                var temp = _source.ToList()[indexes[i]];
-                                var t2 = buffer._items[map[j]];
-                                
                                 selection.Deselect(indexes[i]);
                                 selection.Select(j);
                             }
