@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Avalonia.Controls.Models.TreeDataGrid;
-using Avalonia.Controls.Selection;
 
 namespace Avalonia.Controls
 {
@@ -16,7 +16,6 @@ namespace Avalonia.Controls
         private ItemsSourceViewFix<TModel> _itemsView;
         private AnonymousSortableRows<TModel>? _rows;
         private IComparer<TModel>? _comparer;
-        private ISelectionModel _selection;
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = items;
@@ -44,13 +43,8 @@ namespace Avalonia.Controls
 
         public void Dispose() => _rows?.Dispose();
 
-        public void Sort(Comparison<TModel>? comparer)
-        {
-            _comparer = comparer is object ? new FuncComparer<TModel>(comparer) : null;
-            _rows?.Sort(_comparer, _selection);
-        }
 
-        public bool SortBy(IColumn<TModel> column, ListSortDirection direction)
+        public bool SortBy(IColumn<TModel> column, ListSortDirection direction, ISelectionModel selection)
         {
             if (!Columns.Contains(column))
                 return false;
@@ -59,7 +53,8 @@ namespace Avalonia.Controls
 
             if (comparer is object)
             {
-                Sort(comparer);
+                _comparer = comparer is object ? new FuncComparer<TModel>(comparer) : null;
+                _rows?.Sort(_comparer, selection);
                 foreach (var c in Columns)
                     c.SortDirection = c == column ? (ListSortDirection?)direction : null;
                 return true;
@@ -72,8 +67,7 @@ namespace Avalonia.Controls
         {
             if (column is IColumn<TModel> typedColumn)
             {
-                _selection = selection;
-                SortBy(typedColumn, direction);
+                SortBy(typedColumn, direction, selection);
                 return true;
             }
 

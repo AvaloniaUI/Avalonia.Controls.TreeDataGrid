@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
@@ -344,7 +345,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             private static FlatTreeDataGridSource<Row> CreateTarget(IEnumerable<Row> rows)
             {
                 var result = FlatTreeDataGridSourceTests.CreateTarget(rows);
-                result.Sort((x, y) => y.Id - x.Id);
+                ((AnonymousSortableRows<Row>)result.Rows).Sort(new FuncComparer<Row>(new Comparison<Row>((x, y) => y.Id - x.Id)));
                 return result;
             }
 

@@ -86,7 +86,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
         }
 
-        public void Sort(IComparer<TModel>? comparer, ISelectionModel selection)
+        public void Sort(IComparer<TModel>? comparer, ISelectionModel? selection = null)
         {
             _comparer = comparer;
 
@@ -94,13 +94,20 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             //When you sort for the second time we use _sortedItems for ordering because in OrderByWithSelectionPreserving
             //we compare the selection.SelectedIndexes(which are already in some order) to incoming collection(which would not be ordered if you would pass _items field)
             //and that would cause the selection corruption
-            if (_sortedItems != null)
+            if (selection != null)
             {
-                _sortedItems = _sortedItems.OrderByWithSelectionPreserving(x => x, comparer, selection).ToList();
+                if (_sortedItems != null)
+                {
+                    _sortedItems = _sortedItems.OrderByWithSelectionPreserving(x => x, comparer, selection).ToList();
+                }
+                else
+                {
+                    _sortedItems = _items.OrderByWithSelectionPreserving(x => x, comparer, selection).ToList();
+                }
             }
             else
             {
-                _sortedItems = _items.OrderByWithSelectionPreserving(x => x, comparer, selection).ToList();
+                _sortedItems = _items.OrderBy(x => x, comparer).ToList();
             }
 
         }
