@@ -24,6 +24,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="column">The column.</param>
         /// <param name="direction">The sort direction.</param>
+        /// <param name="selection">Selection model to keep selection during sorting.</param>
         /// <returns>True if the sort could be performed; otherwise false.</returns>
         bool SortBy(IColumn column, ListSortDirection direction, ISelectionModel selection);
     }
