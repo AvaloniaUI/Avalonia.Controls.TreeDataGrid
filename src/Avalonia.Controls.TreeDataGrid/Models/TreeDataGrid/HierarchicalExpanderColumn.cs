@@ -72,7 +72,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public Comparison<TModel>? GetComparison(ListSortDirection direction) => _inner.GetComparison(direction);
 
         void ISetColumnLayout.SetActualWidth(double width) => ActualWidth = width;
-        void ISetColumnLayout.SetWidth(GridLength width) => ((ISetColumnLayout)_inner).SetWidth(width);
+        void ISetColumnLayout.SetWidth(GridLength width) => SetWidth(width);
 
         private void OnInnerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -81,6 +81,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 e.PropertyName == nameof(SortDirection) ||
                 e.PropertyName == nameof(Width))
                 RaisePropertyChanged(e);
+        }
+
+        private void SetWidth(GridLength width)
+        {
+            ((ISetColumnLayout)_inner).SetWidth(width);
+
+            if (width.IsAbsolute)
+                ActualWidth = width.Value;
         }
     }
 }
