@@ -1,4 +1,9 @@
-﻿using System;
+﻿// This source file is adapted from the dotnet runtime project.
+// (https://github.com/dotnet/runtime)
+//
+// Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,7 +14,7 @@ using System.Runtime.CompilerServices;
 namespace Avalonia.Controls.Selection
 {
 
-    public static partial class Enumerable
+    internal static partial class Enumerable
     {
         public static IOrderedEnumerable<TSource> OrderByWithSelectionPreserving<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer,
             ISelectionModel selection) =>
