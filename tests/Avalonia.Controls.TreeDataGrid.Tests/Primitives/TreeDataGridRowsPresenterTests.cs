@@ -229,13 +229,13 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             items.RemoveAt(0);
             items.Insert(0, item);
 
-            target
-                .FindAncestorOfType<TestRoot>()!.LayoutManager
-                .ExecuteInitialLayoutPass();
+            Layout(target);
                 
             Assert.All(
                 GetRealizedRowIndexes(target).GroupBy(index => index),
                 group => Assert.Equal(group.Count(), 1));
+
+            AssertRowIndexes(target, 0, 10);
         }
         
         private static void AssertRowIndexes(TreeDataGridRowsPresenter? target, int firstRowIndex, int rowCount)
