@@ -26,6 +26,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         public int ColumnIndex { get; private set; } = -1;
+        public int RowIndex => (Parent as TreeDataGridCellsPresenter)?.RowIndex ?? -1;
         public ICell? Model { get; private set; }
 
         public bool IsSelected
@@ -42,7 +43,7 @@ namespace Avalonia.Controls.Primitives
             ColumnIndex = columnIndex;
             Model = model;
 
-            _treeDataGrid?.RaiseCellPrepared(this, columnIndex, rowIndex);
+            _treeDataGrid?.RaiseCellPrepared(this, columnIndex, RowIndex);
         }
 
         public virtual void Unrealize()
