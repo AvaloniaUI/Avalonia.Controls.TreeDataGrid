@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -128,6 +127,7 @@ namespace Avalonia.Controls
 
         public event EventHandler<TreeDataGridCellEventArgs>? CellClearing;
         public event EventHandler<TreeDataGridCellEventArgs>? CellPrepared;
+        public event CancelEventHandler SelectionChanging;
 
         public IControl? TryGetCell(int columnIndex, int rowIndex)
         {
@@ -148,11 +148,11 @@ namespace Avalonia.Controls
         public bool TryGetRowModel<TModel>(IControl element, [MaybeNullWhen(false)] out TModel result)
         {
             if (Source is object &&
-                TryGetCell(element, out var cell) &&
-                cell.RowIndex < Source.Rows.Count &&
-                Source.Rows[cell.RowIndex] is IRow<TModel> row)
+                TryGetRow(element, out var row) &&
+                row.RowIndex < Source.Rows.Count &&
+                Source.Rows[row.RowIndex] is IRow<TModel> rowWithModel)
             {
-                result = row.Model;
+                result = rowWithModel.Model;
                 return true;
             }
 
@@ -164,7 +164,7 @@ namespace Avalonia.Controls
 
         protected bool MoveSelection(NavigationDirection direction, bool rangeModifier)
         {
-            return MoveSelection(direction, rangeModifier, GetFocusedCell());
+            return MoveSelection(direction, rangeModifier, GetFocusedRow());
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -185,7 +185,7 @@ namespace Avalonia.Controls
 
                 if (direction.HasValue)
                 {
-                    var focused = GetFocusedCell();
+                    var focused = GetFocusedRow();
 
                     if (focused is object && !ctrl)
                     {
@@ -209,12 +209,12 @@ namespace Avalonia.Controls
             if (Source is null || _selection is null || e.Handled)
                 return;
 
-            if (e.Source is IControl source && TryGetCell(source, out var cell))
+            if (e.Source is IControl source && TryGetRow(source, out var row))
             {
                 var point = e.GetCurrentPoint(this);
 
                 UpdateSelection(
-                    cell.RowIndex,
+                    row.RowIndex,
                     select: true,
                     rangeModifier: e.KeyModifiers.HasFlag(KeyModifiers.Shift),
                     toggleModifier: e.KeyModifiers.HasFlag(KeyModifiers.Control),
@@ -223,23 +223,21 @@ namespace Avalonia.Controls
             }
         }
 
-        private ITreeDataGridCell? GetFocusedCell()
+        private TreeDataGridRow? GetFocusedRow()
         {
             var focus = FocusManager.Instance;
-            ITreeDataGridCell? focused = null;
+            TreeDataGridRow? focused = null;
             if (focus.Current is IControl current)
-                TryGetCell(current, out focused);
+                TryGetRow(current, out focused);
             return focused;
         }
 
-        private bool MoveSelection(NavigationDirection direction, bool rangeModifier, ITreeDataGridCell? focused)
+        private bool MoveSelection(NavigationDirection direction, bool rangeModifier, TreeDataGridRow? focused)
         {
             if (Source is null || RowsPresenter is null || Source.Columns.Count == 0 || Source.Rows.Count == 0)
                 return false;
 
-            var currentColumnIndex = focused?.ColumnIndex ?? 0;
             var currentRowIndex = focused?.RowIndex ?? Selection?.SelectedIndex ?? 0;
-            var newColumnIndex = currentColumnIndex;
             int newRowIndex;
 
             if (direction == NavigationDirection.First || direction == NavigationDirection.Last)
@@ -257,14 +255,13 @@ namespace Avalonia.Controls
                     _ => (0, 0)
                 };
 
-                newColumnIndex = Math.Max(0, Math.Min(currentColumnIndex + step.x, Source.Columns.Count - 1));
                 newRowIndex = Math.Max(0, Math.Min(currentRowIndex + step.y, Source.Rows.Count - 1));
             }
 
             if (newRowIndex != currentRowIndex)
                 UpdateSelection(newRowIndex, true, rangeModifier);
 
-            if (newRowIndex != currentRowIndex || newColumnIndex != currentColumnIndex)
+            if (newRowIndex != currentRowIndex)
             {
                 RowsPresenter?.BringIntoView(newRowIndex);
                 TryGetRow(newRowIndex)?.Focus();
@@ -276,7 +273,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private bool TryKeyExpandCollapse(NavigationDirection direction, ITreeDataGridCell focused)
+        private bool TryKeyExpandCollapse(NavigationDirection direction, TreeDataGridRow focused)
         {
             if (Source is null || RowsPresenter is null || focused.RowIndex < 0)
                 return false;
@@ -300,18 +297,18 @@ namespace Avalonia.Controls
             return false;
         }
 
-        private bool TryGetCell(IControl? element, [MaybeNullWhen(false)] out ITreeDataGridCell result)
+        private bool TryGetRow(IControl? element, [MaybeNullWhen(false)] out TreeDataGridRow result)
         {
-            if (element is ITreeDataGridCell cell && cell.RowIndex >= 0)
+            if (element is TreeDataGridRow row && row.RowIndex >= 0)
             {
-                result = cell;
+                result = row;
                 return true;
             }
 
             do
             {
-                result = element?.FindAncestorOfType<ITreeDataGridCell>();
-                if (result?.ColumnIndex >= 0 && result?.RowIndex >= 0)
+                result = element?.FindAncestorOfType<TreeDataGridRow>();
+                if (result?.RowIndex >= 0)
                     break;
                 element = result;
             } while (result is object);
@@ -338,40 +335,54 @@ namespace Avalonia.Controls
 
             if (!select)
             {
-                _selection.Deselect(index);
+                if (_selection.IsSelected(index) && !SelectionCanceled())
+                    _selection.Deselect(index);
             }
             else if (rightButton)
             {
-                if (_selection.IsSelected(index) == false)
+                if (_selection.IsSelected(index) == false && !SelectionCanceled())
                 {
                     _selection.SelectedIndex = index;
                 }
             }
             else if (range)
             {
-                using var operation = _selection.BatchUpdate();
-                _selection.Clear();
-                _selection.SelectRange(_selection.AnchorIndex, index);
+                if (!SelectionCanceled())
+                {
+                    using var operation = _selection.BatchUpdate();
+                    _selection.Clear();
+                    _selection.SelectRange(_selection.AnchorIndex, index);
+                }
             }
             else if (multi && toggle)
             {
-                if (_selection.IsSelected(index) == true)
+                if (!SelectionCanceled())
                 {
-                    _selection.Deselect(index);
-                }
-                else
-                {
-                    _selection.Select(index);
+                    if (_selection.IsSelected(index) == true)
+                        _selection.Deselect(index);
+                    else
+                        _selection.Select(index);
                 }
             }
             else if (toggle)
             {
-                _selection.SelectedIndex = (_selection.SelectedIndex == index) ? -1 : index;
+                if (!SelectionCanceled())
+                    _selection.SelectedIndex = (_selection.SelectedIndex == index) ? -1 : index;
             }
-            else
+            else if (_selection.SelectedIndex != index || _selection.Count > 1)
             {
-                _selection.SelectedIndex = index;
+                if (!SelectionCanceled())
+                    _selection.SelectedIndex = index;
             }
+        }
+
+        private bool SelectionCanceled()
+        {
+            if (SelectionChanging is null)
+                return false;
+            var e = new CancelEventArgs();
+            SelectionChanging(this, e);
+            return e.Cancel;
         }
 
         internal void RaiseCellClearing(TreeDataGridCell cell, int columnIndex, int rowIndex)

@@ -18,8 +18,8 @@ namespace Avalonia.Controls.Primitives
                 o => o.ElementFactory,
                 (o, v) => o.ElementFactory = v);
 
-        public static readonly DirectProperty<TreeDataGridCell, bool> IsSelectedProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGridCell, bool>(
+        public static readonly DirectProperty<TreeDataGridRow, bool> IsSelectedProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridRow, bool>(
                 nameof(IsSelected),
                 o => o.IsSelected,
                 (o, v) => o.IsSelected = v);

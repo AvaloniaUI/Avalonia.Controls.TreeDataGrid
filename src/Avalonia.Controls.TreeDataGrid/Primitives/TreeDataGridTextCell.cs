@@ -24,11 +24,11 @@ namespace Avalonia.Controls.Primitives
 
         protected override bool CanEdit => _canEdit;
 
-        public override void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        public override void Realize(IElementFactory factory, ICell model, int columnIndex)
         {
             _canEdit = model.CanEdit;
             Value = model.Value?.ToString();
-            base.Realize(factory, model, columnIndex, rowIndex);
+            base.Realize(factory, model, columnIndex);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
