@@ -171,18 +171,6 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(1, raised);
         }
 
-        [Fact]
-        public void Throws_Nothing_On_Removing_First_Adding_Last()
-        {
-            var data = CreateData();
-            var target = CreateTarget(data);
-
-            var item = data[0];
-
-            data.RemoveAt(0);
-            data.Insert(0, item);
-        }
-
         public class Sorted
         {
             [Fact]

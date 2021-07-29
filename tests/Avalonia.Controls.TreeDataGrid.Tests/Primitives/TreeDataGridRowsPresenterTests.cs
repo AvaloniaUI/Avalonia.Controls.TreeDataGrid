@@ -218,6 +218,26 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRowIndexes(target, 1, 10);
         }
 
+        [Fact]
+        public void No_Repeating_Indexes_After_Removal_And_Insertion()
+        {
+            using var app = App();
+
+            var (target, _, items) = CreateTarget();
+            var item = items[0];
+
+            items.RemoveAt(0);
+            items.Insert(0, item);
+
+            target
+                .FindAncestorOfType<TestRoot>()!.LayoutManager
+                .ExecuteInitialLayoutPass();
+                
+            Assert.All(
+                GetRealizedRowIndexes(target).GroupBy(index => index),
+                group => Assert.Equal(group.Count(), 1));
+        }
+        
         private static void AssertRowIndexes(TreeDataGridRowsPresenter? target, int firstRowIndex, int rowCount)
         {
             Assert.NotNull(target);
