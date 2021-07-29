@@ -458,11 +458,12 @@ namespace Avalonia.Controls.Selection
             }
             catch (IndexOutOfRangeException)
             {
-                // ThrowHelper.ThrowArgumentException_BadComparer(comparer);
+                throw new ArgumentException("Unable to sort because the IComparer.Compare() method returns inconsistent results." +
+                    $"Either a value does not compare equal to itself, or one value repeatedly compared to another value yields different results.IComparer: '{comparer}'.");
             }
             catch (Exception e)
             {
-                // ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_IComparerFailed, e);
+                throw new InvalidOperationException("Failed to compare two elements in the array.", e);
             }
         }
 
@@ -475,7 +476,7 @@ namespace Avalonia.Controls.Selection
             }
             catch (Exception e)
             {
-                //   ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_IComparerFailed, e);
+                throw new InvalidOperationException("Failed to compare two elements in the array.", e);
                 return 0;
             }
         }
@@ -493,11 +494,12 @@ namespace Avalonia.Controls.Selection
             }
             catch (IndexOutOfRangeException)
             {
-                //  ThrowHelper.ThrowArgumentException_BadComparer(comparer);
+                throw new ArgumentException("Unable to sort because the IComparer.Compare() method returns inconsistent results." +
+                    $"Either a value does not compare equal to itself, or one value repeatedly compared to another value yields different results.IComparer: '{comparer}'.");
             }
             catch (Exception e)
             {
-                //  ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_IComparerFailed, e);
+                throw new InvalidOperationException("Failed to compare two elements in the array.", e);
             }
         }
 
