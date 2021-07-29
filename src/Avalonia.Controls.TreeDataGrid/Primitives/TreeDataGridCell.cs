@@ -26,7 +26,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         public int ColumnIndex { get; private set; } = -1;
-        public int RowIndex => (Parent as TreeDataGridCellsPresenter)?.RowIndex ?? -1;
+        public int RowIndex { get; private set; } = -1;
         public ICell? Model { get; private set; }
 
         public bool IsSelected
@@ -35,12 +35,13 @@ namespace Avalonia.Controls.Primitives
             set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
         }
 
-        public virtual void Realize(IElementFactory factory, ICell model, int columnIndex)
+        public virtual void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
         {
             if (columnIndex < 0)
                 throw new IndexOutOfRangeException("Invalid column index.");
 
             ColumnIndex = columnIndex;
+            RowIndex = rowIndex;
             Model = model;
 
             _treeDataGrid?.RaiseCellPrepared(this, columnIndex, RowIndex);
@@ -49,7 +50,7 @@ namespace Avalonia.Controls.Primitives
         public virtual void Unrealize()
         {
             _treeDataGrid?.RaiseCellClearing(this, ColumnIndex, RowIndex);
-            ColumnIndex = -1;
+            ColumnIndex = RowIndex = -1;
         }
 
         protected virtual bool CanEdit => false;

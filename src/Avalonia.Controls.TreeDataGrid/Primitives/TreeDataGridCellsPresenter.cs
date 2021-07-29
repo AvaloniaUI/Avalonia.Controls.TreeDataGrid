@@ -86,7 +86,7 @@ namespace Avalonia.Controls.Primitives
         {
             var model = _rows!.RealizeCell(column, index, RowIndex);
             var cell = (TreeDataGridCell)GetElementFromFactory(model, index, this);
-            cell.Realize(ElementFactory!, model, index);
+            cell.Realize(ElementFactory!, model, index, RowIndex);
             return cell;
         }
 
@@ -99,14 +99,14 @@ namespace Avalonia.Controls.Primitives
         {
             var cell = (TreeDataGridCell)element;
 
-            if (cell.ColumnIndex == index)
+            if (cell.ColumnIndex == index && cell.RowIndex == RowIndex)
             {
                 return;
             }
-            else if (cell.ColumnIndex == -1)
+            else if (cell.ColumnIndex == -1 && cell.RowIndex == -1)
             {
                 var model = _rows!.RealizeCell(column, index, RowIndex);
-                ((TreeDataGridCell)element).Realize(ElementFactory!, model, index);
+                ((TreeDataGridCell)element).Realize(ElementFactory!, model, index, RowIndex);
             }
             else
             {
@@ -118,9 +118,10 @@ namespace Avalonia.Controls.Primitives
         {
             var cell = (TreeDataGridCell)element;
             var columnIndex = cell.ColumnIndex;
+            var rowIndex = cell.RowIndex;
 
             cell.Unrealize();
-            _rows!.UnrealizeCell(cell.Model!, columnIndex, RowIndex);
+            _rows!.UnrealizeCell(cell.Model!, columnIndex, rowIndex);
         }
 
         protected override void UpdateElementIndex(IControl element, int index)
