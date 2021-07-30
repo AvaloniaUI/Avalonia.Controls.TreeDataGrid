@@ -31,6 +31,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                         new TreeDataGridColumnHeadersPresenter
                         {
                             Name = "PART_ColumnHeadersPresenter",
+                            [DockPanel.DockProperty] = Dock.Top,
                             [!TreeDataGridColumnHeadersPresenter.ElementFactoryProperty] = x[!TreeDataGrid.ElementFactoryProperty],
                             [!TreeDataGridColumnHeadersPresenter.ItemsProperty] = x[!TreeDataGrid.ColumnsProperty],
                         }.RegisterInNameScope(ns),

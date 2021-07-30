@@ -70,14 +70,17 @@ namespace Avalonia.Controls.Primitives
         protected override Size MeasureElement(int index, IControl element, Size availableSize)
         {
             element.Measure(availableSize);
-            ((IColumns)Items!).CellMeasured(index, RowIndex, element.DesiredSize);
-            return element.DesiredSize;
+            return ((IColumns)Items!).CellMeasured(index, RowIndex, element.DesiredSize);
         }
 
         protected override Rect ArrangeElement(int index, IControl element, Rect rect)
         {
             var column = ((IColumns)Items!)[index];
-            rect = rect.WithWidth(column.ActualWidth);
+
+            if (!column.ActualWidth.HasValue)
+                throw new AvaloniaInternalException("Attempt to arrange cell before measure.");
+
+            rect = rect.WithWidth(column.ActualWidth.Value);
             element.Arrange(rect);
             return rect;
         }
@@ -126,6 +129,14 @@ namespace Avalonia.Controls.Primitives
 
         protected override void UpdateElementIndex(IControl element, int index)
         {
+        }
+
+        protected override double CalculateSizeU(Size availableSize)
+        {
+            if (Items is null)
+                return 0;
+
+            return ((IColumns)Items).GetEstimatedWidth(availableSize.Width);
         }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)

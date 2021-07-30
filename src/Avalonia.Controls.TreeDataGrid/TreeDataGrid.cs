@@ -35,6 +35,11 @@ namespace Avalonia.Controls
                 o => o.Rows,
                 (o, v) => o.Rows = v);
 
+        public static readonly DirectProperty<TreeDataGrid, IScrollable?> ScrollProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGrid, IScrollable?>(
+                nameof(Scroll),
+                o => o.Scroll);
+
         public static readonly StyledProperty<bool> ShowColumnHeadersProperty =
             AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(ShowColumnHeaders), true);
 
@@ -53,6 +58,7 @@ namespace Avalonia.Controls
         private ITreeDataGridSource? _source;
         private IColumns? _columns;
         private IRows? _rows;
+        private IScrollable? _scroll;
         private ISelectionModel? _selection;
         private IControl? _userSortColumn;
         private ListSortDirection _userSortDirection;
@@ -92,7 +98,12 @@ namespace Avalonia.Controls
 
         public TreeDataGridColumnHeadersPresenter? ColumnHeadersPresenter { get; private set; }
         public TreeDataGridRowsPresenter? RowsPresenter { get; private set; }
-        public IScrollable? Scroll { get; private set; }
+        
+        public IScrollable? Scroll 
+        {
+            get => _scroll;
+            private set => SetAndRaise(ScrollProperty, ref _scroll, value);
+        }
 
         public bool ShowColumnHeaders
         {

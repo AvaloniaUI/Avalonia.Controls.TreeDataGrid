@@ -12,14 +12,15 @@ namespace Avalonia.Controls.Primitives
         {
             var columns = (IColumns)Items!;
             element.Measure(availableSize);
-            columns.CellMeasured(index, -1, element.DesiredSize);
-            return new Size(columns[index].ActualWidth, element.DesiredSize.Height);
+            return columns.CellMeasured(index, -1, element.DesiredSize);
         }
 
         protected override Rect ArrangeElement(int index, IControl element, Rect rect)
         {
             var column = ((IColumns)Items!)[index];
-            rect = rect.WithWidth(column.ActualWidth);
+            if (!column.ActualWidth.HasValue)
+                throw new AvaloniaInternalException("Attempt to arrange cell before measure.");
+            rect = rect.WithWidth(column.ActualWidth.Value);
             element.Arrange(rect);
             return rect;
         }
@@ -41,6 +42,14 @@ namespace Avalonia.Controls.Primitives
         protected override void UnrealizeElement(IControl element)
         {
             ((TreeDataGridColumnHeader)element).Unrealize();
+        }
+
+        protected override double CalculateSizeU(Size availableSize)
+        {
+            if (Items is null)
+                return 0;
+
+            return ((IColumns)Items).GetEstimatedWidth(availableSize.Width);
         }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
