@@ -122,7 +122,7 @@ namespace Avalonia.Controls.Primitives
             var cell = (TreeDataGridCell)element;
             var columnIndex = cell.ColumnIndex;
             var rowIndex = cell.RowIndex;
-            
+
             cell.Unrealize();
             _rows!.UnrealizeCell(cell.Model!, columnIndex, rowIndex);
         }

@@ -151,8 +151,59 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
+        [Fact]
+        public void Raises_CellPrepared_Events_On_Initial_Layout()
+        {
+            using var app = App();
+
+            var (target, items) = CreateTarget(runLayout: false);
+            var raised = 0;
+
+            target.CellPrepared += (s, e) =>
+            {
+                Assert.Equal(raised % 2, e.ColumnIndex);
+                Assert.Equal(raised / 2, e.RowIndex);
+                ++raised;
+            };
+
+            var root = (ILayoutRoot)target.GetVisualRoot();
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(20, raised);
+        }
+
+        [Fact]
+        public void Raises_CellClearing_CellPrepared_Events_On_Scroll()
+        {
+            using var app = App();
+
+            var (target, items) = CreateTarget();
+            var clearingRaised = 0;
+            var preparedRaised = 0;
+
+            target.CellClearing += (s, e) =>
+            {
+                Assert.Equal(clearingRaised % 2, e.ColumnIndex);
+                Assert.Equal(0, e.RowIndex);
+                ++clearingRaised;
+            };
+
+            target.CellPrepared += (s, e) =>
+            {
+                Assert.Equal(preparedRaised % 2, e.ColumnIndex);
+                Assert.Equal(10, e.RowIndex);
+                ++preparedRaised;
+            };
+
+            target.Scroll!.Offset = new Vector(0, 10);
+            Layout(target);
+
+            Assert.Equal(2, clearingRaised);
+            Assert.Equal(2, preparedRaised);
+        }
         private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(
-            IEnumerable<IColumn<Model>>? columns = null)
+            IEnumerable<IColumn<Model>>? columns = null,
+            bool runLayout = true)
         {
             var items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
                 new Model
@@ -202,7 +253,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Child = target,
             };
 
-            root.LayoutManager.ExecuteInitialLayoutPass();
+            if (runLayout)
+                root.LayoutManager.ExecuteInitialLayoutPass();
             return (target, items);
         }
 
