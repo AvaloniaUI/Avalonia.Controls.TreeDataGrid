@@ -6,7 +6,7 @@ namespace Avalonia.Controls.Primitives
     {
         int ColumnIndex { get; }
 
-        void Realize(IElementFactory factory, ICell model, int columnIndex);
+        void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex);
         void Unrealize();
     }
 }

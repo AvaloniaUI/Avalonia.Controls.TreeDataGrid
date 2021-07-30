@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -17,6 +18,7 @@ namespace Avalonia.Controls.Primitives
 
         private bool _isEditing;
         private bool _isSelected;
+        private TreeDataGrid? _treeDataGrid;
 
         static TreeDataGridCell()
         {
@@ -24,6 +26,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         public int ColumnIndex { get; private set; } = -1;
+        public int RowIndex { get; private set; } = -1;
         public ICell? Model { get; private set; }
 
         public bool IsSelected
@@ -32,18 +35,22 @@ namespace Avalonia.Controls.Primitives
             set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
         }
 
-        public virtual void Realize(IElementFactory factory, ICell model, int columnIndex)
+        public virtual void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
         {
             if (columnIndex < 0)
                 throw new IndexOutOfRangeException("Invalid column index.");
 
             ColumnIndex = columnIndex;
+            RowIndex = rowIndex;
             Model = model;
+
+            _treeDataGrid?.RaiseCellPrepared(this, columnIndex, RowIndex);
         }
 
         public virtual void Unrealize()
         {
-            ColumnIndex = -1;
+            _treeDataGrid?.RaiseCellClearing(this, ColumnIndex, RowIndex);
+            ColumnIndex = RowIndex = -1;
         }
 
         protected virtual bool CanEdit => false;
@@ -68,6 +75,22 @@ namespace Avalonia.Controls.Primitives
         {
             if (EndEditCore())
                 (DataContext as IEditableObject)?.EndEdit();
+        }
+
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            _treeDataGrid = this.FindLogicalAncestorOfType<TreeDataGrid>();
+            base.OnAttachedToLogicalTree(e);
+
+            // The cell may be realized before being parented. In this case raise the CellPrepared event here.
+            if (_treeDataGrid is object && ColumnIndex >= 0 && RowIndex >= 0)
+                _treeDataGrid.RaiseCellPrepared(this, ColumnIndex, RowIndex);
+        }
+
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            _treeDataGrid = null;
+            base.OnDetachedFromLogicalTree(e);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

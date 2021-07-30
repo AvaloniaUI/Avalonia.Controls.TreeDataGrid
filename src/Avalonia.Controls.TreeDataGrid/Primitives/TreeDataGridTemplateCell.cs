@@ -30,10 +30,10 @@ namespace Avalonia.Controls.Primitives
             set => SetAndRaise(ContentTemplateProperty, ref _contentTemplate, value);
         }
 
-        public override void Realize(IElementFactory factory, ICell model, int columnIndex)
+        public override void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
         {
             DataContext = model;
-            base.Realize(factory, model, columnIndex);
+            base.Realize(factory, model, columnIndex, rowIndex);
         }
 
         public override void Unrealize()
