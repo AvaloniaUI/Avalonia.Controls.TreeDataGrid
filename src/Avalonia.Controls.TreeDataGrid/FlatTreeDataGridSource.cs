@@ -23,6 +23,7 @@ namespace Avalonia.Controls
             Columns = new ColumnList<TModel>();
         }
 
+        public event Action? Sorted;
         public ColumnList<TModel> Columns { get; }
         public IRows Rows => _rows ??= CreateRows();
         IColumns ITreeDataGridSource.Columns => Columns;
@@ -56,6 +57,7 @@ namespace Avalonia.Controls
                 {
                     _comparer = comparer is object ? new FuncComparer<TModel>(comparer) : null;
                     _rows?.Sort(_comparer, selection);
+                    Sorted?.Invoke();
                     foreach (var c in Columns)
                         c.SortDirection = c == column ? direction : null;
                 }

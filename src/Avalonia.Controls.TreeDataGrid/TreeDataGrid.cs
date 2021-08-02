@@ -112,6 +112,20 @@ namespace Avalonia.Controls
             {
                 if (_source != value)
                 {
+                    if (value != null)
+                    {
+                        value.Sorted += Source_Sorted;
+                    }
+                    if (_source!=null)
+                    {
+                        _source.Sorted -= Source_Sorted;
+                    }
+                    void Source_Sorted()
+                    {
+                        RowsPresenter?.RecycleAllElements();
+                        RowsPresenter?.InvalidateMeasure();
+                    }
+
                     var oldSource = _source;
                     _source = value;
                     Columns = _source?.Columns;
@@ -387,8 +401,6 @@ namespace Avalonia.Controls
 
                 var column = _source.Columns[columnHeader.ColumnIndex];
                 _source.SortBy(column, _userSortDirection, _selection!);
-                RowsPresenter?.RecycleAllElements();
-                RowsPresenter?.InvalidateMeasure();
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
+using System;
 using System.ComponentModel;
 
 namespace Avalonia.Controls
@@ -9,6 +10,12 @@ namespace Avalonia.Controls
     /// </summary>
     public interface ITreeDataGridSource
     {
+
+        /// <summary>
+        /// Event which would be triggered after SortBy method execution.
+        /// </summary>
+        event Action Sorted;
+
         /// <summary>
         /// Gets the columns to be displayed.
         /// </summary>
