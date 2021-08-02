@@ -35,6 +35,11 @@ namespace Avalonia.Controls
                 o => o.Rows,
                 (o, v) => o.Rows = v);
 
+        public static readonly DirectProperty<TreeDataGrid, IScrollable?> ScrollProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGrid, IScrollable?>(
+                nameof(Scroll),
+                o => o.Scroll);
+
         public static readonly StyledProperty<bool> ShowColumnHeadersProperty =
             AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(ShowColumnHeaders), true);
 
@@ -53,9 +58,11 @@ namespace Avalonia.Controls
         private ITreeDataGridSource? _source;
         private IColumns? _columns;
         private IRows? _rows;
+        private IScrollable? _scroll;
         private ISelectionModel? _selection;
         private IControl? _userSortColumn;
         private ListSortDirection _userSortDirection;
+        private TreeDataGridCellEventArgs? _cellArgs;
 
         public TreeDataGrid()
         {
@@ -91,7 +98,12 @@ namespace Avalonia.Controls
 
         public TreeDataGridColumnHeadersPresenter? ColumnHeadersPresenter { get; private set; }
         public TreeDataGridRowsPresenter? RowsPresenter { get; private set; }
-        public IScrollable? Scroll { get; private set; }
+        
+        public IScrollable? Scroll 
+        {
+            get => _scroll;
+            private set => SetAndRaise(ScrollProperty, ref _scroll, value);
+        }
 
         public bool ShowColumnHeaders
         {
@@ -138,6 +150,8 @@ namespace Avalonia.Controls
             }
         }
 
+        public event EventHandler<TreeDataGridCellEventArgs>? CellClearing;
+        public event EventHandler<TreeDataGridCellEventArgs>? CellPrepared;
         public event CancelEventHandler SelectionChanging;
 
         public IControl? TryGetCell(int columnIndex, int rowIndex)
@@ -394,6 +408,28 @@ namespace Avalonia.Controls
             var e = new CancelEventArgs();
             SelectionChanging(this, e);
             return e.Cancel;
+        }
+
+        internal void RaiseCellClearing(TreeDataGridCell cell, int columnIndex, int rowIndex)
+        {
+            if (CellClearing is object)
+            {
+                _cellArgs ??= new TreeDataGridCellEventArgs();
+                _cellArgs.Update(cell, columnIndex, rowIndex);
+                CellClearing(this, _cellArgs);
+                _cellArgs.Update(null, -1, -1);
+            }
+        }
+
+        internal void RaiseCellPrepared(TreeDataGridCell cell, int columnIndex, int rowIndex)
+        {
+            if (CellPrepared is object)
+            {
+                _cellArgs ??= new TreeDataGridCellEventArgs();
+                _cellArgs.Update(cell, columnIndex, rowIndex);
+                CellPrepared(this, _cellArgs);
+                _cellArgs.Update(null, -1, -1);
+            }
         }
 
         private void OnClick(object sender, RoutedEventArgs e)

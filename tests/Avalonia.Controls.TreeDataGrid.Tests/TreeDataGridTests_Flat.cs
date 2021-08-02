@@ -1,4 +1,6 @@
-﻿using Avalonia.Collections;
+﻿using System;
+using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -164,6 +166,62 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, items[i].PropertyChangedSubscriberCount());
             }
         }
+        
+        [Fact]
+        public void Desired_Width_Should_Be_Total_Of_Fixed_Width_Columns()
+        {
+            using var app = App();
+
+            var (target, items) = CreateTarget(
+                columns: new IColumn<Model>[]
+                {
+                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(10, GridUnitType.Pixel)),
+                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(14, GridUnitType.Pixel))
+                }
+            );
+
+            Assert.Equal(24, target.DesiredSize.Width);
+        }
+
+        [Fact]
+        public void Should_Size_Star_Columns()
+        {
+            using var app = App();
+
+            var (target, items) = CreateTarget(
+                columns: new IColumn<Model>[]
+                {
+                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(1, GridUnitType.Star)),
+                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(3, GridUnitType.Star))
+                }
+            );
+
+            var rows = target.RowsPresenter
+                .GetLogicalChildren()
+                .Cast<TreeDataGridRow>()
+                .ToList();
+
+            Assert.Equal(10, rows.Count);
+
+            foreach (var row in rows)
+            {
+                var cells = row.CellsPresenter
+                    .GetLogicalChildren()
+                    .Cast<TreeDataGridCell>()
+                    .ToList();
+                Assert.Equal(2, cells.Count);
+                Assert.Equal(25, cells[0].Bounds.Width);
+                Assert.Equal(75, cells[1].Bounds.Width);
+            }
+        }
+
+        [Fact]
+        public void Raises_CellPrepared_Events_On_Initial_Layout()
+        {
+            using var app = App();
+
+            var (target, items) = CreateTarget(runLayout: false);
+            var raised = 0;
 
         private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(IEnumerable<Model>? models = null)
         {
@@ -171,6 +229,53 @@ namespace Avalonia.Controls.TreeDataGridTests
             if (models == null)
             {
                 items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
+            target.CellPrepared += (s, e) =>
+            {
+                Assert.Equal(raised % 2, e.ColumnIndex);
+                Assert.Equal(raised / 2, e.RowIndex);
+                ++raised;
+            };
+
+            var root = (ILayoutRoot)target.GetVisualRoot();
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(20, raised);
+        }
+
+        [Fact]
+        public void Raises_CellClearing_CellPrepared_Events_On_Scroll()
+        {
+            using var app = App();
+
+            var (target, items) = CreateTarget();
+            var clearingRaised = 0;
+            var preparedRaised = 0;
+
+            target.CellClearing += (s, e) =>
+            {
+                Assert.Equal(clearingRaised % 2, e.ColumnIndex);
+                Assert.Equal(0, e.RowIndex);
+                ++clearingRaised;
+            };
+
+            target.CellPrepared += (s, e) =>
+            {
+                Assert.Equal(preparedRaised % 2, e.ColumnIndex);
+                Assert.Equal(10, e.RowIndex);
+                ++preparedRaised;
+            };
+
+            target.Scroll!.Offset = new Vector(0, 10);
+            Layout(target);
+
+            Assert.Equal(2, clearingRaised);
+            Assert.Equal(2, preparedRaised);
+        }
+        private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(
+            IEnumerable<IColumn<Model>>? columns = null,
+            bool runLayout = true)
+        {
+            var items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
                 new Model
                 {
                     Id = x,
@@ -185,8 +290,17 @@ namespace Avalonia.Controls.TreeDataGridTests
 
 
             var source = new FlatTreeDataGridSource<Model>(items);
-            source.Columns.Add(new TextColumn<Model, int>("ID", x => x.Id));
-            source.Columns.Add(new TextColumn<Model, string?>("Title", x => x.Title));
+
+            if (columns is object)
+            {
+                foreach (var column in columns)
+                    source.Columns.Add(column);
+            }
+            else
+            {
+                source.Columns.Add(new TextColumn<Model, int>("ID", x => x.Id));
+                source.Columns.Add(new TextColumn<Model, string?>("Title", x => x.Title));
+            }
 
             var target = new TreeDataGrid
             {
@@ -216,7 +330,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Child = target,
             };
 
-            root.LayoutManager.ExecuteInitialLayoutPass();
+            if (runLayout)
+                root.LayoutManager.ExecuteInitialLayoutPass();
             return (target, items);
         }
 

@@ -50,7 +50,7 @@ namespace Avalonia.Controls.Primitives
             private set => SetAndRaise(ShowExpanderProperty, ref _showExpander, value);
         }
 
-        public override void Realize(IElementFactory factory, ICell model, int columnIndex)
+        public override void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
         {
             if (_model is object)
                 throw new InvalidOperationException("Cell is already realized.");
@@ -75,7 +75,7 @@ namespace Avalonia.Controls.Primitives
                 throw new InvalidOperationException("Invalid cell model.");
             }
 
-            base.Realize(factory, model, columnIndex);
+            base.Realize(factory, model, columnIndex, rowIndex);
             UpdateContent(_factory);
         }
 
@@ -119,7 +119,7 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 if (_contentContainer.Child is ITreeDataGridCell innerCell)
-                    innerCell.Realize(factory, innerModel, ColumnIndex);
+                    innerCell.Realize(factory, innerModel, ColumnIndex, RowIndex);
             }
             else
             {
