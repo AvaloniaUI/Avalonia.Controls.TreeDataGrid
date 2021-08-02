@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Avalonia.Collections;
+﻿using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -166,7 +164,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, items[i].PropertyChangedSubscriberCount());
             }
         }
-        
+
         [Fact]
         public void Desired_Width_Should_Be_Total_Of_Fixed_Width_Columns()
         {
@@ -223,12 +221,6 @@ namespace Avalonia.Controls.TreeDataGridTests
             var (target, items) = CreateTarget(runLayout: false);
             var raised = 0;
 
-        private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(IEnumerable<Model>? models = null)
-        {
-            AvaloniaList<Model>? items = null;
-            if (models == null)
-            {
-                items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
             target.CellPrepared += (s, e) =>
             {
                 Assert.Equal(raised % 2, e.ColumnIndex);
@@ -271,11 +263,15 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(2, clearingRaised);
             Assert.Equal(2, preparedRaised);
         }
-        private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(
+
+        private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(IEnumerable<Model>? models = null,
             IEnumerable<IColumn<Model>>? columns = null,
             bool runLayout = true)
         {
-            var items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
+            AvaloniaList<Model>? items = null;
+            if (models == null)
+            {
+                items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
                 new Model
                 {
                     Id = x,
