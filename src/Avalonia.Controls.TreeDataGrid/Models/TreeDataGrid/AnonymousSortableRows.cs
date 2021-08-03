@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Avalonia.Controls.Selection;
+using Avalonia.Utilities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -85,16 +86,30 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
         }
 
-        public void Sort(IComparer<TModel>? comparer)
+        public void Sort(IComparer<TModel>? comparer, ISelectionModel? selection = null)
         {
             _comparer = comparer;
 
-            if (_comparer is null && _sortedItems is object)
-                _sortedItems = null;
+            //When you sort for the first time _sortedItems field would be null because we obviously didn't sorted anything.
+            //When you sort for the second time we use _sortedItems for ordering because in OrderByWithSelectionPreserving
+            //we compare the selection.SelectedIndexes(which are already ordered) to incoming collection
+            //(which would not be ordered if you would pass _items field) and that would cause the selection corruption.
+            if (selection != null)
+            {
+                if (_sortedItems != null)
+                {
+                    _sortedItems = _sortedItems.OrderByWithSelectionPreserving(x => x, comparer, selection).ToList();
+                }
+                else
+                {
+                    _sortedItems = _items.OrderByWithSelectionPreserving(x => x, comparer, selection).ToList();
+                }
+            }
             else
-                _sortedItems ??= new List<TModel>();
+            {
+                _sortedItems = _items.OrderBy(x => x, comparer).ToList();
+            }
 
-            OnItemsCollectionChanged(_items,  CollectionExtensions.ResetEvent);
         }
 
         public void UnrealizeCell(ICell cell, int columnIndex, int rowIndex)
@@ -121,7 +136,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             if (CollectionChanged is null)
                 return;
-            
+
             var ev = e.Action switch
             {
                 NotifyCollectionChangedAction.Add => new NotifyCollectionChangedEventArgs(
@@ -145,7 +160,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 NotifyCollectionChangedAction.Reset => e,
                 _ => throw new NotSupportedException(),
             };
-            
+
             CollectionChanged(this, ev);
         }
 

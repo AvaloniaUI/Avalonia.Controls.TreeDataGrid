@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 
 namespace Avalonia.Controls
 {
@@ -36,7 +37,7 @@ namespace Avalonia.Controls
             Columns = new ColumnList<TModel>();
             Columns.CollectionChanged += OnColumnsCollectionChanged;
         }
-
+        public event Action? Sorted;
         public IEnumerable<TModel> Items 
         {
             get => _items;
@@ -70,13 +71,14 @@ namespace Avalonia.Controls
             _rows?.Sort(_comparison);
         }
 
-        public bool SortBy(IColumn? column, ListSortDirection direction)
+        public bool SortBy(IColumn? column, ListSortDirection direction, ISelectionModel selection)
         {
             if (column is IColumn<TModel> columnBase &&
                 Columns.Contains(columnBase) &&
                 columnBase.GetComparison(direction) is Comparison<TModel> comparison)
             {
                 Sort(comparison);
+                Sorted?.Invoke();
                 foreach (var c in Columns)
                     c.SortDirection = c == column ? (ListSortDirection?)direction : null;
                 return true;

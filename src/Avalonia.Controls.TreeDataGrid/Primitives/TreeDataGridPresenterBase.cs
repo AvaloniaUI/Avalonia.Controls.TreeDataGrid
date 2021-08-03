@@ -120,6 +120,17 @@ namespace Avalonia.Controls.Primitives
 
         public IControl? TryGetElement(int index) => GetRealizedElement(index);
 
+        internal void RecycleAllElements()
+        {
+            foreach (var e in _realizedElements.Elements)
+            {
+                if (e is object)
+                    RecycleElement(e);
+            }
+
+            _realizedElements.Clear();
+        }
+
         protected virtual Rect ArrangeElement(int index, IControl element, Rect rect)
         {
             element.Arrange(rect);
@@ -247,17 +258,6 @@ namespace Avalonia.Controls.Primitives
             }
 
             return finalSize;
-        }
-
-        protected void RecycleAllElements()
-        {
-            foreach (var e in _realizedElements.Elements)
-            {
-                if (e is object)
-                    RecycleElement(e);
-            }
-
-            _realizedElements.Clear();
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)

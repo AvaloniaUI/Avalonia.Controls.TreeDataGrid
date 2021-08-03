@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls
 {
@@ -15,7 +16,6 @@ namespace Avalonia.Controls
         private ItemsSourceViewFix<TModel> _itemsView;
         private AnonymousSortableRows<TModel>? _rows;
         private IComparer<TModel>? _comparer;
-
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = items;
@@ -23,6 +23,7 @@ namespace Avalonia.Controls
             Columns = new ColumnList<TModel>();
         }
 
+        public event Action? Sorted;
         public ColumnList<TModel> Columns { get; }
         public IRows Rows => _rows ??= CreateRows();
         IColumns ITreeDataGridSource.Columns => Columns;
@@ -43,35 +44,23 @@ namespace Avalonia.Controls
 
         public void Dispose() => _rows?.Dispose();
 
-        public void Sort(Comparison<TModel>? comparer)
-        {
-            _comparer = comparer is object ? new FuncComparer<TModel>(comparer) : null;
-            _rows?.Sort(_comparer);
-        }
-
-        public bool SortBy(IColumn<TModel> column, ListSortDirection direction)
-        {
-            if (!Columns.Contains(column))
-                return false;
-
-            var comparer = column.GetComparison(direction);
-
-            if (comparer is object)
-            {
-                Sort(comparer);
-                foreach (var c in Columns)
-                    c.SortDirection = c == column ? (ListSortDirection?)direction : null;
-                return true;
-            }
-
-            return false;
-        }
-
-        bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)
+        bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction, ISelectionModel selection)
         {
             if (column is IColumn<TModel> typedColumn)
             {
-                SortBy(typedColumn, direction);
+                if (!Columns.Contains(typedColumn))
+                    return true;
+
+                var comparer = typedColumn.GetComparison(direction);
+
+                if (comparer is object)
+                {
+                    _comparer = comparer is object ? new FuncComparer<TModel>(comparer) : null;
+                    _rows?.Sort(_comparer, selection);
+                    Sorted?.Invoke();
+                    foreach (var c in Columns)
+                        c.SortDirection = c == column ? direction : null;
+                }
                 return true;
             }
 

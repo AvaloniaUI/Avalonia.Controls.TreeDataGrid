@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
-using Avalonia.Controls.Models.TreeDataGrid;
+﻿using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
+using System;
+using System.ComponentModel;
 
 namespace Avalonia.Controls
 {
@@ -8,6 +10,12 @@ namespace Avalonia.Controls
     /// </summary>
     public interface ITreeDataGridSource
     {
+
+        /// <summary>
+        /// Event which would be triggered after SortBy method execution.
+        /// </summary>
+        event Action Sorted;
+
         /// <summary>
         /// Gets the columns to be displayed.
         /// </summary>
@@ -23,7 +31,8 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="column">The column.</param>
         /// <param name="direction">The sort direction.</param>
+        /// <param name="selection">Selection model to keep selection during sorting.</param>
         /// <returns>True if the sort could be performed; otherwise false.</returns>
-        bool SortBy(IColumn column, ListSortDirection direction);
+        bool SortBy(IColumn column, ListSortDirection direction, ISelectionModel selection);
     }
 }

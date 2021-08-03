@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <Nullable>enable</Nullable>
-    <LangVersion>8</LangVersion>
+	<TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
 </Project>

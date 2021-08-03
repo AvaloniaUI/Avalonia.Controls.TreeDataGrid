@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Avalonia.Collections;
+﻿using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
+using Enumerable = System.Linq.Enumerable;
 
 namespace Avalonia.Controls.TreeDataGridTests
 {
@@ -27,7 +29,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 .GetLogicalChildren()
                 .Cast<TreeDataGridRow>()
                 .ToList();
-            
+
             Assert.Equal(10, rows.Count);
 
             foreach (var row in rows)
@@ -38,6 +40,66 @@ namespace Avalonia.Controls.TreeDataGridTests
                     .ToList();
                 Assert.Equal(2, cells.Count);
             }
+        }
+
+        [Fact]
+        public void MultiSelection_Should_Work_Correctly_With_Duplicates()
+        {
+            using var app = App();
+
+            var items = new List<Model>
+            {
+                new Model(){ Id=0, Title="Item 0"},
+                new Model(){ Id=1, Title="Item 1"},
+                new Model(){ Id=2, Title="Item 2"}
+            };
+            items.Add(items[0]);
+            items.Add(items[0]);
+            items.Add(items[0]);
+
+            var (target, aaa) = CreateTarget(items);
+
+            target.Selection = new SelectionModel<IRow>(target.Rows)
+            {
+                SingleSelect = false,
+            };
+            target.Selection.Select(3);
+            target.Selection.Select(4);
+            target.Selection.Select(5);
+            Assert.Equal(3, target.Selection.SelectedIndexes.Count);
+            Assert.Equal(3, target.Selection.SelectedIndexes[0]);
+            Assert.Equal(4, target.Selection.SelectedIndexes[1]);
+            Assert.Equal(5, target.Selection.SelectedIndexes[2]);
+            target.Source!.SortBy(target.Columns![0], System.ComponentModel.ListSortDirection.Ascending, target.Selection);
+
+            Assert.Equal(1, target.Selection.SelectedIndexes[0]);
+            Assert.Equal(2, target.Selection.SelectedIndexes[1]);
+            Assert.Equal(3, target.Selection.SelectedIndexes[2]);
+        }
+
+        [Fact]
+        public void Selection_Should_Be_Preserved_After_Sorting()
+        {
+            using var app = App();
+
+            var (target, aaa) = CreateTarget();
+
+            target.Selection = new SelectionModel<IRow>(target.Rows)
+            {
+                SingleSelect = false,
+            };
+            target.Selection.Select(0);
+            target.Selection.Select(5);
+            Assert.Equal(2, target.Selection.SelectedIndexes.Count);
+            Assert.Equal(0, target.Selection.SelectedIndexes[0]);
+            Assert.Equal(5, target.Selection.SelectedIndexes[1]);
+            target.Source!.SortBy(target.Columns![0], System.ComponentModel.ListSortDirection.Descending, target.Selection);
+
+            ///There are 100 items in the collection.
+            ///Their IDs are in range 0..99 so when we order IDs column in Descending order the latest element of the collection would be with
+            ///ID 0(index 99 in collection),first with ID 99
+            Assert.Equal(94, target.Selection.SelectedIndexes[0]);
+            Assert.Equal(99, target.Selection.SelectedIndexes[1]);
         }
 
         [Fact]
@@ -102,7 +164,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, items[i].PropertyChangedSubscriberCount());
             }
         }
-        
+
         [Fact]
         public void Desired_Width_Should_Be_Total_Of_Fixed_Width_Columns()
         {
@@ -201,16 +263,27 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(2, clearingRaised);
             Assert.Equal(2, preparedRaised);
         }
-        private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(
+
+        private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(IEnumerable<Model>? models = null,
             IEnumerable<IColumn<Model>>? columns = null,
             bool runLayout = true)
         {
-            var items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
+            AvaloniaList<Model>? items = null;
+            if (models == null)
+            {
+                items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
                 new Model
                 {
                     Id = x,
                     Title = "Item " + x,
                 }));
+
+            }
+            else
+            {
+                items = new AvaloniaList<Model>(models);
+            }
+
 
             var source = new FlatTreeDataGridSource<Model>(items);
 
