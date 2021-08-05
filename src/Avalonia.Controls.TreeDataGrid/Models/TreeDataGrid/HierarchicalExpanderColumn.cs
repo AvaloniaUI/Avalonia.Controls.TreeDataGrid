@@ -35,6 +35,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _inner.PropertyChanged += OnInnerPropertyChanged;
             _childSelector = childSelector;
             _hasChildrenSelector = hasChildrenSelector;
+            _actualWidth = inner.ActualWidth;
         }
 
         /// <summary>
