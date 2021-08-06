@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.TreeDataG
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{A8CF7AE6-C46F-4930-85AF-13126EAC5E6E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProControlsDemo", "samples\ProControlsDemo\ProControlsDemo.csproj", "{9A36E37E-2C03-4B5A-B7EE-A91DC95C3E4A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProControlsDemo", "samples\ProControlsDemo\ProControlsDemo.csproj", "{9A36E37E-2C03-4B5A-B7EE-A91DC95C3E4A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReproCase", "ReproCase\ReproCase.csproj", "{A27AAE97-80AD-4393-A287-ADAC4FC6FEA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +33,10 @@ Global
 		{9A36E37E-2C03-4B5A-B7EE-A91DC95C3E4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A36E37E-2C03-4B5A-B7EE-A91DC95C3E4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A36E37E-2C03-4B5A-B7EE-A91DC95C3E4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A27AAE97-80AD-4393-A287-ADAC4FC6FEA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A27AAE97-80AD-4393-A287-ADAC4FC6FEA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A27AAE97-80AD-4393-A287-ADAC4FC6FEA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A27AAE97-80AD-4393-A287-ADAC4FC6FEA7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -38,6 +44,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{90F93B90-3622-4332-9E7A-E6D7062422C1} = {00673DCE-6218-4BAC-9026-F9BA18D241AE}
 		{9A36E37E-2C03-4B5A-B7EE-A91DC95C3E4A} = {A8CF7AE6-C46F-4930-85AF-13126EAC5E6E}
+		{A27AAE97-80AD-4393-A287-ADAC4FC6FEA7} = {A8CF7AE6-C46F-4930-85AF-13126EAC5E6E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6C219532-B67B-4A0F-BFC0-A22CBE46DFF4}
