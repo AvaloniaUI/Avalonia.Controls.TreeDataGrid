@@ -59,10 +59,13 @@ namespace ReproCase
                 DoNothing);
 
             PendingChanges pendingChanges = new PendingChanges();
-            pendingChanges.Changed.Add(new ChangeInfo()
+            for (int i = 0; i < 200; i++)
             {
-                
-            });
+                pendingChanges.Changed.Add(new ChangeInfo()
+                {
+
+                });
+            }
             PendingChangesTree pendingChangesTree = new PendingChangesTree();
             pendingChangesTree.BuildChangeCategories(
                 Path.GetTempPath(), pendingChanges);

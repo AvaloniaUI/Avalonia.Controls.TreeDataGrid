@@ -391,7 +391,7 @@ namespace Avalonia.Controls.Primitives
         {
             UnrealizeElement(element);
             element.IsVisible = false;
-
+            _children.Remove(element);
             _recycleArgs ??= new ElementFactoryRecycleArgs();
             _recycleArgs.Element = element;
             _recycleArgs.Parent = this;

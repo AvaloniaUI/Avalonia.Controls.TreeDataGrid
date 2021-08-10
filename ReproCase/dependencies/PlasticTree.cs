@@ -247,7 +247,7 @@ namespace UiAvalonia.Table
                 if (!(x is T) || !(y is T))
                     return 0;
 
-                int result = comparer.Compare((T)x, (T)y);
+                int result = -1;// comparer.Compare((T)x, (T)y);
                 return bDescending ? -result : result;
             };
         }

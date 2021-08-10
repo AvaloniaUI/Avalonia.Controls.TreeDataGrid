@@ -100,7 +100,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     sorted[i] = (i, _items[i]);
                 }
 
-                Array.Sort(sorted, (x, y) => c(x.model, y.model));
+                //Array.Sort(sorted, (x, y) => c(x.model, y.model));
 
                 foreach (var i in sorted)
                 {
