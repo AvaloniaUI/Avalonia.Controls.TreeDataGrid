@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using Avalonia.Controls.Models.TreeDataGrid;
+﻿using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Presenters;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using CollectionExtensions = Avalonia.Controls.Models.TreeDataGrid.CollectionExtensions;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -51,7 +51,7 @@ namespace Avalonia.Controls.Primitives
             set => SetAndRaise(ElementFactoryProperty, ref _elementFactory, value);
         }
 
-        public IReadOnlyList<TItem>? Items 
+        public IReadOnlyList<TItem>? Items
         {
             get => _items;
             set
@@ -71,6 +71,7 @@ namespace Avalonia.Controls.Primitives
                         ItemsProperty,
                         new Optional<IReadOnlyList<TItem>?>(oldValue),
                         new BindingValue<IReadOnlyList<TItem>?>(_items));
+                    OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
                 }
             }
         }
@@ -175,9 +176,18 @@ namespace Avalonia.Controls.Primitives
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (Items is null || Items.Count == 0 || !IsEffectivelyVisible)
+            if (!IsEffectivelyVisible)
                 return default;
 
+            if (Items is null || Items.Count == 0)
+            {
+                if (_children.Count > _realizedElements.Elements.Count && _children.Count - _realizedElements.Elements.Count == _children.Count)
+                {
+                    _children.Clear();
+                }
+
+                return default;
+            }
             // If we're bringing an item into view, ignore any layout passes until we receive a new
             // effective viewport.
             if (_isWaitingForViewportUpdate)

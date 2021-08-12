@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Avalonia.Collections;
+﻿using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Avalonia.Controls.TreeDataGridTests.Primitives
@@ -32,7 +32,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             using var app = App();
 
             var (target, scroll, _) = CreateTarget();
-            
+
             scroll.Offset = new Vector(0, 10);
             Layout(target);
 
@@ -131,6 +131,30 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             // And the removed row should now have been recycled as the last row.
             elements.Add(toRecycle);
             Assert.Equal(elements, target.RealizedElements);
+        }
+
+        [Fact]
+        public void Should_Remove_Logical_And_Visual_Children_On_Empty_Collection_Assignment_To_Items()
+        {
+            using var app = App();
+
+            var (target, _, items) = CreateTarget();
+            Layout(target);
+            Assert.Equal(100, items.Count);
+            target.Items = new AnonymousSortableRows<Model>(ItemsSourceViewFix<Model>.Empty, null);
+            Layout(target);
+            Assert.Empty(target.Items);
+
+            Assert.Empty(target.GetVisualChildren());
+            Assert.Empty(target.GetLogicalChildren());
+
+            target.Items = new AnonymousSortableRows<Model>(new ItemsSourceViewFix<Model>(Enumerable.Range(0, 5)
+                .Select(x => new Model { Id = x, Title = "Item " + x, })), null);
+            Layout(target);
+            Assert.Equal(5, target.Items.Count);
+
+            Assert.Equal(5, target.GetVisualChildren().Count());
+            Assert.Equal(5, target.GetLogicalChildren().Count());
         }
 
         [Fact]
