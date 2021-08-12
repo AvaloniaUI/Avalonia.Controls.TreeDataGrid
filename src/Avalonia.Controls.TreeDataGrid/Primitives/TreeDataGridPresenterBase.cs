@@ -502,20 +502,24 @@ namespace Avalonia.Controls.Primitives
                 var first = _realizedElements.FirstIndex;
                 var last = _realizedElements.LastIndex;
 
-                if (index >= first && index <= last)
+                if (index + count >= first &&
+                    index <= last)
                 {
-                    var removePoint = index - first;
-                    count = Math.Min(count, _realizedElements.Count - removePoint);
+                    var removeFirst = Math.Max(first, index);
+                    var removeLast = Math.Min(last, index + count - 1);
+
+                    index = removeFirst - first;
+                    count = removeLast - removeFirst + 1;
 
                     for (var i = 0; i < count; ++i)
                     {
-                        if (_realizedElements.Elements[removePoint + i] is IControl element)
+                        if (_realizedElements.Elements[index + i] is IControl element)
                             RecycleElement(element);
                     }
 
-                    _realizedElements.RemoveRange(removePoint, count);
+                    _realizedElements.RemoveRange(index, count);
 
-                    for (var i = removePoint; i < _realizedElements.Count; ++i)
+                    for (var i = index; i < _realizedElements.Count; ++i)
                     {
                         if (_realizedElements.Elements[i] is IControl element)
                             UpdateElementIndex(element, first + i);
@@ -630,11 +634,11 @@ namespace Avalonia.Controls.Primitives
 
             public void RemoveRange(int index, int count)
             {
+                if (_elements?.Count == count)
+                    _firstIndex = 0;
+
                 _elements?.RemoveRange(index, count);
                 _sizes?.RemoveRange(index, count);
-
-                if (_firstIndex >= index)
-                    _firstIndex -= count;
             }
 
             public void RecycleRange(int index, int count)
