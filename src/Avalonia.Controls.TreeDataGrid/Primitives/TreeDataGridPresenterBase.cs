@@ -181,11 +181,7 @@ namespace Avalonia.Controls.Primitives
 
             if (Items is null || Items.Count == 0)
             {
-                if (_children.Count > _realizedElements.Elements.Count && _children.Count - _realizedElements.Elements.Count == _children.Count)
-                {
-                    _children.Clear();
-                }
-
+                _children.Clear();
                 return default;
             }
             // If we're bringing an item into view, ignore any layout passes until we receive a new
