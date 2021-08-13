@@ -141,6 +141,12 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             var (target, _, items) = CreateTarget();
             Layout(target);
             Assert.Equal(100, items.Count);
+            items.RemoveRange(1, 99);
+            Layout(target);
+            Assert.Single(target.Items);
+            Assert.Single(target.GetLogicalChildren());
+            Assert.Single(target.GetVisualChildren());
+
             target.Items = new AnonymousSortableRows<Model>(ItemsSourceViewFix<Model>.Empty, null);
             Layout(target);
             Assert.Empty(target.Items);
