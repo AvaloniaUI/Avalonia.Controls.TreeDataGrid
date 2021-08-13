@@ -85,6 +85,19 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets the element at the specified model index, if realized.
+        /// </summary>
+        /// <param name="modelIndex">The index in the source collection of the element to get.</param>
+        /// <returns>The element if realized; otherwise null.</returns>
+        public IControl? GetElement(int modelIndex)
+        {
+            var index = modelIndex - FirstModelIndex;
+            if (index >= 0 && index < _elements?.Count)
+                return _elements[index];
+            return null;
+        }
+
+        /// <summary>
         /// Updates the elements in response to items being inserted into the source collection.
         /// </summary>
         /// <param name="modelIndex">The index in the source collection of the insert.</param>

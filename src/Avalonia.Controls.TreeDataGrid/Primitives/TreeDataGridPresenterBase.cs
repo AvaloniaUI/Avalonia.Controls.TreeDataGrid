@@ -329,8 +329,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_anchorIndex == index)
                 return _anchorElement;
-            return index >= _realizedElements.FirstModelIndex && index <= _realizedElements.LastModelIndex ?
-                _realizedElements.Elements[index - _realizedElements.FirstModelIndex] : null;
+            return _realizedElements.GetElement(index);
         }
 
         private IControl GetRecycledOrCreateElement(int index)
