@@ -101,12 +101,7 @@ namespace Avalonia.Controls.Primitives
             if (_contentContainer is null)
                 return;
 
-            if (_model is null)
-            {
-                if (_contentContainer.Child is ITreeDataGridCell innerCell)
-                    innerCell.Unrealize();
-            }
-            else if (_model?.Content is ICell innerModel)
+            if (_model?.Content is ICell innerModel)
             {
                 var contentType = innerModel.GetType();
 
@@ -126,10 +121,12 @@ namespace Avalonia.Controls.Primitives
                 if (_contentContainer.Child is ITreeDataGridCell innerCell)
                     innerCell.Realize(factory, innerModel, ColumnIndex, RowIndex);
             }
-            else
+            else if (_contentContainer.Child is IControl element)
             {
-                var element = _contentContainer.Child;
+                if (element is ITreeDataGridCell innerCell)
+                    innerCell.Unrealize();
                 _contentContainer.Child = null;
+                _contentType = null;
                 _recycleArgs ??= new ElementFactoryRecycleArgs();
                 _recycleArgs.Element = element;
                 factory.RecycleElement(_recycleArgs);
