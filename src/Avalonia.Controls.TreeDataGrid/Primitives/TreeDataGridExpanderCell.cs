@@ -98,10 +98,15 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateContent(IElementFactory factory)
         {
-            if (_contentContainer is null || _model is null)
+            if (_contentContainer is null)
                 return;
 
-            if (_model?.Content is ICell innerModel)
+            if (_model is null)
+            {
+                if (_contentContainer.Child is ITreeDataGridCell innerCell)
+                    innerCell.Unrealize();
+            }
+            else if (_model?.Content is ICell innerModel)
             {
                 var contentType = innerModel.GetType();
 
