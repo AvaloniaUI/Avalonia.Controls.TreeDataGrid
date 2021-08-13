@@ -1,13 +1,13 @@
-﻿using Avalonia.Collections;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace Avalonia.Controls.TreeDataGridTests.Primitives

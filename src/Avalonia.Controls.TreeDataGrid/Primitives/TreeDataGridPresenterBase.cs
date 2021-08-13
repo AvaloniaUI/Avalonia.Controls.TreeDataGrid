@@ -1,14 +1,14 @@
-﻿using Avalonia.Controls.Models.TreeDataGrid;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Presenters;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using CollectionExtensions = Avalonia.Controls.Models.TreeDataGrid.CollectionExtensions;
 
 namespace Avalonia.Controls.Primitives
@@ -487,7 +487,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             void Add(int index, int count)
             {
