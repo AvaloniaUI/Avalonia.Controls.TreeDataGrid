@@ -44,7 +44,7 @@ namespace ProControlsDemo.ViewModels
 
             for (var i = selection.Count - 1; i >= 0; --i)
             {
-                _data.RemoveAt(i);
+                _data.RemoveAt(selection[i]);
             }
         }
     }
