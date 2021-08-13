@@ -183,7 +183,7 @@ namespace Avalonia.Controls.Primitives
             {
                 _children.Clear();
                 return default;
-            }
+            }             
             // If we're bringing an item into view, ignore any layout passes until we receive a new
             // effective viewport.
             if (_isWaitingForViewportUpdate)
@@ -210,6 +210,11 @@ namespace Avalonia.Controls.Primitives
             _realizedElements = _measureElements;
             _measureElements = tmp;
             _measureElements.Clear();
+
+            if (_children.Count > _realizedElements.Elements.Count && _realizedElements.Elements.Count > 0 && _realizedElements.Count == Items.Count)
+            {
+                _children.RemoveRange(_realizedElements.Elements.Count - 1, _children.Count - _realizedElements.Elements.Count);
+            }
 
             var sizeU = CalculateSizeU(availableSize);
 
