@@ -21,6 +21,7 @@
           <Label Target="gdpTextBox">_GDP</Label>
           <TextBox Name="gdpTextBox">600000</TextBox>
           <Button Click="AddCountryClick">Add</Button>
+          <Button Command="{Binding Countries.RemoveSelected}">Remove</Button>
         </StackPanel>
         <TreeDataGrid Name="countries" Source="{Binding Countries.Source}" Selection="{Binding Countries.Selection}"/>
       </DockPanel>

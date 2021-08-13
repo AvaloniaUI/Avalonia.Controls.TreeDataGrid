@@ -38,10 +38,14 @@ namespace Avalonia.Controls.Primitives
         private RealizedElementList _measureElements = new RealizedElementList();
         private RealizedElementList _realizedElements = new RealizedElementList();
         private ElementFactoryRecycleArgs? _recycleArgs;
+        private Action<IControl> _recycleElement;
+        private Action<IControl, int> _updateElementIndex;
 
         public TreeDataGridPresenterBase()
         {
             _children.CollectionChanged += OnChildrenChanged;
+            _recycleElement = RecycleElement;
+            _updateElementIndex = UpdateElementIndex;
             EffectiveViewportChanged += OnEffectiveViewportChanged;
         }
 
@@ -120,16 +124,7 @@ namespace Avalonia.Controls.Primitives
 
         public IControl? TryGetElement(int index) => GetRealizedElement(index);
 
-        internal void RecycleAllElements()
-        {
-            foreach (var e in _realizedElements.Elements)
-            {
-                if (e is object)
-                    RecycleElement(e);
-            }
-
-            _realizedElements.Clear();
-        }
+        internal void RecycleAllElements() => _realizedElements.RecycleAllElements(_recycleElement);
 
         protected virtual Rect ArrangeElement(int index, IControl element, Rect rect)
         {
@@ -197,13 +192,13 @@ namespace Avalonia.Controls.Primitives
             GenerateElements(availableSize, ref viewport);
 
             // Now we know what definitely fits, recycle anything left over.
-            RecycleElementsAfter(_measureElements.LastIndex);
+            RecycleElementsAfter(_measureElements.LastModelIndex);
 
             // And swap the measureElements and realizedElements collection.
             var tmp = _realizedElements;
             _realizedElements = _measureElements;
             _measureElements = tmp;
-            _measureElements.Clear();
+            _measureElements.ResetForReuse();
 
             var sizeU = CalculateSizeU(availableSize);
 
@@ -252,7 +247,7 @@ namespace Avalonia.Controls.Primitives
                     var rect = orientation == Orientation.Horizontal ?
                         new Rect(u, 0, sizeU, finalSize.Height) :
                         new Rect(0, u, finalSize.Width, sizeU);
-                    rect = ArrangeElement(i + _realizedElements.FirstIndex, e, rect);
+                    rect = ArrangeElement(i + _realizedElements.FirstModelIndex, e, rect);
                     u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
                 }
             }
@@ -266,7 +261,7 @@ namespace Avalonia.Controls.Primitives
             RecycleAllElements();
         }
 
-        protected virtual void OnEffectiveViewportChanged(object sender, EffectiveViewportChangedEventArgs e)
+        protected virtual void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
         {
             Viewport = e.EffectiveViewport;
             _isWaitingForViewportUpdate = false;
@@ -334,8 +329,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_anchorIndex == index)
                 return _anchorElement;
-            return index >= _realizedElements.FirstIndex && index <= _realizedElements.LastIndex ?
-                _realizedElements.Elements[index - _realizedElements.FirstIndex] : null;
+            return _realizedElements.GetElement(index);
         }
 
         private IControl GetRecycledOrCreateElement(int index)
@@ -400,34 +394,12 @@ namespace Avalonia.Controls.Primitives
 
         private void RecycleElementsAfter(int index)
         {
-            if (index > _realizedElements.LastIndex)
-                return;
-
-            var start = Math.Max(index - _realizedElements.FirstIndex + 1, 0);
-
-            for (var i = start; i < _realizedElements.Count; ++i)
-            {
-                if (_realizedElements.Elements[i] is IControl e)
-                    RecycleElement(e);
-            }
-
-            _realizedElements.RemoveRange(start, _realizedElements.Count - start);
+            _realizedElements.RecycleElementsAfter(index, _recycleElement);
         }
 
         private void RecycleElementsBefore(int index)
         {
-            if (index <= _realizedElements.FirstIndex)
-                return;
-
-            var count = Math.Min(index - _realizedElements.FirstIndex, _realizedElements.Count);
-
-            for (var i = 0; i < count; ++i)
-            {
-                if (_realizedElements.Elements[i] is IControl e)
-                    RecycleElement(e);
-            }
-
-            _realizedElements.RemoveRange(0, count);
+            _realizedElements.RecycleElementsBefore(index, _recycleElement);
         }
 
         private void OnChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -478,58 +450,13 @@ namespace Avalonia.Controls.Primitives
 
         private void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            void Add(int index, int count)
-            {
-                var first = _realizedElements.FirstIndex;
-                var last = _realizedElements.LastIndex;
-
-                if (index >= first && index <= last)
-                {
-                    var insertPoint = index - first;
-
-                    for (var i = insertPoint; i < _realizedElements.Count; ++i)
-                    {
-                        if (_realizedElements.Elements[i] is IControl element)
-                            UpdateElementIndex(element, first + i + count);
-                    }
-
-                    _realizedElements.InsertSpace(insertPoint, count);
-                }
-            }
-
-            void Remove(int index, int count)
-            {
-                var first = _realizedElements.FirstIndex;
-                var last = _realizedElements.LastIndex;
-
-                if (index >= first && index <= last)
-                {
-                    var removePoint = index - first;
-                    count = Math.Min(count, _realizedElements.Count - removePoint);
-
-                    for (var i = 0; i < count; ++i)
-                    {
-                        if (_realizedElements.Elements[removePoint + i] is IControl element)
-                            RecycleElement(element);
-                    }
-
-                    _realizedElements.RemoveRange(removePoint, count);
-
-                    for (var i = removePoint; i < _realizedElements.Count; ++i)
-                    {
-                        if (_realizedElements.Elements[i] is IControl element)
-                            UpdateElementIndex(element, first + i);
-                    }
-                }
-            }
-
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    Add(e.NewStartingIndex, e.NewItems.Count);
+                    _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    Remove(e.OldStartingIndex, e.OldItems.Count);
+                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems.Count, _updateElementIndex, _recycleElement);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     RecycleAllElements();
@@ -570,79 +497,6 @@ namespace Avalonia.Controls.Primitives
 
             if (HasInvalidations(c))
                 Invalidate(c);
-        }
-
-        private struct RealizedElementList
-        {
-            private int _firstIndex;
-            private List<IControl?>? _elements;
-            private List<double>? _sizes;
-            private double _startU;
-
-            public int Count => _elements?.Count ?? 0;
-            public int FirstIndex => _elements?.Count > 0 ? _firstIndex : -1;
-            public int LastIndex => _elements?.Count > 0 ? _firstIndex + _elements.Count - 1 : -1;
-            public IReadOnlyList<IControl?> Elements => _elements ??= new List<IControl?>();
-            public IReadOnlyList<double> SizeU => _sizes ??= new List<double>();
-            public double StartU => _startU;
-
-            public void Add(int index, IControl element, double u, double sizeU)
-            {
-                if (index < 0)
-                    throw new ArgumentOutOfRangeException(nameof(index));
-
-                _elements ??= new List<IControl?>();
-                _sizes ??= new List<double>();
-
-                if (Count == 0)
-                {
-                    _elements.Add(element);
-                    _sizes.Add(sizeU);
-                    _startU = u;
-                    _firstIndex = index;
-                }
-                else if (index == LastIndex + 1)
-                {
-                    _elements.Add(element);
-                    _sizes.Add(sizeU);
-                }
-                else if (index == FirstIndex - 1)
-                {
-                    --_firstIndex;
-                    _elements.Insert(0, element);
-                    _sizes.Insert(0, sizeU);
-                    _startU = u;
-                }
-                else
-                {
-                    throw new NotSupportedException("Can only add items to the beginning or end of realized elements.");
-                }
-            }
-
-            public void InsertSpace(int index, int count)
-            {
-                if (Count == 0)
-                    return;
-
-                _elements!.InsertMany(index, null, count);
-                _sizes!.InsertMany(index, 0.0, count);
-            }
-
-            public void RemoveRange(int index, int count)
-            {
-                _elements?.RemoveRange(index, count);
-                _sizes?.RemoveRange(index, count);
-
-                if (index == 0)
-                    _firstIndex += count;
-            }
-
-            public void Clear()
-            {
-                _startU = _firstIndex = 0;
-                _elements?.Clear();
-                _sizes?.Clear();
-            }
         }
 
         private struct MeasureViewport
