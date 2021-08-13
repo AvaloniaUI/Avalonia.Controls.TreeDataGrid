@@ -170,10 +170,9 @@ namespace Avalonia.Controls.Primitives
                 // The removed range was before the realized elements. Update the first index.
                 _firstIndex -= count;
             }
-            else if (startIndex >= 0 || endIndex < Count)
+            else
             {
-                // The removed range occured in the middle of the realized elements. Recycle and
-                // remove the affected elements.
+                // Recycle and remove the affected elements.
                 var start = Math.Max(startIndex, 0);
                 var end = Math.Min(endIndex, _elements.Count);
 

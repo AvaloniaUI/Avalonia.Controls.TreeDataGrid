@@ -206,6 +206,26 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         }
 
         [Fact]
+        public void Handles_Removing_All_Rows_When_Scrolled()
+        {
+            using var app = App();
+
+            var (target, scroll, items) = CreateTarget();
+
+            // Scroll down one item.
+            scroll.Offset = new Vector(0, 10);
+            Layout(target);
+
+            Assert.Equal(10, target.RealizedElements.Count());
+
+            // Remove all items using RemoveRange.
+            items.RemoveRange(0, items.Count);
+
+            // All items removed
+            Assert.Empty(target.RealizedElements);
+        }
+
+        [Fact]
         public void Handles_Removing_Row_Range_That_Invalidates_Current_Viewport()
         {
             using var app = App();
