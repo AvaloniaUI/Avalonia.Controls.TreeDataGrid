@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
@@ -36,5 +37,15 @@ namespace ProControlsDemo.ViewModels
         public SelectionModel<IRow> Selection { get; }
 
         public void AddCountry(Country country) => _data.Add(country);
+
+        public void RemoveSelected()
+        {
+            var selection = Selection.SelectedIndexes.ToList();
+
+            for (var i = selection.Count - 1; i >= 0; --i)
+            {
+                _data.RemoveAt(selection[i]);
+            }
+        }
     }
 }

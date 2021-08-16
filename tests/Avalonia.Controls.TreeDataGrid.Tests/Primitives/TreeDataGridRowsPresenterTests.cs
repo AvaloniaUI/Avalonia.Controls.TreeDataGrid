@@ -184,6 +184,44 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         }
 
         [Fact]
+        public void Handles_Removed_And_Reinserted_Row()
+        {
+            using var app = App();
+
+            var (target, _, items) = CreateTarget();
+
+            Assert.Equal(10, target.RealizedElements.Count());
+
+            var toRecycle = target.RealizedElements.ElementAt(0);
+            var item = items[0];
+            items.RemoveAt(0);
+
+            var indexes = GetRealizedRowIndexes(target);
+
+            // Item removed from realized elements and subsequent row indexes updated.
+            Assert.DoesNotContain(toRecycle, target.RealizedElements);
+            Assert.Equal(Enumerable.Range(0, 9), indexes);
+
+            items.Insert(0, item);
+
+            // Row indexes updated.
+            indexes = GetRealizedRowIndexes(target);
+            Assert.Equal(Enumerable.Range(1, 9), indexes);
+
+            var elements = target.RealizedElements.ToList();
+            Layout(target);
+
+            indexes = GetRealizedRowIndexes(target);
+
+            // After layout an element for the newly visible last row is created and indexes updated.
+            Assert.Equal(Enumerable.Range(0, 10), indexes);
+
+            // And the removed row should now have been recycled as the first row.
+            elements.Insert(0, toRecycle);
+            Assert.Equal(elements, target.RealizedElements);
+        }
+
+        [Fact]
         public void Handles_Removing_Row_Range_That_Spans_Realized_And_Unrealized_Elements()
         {
             using var app = App();
@@ -215,6 +253,26 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             // And the removed row should now have been recycled as the last row.
             elements.AddRange(toRecycle);
             Assert.Equal(elements, target.RealizedElements);
+        }
+
+        [Fact]
+        public void Handles_Removing_All_Rows_When_Scrolled()
+        {
+            using var app = App();
+
+            var (target, scroll, items) = CreateTarget();
+
+            // Scroll down one item.
+            scroll.Offset = new Vector(0, 10);
+            Layout(target);
+
+            Assert.Equal(10, target.RealizedElements.Count());
+
+            // Remove all items using RemoveRange.
+            items.RemoveRange(0, items.Count);
+
+            // All items removed
+            Assert.Empty(target.RealizedElements);
         }
 
         [Fact]
