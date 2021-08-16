@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using Avalonia.Controls.Models.TreeDataGrid;
+using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Data;
 using Avalonia.Layout;
@@ -178,7 +178,7 @@ namespace Avalonia.Controls.Primitives
             {
                 _children.Clear();
                 return default;
-            }             
+            }
             // If we're bringing an item into view, ignore any layout passes until we receive a new
             // effective viewport.
             if (_isWaitingForViewportUpdate)
@@ -208,7 +208,13 @@ namespace Avalonia.Controls.Primitives
 
             if (_children.Count > _realizedElements.Elements.Count && _realizedElements.Elements.Count > 0 && _realizedElements.Count == Items.Count)
             {
-                _children.RemoveRange(_realizedElements.Elements.Count - 1, _children.Count - _realizedElements.Elements.Count);
+                for (int i = _children.Count - 1; i >= _realizedElements.Elements.Count; i--)
+                {
+                    if (!_realizedElements.Elements.Contains(_children.ElementAt(i)))
+                    {
+                        _children.RemoveAt(i);
+                    }
+                }
             }
 
             var sizeU = CalculateSizeU(availableSize);
