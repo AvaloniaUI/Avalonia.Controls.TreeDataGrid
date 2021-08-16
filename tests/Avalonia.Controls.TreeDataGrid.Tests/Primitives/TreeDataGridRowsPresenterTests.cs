@@ -134,6 +134,26 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         }
 
         [Fact]
+        public void Realized_Children_Should_Not_Be_Removed()
+        {
+            using var app = App();
+
+            var (target, _, items) = CreateTarget();
+
+            Assert.Equal(100, target!.Items!.Count);
+            Assert.Equal(10, target.RealizedElements.Count);
+
+            items.RemoveRange(7, 93);
+            Layout(target);
+            var children = target.GetVisualChildren();
+
+            for (int i = 0; i < children.Count(); i++)
+            {
+                Assert.Equal(children.ElementAt(i), target.RealizedElements[i]);
+            }  
+        }
+
+        [Fact]
         public void Should_Remove_Logical_And_Visual_Children_On_Empty_Collection_Assignment_To_Items()
         {
             using var app = App();
