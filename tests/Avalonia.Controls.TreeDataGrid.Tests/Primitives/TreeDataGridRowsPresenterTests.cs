@@ -291,7 +291,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 Enumerable.Range(firstRowIndex, rowCount),
                 rowIndexes);
 
-            target!.RealizedElements
+            rowIndexes = target!.RealizedElements
                 .Cast<TreeDataGridRow>()
                 .Where(x => x.IsVisible)
                 .Select(x => x.RowIndex)
