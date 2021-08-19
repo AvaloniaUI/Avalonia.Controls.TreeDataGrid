@@ -197,7 +197,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             {
             }
 
-            public override ICell CreateCell(IRow<string> row)
+            public override ICell CreateCell(IModelRow<string> row)
             {
                 throw new NotImplementedException();
             }

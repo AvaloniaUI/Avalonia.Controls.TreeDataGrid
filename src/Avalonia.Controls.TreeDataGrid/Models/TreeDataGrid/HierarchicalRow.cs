@@ -58,6 +58,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         public IndexPath ModelIndexPath { get; private set; }
 
+        object IModelRow.Model => Model;
+
         public object? Header => ModelIndexPath;
         public int Indent => ModelIndexPath.GetSize() - 1;
         public TModel Model { get; }

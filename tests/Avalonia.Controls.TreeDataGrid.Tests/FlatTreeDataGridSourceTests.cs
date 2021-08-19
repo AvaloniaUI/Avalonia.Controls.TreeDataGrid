@@ -380,7 +380,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             for (var i = 0; i < data.Count; ++i)
             {
-                var row = (IRow<Row>)rows[i];
+                var row = (IModelRow<Row>)rows[i];
                 Assert.Same(row.Model, data[i]);
                 Assert.Equal(i, row.ModelIndex);
             }

@@ -1,15 +1,15 @@
-﻿namespace Avalonia.Controls.Models.TreeDataGrid
+namespace Avalonia.Controls.Models.TreeDataGrid
 {
     /// <summary>
-    /// Base class for rows with a model taken from an indexable data source.
+    /// Base interface for rows with a model taken from an indexable data source.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public interface IRow<TModel> : IRow
+    public interface IModelRow : IRow
     {
         /// <summary>
         /// Gets the row model.
         /// </summary>
-        TModel Model { get; }
+        object Model { get; }
 
         /// <summary>
         /// Gets the index of the model in the data source.

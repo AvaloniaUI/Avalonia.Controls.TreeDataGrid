@@ -6,7 +6,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// Represents a row which can be expanded to reveal nested data.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public interface IExpanderRow<TModel> : IRow<TModel>, IExpander, INotifyPropertyChanged
+    public interface IExpanderRow<TModel> : IModelRow<TModel>, IExpander, INotifyPropertyChanged
     {
     }
 }

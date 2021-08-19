@@ -16,7 +16,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// In a flat grid where rows cannot be resized, it is not necessary to persist any information
     /// about rows; the same row object can be updated and reused when a new row is requested.
     /// </remarks>
-    public class AnonymousSortableRows<TModel> : ReadOnlyListBase<IRow<TModel>>, IRows, IDisposable
+    public class AnonymousSortableRows<TModel> : ReadOnlyListBase<IModelRow<TModel>>, IRows, IDisposable
     {
         private readonly AnonymousRow<TModel> _row;
         private ItemsSourceViewFix<TModel> _items;
@@ -33,7 +33,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _row = new AnonymousRow<TModel>();
         }
 
-        public override IRow<TModel> this[int index]
+        public override IModelRow<TModel> this[int index]
         {
             get
             {
@@ -61,7 +61,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return (-1, -1);
         }
 
-        public override IEnumerator<IRow<TModel>> GetEnumerator()
+        public override IEnumerator<IModelRow<TModel>> GetEnumerator()
         {
             for (var i = 0; i < Count; ++i)
                 yield return this[i];

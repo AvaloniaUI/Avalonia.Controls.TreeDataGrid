@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         /// <param name="row">The row.</param>
         /// <returns>The cell.</returns>
-        ICell CreateCell(IRow<TModel> row);
+        ICell CreateCell(IModelRow<TModel> row);
 
         /// <summary>
         /// Gets a comparison function for the column.

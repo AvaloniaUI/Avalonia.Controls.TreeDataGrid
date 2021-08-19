@@ -58,7 +58,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public GridLength Width => _inner.Width;
 
-        public ICell CreateCell(IRow<TModel> row)
+        public ICell CreateCell(IModelRow<TModel> row)
         {
             if (row is HierarchicalRow<TModel> r)
             {

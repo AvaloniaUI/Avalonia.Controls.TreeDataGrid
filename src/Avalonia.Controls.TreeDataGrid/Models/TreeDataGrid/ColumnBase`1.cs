@@ -91,7 +91,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         /// <param name="row">The row.</param>
         /// <returns>The cell.</returns>
-        public abstract ICell CreateCell(IRow<TModel> row);
+        public abstract ICell CreateCell(IModelRow<TModel> row);
 
         public abstract Comparison<TModel>? GetComparison(ListSortDirection direction);
 

@@ -182,7 +182,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             {
             }
 
-            public override ICell CreateCell(IRow<Model> row)
+            public override ICell CreateCell(IModelRow<Model> row)
             {
                 return new TextCell<string>($"{Header} Row {row.ModelIndex}");
             }

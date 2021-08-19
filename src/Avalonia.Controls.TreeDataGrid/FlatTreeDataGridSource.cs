@@ -72,7 +72,7 @@ namespace Avalonia.Controls
             return new AnonymousSortableRows<TModel>(_itemsView, _comparer);
         }
 
-        private ICell CreateCell(IRow<TModel> row, int columnIndex)
+        private ICell CreateCell(IModelRow<TModel> row, int columnIndex)
         {
             return Columns[columnIndex].CreateCell(row);
         }

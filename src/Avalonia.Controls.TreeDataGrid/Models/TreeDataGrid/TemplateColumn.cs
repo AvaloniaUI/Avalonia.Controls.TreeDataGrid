@@ -37,7 +37,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         /// <param name="row">The row.</param>
         /// <returns>The cell.</returns>
-        public override ICell CreateCell(IRow<TModel> row) => new TemplateCell(row.Model, CellTemplate);
+        public override ICell CreateCell(IModelRow<TModel> row) => new TemplateCell(row.Model, CellTemplate);
 
         public override Comparison<TModel>? GetComparison(ListSortDirection direction)
         {

@@ -82,6 +82,12 @@ namespace Avalonia.Controls.Primitives
         {
             RowIndex = index;
             CellsPresenter?.UpdateIndex(index);
+
+            if (Rows is IRows rows &&
+                rows[index] is IModelRow row)
+            {
+                DataContext = row.Model;
+            }
         }
 
         public void Unrealize()

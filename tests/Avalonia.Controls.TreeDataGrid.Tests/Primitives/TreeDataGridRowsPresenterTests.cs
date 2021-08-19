@@ -23,6 +23,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
             Assert.Equal(new Size(100, 1000), scroll.Extent);
             AssertRowIndexes(target, 0, 10);
+            AssertRowContexts(target, 0, 10);
             AssertRecyclable(target, 0);
         }
 
@@ -37,6 +38,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Layout(target);
 
             AssertRowIndexes(target, 1, 10);
+            AssertRowContexts(target, 1, 10);
             AssertRecyclable(target, 0);
         }
 
@@ -51,6 +53,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Layout(target);
 
             AssertRowIndexes(target, 20, 10);
+            AssertRowContexts(target, 20, 10);
             AssertRecyclable(target, 0);
         }
 
@@ -68,6 +71,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Layout(target);
 
             AssertRowIndexes(target, 0, 10);
+            AssertRowContexts(target, 0, 10);
             AssertRecyclable(target, 0);
         }
 
@@ -274,6 +278,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             target.BringIntoView(10);
 
             AssertRowIndexes(target, 1, 10);
+            AssertRowContexts(target, 1, 10);
         }
 
         private static void AssertRowIndexes(TreeDataGridRowsPresenter? target, int firstRowIndex, int rowCount)
@@ -301,6 +306,37 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(
                 Enumerable.Range(firstRowIndex, rowCount),
                 rowIndexes);
+        }
+
+        private static void AssertRowContexts(TreeDataGridRowsPresenter? target, int firstRowIndex, int rowCount)
+        {
+            Assert.NotNull(target);
+            Assert.NotNull(target!.Items);
+
+            var expected = target!.Items!
+                .Skip(firstRowIndex)
+                .Take(rowCount)
+                .Cast<IModelRow>()
+                .Select(x => x.Model)
+                .ToArray();
+
+            var actualLogical = target!.GetLogicalChildren()
+                .Cast<TreeDataGridRow>()
+                .Where(x => x.IsVisible)
+                .OrderBy(x => x.RowIndex)
+                .Select(x => x.DataContext)
+                .ToArray();
+
+            Assert.Equal(expected, actualLogical);
+
+            var actualRealized = target!.RealizedElements
+                .Cast<TreeDataGridRow>()
+                .Where(x => x.IsVisible)
+                .OrderBy(x => x.RowIndex)
+                .Select(x => x.DataContext)
+                .ToArray();
+
+            Assert.Equal(expected, actualRealized);
         }
 
         private static void AssertRecyclable(TreeDataGridRowsPresenter? target, int count)

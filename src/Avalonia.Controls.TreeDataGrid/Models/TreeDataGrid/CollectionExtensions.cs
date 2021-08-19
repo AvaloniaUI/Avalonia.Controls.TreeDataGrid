@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             Comparison<TModel> comparison,
             int from = 0,
             int to = -1)
-                where TRow : IRow<TModel>
+                where TRow : IModelRow<TModel>
         {
             to = to == -1 ? items.Count - 1 : to;
 

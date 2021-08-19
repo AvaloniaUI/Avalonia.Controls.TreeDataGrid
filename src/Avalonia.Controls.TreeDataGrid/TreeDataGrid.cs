@@ -175,7 +175,7 @@ namespace Avalonia.Controls
             if (Source is object &&
                 TryGetRow(element, out var row) &&
                 row.RowIndex < Source.Rows.Count &&
-                Source.Rows[row.RowIndex] is IRow<TModel> rowWithModel)
+                Source.Rows[row.RowIndex] is IModelRow<TModel> rowWithModel)
             {
                 result = rowWithModel.Model;
                 return true;
