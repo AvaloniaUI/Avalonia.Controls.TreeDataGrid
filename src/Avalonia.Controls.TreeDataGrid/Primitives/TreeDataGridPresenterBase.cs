@@ -3,13 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Presenters;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+using CollectionExtensions = Avalonia.Controls.Models.TreeDataGrid.CollectionExtensions;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -55,7 +55,7 @@ namespace Avalonia.Controls.Primitives
             set => SetAndRaise(ElementFactoryProperty, ref _elementFactory, value);
         }
 
-        public IReadOnlyList<TItem>? Items 
+        public IReadOnlyList<TItem>? Items
         {
             get => _items;
             set
@@ -75,6 +75,7 @@ namespace Avalonia.Controls.Primitives
                         ItemsProperty,
                         new Optional<IReadOnlyList<TItem>?>(oldValue),
                         new BindingValue<IReadOnlyList<TItem>?>(_items));
+                    OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
                 }
             }
         }
@@ -170,9 +171,14 @@ namespace Avalonia.Controls.Primitives
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (Items is null || Items.Count == 0 || !IsEffectivelyVisible)
+            if (!IsEffectivelyVisible)
                 return default;
 
+            if (Items is null || Items.Count == 0)
+            {
+                _children.Clear();
+                return default;
+            }
             // If we're bringing an item into view, ignore any layout passes until we receive a new
             // effective viewport.
             if (_isWaitingForViewportUpdate)
@@ -199,6 +205,17 @@ namespace Avalonia.Controls.Primitives
             _realizedElements = _measureElements;
             _measureElements = tmp;
             _measureElements.ResetForReuse();
+
+            if (_children.Count > _realizedElements.Elements.Count && _realizedElements.Elements.Count > 0 && _realizedElements.Count == Items.Count)
+            {
+                for (int i = _children.Count - 1; i >= _realizedElements.Elements.Count; i--)
+                {
+                    if (!_realizedElements.Elements.Contains(_children.ElementAt(i)))
+                    {
+                        _children.RemoveAt(i);
+                    }
+                }
+            }
 
             var sizeU = CalculateSizeU(availableSize);
 
@@ -448,7 +465,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {

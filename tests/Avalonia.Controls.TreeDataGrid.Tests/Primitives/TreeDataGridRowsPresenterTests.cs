@@ -32,7 +32,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             using var app = App();
 
             var (target, scroll, _) = CreateTarget();
-            
+
             scroll.Offset = new Vector(0, 10);
             Layout(target);
 
@@ -131,6 +131,56 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             // And the removed row should now have been recycled as the last row.
             elements.Add(toRecycle);
             Assert.Equal(elements, target.RealizedElements);
+        }
+
+        [Fact]
+        public void Realized_Children_Should_Not_Be_Removed()
+        {
+            using var app = App();
+
+            var (target, _, items) = CreateTarget();
+
+            Assert.Equal(100, target!.Items!.Count);
+            Assert.Equal(10, target.RealizedElements.Count);
+
+            items.RemoveRange(7, 93);
+            Layout(target);
+            var children = target.GetVisualChildren();
+
+            for (int i = 0; i < children.Count(); i++)
+            {
+                Assert.Equal(children.ElementAt(i), target.RealizedElements[i]);
+            }  
+        }
+
+        [Fact]
+        public void Should_Remove_Logical_And_Visual_Children_On_Empty_Collection_Assignment_To_Items()
+        {
+            using var app = App();
+
+            var (target, _, items) = CreateTarget();
+            Layout(target);
+            Assert.Equal(100, items.Count);
+            items.RemoveRange(1, 99);
+            Layout(target);
+            Assert.Single(target.Items);
+            Assert.Single(target.GetLogicalChildren());
+            Assert.Single(target.GetVisualChildren());
+
+            target.Items = new AnonymousSortableRows<Model>(ItemsSourceViewFix<Model>.Empty, null);
+            Layout(target);
+            Assert.Empty(target.Items);
+
+            Assert.Empty(target.GetVisualChildren());
+            Assert.Empty(target.GetLogicalChildren());
+
+            target.Items = new AnonymousSortableRows<Model>(new ItemsSourceViewFix<Model>(Enumerable.Range(0, 5)
+                .Select(x => new Model { Id = x, Title = "Item " + x, })), null);
+            Layout(target);
+            Assert.Equal(5, target.Items.Count);
+
+            Assert.Equal(5, target.GetVisualChildren().Count());
+            Assert.Equal(5, target.GetLogicalChildren().Count());
         }
 
         [Fact]
