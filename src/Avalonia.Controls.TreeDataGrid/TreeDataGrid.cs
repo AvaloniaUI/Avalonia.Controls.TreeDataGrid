@@ -126,16 +126,13 @@ namespace Avalonia.Controls
                 {
                     if (value != null)
                     {
-                        value.Sorted += Source_Sorted;
+                        value.BeforeSort += BeforeSourceSort;
+                        value.AfterSort += AfterSourceSort;
                     }
                     if (_source!=null)
                     {
-                        _source.Sorted -= Source_Sorted;
-                    }
-                    void Source_Sorted()
-                    {
-                        RowsPresenter?.RecycleAllElements();
-                        RowsPresenter?.InvalidateMeasure();
+                        _source.BeforeSort -= BeforeSourceSort;
+                        _source.AfterSort -= AfterSourceSort;
                     }
 
                     var oldSource = _source;
@@ -150,6 +147,8 @@ namespace Avalonia.Controls
             }
         }
 
+        public event EventHandler BeforeSort;
+        public event EventHandler AfterSort;
         public event EventHandler<TreeDataGridCellEventArgs>? CellClearing;
         public event EventHandler<TreeDataGridCellEventArgs>? CellPrepared;
         public event CancelEventHandler SelectionChanging;
@@ -430,6 +429,18 @@ namespace Avalonia.Controls
                 CellPrepared(this, _cellArgs);
                 _cellArgs.Update(null, -1, -1);
             }
+        }
+
+        private void BeforeSourceSort()
+        {
+            BeforeSort?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void AfterSourceSort()
+        {
+            RowsPresenter?.RecycleAllElements();
+            RowsPresenter?.InvalidateMeasure();
+            AfterSort?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnClick(object sender, RoutedEventArgs e)

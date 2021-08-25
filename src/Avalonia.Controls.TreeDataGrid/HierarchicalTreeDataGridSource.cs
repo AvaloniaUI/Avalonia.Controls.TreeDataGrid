@@ -37,7 +37,10 @@ namespace Avalonia.Controls
             Columns = new ColumnList<TModel>();
             Columns.CollectionChanged += OnColumnsCollectionChanged;
         }
-        public event Action? Sorted;
+
+        public event Action? BeforeSort;
+        public event Action? AfterSort;
+
         public IEnumerable<TModel> Items 
         {
             get => _items;
@@ -77,8 +80,9 @@ namespace Avalonia.Controls
                 Columns.Contains(columnBase) &&
                 columnBase.GetComparison(direction) is Comparison<TModel> comparison)
             {
+                BeforeSort?.Invoke();
                 Sort(comparison);
-                Sorted?.Invoke();
+                AfterSort?.Invoke();
                 foreach (var c in Columns)
                     c.SortDirection = c == column ? (ListSortDirection?)direction : null;
                 return true;

@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
@@ -14,7 +17,9 @@ namespace ProControlsDemo
 {
     public class MainWindow : Window
     {
+        private readonly TreeDataGrid _fileViewer;
         private readonly TabControl _tabs;
+        private HashSet<FileTreeNodeModel>? _fileSelection;
 
         public MainWindow()
         {
@@ -24,6 +29,9 @@ namespace ProControlsDemo
             DataContext = new MainWindowViewModel();
 
             _tabs = this.FindControl<TabControl>("tabs");
+            _fileViewer = this.FindControl<TreeDataGrid>("fileViewer");
+            _fileViewer.BeforeSort += SaveFileSelection;
+            _fileViewer.AfterSort += RestoreFileSelection;
 
             DispatcherTimer.Run(() =>
             {
@@ -81,6 +89,34 @@ namespace ProControlsDemo
             var realizedRowCount = rows.RealizedElements.Count;
             var unrealizedRowCount = ((ILogical)rows).LogicalChildren.Count - realizedRowCount;
             textBlock.Text = $"{realizedRowCount} rows realized ({unrealizedRowCount} unrealized)";
+        }
+
+        private void SaveFileSelection(object? sender, EventArgs e)
+        {
+            var selection = (HierarchicalSelectionModel<FileTreeNodeModel>)_fileViewer.Selection!;
+            _fileSelection = new HashSet<FileTreeNodeModel>(selection.SelectedItems);
+        }
+
+        private void RestoreFileSelection(object? sender, EventArgs e)
+        {
+            if (_fileSelection?.Count > 0)
+            {
+                var rows = _fileViewer.Source!.Rows;
+                var selection = _fileViewer.Selection!;
+                selection.BeginBatchUpdate();
+
+                for (var i = 0; i < rows.Count; ++i)
+                {
+                    var row = (IRow<FileTreeNodeModel>)rows[i];
+
+                    if (_fileSelection.Contains(row.Model))
+                    {
+                        selection.Select(i);
+                    }
+                }
+
+                selection.EndBatchUpdate();
+            }
         }
     }
 }

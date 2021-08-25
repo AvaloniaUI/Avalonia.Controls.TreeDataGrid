@@ -10,11 +10,15 @@ namespace Avalonia.Controls
     /// </summary>
     public interface ITreeDataGridSource
     {
+        /// <summary>
+        /// Raised before the source begins a sort operation.
+        /// </summary>
+        event Action BeforeSort;
 
         /// <summary>
-        /// Event which would be triggered after SortBy method execution.
+        /// Raised after a sort operation on the the source ends.
         /// </summary>
-        event Action Sorted;
+        event Action AfterSort;
 
         /// <summary>
         /// Gets the columns to be displayed.
