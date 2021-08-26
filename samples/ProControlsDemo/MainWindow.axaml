@@ -23,13 +23,13 @@
           <Button Click="AddCountryClick">Add</Button>
           <Button Command="{Binding Countries.RemoveSelected}">Remove</Button>
         </StackPanel>
-        <TreeDataGrid Name="countries" Source="{Binding Countries.Source}" Selection="{Binding Countries.Selection}"/>
+        <TreeDataGrid Name="countries" Source="{Binding Countries.Source}"/>
       </DockPanel>
     </TabItem>
     <TabItem Header="Files">
       <DockPanel>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
-        <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}" Selection="{Binding Files.Selection}"/>
+        <!--<TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}"/>-->
       </DockPanel>
     </TabItem>
   </TabControl>

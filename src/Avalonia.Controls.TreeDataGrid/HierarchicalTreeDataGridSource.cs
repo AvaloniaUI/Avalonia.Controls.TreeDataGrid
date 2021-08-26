@@ -24,6 +24,7 @@ namespace Avalonia.Controls
         private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
         private Comparison<TModel>? _comparison;
+        private ITreeDataGridSelectionModel? _selection;
 
         public HierarchicalTreeDataGridSource(TModel item)
             : this(new[] { item })
@@ -37,7 +38,7 @@ namespace Avalonia.Controls
             Columns = new ColumnList<TModel>();
             Columns.CollectionChanged += OnColumnsCollectionChanged;
         }
-        public event Action? Sorted;
+
         public IEnumerable<TModel> Items 
         {
             get => _items;
@@ -54,12 +55,27 @@ namespace Avalonia.Controls
 
         public IRows Rows => GetOrCreateRows();
         public ColumnList<TModel> Columns { get; }
+
+        public ITreeDataGridSelectionModel Selection
+        {
+            get => _selection ?? throw new NotImplementedException();
+            set
+            {
+                if (value is null)
+                    throw new ArgumentNullException(nameof(value));
+                if (_selection is object)
+                    throw new InvalidOperationException("Selection model is already set.");
+                _selection = value;
+            }
+        }
+
         IColumns ITreeDataGridSource.Columns => Columns;
 
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanding;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanded;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsing;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsed;
+        public event Action? Sorted;
 
         public void Dispose() => _rows?.Dispose();
         public void Expand(IndexPath index) => GetOrCreateRows().Expand(index);

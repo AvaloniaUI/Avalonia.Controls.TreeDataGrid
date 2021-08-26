@@ -35,6 +35,12 @@ namespace Avalonia.Controls
                 o => o.Rows,
                 (o, v) => o.Rows = v);
 
+        public static readonly DirectProperty<TreeDataGrid, ISelectionModel?> RowSelectionProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGrid, ISelectionModel?>(
+                nameof(RowSelection),
+                o => o.RowSelection,
+                (o, v) => o.RowSelection = v);
+
         public static readonly DirectProperty<TreeDataGrid, IScrollable?> ScrollProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, IScrollable?>(
                 nameof(Scroll),
@@ -42,12 +48,6 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<bool> ShowColumnHeadersProperty =
             AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(ShowColumnHeaders), true);
-
-        public static readonly DirectProperty<TreeDataGrid, ISelectionModel?> SelectionProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGrid, ISelectionModel?>(
-                nameof(Selection),
-                o => o.Selection,
-                (o, v) => o.Selection = v);
 
         public static readonly DirectProperty<TreeDataGrid, ITreeDataGridSource?> SourceProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, ITreeDataGridSource?>(
@@ -59,7 +59,7 @@ namespace Avalonia.Controls
         private IColumns? _columns;
         private IRows? _rows;
         private IScrollable? _scroll;
-        private ISelectionModel? _selection;
+        private ISelectionModel? _rowSelection;
         private IControl? _userSortColumn;
         private ListSortDirection _userSortDirection;
         private TreeDataGridCellEventArgs? _cellArgs;
@@ -96,6 +96,12 @@ namespace Avalonia.Controls
             private set => SetAndRaise(RowsProperty, ref _rows, value);
         }
 
+        public ISelectionModel? RowSelection
+        {
+            get => _rowSelection;
+            private set => SetAndRaise(RowSelectionProperty, ref _rowSelection, value);
+        }
+
         public TreeDataGridColumnHeadersPresenter? ColumnHeadersPresenter { get; private set; }
         public TreeDataGridRowsPresenter? RowsPresenter { get; private set; }
         
@@ -111,12 +117,7 @@ namespace Avalonia.Controls
             set => SetValue(ShowColumnHeadersProperty, value);
         }
 
-        public ISelectionModel? Selection
-        {
-            get => _selection;
-            set => SetAndRaise(SelectionProperty, ref _selection, value);
-        }
-
+        public ITreeSelectionModel? Selection => Source?.Selection;
         public ITreeDataGridSource? Source
         {
             get => _source;
@@ -128,10 +129,12 @@ namespace Avalonia.Controls
                     {
                         value.Sorted += Source_Sorted;
                     }
+                    
                     if (_source!=null)
                     {
                         _source.Sorted -= Source_Sorted;
                     }
+                    
                     void Source_Sorted()
                     {
                         RowsPresenter?.RecycleAllElements();
@@ -142,6 +145,7 @@ namespace Avalonia.Controls
                     _source = value;
                     Columns = _source?.Columns;
                     Rows = _source?.Rows;
+                    RowSelection = value?.Selection.RowSelection;
                     RaisePropertyChanged(
                         SourceProperty,
                         new Optional<ITreeDataGridSource?>(oldSource),
@@ -152,7 +156,7 @@ namespace Avalonia.Controls
 
         public event EventHandler<TreeDataGridCellEventArgs>? CellClearing;
         public event EventHandler<TreeDataGridCellEventArgs>? CellPrepared;
-        public event CancelEventHandler SelectionChanging;
+        public event CancelEventHandler? SelectionChanging;
 
         public IControl? TryGetCell(int columnIndex, int rowIndex)
         {
@@ -231,7 +235,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (Source is null || _selection is null || e.Handled)
+            if (Source is null || _rowSelection is null || e.Handled)
                 return;
 
             if (e.Source is IControl source && TryGetRow(source, out var row))
@@ -262,7 +266,7 @@ namespace Avalonia.Controls
             if (Source is null || RowsPresenter is null || Source.Columns.Count == 0 || Source.Rows.Count == 0)
                 return false;
 
-            var currentRowIndex = focused?.RowIndex ?? Selection?.SelectedIndex ?? 0;
+            var currentRowIndex = focused?.RowIndex ?? _rowSelection?.SelectedIndex ?? 0;
             int newRowIndex;
 
             if (direction == NavigationDirection.First || direction == NavigationDirection.Last)
@@ -348,56 +352,56 @@ namespace Avalonia.Controls
             bool toggleModifier = false,
             bool rightButton = false)
         {
-            if (Source is null || _selection is null || index < 0 || index >= Source.Rows.Count)
+            if (Source is null || _rowSelection is null || index < 0 || index >= Source.Rows.Count)
             {
                 return;
             }
 
-            var mode = _selection.SingleSelect ? SelectionMode.Single : SelectionMode.Multiple;
+            var mode = _rowSelection.SingleSelect ? SelectionMode.Single : SelectionMode.Multiple;
             var multi = (mode & SelectionMode.Multiple) != 0;
             var toggle = (toggleModifier || (mode & SelectionMode.Toggle) != 0);
             var range = multi && rangeModifier;
 
             if (!select)
             {
-                if (_selection.IsSelected(index) && !SelectionCanceled())
-                    _selection.Deselect(index);
+                if (_rowSelection.IsSelected(index) && !SelectionCanceled())
+                    _rowSelection.Deselect(index);
             }
             else if (rightButton)
             {
-                if (_selection.IsSelected(index) == false && !SelectionCanceled())
+                if (_rowSelection.IsSelected(index) == false && !SelectionCanceled())
                 {
-                    _selection.SelectedIndex = index;
+                    _rowSelection.SelectedIndex = index;
                 }
             }
             else if (range)
             {
                 if (!SelectionCanceled())
                 {
-                    using var operation = _selection.BatchUpdate();
-                    _selection.Clear();
-                    _selection.SelectRange(_selection.AnchorIndex, index);
+                    using var operation = _rowSelection.BatchUpdate();
+                    _rowSelection.Clear();
+                    _rowSelection.SelectRange(_rowSelection.AnchorIndex, index);
                 }
             }
             else if (multi && toggle)
             {
                 if (!SelectionCanceled())
                 {
-                    if (_selection.IsSelected(index) == true)
-                        _selection.Deselect(index);
+                    if (_rowSelection.IsSelected(index) == true)
+                        _rowSelection.Deselect(index);
                     else
-                        _selection.Select(index);
+                        _rowSelection.Select(index);
                 }
             }
             else if (toggle)
             {
                 if (!SelectionCanceled())
-                    _selection.SelectedIndex = (_selection.SelectedIndex == index) ? -1 : index;
+                    _rowSelection.SelectedIndex = (_rowSelection.SelectedIndex == index) ? -1 : index;
             }
-            else if (_selection.SelectedIndex != index || _selection.Count > 1)
+            else if (_rowSelection.SelectedIndex != index || _rowSelection.Count > 1)
             {
                 if (!SelectionCanceled())
-                    _selection.SelectedIndex = index;
+                    _rowSelection.SelectedIndex = index;
             }
         }
 
@@ -432,7 +436,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnClick(object sender, RoutedEventArgs e)
+        private void OnClick(object? sender, RoutedEventArgs e)
         {
             if (_source is object &&
                 e.Source is TreeDataGridColumnHeader columnHeader &&
@@ -452,7 +456,7 @@ namespace Avalonia.Controls
                 }
 
                 var column = _source.Columns[columnHeader.ColumnIndex];
-                _source.SortBy(column, _userSortDirection, _selection!);
+                _source.SortBy(column, _userSortDirection, _rowSelection!);
             }
         }
     }

@@ -32,7 +32,7 @@
                                          Columns="{TemplateBinding Columns}"
                                          ElementFactory="{TemplateBinding ElementFactory}"
                                          Items="{TemplateBinding Rows}"
-                                         Selection="{TemplateBinding Selection}"/>
+                                         Selection="{TemplateBinding RowSelection}"/>
             </ScrollViewer>
           </DockPanel>
         </Border>
