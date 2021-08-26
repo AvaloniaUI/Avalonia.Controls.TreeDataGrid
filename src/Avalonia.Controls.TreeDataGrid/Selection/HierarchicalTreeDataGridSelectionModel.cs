@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls.Selection
@@ -17,6 +18,8 @@ namespace Avalonia.Controls.Selection
         private bool _singleSelect;
         private IndexPath _anchorIndex;
         private IndexPath _selectedIndex;
+        private EventHandler<TreeSelectionModelSelectionChangedEventArgs>? _untypedSelectionChanged;
+        private bool _isSyncingSelection;
 
         public HierarchicalTreeDataGridSelectionModel(HierarchicalTreeDataGridSource<T> source)
         {
@@ -57,7 +60,20 @@ namespace Avalonia.Controls.Selection
         public IndexPath SelectedIndex
         {
             get => _selectedIndex;
-            set => throw new NotImplementedException();
+            set
+            {
+                if (_selectedIndex == value && _modelSelection.Count == 1)
+                    return;
+
+                var oldSelection = _modelSelection;
+                _modelSelection = new();
+                _selectedIndex = value;
+
+                if (_source.TryGetModelAt(value, out var model))
+                    _modelSelection.Add(value, model);
+                SyncRowSelection();
+                RaiseSelectionChanged(oldSelection);
+            }
         }
 
         public IReadOnlyList<IndexPath> SelectedIndexes
@@ -67,7 +83,7 @@ namespace Avalonia.Controls.Selection
 
         public int Count => _modelSelection.Count;
 
-        public T SelectedItem => GetModelAt(_selectedIndex);
+        public T? SelectedItem => GetModelAt(_selectedIndex);
 
         public IReadOnlyList<T> SelectedItems
         {
@@ -85,9 +101,15 @@ namespace Avalonia.Controls.Selection
         }
 
         public event EventHandler<SelectionModelIndexesChangedEventArgs>? IndexesChanged;
-        public event EventHandler<TreeSelectionModelSelectionChangedEventArgs>? SelectionChanged;
+        public event EventHandler<TreeSelectionModelSelectionChangedEventArgs<T>>? SelectionChanged;
         public event EventHandler? LostSelection;
         public event PropertyChangedEventHandler? PropertyChanged;
+
+        event EventHandler<TreeSelectionModelSelectionChangedEventArgs>? ITreeSelectionModel.SelectionChanged
+        {
+            add => _untypedSelectionChanged += value;
+            remove => _untypedSelectionChanged -= value;
+        }
 
         public void BeginBatchUpdate() => _rowSelection.BeginBatchUpdate();
         public void EndBatchUpdate() => _rowSelection.EndBatchUpdate();
@@ -95,10 +117,20 @@ namespace Avalonia.Controls.Selection
         
         public void Select(IndexPath index)
         {
-            if (!_modelSelection.ContainsKey(index) && _source.TryGetModelAt(index, out var model))
+            if (SingleSelect)
             {
-                _modelSelection.Add(index, model);
+                if (!IsSelected(index) && _source.TryGetModelAt(index, out var model))
+                {
+                    var oldSelection = _modelSelection;
+                    _modelSelection = new();
+                    _selectedIndex = index;
+                    _modelSelection.Add(index, model);
+                    SyncRowSelection();
+                    RaiseSelectionChanged(oldSelection);
+                }
             }
+            else
+                throw new NotImplementedException();
         }
         
         public void Deselect(IndexPath index) => throw new NotImplementedException();
@@ -110,6 +142,23 @@ namespace Avalonia.Controls.Selection
         protected void RaisePropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void SyncRowSelection()
+        {
+            _isSyncingSelection = true;
+
+            try
+            {
+                if (_modelSelection.Count == 0)
+                    _rowSelection.Clear();
+                if (_modelSelection.Count == 1)
+                    _rowSelection.SelectedIndex = ModelToRowIndex(_modelSelection.Keys[0]);
+            }
+            finally
+            {
+                _isSyncingSelection = false;
+            }
         }
 
         private void OnRowPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -127,50 +176,79 @@ namespace Avalonia.Controls.Selection
 
         private void OnRowSelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs<IRow<T>> e)
         {
+            if (_isSyncingSelection)
+                return;
+
             foreach (HierarchicalRow<T> row in e.DeselectedItems)
                 _modelSelection.Remove(row.ModelIndexPath);
             foreach (HierarchicalRow<T> row in e.SelectedItems)
-                _modelSelection.Add(row.ModelIndexPath, row.Model);
+                _modelSelection.TryAdd(row.ModelIndexPath, row.Model);
 
-            if (SelectionChanged is object)
+            if (SelectionChanged is object || _untypedSelectionChanged is object)
             {
-                static IReadOnlyList<TDest> RowAdapter<TDest>(
-                    IReadOnlyList<IRow<T>> source,
-                    Func<IRow<T>, TDest> selector)
-                {
-                    return new ReadOnlyListAdapter<IRow<T>, TDest>(source, selector);
-                }
+                var ev = new TreeSelectionModelSelectionChangedEventArgs<T>(
+                    Select(e.DeselectedItems, x => ((HierarchicalRow<T>)x).ModelIndexPath),
+                    Select(e.SelectedItems, x => ((HierarchicalRow<T>)x).ModelIndexPath),
+                    Select(e.DeselectedItems, x => ((HierarchicalRow<T>)x).Model),
+                    Select(e.SelectedItems, x => ((HierarchicalRow<T>)x).Model));
+                SelectionChanged?.Invoke(this, ev);
+                _untypedSelectionChanged?.Invoke(this, ev);
+            }
+        }
+
+        private void RaiseSelectionChanged(SortedList<IndexPath, T> oldSelection)
+        {
+            if (SelectionChanged is object || _untypedSelectionChanged is object)
+            {
+                var deselected = oldSelection.Except(_modelSelection).ToList();
+                var selected = _modelSelection.Except(oldSelection).ToList();
 
                 var ev = new TreeSelectionModelSelectionChangedEventArgs<T>(
-                    RowAdapter(e.DeselectedItems, x => ((HierarchicalRow<T>)x).ModelIndexPath),
-                    RowAdapter(e.SelectedItems, x => ((HierarchicalRow<T>)x).ModelIndexPath),
-                    RowAdapter(e.DeselectedItems, x => ((HierarchicalRow<T>)x).Model),
-                    RowAdapter(e.SelectedItems, x => ((HierarchicalRow<T>)x).Model));
+                    Select(deselected, x => x.Key),
+                    Select(selected, x => x.Key),
+                    Select(deselected, x => x.Value),
+                    Select(selected, x => x.Value));
+                SelectionChanged?.Invoke(this, ev);
+                _untypedSelectionChanged?.Invoke(this, ev);
             }
         }
 
-        private T GetModelAt(IndexPath index)
+        private T? GetModelAt(IndexPath index)
         {
+            if (index == default)
+                return default;
             if (_source.TryGetModelAt(index, out var result))
                 return result;
-            else
-                throw new IndexOutOfRangeException();
+            throw new IndexOutOfRangeException();
         }
 
-        private HierarchicalRow<T>? GetRowFor(IndexPath modelIndex)
+        private int ModelToRowIndex(IndexPath modelIndex)
         {
-            foreach (HierarchicalRow<T> row in _source.Rows)
+            if (modelIndex == default)
+                return -1;
+
+            var rows = _source.Rows;
+
+            for (var i = 0; i < rows.Count; ++i)
             {
+                var row = (HierarchicalRow<T>)rows[i];
                 if (row.ModelIndexPath == modelIndex)
-                    return row;
+                    return i;
             }
 
-            return null;
+            return -1;
         }
 
         private IndexPath RowToModelIndex(int rowIndex)
         {
             return rowIndex >= 0 ? ((HierarchicalRow<T>)_source.Rows[rowIndex]).ModelIndexPath : default;
+        }
+
+        private static IReadOnlyList<TDest> Select<TSource, TDest>(
+            IReadOnlyList<TSource> source,
+            Func<TSource, TDest> selector)
+        {
+            return new ReadOnlyListAdapter<TSource, TDest>(source, selector);
         }
 
         private class ReadOnlyListAdapter<TItem> : IReadOnlyList<TItem>

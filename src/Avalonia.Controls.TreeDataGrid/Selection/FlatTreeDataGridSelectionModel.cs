@@ -180,6 +180,9 @@ namespace Avalonia.Controls.Selection
 
         private int ModelIndexToRowIndex(int modelIndex)
         {
+            if (modelIndex == -1)
+                return -1;
+
             var rows = _source.Rows;
 
             // TODO: We probably need to implement lookup in _source.Rows?
