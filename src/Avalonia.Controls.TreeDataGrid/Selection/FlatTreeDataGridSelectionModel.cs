@@ -129,16 +129,16 @@ namespace Avalonia.Controls.Selection
             {
                 _rowSelection.BeginBatchUpdate();
 
-                foreach (var i in e.DeselectedItems)
+                foreach (var i in e.DeselectedIndexes)
                 {
-                    var index = ModelToRowIndex(i);
+                    var index = ModelIndexToRowIndex(i);
                     if (index >= 0)
                         _rowSelection.Deselect(index);
                 }
 
-                foreach (var i in e.SelectedItems)
+                foreach (var i in e.SelectedIndexes)
                 {
-                    var index = ModelToRowIndex(i);
+                    var index = ModelIndexToRowIndex(i);
                     if (index >= 0)
                         _rowSelection.Select(index);
                 }
@@ -178,14 +178,15 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        private int ModelToRowIndex(T model)
+        private int ModelIndexToRowIndex(int modelIndex)
         {
             var rows = _source.Rows;
 
             // TODO: We probably need to implement lookup in _source.Rows?
             for (var i = 0; i < rows.Count; ++i)
             {
-                if (EqualityComparer<T>.Default.Equals(((IRow<T>)rows[i]).Model, model))
+                var row = (IRow<T>)rows[i];
+                if (row.ModelIndex == modelIndex)
                     return i;
             }
 

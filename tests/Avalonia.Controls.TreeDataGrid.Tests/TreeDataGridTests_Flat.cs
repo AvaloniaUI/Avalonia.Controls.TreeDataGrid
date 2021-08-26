@@ -83,15 +83,15 @@ namespace Avalonia.Controls.TreeDataGridTests
             target.Selection!.Select(new IndexPath(0));
             target.Selection.Select(new IndexPath(5));
             Assert.Equal(2, target.Selection.SelectedIndexes.Count);
-            Assert.Equal(new IndexPath(0), target.Selection.SelectedIndexes[0]);
-            Assert.Equal(new IndexPath(5), target.Selection.SelectedIndexes[1]);
-            ////target.Source!.SortBy(target.Columns![0], System.ComponentModel.ListSortDirection.Descending, target.Selection);
+            Assert.Equal(0, target.Selection.RowSelection.SelectedIndexes[0]);
+            Assert.Equal(5, target.Selection.RowSelection.SelectedIndexes[1]);
+            target.Source!.SortBy(target.Columns![0], System.ComponentModel.ListSortDirection.Descending, target.Selection.RowSelection);
 
             ///There are 100 items in the collection.
             ///Their IDs are in range 0..99 so when we order IDs column in Descending order the latest element of the collection would be with
             ///ID 0(index 99 in collection),first with ID 99
-            Assert.Equal(new IndexPath(94), target.Selection.SelectedIndexes[0]);
-            Assert.Equal(new IndexPath(99), target.Selection.SelectedIndexes[1]);
+            Assert.Equal(94, target.Selection.RowSelection.SelectedIndexes[0]);
+            Assert.Equal(99, target.Selection.RowSelection.SelectedIndexes[1]);
         }
 
         [Fact]
