@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
@@ -58,7 +59,7 @@ namespace Avalonia.Controls
 
         public ITreeDataGridSelectionModel Selection
         {
-            get => _selection ?? throw new NotImplementedException();
+            get => _selection ??= new HierarchicalTreeDataGridSelectionModel<TModel>(this);
             set
             {
                 if (value is null)
@@ -131,7 +132,7 @@ namespace Avalonia.Controls
         {
         }
 
-        internal TModel GetModelAt(in IndexPath index)
+        public bool TryGetModelAt(IndexPath index, [NotNullWhen(true)] out TModel? result)
         {
             if (_expanderColumn is null)
                 throw new InvalidOperationException("No expander column defined.");
@@ -139,12 +140,32 @@ namespace Avalonia.Controls
             var items = (IEnumerable<TModel>?)Items;
             var count = index.GetSize();
 
-            for (var depth = 0; depth < count - 1; ++depth)
+            for (var depth = 0; depth < count; ++depth)
             {
-                items = _expanderColumn.GetChildModels(items.ElementAt(index.GetAt(depth)));
+                var i = index.GetAt(depth);
+
+                if (i < items.Count())
+                {
+                    var e = items.ElementAt(i);
+
+                    if (depth < count - 1)
+                    { 
+                        items = _expanderColumn.GetChildModels(e); 
+                    }
+                    else
+                    {
+                        result = e;
+                        return true;
+                    }
+                }
+                else
+                {
+                    break;
+                }
             }
 
-            return items.ElementAt(index.GetLeaf()!.Value);
+            result = default;
+            return false;
         }
 
         internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0) =>

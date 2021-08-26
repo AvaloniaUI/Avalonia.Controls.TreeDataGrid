@@ -11,7 +11,7 @@ namespace Avalonia.Controls.Selection
         bool SingleSelect { get; set; }
         IndexPath SelectedIndex { get; set; }
         IReadOnlyList<IndexPath> SelectedIndexes { get; }
-        object? SelectedItem { get; set; }
+        object? SelectedItem { get; }
         IReadOnlyList<object?> SelectedItems { get; }
         IndexPath AnchorIndex { get; set; }
         int Count { get; }

@@ -60,6 +60,9 @@ namespace Avalonia.Controls.Selection
             get => _selectedIndexes ??= new IndexPathAdapter(_modelSelection.SelectedIndexes);
         }
 
+        public T? SelectedItem => _modelSelection.SelectedItem;
+        public IReadOnlyList<T> SelectedItems => _modelSelection.SelectedItems;
+
         public int Count => _modelSelection.Count;
 
         IEnumerable? ITreeSelectionModel.Source
@@ -68,14 +71,12 @@ namespace Avalonia.Controls.Selection
             set => throw new NotSupportedException();
         }
 
-        IReadOnlyList<object?> ITreeSelectionModel.SelectedItems => ((ISelectionModel)_modelSelection).SelectedItems;
-        public IReadOnlyList<T> SelectedItems => _modelSelection.SelectedItems;
-
         object? ITreeSelectionModel.SelectedItem
         {
             get => ((ISelectionModel)_modelSelection).SelectedItem;
-            set => ((ISelectionModel)_modelSelection).SelectedItem = value;
         }
+
+        IReadOnlyList<object?> ITreeSelectionModel.SelectedItems => ((ISelectionModel)_modelSelection).SelectedItems;
 
         ISelectionModel ITreeDataGridSelectionModel.RowSelection => _rowSelection;
 

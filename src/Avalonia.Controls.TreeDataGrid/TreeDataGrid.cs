@@ -117,7 +117,8 @@ namespace Avalonia.Controls
             set => SetValue(ShowColumnHeadersProperty, value);
         }
 
-        public ITreeSelectionModel? Selection => Source?.Selection;
+        public ITreeDataGridSelectionModel? Selection => Source?.Selection;
+
         public ITreeDataGridSource? Source
         {
             get => _source;

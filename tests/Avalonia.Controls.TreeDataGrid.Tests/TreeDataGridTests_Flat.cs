@@ -63,14 +63,14 @@ namespace Avalonia.Controls.TreeDataGridTests
             target.Selection.Select(new IndexPath(4));
             target.Selection.Select(new IndexPath(5));
             Assert.Equal(3, target.Selection.SelectedIndexes.Count);
-            Assert.Equal(new IndexPath(3), target.Selection.SelectedIndexes[0]);
-            Assert.Equal(new IndexPath(4), target.Selection.SelectedIndexes[1]);
-            Assert.Equal(new IndexPath(5), target.Selection.SelectedIndexes[2]);
-            ////target.Source!.SortBy(target.Columns![0], System.ComponentModel.ListSortDirection.Ascending, target.Selection);
+            Assert.Equal(3, target.Selection.RowSelection.SelectedIndexes[0]);
+            Assert.Equal(4, target.Selection.RowSelection.SelectedIndexes[1]);
+            Assert.Equal(5, target.Selection.RowSelection.SelectedIndexes[2]);
+            target.Source!.SortBy(target.Columns![0], System.ComponentModel.ListSortDirection.Ascending, target.Selection.RowSelection);
 
-            Assert.Equal(new IndexPath(1), target.Selection.SelectedIndexes[0]);
-            Assert.Equal(new IndexPath(2), target.Selection.SelectedIndexes[1]);
-            Assert.Equal(new IndexPath(3), target.Selection.SelectedIndexes[2]);
+            Assert.Equal(1, target.Selection.RowSelection.SelectedIndexes[0]);
+            Assert.Equal(2, target.Selection.RowSelection.SelectedIndexes[1]);
+            Assert.Equal(3, target.Selection.RowSelection.SelectedIndexes[2]);
         }
 
         [Fact]
