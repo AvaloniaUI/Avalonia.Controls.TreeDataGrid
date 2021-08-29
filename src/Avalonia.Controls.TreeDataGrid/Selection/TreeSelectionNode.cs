@@ -40,9 +40,6 @@ namespace Avalonia.Controls.Selection
             set => base.Source = value;
         }
 
-        public new void CommitSelect(IndexRange range) => base.CommitSelect(range);
-        public new void CommitDeselect(IndexRange range) => base.CommitDeselect(range);
-
         public IndexPath CoerceIndex(IndexPath path, int depth)
         {
             if (path == default)
@@ -88,6 +85,25 @@ namespace Avalonia.Controls.Selection
             }
 
             return default;
+        }
+
+        public void Deselect(IndexPath start, IndexPath end, TreeSelectionModelBase<T>.Operation operation)
+        {
+            if (Ranges.Count > 0)
+            {
+                var firstSelected = Path.CloneWithChildIndex(Ranges[0].Begin);
+                var lastSelected = Path.CloneWithChildIndex(Ranges[^1].End);
+
+                if (start <= firstSelected && end >= lastSelected)
+                {
+                    var deselected = operation.DeselectedRanges ??= new();
+                    
+                    foreach (var range in Ranges)
+                    {
+                        deselected.Add(Path, range);
+                    }
+                }
+            }
         }
 
         public bool TryGetNode(

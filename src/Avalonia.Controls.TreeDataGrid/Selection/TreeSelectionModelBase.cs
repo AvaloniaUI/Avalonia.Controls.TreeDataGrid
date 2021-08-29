@@ -35,7 +35,12 @@ namespace Avalonia.Controls.Selection
         public IndexPath SelectedIndex 
         {
             get => _selectedIndex;
-            set => SetSelectedIndex(value);
+            set
+            {
+                using var update = BatchUpdate();
+                Clear();
+                Select(value);
+            }
         }
 
         public IReadOnlyList<IndexPath> SelectedIndexes => _selectedIndexes ??= new(this);
@@ -101,10 +106,7 @@ namespace Avalonia.Controls.Selection
             }
         }
         
-        public void Clear()
-        {
-            throw new NotImplementedException();
-        }
+        public void Clear() => DeselectRange(new IndexPath(0), new IndexPath(int.MaxValue));
 
         public void Deselect(IndexPath index)
         {
@@ -113,7 +115,10 @@ namespace Avalonia.Controls.Selection
 
         public void DeselectRange(IndexPath start, IndexPath end)
         {
-            throw new NotImplementedException();
+            using var update = BatchUpdate();
+            var o = update.Operation;
+
+            _root.Deselect(start, end, o);
         }
 
         public bool IsSelected(IndexPath index)
@@ -121,10 +126,7 @@ namespace Avalonia.Controls.Selection
             throw new NotImplementedException();
         }
 
-        public void Select(IndexPath index)
-        {
-            throw new NotImplementedException();
-        }
+        public void Select(IndexPath index) => SelectRange(index, index, false, true);
 
         public void SelectAll()
         {
@@ -156,6 +158,60 @@ namespace Avalonia.Controls.Selection
             }
         }
 
+        private void SelectRange(
+            IndexPath start,
+            IndexPath end,
+            bool forceSelectedIndex,
+            bool forceAnchorIndex)
+        {
+            if (SingleSelect && start != end)
+            {
+                throw new InvalidOperationException("Cannot select range with single selection.");
+            }
+
+            CoerceRange(ref start, ref end);
+
+            if (start == default)
+            {
+                return;
+            }
+
+            using var update = BatchUpdate();
+            var o = update.Operation;
+            var selected = new List<IndexRange>();
+
+            if (!SingleSelect)
+            {
+                o.SelectedRanges ??= new();
+                o.SelectedRanges.RemoveRange(start, end);
+                //IndexRange.Remove(o.DeselectedRanges, range);
+                //IndexRange.Add(o.SelectedRanges, range);
+                //IndexRange.Remove(o.SelectedRanges, Ranges);
+
+                //if (o.SelectedIndex == -1 || forceSelectedIndex)
+                //{
+                //    o.SelectedIndex = range.Begin;
+                //}
+
+                //if (o.AnchorIndex == -1 || forceAnchorIndex)
+                //{
+                //    o.AnchorIndex = range.Begin;
+                //}
+            }
+            else
+            {
+                o.SelectedIndex = o.AnchorIndex = start;
+            }
+
+            //_initSelectedItems = null;
+        }
+
+        private void CoerceRange(ref IndexPath start, ref IndexPath end)
+        {
+            start = _root.CoerceIndex(start, 0);
+            end = _root.CoerceIndex(end, 0);
+        }
+
         private bool ShiftIndex(IndexPath parentPath, int shiftIndex, int shiftDelta, ref IndexPath path)
         {
             if (parentPath.IsAncestorOf(path) && path.GetAt(parentPath.GetSize()) >= shiftIndex)
@@ -167,18 +223,6 @@ namespace Avalonia.Controls.Selection
             }
 
             return false;
-        }
-
-        private void SetSelectedIndex(IndexPath value, bool updateAnchor = true)
-        {
-            if (_selectedIndex == value)
-            {
-                return;
-            }
-
-            using var update = BatchUpdate();
-            Clear();
-            Select(value);
         }
 
         private T? GetItemAt(in IndexPath path)
@@ -241,18 +285,6 @@ namespace Avalonia.Controls.Selection
             return _root.CoerceIndex(path, 0);
         }
 
-        private void CommitSelect(IndexPath path)
-        {
-            var node = RealizeNode(path.GetParent());
-            node.CommitSelect(new IndexRange(path.GetLeaf()!.Value));
-        }
-
-        private void CommitDeselect(IndexPath path)
-        {
-            var node = RealizeNode(path.GetParent());
-            node.CommitDeselect(new IndexRange(path.GetLeaf()!.Value));
-        }
-
         private void CommitOperation(Operation operation)
         {
             var oldAnchorIndex = _anchorIndex;
@@ -265,12 +297,12 @@ namespace Avalonia.Controls.Selection
             {
                 if (oldSelectedIndex != default)
                 {
-                    CommitDeselect(oldSelectedIndex);
+                    //CommitDeselect(oldSelectedIndex);
                 }
 
                 if (_selectedIndex != default)
                 {
-                    CommitSelect(_selectedIndex);
+                    //CommitSelect(_selectedIndex);
                 }
             }
 
@@ -357,7 +389,7 @@ namespace Avalonia.Controls.Selection
             public IndexPath AnchorIndex { get; set; }
             public IndexPath SelectedIndex { get; set; }
             public IndexRanges? SelectedRanges { get; set; }
-            public IndexRanges? SeselectedRanges { get; set; }
+            public IndexRanges? DeselectedRanges { get; set; }
             public IReadOnlyList<T>? DeselectedItems { get; set; }
         }
     }

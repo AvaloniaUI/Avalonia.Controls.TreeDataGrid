@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Controls.Selection
 {
     internal class IndexRanges : IReadOnlyList<IndexPath>
     {
-        private Dictionary<IndexPath, List<IndexRange>>? _ranges;
+        private SortedList<IndexPath, List<IndexRange>>? _ranges;
 
         public IndexPath this[int index]
         {
@@ -34,7 +35,7 @@ namespace Avalonia.Controls.Selection
 
         public void Add(in IndexPath index)
         {
-            _ranges ??= new Dictionary<IndexPath, List<IndexRange>>();
+            _ranges ??= new();
 
             var parent = index.GetParent();
 
@@ -46,6 +47,19 @@ namespace Avalonia.Controls.Selection
 
             IndexRange.Add(ranges, new IndexRange(index.GetLeaf()!.Value));
             ++Count;
+        }
+
+        public void Add(in IndexPath parent, in IndexRange range)
+        {
+            _ranges ??= new();
+
+            if (!_ranges.TryGetValue(parent, out var ranges))
+            {
+                ranges = new List<IndexRange>();
+                _ranges.Add(parent, ranges);
+            }
+
+            Count += IndexRange.Add(ranges, range);
         }
 
         public bool Remove(in IndexPath index)
@@ -62,6 +76,45 @@ namespace Avalonia.Controls.Selection
             }
 
             return false;
+        }
+
+        public bool RemoveRange(in IndexPath start, in IndexPath end)
+        {
+            if (_ranges is null)
+                return false;
+            if (start.GetSize() == 0)
+                throw new ArgumentException("Invalid start index", nameof(start));
+            if (end.GetSize() == 0)
+                throw new ArgumentException("Invalid end index", nameof(end));
+
+            var result = false;
+
+            for (var i = 0;  i < _ranges.Count; i++)
+            {
+                var parent = _ranges.Keys[i];
+                var ranges = _ranges.Values[i];
+                var rangeBegin = parent.CloneWithChildIndex(ranges.First().Begin);
+                var rangeEnd = parent.CloneWithChildIndex(ranges.Last().End);
+                var depth = parent.GetSize();
+
+                if (start <= rangeBegin && end >= rangeEnd)
+                {
+                    Count -= IndexRange.GetCount(ranges);
+                    _ranges.RemoveAt(i--);
+                }
+                else if (start < rangeBegin && end < rangeEnd)
+                {
+                    Count -= IndexRange.Remove(ranges, new IndexRange(0, end.GetAt(depth)));
+                }
+                else if (start > rangeBegin && end >= rangeEnd)
+                {
+                    var removeBegin = start.GetAt(depth) + 1;
+                    var removeEnd = ranges.Last().End;
+                    Count -= IndexRange.Remove(ranges, new IndexRange(removeBegin, removeEnd));
+                }
+            }
+
+            return result;
         }
 
         public bool Contains(in IndexPath index)
