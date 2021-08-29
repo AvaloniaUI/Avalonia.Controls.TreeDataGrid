@@ -15,7 +15,33 @@ namespace Avalonia.Controls.TreeDataGridTests
         public class SelectedIndex
         {
             [Fact]
-            public void Can_Set_SelectedIndex()
+            public void Can_Set_Root_SelectedIndex()
+            {
+                var data = CreateData();
+                var source = CreateSource(data);
+                var target = CreateTarget(source);
+                var raised = 0;
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Empty(e.DeselectedIndexes);
+                    Assert.Empty(e.DeselectedItems);
+                    Assert.Equal(new IndexPath(0), e.SelectedIndexes.Single());
+                    Assert.Equal("Node 0", e.SelectedItems.Single().Caption);
+                    ++raised;
+                };
+
+                target.SelectedIndex = new IndexPath(0);
+
+                Assert.Equal(1, raised);
+                Assert.Equal(new IndexPath(0), target.SelectedIndex);
+                Assert.Equal(new IndexPath(0), target.SelectedIndexes.Single());
+                Assert.Equal("Node 0", target.SelectedItem!.Caption);
+                Assert.Equal("Node 0", target.SelectedItems.Single()!.Caption);
+            }
+
+            [Fact]
+            public void Can_Set_Child_SelectedIndex()
             {
                 var data = CreateData();
                 var source = CreateSource(data);

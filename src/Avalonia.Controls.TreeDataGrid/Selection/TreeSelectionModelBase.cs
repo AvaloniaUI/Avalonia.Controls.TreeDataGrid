@@ -44,7 +44,10 @@ namespace Avalonia.Controls.Selection
         }
 
         public IReadOnlyList<IndexPath> SelectedIndexes => _selectedIndexes ??= new(this);
-        public T? SelectedItem => GetItemAt(_selectedIndex);
+        public T? SelectedItem
+        {
+            get => Source is null || _selectedIndex == default ? default : GetItemAt(_selectedIndex);
+        }
 
         public IReadOnlyList<T?> SelectedItems => _selectedItems ??= new(this);
 
@@ -62,6 +65,8 @@ namespace Avalonia.Controls.Selection
             get => Source;
             set => Source = (IEnumerable<T>?)value;
         }
+
+        internal TreeSelectionNode<T> Root => _root;
 
         protected IEnumerable? Source 
         {
@@ -118,7 +123,7 @@ namespace Avalonia.Controls.Selection
             using var update = BatchUpdate();
             var o = update.Operation;
 
-            _root.Deselect(start, end, o);
+            _root.Deselect(new IndexPathRange(start, end), o);
         }
 
         public bool IsSelected(IndexPath index)
@@ -143,6 +148,26 @@ namespace Avalonia.Controls.Selection
         protected void RaisePropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        internal T GetItemAt(in IndexPath path)
+        {
+            if (path == default)
+                throw new ArgumentOutOfRangeException();
+            if (Source is null)
+                throw new InvalidOperationException("Cannot get item from null Source.");
+
+            if (path != default)
+            {
+                var node = GetNode(path.GetParent());
+
+                if (node is object)
+                {
+                    return node.ItemsView![path.GetLeaf()!.Value];
+                }
+            }
+
+            throw new ArgumentOutOfRangeException();
         }
 
         internal void OnIndexesChanged(IndexPath parentPath, int shiftIndex, int shiftDelta)
@@ -178,32 +203,13 @@ namespace Avalonia.Controls.Selection
 
             using var update = BatchUpdate();
             var o = update.Operation;
-            var selected = new List<IndexRange>();
 
-            if (!SingleSelect)
-            {
-                o.SelectedRanges ??= new();
-                o.SelectedRanges.RemoveRange(start, end);
-                //IndexRange.Remove(o.DeselectedRanges, range);
-                //IndexRange.Add(o.SelectedRanges, range);
-                //IndexRange.Remove(o.SelectedRanges, Ranges);
+            _root.Select(new IndexPathRange(start, end), o);
 
-                //if (o.SelectedIndex == -1 || forceSelectedIndex)
-                //{
-                //    o.SelectedIndex = range.Begin;
-                //}
-
-                //if (o.AnchorIndex == -1 || forceAnchorIndex)
-                //{
-                //    o.AnchorIndex = range.Begin;
-                //}
-            }
-            else
-            {
-                o.SelectedIndex = o.AnchorIndex = start;
-            }
-
-            //_initSelectedItems = null;
+            if (o.SelectedIndex == default || forceSelectedIndex)
+                o.SelectedIndex = start;
+            if (o.AnchorIndex == default || forceAnchorIndex)
+                o.AnchorIndex = start;
         }
 
         private void CoerceRange(ref IndexPath start, ref IndexPath end)
@@ -223,26 +229,6 @@ namespace Avalonia.Controls.Selection
             }
 
             return false;
-        }
-
-        private T? GetItemAt(in IndexPath path)
-        {
-            if (Source is null || path == default)
-            {
-                return default;
-            }
-
-            if (path != default)
-            {
-                var node = GetNode(path.GetParent());
-
-                if (node is object)
-                {
-                    return node.ItemsView![path.GetLeaf()!.Value];
-                }
-            }
-
-            throw new ArgumentOutOfRangeException();
         }
 
         private TreeSelectionNode<T>? GetNode(in IndexPath path)
@@ -308,33 +294,16 @@ namespace Avalonia.Controls.Selection
 
             if (SelectionChanged is object)
             {
-                IReadOnlyList<IndexPath>? deselectedIndexes = null;
-                IReadOnlyList<IndexPath>? selectedIndexes = null;
-                IReadOnlyList<T>? deselectedItems = null;
-                IReadOnlyList<T>? selectedItems = null;
-
-                if (SingleSelect && oldSelectedIndex != _selectedIndex)
-                {
-                    if (oldSelectedIndex != default)
-                    {
-                        deselectedIndexes = new[] { oldSelectedIndex };
-                        deselectedItems = new[] { GetItemAt(oldSelectedIndex)! };
-                    }
-
-                    if (_selectedIndex != default)
-                    {
-                        selectedIndexes = new[] { _selectedIndex };
-                        selectedItems = new[] { GetItemAt(_selectedIndex)! };
-                    }
-                }
+                var deselectedIndexes = operation.DeselectedRanges;
+                var selectedIndexes = operation.SelectedRanges;
 
                 if (deselectedIndexes?.Count > 0 || selectedIndexes?.Count > 0)
                 {
                     var e = new TreeSelectionModelSelectionChangedEventArgs<T>(
                         deselectedIndexes,
                         selectedIndexes,
-                        deselectedItems,
-                        selectedItems);
+                        TreeSelectionChangedItems<T>.Create(this, deselectedIndexes),
+                        TreeSelectionChangedItems<T>.Create(this, selectedIndexes));
                     SelectionChanged?.Invoke(this, e);
                 }
             }

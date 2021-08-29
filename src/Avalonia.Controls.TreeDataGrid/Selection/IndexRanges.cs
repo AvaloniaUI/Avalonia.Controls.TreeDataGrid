@@ -78,45 +78,6 @@ namespace Avalonia.Controls.Selection
             return false;
         }
 
-        public bool RemoveRange(in IndexPath start, in IndexPath end)
-        {
-            if (_ranges is null)
-                return false;
-            if (start.GetSize() == 0)
-                throw new ArgumentException("Invalid start index", nameof(start));
-            if (end.GetSize() == 0)
-                throw new ArgumentException("Invalid end index", nameof(end));
-
-            var result = false;
-
-            for (var i = 0;  i < _ranges.Count; i++)
-            {
-                var parent = _ranges.Keys[i];
-                var ranges = _ranges.Values[i];
-                var rangeBegin = parent.CloneWithChildIndex(ranges.First().Begin);
-                var rangeEnd = parent.CloneWithChildIndex(ranges.Last().End);
-                var depth = parent.GetSize();
-
-                if (start <= rangeBegin && end >= rangeEnd)
-                {
-                    Count -= IndexRange.GetCount(ranges);
-                    _ranges.RemoveAt(i--);
-                }
-                else if (start < rangeBegin && end < rangeEnd)
-                {
-                    Count -= IndexRange.Remove(ranges, new IndexRange(0, end.GetAt(depth)));
-                }
-                else if (start > rangeBegin && end >= rangeEnd)
-                {
-                    var removeBegin = start.GetAt(depth) + 1;
-                    var removeEnd = ranges.Last().End;
-                    Count -= IndexRange.Remove(ranges, new IndexRange(removeBegin, removeEnd));
-                }
-            }
-
-            return result;
-        }
-
         public bool Contains(in IndexPath index)
         {
             var parent = index.GetParent();

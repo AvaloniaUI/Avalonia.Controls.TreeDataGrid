@@ -8,17 +8,17 @@ namespace Avalonia.Controls.Selection
 {
     internal class TreeSelectedItemsBase<T> : IReadOnlyList<T?>
     {
-        protected readonly TreeSelectionModelBase<T> _model;
+        protected readonly TreeSelectionModelBase<T> _owner;
 
-        public TreeSelectedItemsBase(TreeSelectionModelBase<T> root) => _model = root;
+        public TreeSelectedItemsBase(TreeSelectionModelBase<T> owner) => _owner = owner;
 
         public int Count
         {
             get
             {
-                if (_model.SingleSelect)
+                if (_owner.SingleSelect)
                 {
-                    return _model.SelectedIndex.GetSize() > 0 ? 1 : 0;
+                    return _owner.SelectedIndex.GetSize() > 0 ? 1 : 0;
                 }
                 else
                 {
@@ -42,16 +42,24 @@ namespace Avalonia.Controls.Selection
 
         public IEnumerator<T?> GetEnumerator()
         {
-            if (_model.SingleSelect)
+            if (_owner.SingleSelect)
             {
-                if (_model.SelectedIndex.GetSize() > 0)
+                if (_owner.SelectedIndex.GetSize() > 0)
                 {
-                    yield return _model.SelectedItem;
+                    yield return _owner.SelectedItem;
                 }
             }
             else
             {
-                throw new NotImplementedException();
+                var node = _owner.Root;
+
+                foreach (var range in node.Ranges)
+                {
+                    for (var i = range.Begin; i <= range.End; ++i)
+                    {
+                        yield return node.ItemsView is object ? node.ItemsView[i] : default;
+                    }
+                }
             }
         }
 
@@ -65,11 +73,11 @@ namespace Avalonia.Controls.Selection
 
         IEnumerator<object?> IEnumerable<object?>.GetEnumerator()
         {
-            if (_model.SingleSelect)
+            if (_owner.SingleSelect)
             {
-                if (_model.SelectedIndex.GetSize() > 0)
+                if (_owner.SelectedIndex.GetSize() > 0)
                 {
-                    yield return _model.SelectedItem;
+                    yield return _owner.SelectedItem;
                 }
             }
             else

@@ -44,14 +44,22 @@ namespace Avalonia.Controls.Selection
         {
             if (_owner.SingleSelect)
             {
-                if (_owner.SelectedIndex.GetSize() > 0)
+                if (_owner.SelectedIndex.GetSize() != default)
                 {
                     yield return _owner.SelectedIndex;
                 }
             }
             else
             {
-                throw new NotImplementedException();
+                var node = _owner.Root;
+
+                foreach (var range in node.Ranges)
+                {
+                    for (var i = range.Begin; i <= range.End; ++i)
+                    {
+                        yield return node.Path.CloneWithChildIndex(i);
+                    }
+                }
             }
         }
 
