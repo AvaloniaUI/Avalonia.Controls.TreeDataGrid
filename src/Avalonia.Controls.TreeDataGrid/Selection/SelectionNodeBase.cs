@@ -90,12 +90,12 @@ namespace Avalonia.Controls.Selection
 
         private protected abstract void OnSelectionChanged(IReadOnlyList<T> deselectedItems);
 
-        private protected int CommitSelect(IndexRange range)
+        private protected int CommitSelect(int begin, int end, IList<IndexRange>? added = null)
         {
             if (RangesEnabled)
             {
                 _ranges ??= new List<IndexRange>();
-                return IndexRange.Add(_ranges, range);
+                return IndexRange.Add(_ranges, new IndexRange(begin, end), added);
             }
 
             return 0;

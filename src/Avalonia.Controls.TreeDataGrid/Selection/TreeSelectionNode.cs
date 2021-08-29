@@ -92,39 +92,47 @@ namespace Avalonia.Controls.Selection
             if (ItemsView is null || ItemsView.Count == 0)
                 return;
 
-            var select = range.Intersect(Path, ItemsView.Count);
+            var begin = int.MaxValue;
+            var end = int.MaxValue;
+            var itemDepth = Path.GetSize() + 1;
 
-            if (select.HasValue)
+            if (range.Begin.GetSize() == itemDepth)
+                begin = range.Begin.GetLeaf()!.Value;
+            if (range.End.GetSize() == itemDepth)
+                end = range.Begin.GetLeaf()!.Value;
+
+            if (begin < ItemsView.Count && end < ItemsView.Count)
             {
-                CommitSelect(select.Value);
+                var added = new List<IndexRange>();
+                CommitSelect(begin, end - begin, added);
                 operation.SelectedRanges ??= new();
-                operation.SelectedRanges.Add(Path, select.Value);
+                operation.SelectedRanges.Add(Path, added);
             }
         }
 
         public void Deselect(IndexPathRange range, TreeSelectionModelBase<T>.Operation operation)
         {
-            if (Ranges.Count > 0)
-            {
-                var firstSelected = Path.CloneWithChildIndex(Ranges[0].Begin);
-                var lastSelected = Path.CloneWithChildIndex(Ranges[^1].End);
+            //if (Ranges.Count > 0)
+            //{
+            //    var firstSelected = Path.CloneWithChildIndex(Ranges[0].Begin);
+            //    var lastSelected = Path.CloneWithChildIndex(Ranges[^1].End);
 
-                if (range.FullyContains(firstSelected, lastSelected))
-                {
-                    var deselected = operation.DeselectedRanges ??= new();
-                    foreach (var selected in Ranges)
-                        deselected.Add(Path, selected);
-                    CommitDeselect(new IndexRange(0, int.MaxValue));
-                }
+            //    if (range.FullyContains(firstSelected, lastSelected))
+            //    {
+            //        var deselected = operation.DeselectedRanges ??= new();
+            //        foreach (var selected in Ranges)
+            //            deselected.Add(Path, selected);
+            //        CommitDeselect(new IndexRange(0, int.MaxValue));
+            //    }
 
-                // TODO: Intersecting ranges
-            }
+            //    // TODO: Intersecting ranges
+            //}
 
-            if (_children is object)
-            {
-                foreach (var child in _children)
-                    child?.Deselect(range, operation);
-            }
+            //if (_children is object)
+            //{
+            //    foreach (var child in _children)
+            //        child?.Deselect(range, operation);
+            //}
         }
 
         public bool TryGetNode(

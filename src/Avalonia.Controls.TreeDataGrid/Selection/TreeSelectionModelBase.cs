@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
@@ -112,11 +111,7 @@ namespace Avalonia.Controls.Selection
         }
         
         public void Clear() => DeselectRange(new IndexPath(0), new IndexPath(int.MaxValue));
-
-        public void Deselect(IndexPath index)
-        {
-            throw new NotImplementedException();
-        }
+        public void Deselect(IndexPath index) => DeselectRange(index, index);
 
         public void DeselectRange(IndexPath start, IndexPath end)
         {

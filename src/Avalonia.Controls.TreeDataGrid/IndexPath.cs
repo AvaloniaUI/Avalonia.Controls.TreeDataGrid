@@ -130,6 +130,21 @@ namespace Avalonia.Controls
             }
         }
 
+        public IndexPath Truncate(int size)
+        {
+            if (size == 0 || size > GetSize())
+                throw new ArgumentException(nameof(size));
+
+            if (size == 1)
+                return new IndexPath(GetAt(0));
+            else 
+            {
+                var path = new int[size];
+                Array.Copy(_path!, 0, path, 0, size);
+                return new(path);
+            }
+        }
+
         public override string ToString()
         {
             if (_path != null)

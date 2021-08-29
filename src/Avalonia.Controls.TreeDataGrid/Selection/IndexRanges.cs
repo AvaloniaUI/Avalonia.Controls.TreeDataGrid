@@ -49,17 +49,20 @@ namespace Avalonia.Controls.Selection
             ++Count;
         }
 
-        public void Add(in IndexPath parent, in IndexRange range)
+        public void Add(in IndexPath parent, List<IndexRange> ranges)
         {
             _ranges ??= new();
 
-            if (!_ranges.TryGetValue(parent, out var ranges))
+            if (!_ranges.TryGetValue(parent, out var r))
             {
-                ranges = new List<IndexRange>();
                 _ranges.Add(parent, ranges);
+                Count += IndexRange.GetCount(ranges);
+            }
+            else
+            {
+                Count += IndexRange.Add(ranges, r);
             }
 
-            Count += IndexRange.Add(ranges, range);
         }
 
         public bool Remove(in IndexPath index)
