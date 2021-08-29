@@ -168,6 +168,12 @@ namespace Avalonia.Controls
             return false;
         }
 
+        internal IEnumerable<TModel>? GetModelChildren(TModel model)
+        {
+            _ = _expanderColumn ?? throw new InvalidOperationException("No expander column defined.");
+            return _expanderColumn.GetChildModels(model);
+        }
+
         internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0) =>
             _rows?.GetRowIndex(index, fromRowIndex) ?? -1;
 

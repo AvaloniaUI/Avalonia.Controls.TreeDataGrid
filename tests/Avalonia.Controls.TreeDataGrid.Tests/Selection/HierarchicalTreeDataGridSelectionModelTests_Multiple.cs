@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Avalonia.Controls.TreeDataGridTests
 {
-    public class HierarchicalTreeDataGridSelectionModelTests_Single
+    public class HierarchicalTreeDataGridSelectionModelTests_Multiple
     {
         public class SelectedIndex
         {
@@ -401,7 +401,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             HierarchicalTreeDataGridSource<Node> source)
         {
             var result = (HierarchicalTreeDataGridSelectionModel<Node>)source.Selection;
-            result.SingleSelect = true;
+            result.SingleSelect = false;
             return result;
         }
 

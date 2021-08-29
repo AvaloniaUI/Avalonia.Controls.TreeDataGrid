@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Avalonia.Controls.Models.TreeDataGrid
+namespace Avalonia.Controls.Selection
 {
     internal readonly struct IndexRange : IEquatable<IndexRange>
     {

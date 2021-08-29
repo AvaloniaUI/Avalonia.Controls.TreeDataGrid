@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Avalonia.Controls.Models.TreeDataGrid
+namespace Avalonia.Controls.Selection
 {
     internal class IndexRanges : IReadOnlyList<IndexPath>
     {
