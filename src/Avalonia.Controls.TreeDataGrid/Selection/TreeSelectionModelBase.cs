@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
@@ -170,7 +171,37 @@ namespace Avalonia.Controls.Selection
         }
 
         protected internal abstract IEnumerable<T>? GetChildren(T node);
-        protected abstract bool TryGetItemAt(IndexPath index, out T result);
+        
+        protected virtual bool TryGetItemAt(IndexPath index, out T? result)
+        {
+            var items = (IReadOnlyList<T>?)_root.ItemsView;
+            var count = index.GetSize();
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (items is null)
+                {
+                    result = default;
+                    return false;
+                }
+
+                var j = index.GetAt(i);
+
+                if (j < items.Count)
+                {
+                    if (i == count - 1)
+                    {
+                        result = items[j];
+                        return true;
+                    }
+                    else
+                        items = GetChildren(items[j]) as IReadOnlyList<T>;
+                }
+            }
+
+            result = default;
+            return false;
+        }
 
         protected void RaisePropertyChanged(string propertyName)
         {
