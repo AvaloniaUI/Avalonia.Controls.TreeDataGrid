@@ -59,31 +59,8 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        public int Select(int index, TreeSelectionModelBase<T>.Operation operation)
-        {
-            var count = CommitSelect(index, index);
-
-            if (count > 0)
-            {
-                operation.SelectedRanges ??= new();
-                operation.SelectedRanges.Add(Path, new IndexRange(index, index));
-            }
-
-            return count;
-        }
-
-        public int Deselect(int index, TreeSelectionModelBase<T>.Operation operation)
-        {
-            var count = CommitDeselect(index, index);
-
-            if (count > 0)
-            {
-                operation.DeselectedRanges ??= new();
-                operation.DeselectedRanges.Add(Path, new IndexRange(index, index));
-            }
-
-            return count;
-        }
+        public int CommitSelect(IndexRange range) => CommitSelect(range.Begin, range.End);
+        public int CommitDeselect(IndexRange range) => CommitDeselect(range.Begin, range.End);
 
         public bool TryGetNode(
             IndexPath path,

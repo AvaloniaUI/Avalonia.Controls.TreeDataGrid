@@ -10,6 +10,7 @@ namespace Avalonia.Controls.Selection
     public abstract class TreeSelectionModelBase<T> : ITreeSelectionModel, INotifyPropertyChanged
     {
         private TreeSelectionNode<T> _root;
+        private bool _singleSelect = true;
         private IndexPath _anchorIndex;
         private IndexPath _selectedIndex;
         private Operation? _operation;
@@ -29,7 +30,24 @@ namespace Avalonia.Controls.Selection
 
         public int Count { get; }
 
-        public bool SingleSelect { get; set; } = true;
+        public bool SingleSelect 
+        {
+            get => _singleSelect;
+            set
+            {
+                if (_singleSelect != value)
+                {
+                    if (value == true)
+                    {
+                        SelectedIndex = _selectedIndex;
+                    }
+
+                    _singleSelect = value;
+
+                    RaisePropertyChanged(nameof(SingleSelect));
+                }
+            }
+        }
 
         public IndexPath SelectedIndex 
         {
@@ -111,11 +129,15 @@ namespace Avalonia.Controls.Selection
 
         public void Deselect(IndexPath index)
         {
+            if (!IsSelected(index))
+                return;
+
             using var update = BatchUpdate();
             var o = update.Operation;
-            var node = GetNode(index.GetParent());
 
-            node?.Deselect(index.GetLeaf()!.Value, o);
+            o.DeselectedRanges ??= new();
+            o.SelectedRanges?.Remove(index);
+            o.DeselectedRanges.Add(index);
 
             if (o.DeselectedRanges?.Contains(_selectedIndex) == true)
                 o.SelectedIndex = GetFirstSelectedIndex(_root);
@@ -136,13 +158,14 @@ namespace Avalonia.Controls.Selection
 
             using var update = BatchUpdate();
             var o = update.Operation;
-            var node = RealizeNode(index.GetParent());
-            node.Select(index.GetLeaf()!.Value, o);
+            
+            o.SelectedRanges ??= new();
+            o.DeselectedRanges?.Remove(index);
+            o.SelectedRanges.Add(index);
 
             if (o.SelectedIndex == default)
                 o.SelectedIndex = index;
-            if (o.AnchorIndex == default)
-                o.AnchorIndex = index;
+            o.AnchorIndex = index;
         }
 
         protected internal abstract IEnumerable<T>? GetChildren(T node);
@@ -254,9 +277,20 @@ namespace Avalonia.Controls.Selection
         {
             var oldAnchorIndex = _anchorIndex;
             var oldSelectedIndex = _selectedIndex;
+            var indexesChanged = false;
 
             _selectedIndex = operation.SelectedIndex;
             _anchorIndex = operation.AnchorIndex;
+
+            if (operation.SelectedRanges is object)
+            {
+                indexesChanged |= CommitSelect(operation.SelectedRanges) > 0;
+            }
+
+            if (operation.DeselectedRanges is object)
+            {
+                indexesChanged |= CommitDeselect(operation.DeselectedRanges) > 0;
+            }
 
             if (SelectionChanged is object)
             {
@@ -290,6 +324,36 @@ namespace Avalonia.Controls.Selection
             }
 
             _operation = null;
+        }
+
+        private int CommitSelect(IndexRanges selectedRanges)
+        {
+            var result = 0;
+
+            foreach (var (parent, ranges) in selectedRanges.Ranges)
+            {
+                var node = RealizeNode(parent);
+
+                foreach (var range in ranges)
+                    result += node.CommitSelect(range);
+            }
+
+            return result;
+        }
+
+        private int CommitDeselect(IndexRanges selectedRanges)
+        {
+            var result = 0;
+
+            foreach (var (parent, ranges) in selectedRanges.Ranges)
+            {
+                var node = RealizeNode(parent);
+
+                foreach (var range in ranges)
+                    result += node.CommitDeselect(range);
+            }
+
+            return result;
         }
 
         public struct BatchUpdateOperation : IDisposable

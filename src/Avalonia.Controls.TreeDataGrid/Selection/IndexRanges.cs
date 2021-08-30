@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Selection
 {
     internal class IndexRanges : IReadOnlyList<IndexPath>
     {
-        private SortedList<IndexPath, List<IndexRange>>? _ranges;
+        private SortedList<IndexPath, List<IndexRange>> _ranges = new();
 
         public IndexPath this[int index]
         {
@@ -32,11 +32,10 @@ namespace Avalonia.Controls.Selection
         }
 
         public int Count { get; private set; }
+        public IDictionary<IndexPath, List<IndexRange>> Ranges => _ranges;
 
         public void Add(in IndexPath index)
         {
-            _ranges ??= new();
-
             var parent = index.GetParent();
 
             if (!_ranges.TryGetValue(parent, out var ranges))
@@ -51,8 +50,6 @@ namespace Avalonia.Controls.Selection
 
         public void Add(in IndexPath parent, in IndexRange range)
         {
-            _ranges ??= new();
-
             if (!_ranges.TryGetValue(parent, out var ranges))
             {
                 ranges = new List<IndexRange>();
@@ -64,8 +61,6 @@ namespace Avalonia.Controls.Selection
 
         public void Add(in IndexPath parent, List<IndexRange> ranges)
         {
-            _ranges ??= new();
-
             if (!_ranges.TryGetValue(parent, out var r))
             {
                 _ranges.Add(parent, ranges);
@@ -82,7 +77,7 @@ namespace Avalonia.Controls.Selection
         {
             var parent = index.GetParent();
 
-            if (_ranges is object && _ranges.TryGetValue(parent, out var ranges))
+            if (_ranges.TryGetValue(parent, out var ranges))
             {
                 if (IndexRange.Remove(ranges, new IndexRange(index.GetLeaf()!.Value)) > 0)
                 {
@@ -94,11 +89,35 @@ namespace Avalonia.Controls.Selection
             return false;
         }
 
+        public bool Remove(in IndexPath parent, IndexRange range)
+        {
+            if (_ranges.TryGetValue(parent, out var existing))
+            {
+                var removed = IndexRange.Remove(existing, range);
+                Count -= removed;
+                return removed > 0;
+            }
+
+            return false;
+        }
+
+        public bool Remove(in IndexPath parent, IReadOnlyList<IndexRange> ranges)
+        {
+            if (_ranges.TryGetValue(parent, out var existing))
+            {
+                var removed = IndexRange.Remove(existing, ranges);
+                Count -= removed;
+                return removed > 0;
+            }
+
+            return false;
+        }
+
         public bool Contains(in IndexPath index)
         {
             var parent = index.GetParent();
 
-            if (_ranges is object && _ranges.TryGetValue(parent, out var ranges))
+            if (_ranges.TryGetValue(parent, out var ranges))
             {
                 return IndexRange.Contains(ranges, index.GetLeaf()!.Value);
             }
@@ -108,13 +127,10 @@ namespace Avalonia.Controls.Selection
 
         public bool ContainsDescendents(in IndexPath index)
         {
-            if (_ranges is object)
+            foreach (var i in _ranges.Keys)
             {
-                foreach (var i in _ranges.Keys)
-                {
-                    if (index == i || index.IsAncestorOf(i))
-                        return true;
-                }
+                if (index == i || index.IsAncestorOf(i))
+                    return true;
             }
 
             return false;
