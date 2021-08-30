@@ -140,7 +140,7 @@ namespace Avalonia.Controls.Selection
             o.DeselectedRanges.Add(index);
 
             if (o.DeselectedRanges?.Contains(_selectedIndex) == true)
-                o.SelectedIndex = GetFirstSelectedIndex(_root);
+                o.SelectedIndex = GetFirstSelectedIndex(_root, except: o.DeselectedRanges);
         }
 
         public bool IsSelected(IndexPath index)
@@ -209,10 +209,20 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        private IndexPath GetFirstSelectedIndex(TreeSelectionNode<T> node)
+        private IndexPath GetFirstSelectedIndex(TreeSelectionNode<T> node, IndexRanges? except = null)
         {
             if (node.Ranges.Count > 0)
-                return node.Path.CloneWithChildIndex(node.Ranges[0].Begin);
+            {
+                var count = IndexRange.GetCount(node.Ranges);
+                var index = 0;
+
+                while (index < count)
+                {
+                    var result = node.Path.CloneWithChildIndex(IndexRange.GetAt(node.Ranges, index++));
+                    if (except?.Contains(result) != true)
+                        return result;
+                }
+            }
             
             if (node.Children is object)
             {
@@ -220,7 +230,8 @@ namespace Avalonia.Controls.Selection
                 {
                     if (child is object)
                     {
-                        var i = GetFirstSelectedIndex(child);
+                        var i = GetFirstSelectedIndex(child, except);
+                        
                         if (i != default)
                             return i;
                     }
