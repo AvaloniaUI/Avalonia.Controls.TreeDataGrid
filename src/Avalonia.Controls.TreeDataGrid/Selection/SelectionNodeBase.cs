@@ -90,44 +90,23 @@ namespace Avalonia.Controls.Selection
 
         private protected abstract void OnSelectionChanged(IReadOnlyList<T> deselectedItems);
 
-        private protected int CommitSelect(int begin, int end, IList<IndexRange>? added = null)
+        private protected int CommitSelect(int begin, int end)
         {
             if (RangesEnabled)
             {
                 _ranges ??= new List<IndexRange>();
-                return IndexRange.Add(_ranges, new IndexRange(begin, end), added);
+                return IndexRange.Add(_ranges, new IndexRange(begin, end));
             }
 
             return 0;
         }
 
-        private protected int CommitSelect(IReadOnlyList<IndexRange> ranges)
+        private protected int CommitDeselect(int begin, int end)
         {
             if (RangesEnabled)
             {
                 _ranges ??= new List<IndexRange>();
-                return IndexRange.Add(_ranges, ranges);
-            }
-
-            return 0;
-        }
-
-        private protected int CommitDeselect(IndexRange range)
-        {
-            if (RangesEnabled)
-            {
-                _ranges ??= new List<IndexRange>();
-                return IndexRange.Remove(_ranges, range);
-            }
-
-            return 0;
-        }
-
-        private protected int CommitDeselect(IReadOnlyList<IndexRange> ranges)
-        {
-            if (RangesEnabled && _ranges is object)
-            {
-                return IndexRange.Remove(_ranges, ranges);
+                return IndexRange.Remove(_ranges, new IndexRange(begin, end));
             }
 
             return 0;

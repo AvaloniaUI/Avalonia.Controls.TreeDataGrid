@@ -148,6 +148,33 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
 
             [Fact]
+            public void Out_Of_Range_By_Depth_SelectedIndex_Clears_Selection()
+            {
+                var data = CreateData();
+                var source = CreateSource(data);
+                var target = CreateTarget(source);
+                var raised = 0;
+
+                target.SelectedIndex = new IndexPath(0, 2);
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Equal(new IndexPath(0, 2), e.DeselectedIndexes.Single());
+                    Assert.Equal("Node 0-2", e.DeselectedItems.Single().Caption);
+                    Assert.Empty(e.SelectedIndexes);
+                    Assert.Empty(e.SelectedItems);
+                    ++raised;
+                };
+
+                target.SelectedIndex = new IndexPath(0, 2, 3);
+
+                Assert.Equal(1, raised);
+                Assert.Equal(default, target.SelectedIndex);
+                Assert.Empty(target.SelectedIndexes);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+            }
+
+            [Fact]
             public void Can_Select_Unexpanded_Item()
             {
                 var data = CreateData();
@@ -398,16 +425,44 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, raised);
             }
 
-            //[Fact]
-            //public void Deselect_Updates_SelectedItem_To_First_Selected_Item()
-            //{
-            //    var target = CreateTarget();
+            [Fact]
+            public void Deselect_Updates_SelectedItem_To_First_Selected_Item()
+            {
+                var target = CreateTarget();
 
-            //    target.SelectRange(3, 5);
-            //    target.Deselect(3);
+                target.Select(new IndexPath(0, 3));
+                target.Select(new IndexPath(0, 4));
+                target.Select(new IndexPath(0, 5));
+                target.Deselect(new IndexPath(0, 3));
 
-            //    Assert.Equal(4, target.SelectedIndex);
-            //}
+                Assert.Equal(new IndexPath(0, 4), target.SelectedIndex);
+            }
+        }
+
+        public class Clear
+        {
+            [Fact]
+            public void Clear_Raises_SelectionChanged()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.Select(new IndexPath(0, 1));
+                target.Select(new IndexPath(0, 2));
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Equal(new[] { new IndexPath(0, 1), new IndexPath(0, 2) }, e.DeselectedIndexes);
+                    Assert.Equal(new[] { "Node 0-1", "Node 0-2" }, e.DeselectedItems.Select(x => x.Caption));
+                    Assert.Empty(e.SelectedIndexes);
+                    Assert.Empty(e.SelectedItems);
+                    ++raised;
+                };
+
+                target.Clear();
+
+                Assert.Equal(1, raised);
+            }
         }
 
         public class RowSelection

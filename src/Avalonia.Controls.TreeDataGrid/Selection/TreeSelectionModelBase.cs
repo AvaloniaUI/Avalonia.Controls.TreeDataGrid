@@ -111,7 +111,14 @@ namespace Avalonia.Controls.Selection
 
         public void Deselect(IndexPath index)
         {
-            throw new NotImplementedException();
+            using var update = BatchUpdate();
+            var o = update.Operation;
+            var node = GetNode(index.GetParent());
+
+            node?.Deselect(index.GetLeaf()!.Value, o);
+
+            if (o.DeselectedRanges?.Contains(_selectedIndex) == true)
+                o.SelectedIndex = GetFirstSelectedIndex(_root);
         }
 
         public bool IsSelected(IndexPath index)
@@ -179,6 +186,27 @@ namespace Avalonia.Controls.Selection
             {
                 RaisePropertyChanged(nameof(AnchorIndex));
             }
+        }
+
+        private IndexPath GetFirstSelectedIndex(TreeSelectionNode<T> node)
+        {
+            if (node.Ranges.Count > 0)
+                return node.Path.CloneWithChildIndex(node.Ranges[0].Begin);
+            
+            if (node.Children is object)
+            {
+                foreach (var child in node.Children)
+                {
+                    if (child is object)
+                    {
+                        var i = GetFirstSelectedIndex(child);
+                        if (i != default)
+                            return i;
+                    }
+                }
+            }
+
+            return default;
         }
 
         private bool ShiftIndex(IndexPath parentPath, int shiftIndex, int shiftDelta, ref IndexPath path)

@@ -49,7 +49,7 @@ namespace Avalonia.Controls.Selection
                 operation.DeselectedRanges ??= new();
                 foreach (var range in Ranges)
                     operation.DeselectedRanges.Add(Path, range);
-                CommitDeselect(new IndexRange(0, int.MaxValue));
+                CommitDeselect(0, int.MaxValue);
             }
 
             if (_children is object)
@@ -106,7 +106,7 @@ namespace Avalonia.Controls.Selection
             return default;
         }
 
-        public void Select(int index, TreeSelectionModelBase<T>.Operation operation)
+        public int Select(int index, TreeSelectionModelBase<T>.Operation operation)
         {
             var count = CommitSelect(index, index);
 
@@ -115,8 +115,23 @@ namespace Avalonia.Controls.Selection
                 operation.SelectedRanges ??= new();
                 operation.SelectedRanges.Add(Path, new IndexRange(index, index));
             }
+
+            return count;
         }
-        
+
+        public int Deselect(int index, TreeSelectionModelBase<T>.Operation operation)
+        {
+            var count = CommitDeselect(index, index);
+
+            if (count > 0)
+            {
+                operation.DeselectedRanges ??= new();
+                operation.DeselectedRanges.Add(Path, new IndexRange(index, index));
+            }
+
+            return count;
+        }
+
         public bool TryGetNode(
             IndexPath path,
             int depth,
