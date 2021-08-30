@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using Avalonia.Collections;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
@@ -187,18 +184,17 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 Assert.Equal("Node 1-2", target.SelectedItems.Single()!.Caption);
             }
 
-            //[Fact]
-            //public void Setting_SelectedIndex_During_CollectionChanged_Results_In_Correct_Selection()
-            //{
-            //    var data = new AvaloniaList<Node>();
-            //    var source = CreateSource(data, expandRoot: false);
-            //    var target = CreateTarget(source);
-            //    var binding = new MockBinding(target, data);
+            [Fact]
+            public void Setting_SelectedIndex_During_CollectionChanged_Results_In_Correct_Selection()
+            {
+                var data = new AvaloniaList<Node>();
+                var target = CreateTarget(data);
+                var binding = new MockBinding(target, data);
 
-            //    data.Add(new Node());
+                data.Add(new Node());
 
-            //    Assert.Equal(new IndexPath(0), target.SelectedIndex);
-            //}
+                Assert.Equal(new IndexPath(0), target.SelectedIndex);
+            }
 
             [Fact]
             public void PropertyChanged_Is_Raised()
