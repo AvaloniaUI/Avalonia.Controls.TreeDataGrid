@@ -106,7 +106,7 @@ namespace Avalonia.Controls.Selection
             var o = update.Operation;
 
             _root.Clear(o);
-            o.SelectedIndex = o.AnchorIndex = default;
+            o.SelectedIndex = default;
         }
 
         public void Deselect(IndexPath index)
