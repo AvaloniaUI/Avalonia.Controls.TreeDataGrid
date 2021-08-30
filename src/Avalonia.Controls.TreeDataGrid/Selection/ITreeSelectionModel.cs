@@ -23,11 +23,8 @@ namespace Avalonia.Controls.Selection
         void BeginBatchUpdate();
         void Clear();
         void Deselect(IndexPath index);
-        void DeselectRange(IndexPath start, IndexPath end);
         void EndBatchUpdate();
         bool IsSelected(IndexPath index);
         void Select(IndexPath index);
-        void SelectAll();
-        void SelectRange(IndexPath start, IndexPath end);
     }
 }

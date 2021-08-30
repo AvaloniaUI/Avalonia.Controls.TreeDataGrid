@@ -49,6 +49,19 @@ namespace Avalonia.Controls.Selection
             ++Count;
         }
 
+        public void Add(in IndexPath parent, in IndexRange range)
+        {
+            _ranges ??= new();
+
+            if (!_ranges.TryGetValue(parent, out var ranges))
+            {
+                ranges = new List<IndexRange>();
+                _ranges.Add(parent, ranges);
+            }
+
+            Count += IndexRange.Add(ranges, range);
+        }
+
         public void Add(in IndexPath parent, List<IndexRange> ranges)
         {
             _ranges ??= new();

@@ -110,32 +110,43 @@ namespace Avalonia.Controls.Selection
             }
         }
         
-        public void Clear() => DeselectRange(new IndexPath(0), new IndexPath(int.MaxValue));
-        public void Deselect(IndexPath index) => DeselectRange(index, index);
-
-        public void DeselectRange(IndexPath start, IndexPath end)
+        public void Clear()
         {
             using var update = BatchUpdate();
             var o = update.Operation;
 
-            _root.Deselect(new IndexPathRange(start, end), o);
+            _root.Clear(o);
+        }
+
+        public void Deselect(IndexPath index)
+        {
+            throw new NotImplementedException();
         }
 
         public bool IsSelected(IndexPath index)
         {
-            throw new NotImplementedException();
+            if (index == default)
+                return false;
+            var node = GetNode(index.GetParent());
+            return IndexRange.Contains(node?.Ranges, index.GetLeaf()!.Value);
         }
 
-        public void Select(IndexPath index) => SelectRange(index, index, false, true);
-
-        public void SelectAll()
+        public void Select(IndexPath index)
         {
-            throw new NotImplementedException();
-        }
+            index = _root.CoerceIndex(index, 0);
 
-        public void SelectRange(IndexPath start, IndexPath end)
-        {
-            throw new NotImplementedException();
+            if (index == default)
+                return;
+
+            using var update = BatchUpdate();
+            var o = update.Operation;
+            var node = RealizeNode(index.GetParent());
+            node.Select(index.GetLeaf()!.Value, o);
+
+            if (o.SelectedIndex == default)
+                o.SelectedIndex = index;
+            if (o.AnchorIndex == default)
+                o.AnchorIndex = index;
         }
 
         protected internal abstract IEnumerable<T>? GetChildren(T node);
@@ -188,43 +199,6 @@ namespace Avalonia.Controls.Selection
             if (TryGetItemAt(index, out var item))
                 return GetChildren(item);
             return null;
-        }
-
-        private void SelectRange(
-            IndexPath start,
-            IndexPath end,
-            bool forceSelectedIndex,
-            bool forceAnchorIndex)
-        {
-            if (SingleSelect && start != end)
-            {
-                throw new InvalidOperationException("Cannot select range with single selection.");
-            }
-
-            CoerceRange(ref start, ref end);
-
-            if (start == default)
-            {
-                return;
-            }
-
-            using var update = BatchUpdate();
-            var o = update.Operation;
-
-            var current = start;
-            var parentIndex = current.Truncate(current.GetSize() - 1);
-            var childItems = GetChildren(parentIndex);
-            
-            if (childItems is object)
-            {
-                var childEnd = end.GetAt(current.GetSize() - 1);
-            }
-        }
-
-        private void CoerceRange(ref IndexPath start, ref IndexPath end)
-        {
-            start = _root.CoerceIndex(start, 0);
-            end = _root.CoerceIndex(end, 0);
         }
 
         private bool ShiftIndex(IndexPath parentPath, int shiftIndex, int shiftDelta, ref IndexPath path)

@@ -51,18 +51,34 @@ namespace Avalonia.Controls.Selection
             }
             else
             {
-                var node = _owner.Root;
-
-                foreach (var range in node.Ranges)
-                {
-                    for (var i = range.Begin; i <= range.End; ++i)
-                    {
-                        yield return node.Path.CloneWithChildIndex(i);
-                    }
-                }
+                foreach (var i in EnumerateNode(_owner.Root))
+                    yield return i;
             }
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private IEnumerable<IndexPath> EnumerateNode(TreeSelectionNode<T> node)
+        {
+            foreach (var range in node.Ranges)
+            {
+                for (var i = range.Begin; i <= range.End; ++i)
+                {
+                    yield return node.Path.CloneWithChildIndex(i);
+                }
+            }
+
+            if (node.Children is object)
+            {
+                foreach (var child in node.Children)
+                {
+                    if (child is object)
+                    {
+                        foreach (var i in EnumerateNode(child))
+                            yield return i;
+                    }
+                }
+            }
+        }
     }
 }
