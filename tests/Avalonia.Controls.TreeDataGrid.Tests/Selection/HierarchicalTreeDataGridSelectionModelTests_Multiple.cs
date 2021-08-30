@@ -177,7 +177,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             public void Setting_SelectedIndex_During_CollectionChanged_Results_In_Correct_Selection()
             {
                 var data = new AvaloniaList<Node>();
-                var source = CreateSource(data);
+                var source = CreateSource(data, expandRoot: false);
                 var target = CreateTarget(source);
                 var binding = new MockBinding(target, data);
 
@@ -232,10 +232,54 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
+        public class SelectedIndexes
+        {
+            [Fact]
+            public void PropertyChanged_Is_Raised_When_SelectedIndex_Changes()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndexes))
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.SelectedIndex = new IndexPath(1);
+
+                Assert.Equal(1, raised);
+            }
+        }
+
+        public class SelectedItem
+        {
+            [Fact]
+            public void PropertyChanged_Is_Raised_When_SelectedIndex_Changes()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.SelectedIndex = new IndexPath(1);
+
+                Assert.Equal(1, raised);
+            }
+        }
+
         public class Select
         {
             [Fact]
-            public void Select_Sets_SelectedIndex()
+            public void Select_Sets_SelectedIndex_If_Previously_Unset()
             {
                 var data = CreateData();
                 var source = CreateSource(data);
@@ -261,19 +305,19 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
 
             [Fact]
-            public void Select_Clears_Old_Selection()
+            public void Select_Adds_To_Selection()
             {
                 var data = CreateData();
                 var source = CreateSource(data);
                 var target = CreateTarget(source);
                 var raised = 0;
 
-                target.Select(new IndexPath(0, 1));
+                target.Select(new IndexPath(0));
 
                 target.SelectionChanged += (s, e) =>
                 {
-                    Assert.Equal(new IndexPath(0, 1), e.DeselectedIndexes.Single());
-                    Assert.Equal("Node 0-1", e.DeselectedItems.Single().Caption);
+                    Assert.Empty(e.DeselectedIndexes);
+                    Assert.Empty(e.DeselectedItems);
                     Assert.Equal(new IndexPath(0, 2), e.SelectedIndexes.Single());
                     Assert.Equal("Node 0-2", e.SelectedItems.Single().Caption);
                     ++raised;
@@ -282,10 +326,10 @@ namespace Avalonia.Controls.TreeDataGridTests
                 target.Select(new IndexPath(0, 2));
 
                 Assert.Equal(1, raised);
-                Assert.Equal(new IndexPath(0, 2), target.SelectedIndex);
-                Assert.Equal(new IndexPath(0, 2), target.SelectedIndexes.Single());
-                Assert.Equal("Node 0-2", target.SelectedItem!.Caption);
-                Assert.Equal("Node 0-2", target.SelectedItems.Single().Caption);
+                Assert.Equal(new IndexPath(0), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(0), new IndexPath(0, 2) }, target.SelectedIndexes);
+                Assert.Equal("Node 0", target.SelectedItem!.Caption);
+                Assert.Equal(new[] { "Node 0", "Node 0-2" }, target.SelectedItems.Select(x => x.Caption));
             }
 
             [Fact]
@@ -323,6 +367,47 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 Assert.Equal(0, raised);
             }
+        }
+
+        public class Deselect
+        {
+            [Fact]
+            public void Deselect_Clears_Selected_Item()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.SelectedIndex = new IndexPath(0);
+                target.Select(new IndexPath(0, 1));
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Equal(new[] { new IndexPath(0, 1) }, e.DeselectedIndexes);
+                    Assert.Equal(new[] { "Node 0-1" }, e.DeselectedItems.Select(x => x.Caption));
+                    Assert.Empty(e.SelectedIndexes);
+                    Assert.Empty(e.SelectedItems);
+                    ++raised;
+                };
+
+                target.Deselect(new IndexPath(0, 1));
+
+                Assert.Equal(new IndexPath(0), target.SelectedIndex);
+                Assert.Equal(new IndexPath(0), target.SelectedIndexes.Single());
+                Assert.Equal("Node 0", target.SelectedItem!.Caption);
+                Assert.Equal(new[] { "Node 0" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(1, raised);
+            }
+
+            //[Fact]
+            //public void Deselect_Updates_SelectedItem_To_First_Selected_Item()
+            //{
+            //    var target = CreateTarget();
+
+            //    target.SelectRange(3, 5);
+            //    target.Deselect(3);
+
+            //    Assert.Equal(4, target.SelectedIndex);
+            //}
         }
 
         public class RowSelection
@@ -461,7 +546,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             return result;
         }
 
-        private static HierarchicalTreeDataGridSource<Node> CreateSource(IEnumerable<Node> roots)
+        private static HierarchicalTreeDataGridSource<Node> CreateSource(IEnumerable<Node> roots, bool expandRoot = true)
         {
             var result = new HierarchicalTreeDataGridSource<Node>(roots)
             {
@@ -475,7 +560,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                 }
             };
 
-            SetExpanded(result, new IndexPath(0), true);
+            if (expandRoot)
+                SetExpanded(result, new IndexPath(0), true);
 
             return result;
         }

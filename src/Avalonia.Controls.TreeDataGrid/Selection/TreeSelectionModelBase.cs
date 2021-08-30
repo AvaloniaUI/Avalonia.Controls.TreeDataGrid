@@ -95,19 +95,9 @@ namespace Avalonia.Controls.Selection
         public void EndBatchUpdate()
         {
             if (_operation is null || _operation.UpdateCount == 0)
-            {
                 throw new InvalidOperationException("No batch update in progress.");
-            }
-
             if (--_operation.UpdateCount == 0)
-            {
-                // If the collection is currently changing, commit the update when the
-                // collection change finishes.
-                ////if (!IsSourceCollectionChanging)
-                {
-                    CommitOperation(_operation);
-                }
-            }
+                CommitOperation(_operation);
         }
         
         public void Clear()
@@ -116,6 +106,7 @@ namespace Avalonia.Controls.Selection
             var o = update.Operation;
 
             _root.Clear(o);
+            o.SelectedIndex = o.AnchorIndex = default;
         }
 
         public void Deselect(IndexPath index)
@@ -190,17 +181,6 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        private IEnumerable<T>? GetChildren(IndexPath index)
-        {
-            if (index == default)
-                return _root.ItemsView;
-            if (GetNode(index) is TreeSelectionNode<T> node)
-                return node.ItemsView;
-            if (TryGetItemAt(index, out var item))
-                return GetChildren(item);
-            return null;
-        }
-
         private bool ShiftIndex(IndexPath parentPath, int shiftIndex, int shiftDelta, ref IndexPath path)
         {
             if (parentPath.IsAncestorOf(path) && path.GetAt(parentPath.GetSize()) >= shiftIndex)
@@ -244,16 +224,6 @@ namespace Avalonia.Controls.Selection
             throw new ArgumentOutOfRangeException();
         }
 
-        private IndexPath CoerceIndex(IndexPath path)
-        {
-            if (Source is null)
-            {
-                return path;
-            }
-
-            return _root.CoerceIndex(path, 0);
-        }
-
         private void CommitOperation(Operation operation)
         {
             var oldAnchorIndex = _anchorIndex;
@@ -261,19 +231,6 @@ namespace Avalonia.Controls.Selection
 
             _selectedIndex = operation.SelectedIndex;
             _anchorIndex = operation.AnchorIndex;
-
-            if (_selectedIndex != oldSelectedIndex)
-            {
-                if (oldSelectedIndex != default)
-                {
-                    //CommitDeselect(oldSelectedIndex);
-                }
-
-                if (_selectedIndex != default)
-                {
-                    //CommitSelect(_selectedIndex);
-                }
-            }
 
             if (SelectionChanged is object)
             {
@@ -294,11 +251,16 @@ namespace Avalonia.Controls.Selection
             if (oldSelectedIndex != _selectedIndex)
             {
                 RaisePropertyChanged(nameof(SelectedIndex));
+                RaisePropertyChanged(nameof(SelectedItem));
             }
 
             if (oldAnchorIndex != _anchorIndex)
-            {
                 RaisePropertyChanged(nameof(AnchorIndex));
+
+            if (operation.DeselectedRanges?.Count > 0 || operation.SelectedRanges?.Count > 0)
+            {
+                RaisePropertyChanged(nameof(SelectedIndexes));
+                RaisePropertyChanged(nameof(SelectedItems));
             }
 
             _operation = null;
