@@ -94,7 +94,7 @@ namespace Avalonia.Controls.Selection
 
         public event EventHandler<TreeSelectionModelSelectionChangedEventArgs<T>>? SelectionChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
-        public event EventHandler<SelectionModelIndexesChangedEventArgs>? IndexesChanged;
+        public event EventHandler<TreeSelectionModelIndexesChangedEventArgs>? IndexesChanged;
         public event EventHandler? LostSelection;
 
         event EventHandler<TreeSelectionModelSelectionChangedEventArgs>? ITreeSelectionModel.SelectionChanged
@@ -231,14 +231,16 @@ namespace Avalonia.Controls.Selection
             throw new ArgumentOutOfRangeException();
         }
 
-        internal void OnIndexesChanged(IndexPath parentPath, int shiftIndex, int shiftDelta)
+        internal void OnIndexesChanged(IndexPath parentIndex, int shiftIndex, int shiftDelta)
         {
-            if (ShiftIndex(parentPath, shiftIndex, shiftDelta, ref _selectedIndex))
+            IndexesChanged?.Invoke(this, new TreeSelectionModelIndexesChangedEventArgs(parentIndex, shiftIndex, shiftDelta));
+
+            if (ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _selectedIndex))
             {
                 RaisePropertyChanged(nameof(SelectedIndex));
             }
 
-            if (ShiftIndex(parentPath, shiftIndex, shiftDelta, ref _anchorIndex))
+            if (ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _anchorIndex))
             {
                 RaisePropertyChanged(nameof(AnchorIndex));
             }
@@ -274,19 +276,6 @@ namespace Avalonia.Controls.Selection
             }
 
             return default;
-        }
-
-        private bool ShiftIndex(IndexPath parentPath, int shiftIndex, int shiftDelta, ref IndexPath path)
-        {
-            if (parentPath.IsAncestorOf(path) && path.GetAt(parentPath.GetSize()) >= shiftIndex)
-            {
-                var indexes = path.ToArray();
-                ++indexes[parentPath.GetSize()];
-                path = new IndexPath(indexes);
-                return true;
-            }
-
-            return false;
         }
 
         private TreeSelectionNode<T>? GetNode(in IndexPath path)
@@ -397,6 +386,19 @@ namespace Avalonia.Controls.Selection
             }
 
             return result;
+        }
+
+        private static bool ShiftIndex(IndexPath parentIndex, int shiftIndex, int shiftDelta, ref IndexPath path)
+        {
+            if (parentIndex.IsAncestorOf(path) && path.GetAt(parentIndex.GetSize()) >= shiftIndex)
+            {
+                var indexes = path.ToArray();
+                indexes[parentIndex.GetSize()] += shiftDelta;
+                path = new IndexPath(indexes);
+                return true;
+            }
+
+            return false;
         }
 
         public struct BatchUpdateOperation : IDisposable

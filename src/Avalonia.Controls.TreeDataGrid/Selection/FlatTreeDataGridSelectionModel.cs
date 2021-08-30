@@ -80,7 +80,7 @@ namespace Avalonia.Controls.Selection
 
         ISelectionModel ITreeDataGridSelectionModel.RowSelection => _rowSelection;
 
-        public event EventHandler<SelectionModelIndexesChangedEventArgs>? IndexesChanged;
+        public event EventHandler<TreeSelectionModelIndexesChangedEventArgs>? IndexesChanged;
         public event EventHandler<TreeSelectionModelSelectionChangedEventArgs>? SelectionChanged;
         public event EventHandler? LostSelection;
         public event PropertyChangedEventHandler? PropertyChanged;

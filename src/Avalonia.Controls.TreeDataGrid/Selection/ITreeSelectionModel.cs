@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Selection
         int Count { get; }
 
         event EventHandler<TreeSelectionModelSelectionChangedEventArgs>? SelectionChanged;
-        event EventHandler<SelectionModelIndexesChangedEventArgs>? IndexesChanged;
+        event EventHandler<TreeSelectionModelIndexesChangedEventArgs>? IndexesChanged;
         event EventHandler? LostSelection;
 
         void BeginBatchUpdate();

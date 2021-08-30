@@ -560,6 +560,361 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
+        public class CollectionChanges
+        {
+            [Fact]
+            public void Adding_Root_Item_Before_Selected_Root_Item_Updates_Indexes()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var selectionChangedRaised = 0;
+                var indexesChangedRaised = 0;
+                var selectedIndexRaised = 0;
+
+                target.SelectedIndex = new IndexPath(1);
+
+                target.SelectionChanged += (s, e) => ++selectionChangedRaised;
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+                };
+
+                target.IndexesChanged += (s, e) =>
+                {
+                    Assert.Equal(default, e.ParentIndex);
+                    Assert.Equal(0, e.StartIndex);
+                    Assert.Equal(1, e.Delta);
+                    ++indexesChangedRaised;
+                };
+
+                data.Insert(0, new Node { Caption = "new" });
+
+                Assert.Equal(new IndexPath(2), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(2) }, target.SelectedIndexes);
+                Assert.Equal("Node 1", target.SelectedItem!.Caption);
+                Assert.Equal(new[] { "Node 1" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new IndexPath(2), target.AnchorIndex);
+                Assert.Equal(1, indexesChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(0, selectionChangedRaised);
+            }
+
+            [Fact]
+            public void Adding_Child_Item_Before_Selected_Child_Item_Updates_Indexes()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var selectionChangedRaised = 0;
+                var indexesChangedRaised = 0;
+                var selectedIndexRaised = 0;
+
+                target.SelectedIndex = new IndexPath(0, 1);
+
+                target.SelectionChanged += (s, e) => ++selectionChangedRaised;
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+                };
+
+                target.IndexesChanged += (s, e) =>
+                {
+                    Assert.Equal(new IndexPath(0), e.ParentIndex);
+                    Assert.Equal(0, e.StartIndex);
+                    Assert.Equal(1, e.Delta);
+                    ++indexesChangedRaised;
+                };
+
+                data[0].Children!.Insert(0, new Node { Caption = "new" });
+
+                Assert.Equal(new IndexPath(0, 2), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(0, 2) }, target.SelectedIndexes);
+                Assert.Equal("Node 0-1", target.SelectedItem!.Caption);
+                Assert.Equal(new[] { "Node 0-1" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new IndexPath(0, 2), target.AnchorIndex);
+                Assert.Equal(1, indexesChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(0, selectionChangedRaised);
+            }
+
+            [Fact]
+            public void Adding_Root_Item_Before_Selected_Child_Item_Updates_Indexes()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var selectionChangedRaised = 0;
+                var indexesChangedRaised = 0;
+                var selectedIndexRaised = 0;
+
+                target.SelectedIndex = new IndexPath(0, 1);
+
+                target.SelectionChanged += (s, e) => ++selectionChangedRaised;
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+                };
+
+                target.IndexesChanged += (s, e) =>
+                {
+                    Assert.Equal(default, e.ParentIndex);
+                    Assert.Equal(0, e.StartIndex);
+                    Assert.Equal(1, e.Delta);
+                    ++indexesChangedRaised;
+                };
+
+                data.Insert(0, new Node { Caption = "new" });
+
+                Assert.Equal(new IndexPath(1, 1), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(1, 1) }, target.SelectedIndexes);
+                Assert.Equal("Node 0-1", target.SelectedItem!.Caption);
+                Assert.Equal(new[] { "Node 0-1" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new IndexPath(0, 2), target.AnchorIndex);
+                Assert.Equal(1, indexesChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(0, selectionChangedRaised);
+            }
+
+            [Fact]
+            public void Adding_Root_Item_After_Selected_Root_Item_Doesnt_Raise_Events()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var raised = 0;
+
+                target.SelectedIndex = new IndexPath(1);
+
+                target.PropertyChanged += (s, e) => ++raised;
+                target.SelectionChanged += (s, e) => ++raised;
+                target.IndexesChanged += (s, e) => ++raised;
+
+                data.Insert(2, new Node { Caption = "new" });
+
+                Assert.Equal(new IndexPath(1), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndexes);
+                Assert.Equal("Node 1", target.SelectedItem!.Caption);
+                Assert.Equal(new[] { "Node 1" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new IndexPath(1), target.AnchorIndex);
+                Assert.Equal(0, raised);
+            }
+#if false
+
+            [Fact]
+            public void Removing_Selected_Item_Updates_State()
+            {
+                var target = CreateTarget();
+                var data = (AvaloniaList<string>)target.Source!;
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+
+                target.Source = data;
+                target.Select(1);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+                };
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Empty(e.DeselectedIndexes);
+                    Assert.Equal(new[] { "bar" }, e.DeselectedItems);
+                    Assert.Empty(e.SelectedIndexes);
+                    Assert.Empty(e.SelectedItems);
+                    ++selectionChangedRaised;
+                };
+
+                data.RemoveAt(1);
+
+                Assert.Equal(-1, target.SelectedIndex);
+                Assert.Empty(target.SelectedIndexes);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+                Assert.Equal(-1, target.AnchorIndex);
+                Assert.Equal(1, selectionChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+            }
+
+            [Fact]
+            public void Removing_Item_Before_Selected_Item_Updates_Indexes()
+            {
+                var target = CreateTarget();
+                var data = (AvaloniaList<string>)target.Source!;
+                var selectionChangedRaised = 0;
+                var indexesChangedraised = 0;
+
+                target.SelectedIndex = 1;
+
+                target.SelectionChanged += (s, e) => ++selectionChangedRaised;
+
+                target.IndexesChanged += (s, e) =>
+                {
+                    Assert.Equal(0, e.StartIndex);
+                    Assert.Equal(-1, e.Delta);
+                    ++indexesChangedraised;
+                };
+
+                data.RemoveAt(0);
+
+                Assert.Equal(0, target.SelectedIndex);
+                Assert.Equal(new[] { 0 }, target.SelectedIndexes);
+                Assert.Equal("bar", target.SelectedItem);
+                Assert.Equal(new[] { "bar" }, target.SelectedItems);
+                Assert.Equal(0, target.AnchorIndex);
+                Assert.Equal(1, indexesChangedraised);
+                Assert.Equal(0, selectionChangedRaised);
+            }
+
+            [Fact]
+            public void Removing_Item_After_Selected_Doesnt_Raise_Events()
+            {
+                var target = CreateTarget();
+                var data = (AvaloniaList<string>)target.Source!;
+                var raised = 0;
+
+                target.SelectedIndex = 1;
+
+                target.PropertyChanged += (s, e) => ++raised;
+                target.SelectionChanged += (s, e) => ++raised;
+                target.IndexesChanged += (s, e) => ++raised;
+
+                data.RemoveAt(2);
+
+                Assert.Equal(1, target.SelectedIndex);
+                Assert.Equal(new[] { 1 }, target.SelectedIndexes);
+                Assert.Equal("bar", target.SelectedItem);
+                Assert.Equal(new[] { "bar" }, target.SelectedItems);
+                Assert.Equal(1, target.AnchorIndex);
+                Assert.Equal(0, raised);
+            }
+
+            [Fact]
+            public void Replacing_Selected_Item_Updates_State()
+            {
+                var target = CreateTarget();
+                var data = (AvaloniaList<string>)target.Source!;
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
+
+                target.Source = data;
+                target.Select(1);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                };
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Empty(e.DeselectedIndexes);
+                    Assert.Equal(new[] { "bar" }, e.DeselectedItems);
+                    Assert.Empty(e.SelectedIndexes);
+                    Assert.Empty(e.SelectedItems);
+                    ++selectionChangedRaised;
+                };
+
+                data[1] = "new";
+
+                Assert.Equal(-1, target.SelectedIndex);
+                Assert.Empty(target.SelectedIndexes);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+                Assert.Equal(-1, target.AnchorIndex);
+                Assert.Equal(1, selectionChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(1, selectedItemRaised);
+            }
+
+            [Fact]
+            public void Resetting_Source_Updates_State()
+            {
+                var target = CreateTarget();
+                var data = (AvaloniaList<string>)target.Source!;
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+                var resetRaised = 0;
+
+                target.Source = data;
+                target.Select(1);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+                };
+
+                target.SelectionChanged += (s, e) => ++selectionChangedRaised;
+                target.SourceReset += (s, e) => ++resetRaised;
+
+                data.Clear();
+
+                Assert.Equal(-1, target.SelectedIndex);
+                Assert.Empty(target.SelectedIndexes);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+                Assert.Equal(-1, target.AnchorIndex);
+                Assert.Equal(0, selectionChangedRaised);
+                Assert.Equal(1, resetRaised);
+                Assert.Equal(1, selectedIndexRaised);
+            }
+
+            [Fact]
+            public void Handles_Selection_Made_In_CollectionChanged()
+            {
+                // Tests the following scenario:
+                //
+                // - Items changes from empty to having 1 item
+                // - ViewModel auto-selects item 0 in CollectionChanged
+                // - SelectionModel receives CollectionChanged
+                // - And so adjusts the selected item from 0 to 1, which is past the end of the items.
+                //
+                // There's not much we can do about this situation because the order in which
+                // CollectionChanged handlers are called can't be known (the problem also exists with
+                // WPF). The best we can do is not select an invalid index.
+                var target = CreateTarget(createData: false);
+                var data = new AvaloniaList<string>();
+
+                data.CollectionChanged += (s, e) =>
+                {
+                    target.Select(0);
+                };
+
+                target.Source = data;
+                data.Add("foo");
+
+                Assert.Equal(0, target.SelectedIndex);
+                Assert.Equal(new[] { 0 }, target.SelectedIndexes);
+                Assert.Equal("foo", target.SelectedItem);
+                Assert.Equal(new[] { "foo" }, target.SelectedItems);
+                Assert.Equal(0, target.AnchorIndex);
+            }
+#endif
+        }
+
         private static AvaloniaList<Node> CreateNodes(IndexPath parentId)
         {
             var result = new AvaloniaList<Node>();
