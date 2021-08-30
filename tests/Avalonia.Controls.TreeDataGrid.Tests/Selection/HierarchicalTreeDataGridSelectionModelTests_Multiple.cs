@@ -581,8 +581,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, raised);
                 Assert.Equal(new IndexPath(0, 1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(0, 1) }, target.SelectedIndexes);
-                Assert.Equal("bar", target.SelectedItem!.Caption);
-                Assert.Equal(new[] { "bar" }, target.SelectedItems.Select(x => x?.Caption));
+                Assert.Equal("Node 0-1", target.SelectedItem!.Caption);
+                Assert.Equal(new[] { "Node 0-1" }, target.SelectedItems.Select(x => x?.Caption));
                 Assert.Equal(1, raised);
             }
 

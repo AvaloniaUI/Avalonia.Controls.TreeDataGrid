@@ -122,7 +122,6 @@ namespace Avalonia.Controls.Selection
         {
             using var update = BatchUpdate();
             var o = update.Operation;
-
             _root.Clear(o);
             o.SelectedIndex = default;
         }
@@ -159,9 +158,11 @@ namespace Avalonia.Controls.Selection
             using var update = BatchUpdate();
             var o = update.Operation;
             
-            o.SelectedRanges ??= new();
-            o.DeselectedRanges?.Remove(index);
-            o.SelectedRanges.Add(index);
+            if (o.DeselectedRanges?.Remove(index) != true)
+            {
+                o.SelectedRanges ??= new();
+                o.SelectedRanges.Add(index);
+            }
 
             if (o.SelectedIndex == default)
                 o.SelectedIndex = index;
@@ -303,20 +304,17 @@ namespace Avalonia.Controls.Selection
                 indexesChanged |= CommitDeselect(operation.DeselectedRanges) > 0;
             }
 
-            if (SelectionChanged is object)
+            if (SelectionChanged is object && indexesChanged)
             {
                 var deselectedIndexes = operation.DeselectedRanges;
                 var selectedIndexes = operation.SelectedRanges;
 
-                if (deselectedIndexes?.Count > 0 || selectedIndexes?.Count > 0)
-                {
-                    var e = new TreeSelectionModelSelectionChangedEventArgs<T>(
-                        deselectedIndexes,
-                        selectedIndexes,
-                        TreeSelectionChangedItems<T>.Create(this, deselectedIndexes),
-                        TreeSelectionChangedItems<T>.Create(this, selectedIndexes));
-                    SelectionChanged?.Invoke(this, e);
-                }
+                var e = new TreeSelectionModelSelectionChangedEventArgs<T>(
+                    deselectedIndexes,
+                    selectedIndexes,
+                    TreeSelectionChangedItems<T>.Create(this, deselectedIndexes),
+                    TreeSelectionChangedItems<T>.Create(this, selectedIndexes));
+                SelectionChanged?.Invoke(this, e);
             }
 
             if (oldSelectedIndex != _selectedIndex)

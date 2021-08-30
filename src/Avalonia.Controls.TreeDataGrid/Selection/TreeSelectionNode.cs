@@ -49,7 +49,6 @@ namespace Avalonia.Controls.Selection
                 operation.DeselectedRanges ??= new();
                 foreach (var range in Ranges)
                     operation.DeselectedRanges.Add(Path, range);
-                CommitDeselect(0, int.MaxValue);
             }
 
             if (_children is object)
