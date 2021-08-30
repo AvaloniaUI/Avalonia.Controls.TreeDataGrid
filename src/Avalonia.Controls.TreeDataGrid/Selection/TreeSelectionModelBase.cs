@@ -158,7 +158,10 @@ namespace Avalonia.Controls.Selection
 
             using var update = BatchUpdate();
             var o = update.Operation;
-            
+
+            if (SingleSelect)
+                Clear();
+
             if (o.DeselectedRanges?.Remove(index) != true)
             {
                 o.SelectedRanges ??= new();
