@@ -132,7 +132,7 @@ namespace Avalonia.Controls
         {
         }
 
-        public bool TryGetModelAt(IndexPath index, [NotNullWhen(true)] out TModel? result)
+        public bool TryGetModelAt(IndexPath index, [NotNullWhen(true)] out TModel result)
         {
             if (_expanderColumn is null)
                 throw new InvalidOperationException("No expander column defined.");

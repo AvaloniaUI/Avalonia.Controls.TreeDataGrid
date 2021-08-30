@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 
@@ -28,6 +29,11 @@ namespace Avalonia.Controls.Selection
         protected internal override IEnumerable<T>? GetChildren(T node)
         {
             return _source.GetModelChildren(node);
+        }
+
+        protected override bool TryGetItemAt(IndexPath index, [NotNullWhen(true)] out T result)
+        {
+            return _source.TryGetModelAt(index, out result);
         }
 
         private void OnRowPropertyChanged(object sender, PropertyChangedEventArgs e)

@@ -132,9 +132,10 @@ namespace Avalonia.Controls
 
         public IndexPath Truncate(int size)
         {
-            if (size == 0 || size > GetSize())
-                throw new ArgumentException(nameof(size));
-
+            if (size > GetSize())
+                throw new ArgumentException("Truncated size is larger than IndexPath size", nameof(size));
+            if (size == 0)
+                return default;
             if (size == 1)
                 return new IndexPath(GetAt(0));
             else 

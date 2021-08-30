@@ -45,7 +45,7 @@ namespace Avalonia.Controls.Selection
         public IReadOnlyList<IndexPath> SelectedIndexes => _selectedIndexes ??= new(this);
         public T? SelectedItem
         {
-            get => Source is null || _selectedIndex == default ? default : GetItemAt(_selectedIndex);
+            get => Source is null || _selectedIndex == default ? default : GetSelectedItemAt(_selectedIndex);
         }
 
         public IReadOnlyList<T?> SelectedItems => _selectedItems ??= new(this);
@@ -139,13 +139,14 @@ namespace Avalonia.Controls.Selection
         }
 
         protected internal abstract IEnumerable<T>? GetChildren(T node);
+        protected abstract bool TryGetItemAt(IndexPath index, out T result);
 
         protected void RaisePropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        internal T GetItemAt(in IndexPath path)
+        internal T GetSelectedItemAt(in IndexPath path)
         {
             if (path == default)
                 throw new ArgumentOutOfRangeException();
@@ -178,6 +179,17 @@ namespace Avalonia.Controls.Selection
             }
         }
 
+        private IEnumerable<T>? GetChildren(IndexPath index)
+        {
+            if (index == default)
+                return _root.ItemsView;
+            if (GetNode(index) is TreeSelectionNode<T> node)
+                return node.ItemsView;
+            if (TryGetItemAt(index, out var item))
+                return GetChildren(item);
+            return null;
+        }
+
         private void SelectRange(
             IndexPath start,
             IndexPath end,
@@ -199,12 +211,14 @@ namespace Avalonia.Controls.Selection
             using var update = BatchUpdate();
             var o = update.Operation;
 
-            _root.Select(new IndexPathRange(start, end), o);
-
-            if (o.SelectedIndex == default || forceSelectedIndex)
-                o.SelectedIndex = start;
-            if (o.AnchorIndex == default || forceAnchorIndex)
-                o.AnchorIndex = start;
+            var current = start;
+            var parentIndex = current.Truncate(current.GetSize() - 1);
+            var childItems = GetChildren(parentIndex);
+            
+            if (childItems is object)
+            {
+                var childEnd = end.GetAt(current.GetSize() - 1);
+            }
         }
 
         private void CoerceRange(ref IndexPath start, ref IndexPath end)

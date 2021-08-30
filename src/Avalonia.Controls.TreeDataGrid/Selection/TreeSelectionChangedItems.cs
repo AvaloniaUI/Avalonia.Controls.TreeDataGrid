@@ -14,13 +14,13 @@ namespace Avalonia.Controls.Selection
             _ranges = ranges;
         }
 
-        public T this[int index] => _owner.GetItemAt(_ranges[index]);
+        public T this[int index] => _owner.GetSelectedItemAt(_ranges[index]);
         public int Count => _ranges.Count;
 
         public IEnumerator<T> GetEnumerator()
         {
             foreach (var index in _ranges)
-                yield return _owner.GetItemAt(index);
+                yield return _owner.GetSelectedItemAt(index);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
