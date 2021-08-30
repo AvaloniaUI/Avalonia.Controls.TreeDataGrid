@@ -465,6 +465,96 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
+        public class AnchorIndex
+        {
+            [Fact]
+            public void Setting_SelectedIndex_Sets_AnchorIndex()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.AnchorIndex))
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.SelectedIndex = new IndexPath(0, 1);
+
+                Assert.Equal(new IndexPath(0, 1), target.AnchorIndex);
+                Assert.Equal(1, raised);
+            }
+
+            [Fact]
+            public void Setting_SelectedIndex_To_Empty_Doesnt_Clear_AnchorIndex()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.SelectedIndex = new IndexPath(0, 1);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.AnchorIndex))
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.SelectedIndex = default;
+
+                Assert.Equal(new IndexPath(0, 1), target.AnchorIndex);
+                Assert.Equal(0, raised);
+            }
+
+            [Fact]
+            public void Select_Sets_AnchorIndex()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.SelectedIndex = new IndexPath(0, 0);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.AnchorIndex))
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.Select(new IndexPath(0, 1));
+
+                Assert.Equal(new IndexPath(0, 1), target.AnchorIndex);
+                Assert.Equal(1, raised);
+            }
+
+            [Fact]
+            public void Deselect_Doesnt_Clear_AnchorIndex()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.Select(new IndexPath(0, 0));
+                target.Select(new IndexPath(0, 1));
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.AnchorIndex))
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.Deselect(new IndexPath(0, 1));
+
+                Assert.Equal(new IndexPath(0, 1), target.AnchorIndex);
+                Assert.Equal(0, raised);
+            }
+        }
+
         public class RowSelection
         {
             [Fact]

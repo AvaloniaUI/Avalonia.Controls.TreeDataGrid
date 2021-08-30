@@ -131,9 +131,7 @@ namespace Avalonia.Controls.Selection
 
         public void Select(IndexPath index)
         {
-            index = _root.CoerceIndex(index, 0);
-
-            if (index == default)
+            if (index == default || !TryGetItemAt(index, out _))
                 return;
 
             using var update = BatchUpdate();

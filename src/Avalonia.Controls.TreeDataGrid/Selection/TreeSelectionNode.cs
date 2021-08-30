@@ -59,53 +59,6 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        public IndexPath CoerceIndex(IndexPath path, int depth)
-        {
-            if (path == default)
-                return default;
-
-            if (depth == path.GetSize() - 1)
-            {
-                var leaf = path.GetLeaf()!.Value;
-                return leaf < ItemsView?.Count ? path : default;
-            }
-
-            var index = path.GetAt(depth++);
-            var child = GetChild(index, false);
-
-            if (child is object)
-            {
-                return child.CoerceIndex(path, depth);
-            }
-
-            var items = (IEnumerable<T>?)ItemsView;
-
-            while (items is object)
-            {
-                var count = items.Count();
-
-                if (index < count)
-                {
-                    items = _owner.GetChildren(items.ElementAt(index));
-
-                    if (depth == path.GetSize() - 1)
-                    {
-                        return path;
-                    }
-                    else
-                    {
-                        index = path.GetAt(depth++);
-                    }
-                }
-                else
-                {
-                    return default;
-                }
-            }
-
-            return default;
-        }
-
         public int Select(int index, TreeSelectionModelBase<T>.Operation operation)
         {
             var count = CommitSelect(index, index);
