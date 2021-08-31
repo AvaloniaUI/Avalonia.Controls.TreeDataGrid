@@ -88,7 +88,7 @@ namespace Avalonia.Controls.Selection
 
         private protected abstract void OnSourceReset();
 
-        private protected abstract void OnSelectionChanged(IReadOnlyList<T> deselectedItems);
+        private protected abstract void OnSelectionRemoved(int index, int count, IReadOnlyList<T> deselectedItems);
 
         private protected int CommitSelect(int begin, int end)
         {
@@ -251,7 +251,7 @@ namespace Avalonia.Controls.Selection
 
             if (removed is object)
             {
-                OnSelectionChanged(removed);
+                OnSelectionRemoved(shiftIndex, -shiftDelta, removed);
             }
         }
 

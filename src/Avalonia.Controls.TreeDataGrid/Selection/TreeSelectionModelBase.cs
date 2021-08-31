@@ -17,6 +17,7 @@ namespace Avalonia.Controls.Selection
         private Operation? _operation;
         private TreeSelectedIndexes<T>? _selectedIndexes;
         private TreeSelectedItems<T>? _selectedItems;
+        private EventHandler<TreeSelectionModelSelectionChangedEventArgs>? _untypedSelectionChanged;
 
         protected TreeSelectionModelBase()
         {
@@ -95,12 +96,11 @@ namespace Avalonia.Controls.Selection
         public event EventHandler<TreeSelectionModelSelectionChangedEventArgs<T>>? SelectionChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
         public event EventHandler<TreeSelectionModelIndexesChangedEventArgs>? IndexesChanged;
-        public event EventHandler? LostSelection;
 
         event EventHandler<TreeSelectionModelSelectionChangedEventArgs>? ITreeSelectionModel.SelectionChanged
         {
-            add => throw new NotImplementedException();
-            remove => throw new NotImplementedException();
+            add => _untypedSelectionChanged += value;
+            remove => _untypedSelectionChanged -= value;
         }
 
         public BatchUpdateOperation BatchUpdate() => new BatchUpdateOperation(this);
@@ -162,7 +162,9 @@ namespace Avalonia.Controls.Selection
             if (SingleSelect)
                 Clear();
 
-            if (o.DeselectedRanges?.Remove(index) != true)
+            o.DeselectedRanges?.Remove(index);
+
+            if (!IsSelected(index))
             {
                 o.SelectedRanges ??= new();
                 o.SelectedRanges.Add(index);
@@ -246,6 +248,19 @@ namespace Avalonia.Controls.Selection
             }
         }
 
+        internal void OnSelectionChanged(IndexPath parentIndex, int index, int count, IReadOnlyList<T> deselectedItems)
+        {
+            using var update = BatchUpdate();
+            var o = update.Operation;
+
+            if (_selectedIndex != default && (_selectedIndex == parentIndex || parentIndex.IsAncestorOf(_selectedIndex)))
+                o.SelectedIndex = default;
+            if (_anchorIndex != default && (_anchorIndex == parentIndex || parentIndex.IsAncestorOf(_anchorIndex)))
+                o.AnchorIndex = default;
+
+            o.DeselectedItems = deselectedItems;
+        }
+
         private IndexPath GetFirstSelectedIndex(TreeSelectionNode<T> node, IndexRanges? except = null)
         {
             if (node.Ranges.Count > 0)
@@ -327,21 +342,28 @@ namespace Avalonia.Controls.Selection
                 indexesChanged |= CommitDeselect(operation.DeselectedRanges) > 0;
             }
 
-            if (SelectionChanged is object && indexesChanged)
+            if ((SelectionChanged is object || _untypedSelectionChanged is object) &&
+                (operation.DeselectedRanges?.Count > 0 ||
+                 operation.SelectedRanges?.Count > 0 ||
+                 operation.DeselectedItems is object))
             {
                 var deselectedIndexes = operation.DeselectedRanges;
                 var selectedIndexes = operation.SelectedRanges;
+                var deselectedItems = operation.DeselectedItems ??
+                    TreeSelectionChangedItems<T>.Create(this, deselectedIndexes);
 
                 var e = new TreeSelectionModelSelectionChangedEventArgs<T>(
                     deselectedIndexes,
                     selectedIndexes,
-                    TreeSelectionChangedItems<T>.Create(this, deselectedIndexes),
+                    deselectedItems,
                     TreeSelectionChangedItems<T>.Create(this, selectedIndexes));
                 SelectionChanged?.Invoke(this, e);
+                _untypedSelectionChanged?.Invoke(this, e);
             }
 
             if (oldSelectedIndex != _selectedIndex)
             {
+                indexesChanged = true;
                 RaisePropertyChanged(nameof(SelectedIndex));
                 RaisePropertyChanged(nameof(SelectedItem));
             }
@@ -349,7 +371,7 @@ namespace Avalonia.Controls.Selection
             if (oldAnchorIndex != _anchorIndex)
                 RaisePropertyChanged(nameof(AnchorIndex));
 
-            if (operation.DeselectedRanges?.Count > 0 || operation.SelectedRanges?.Count > 0)
+            if (indexesChanged)
             {
                 RaisePropertyChanged(nameof(SelectedIndexes));
                 RaisePropertyChanged(nameof(SelectedItems));

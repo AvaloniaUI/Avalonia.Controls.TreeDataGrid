@@ -100,6 +100,33 @@ namespace Avalonia.Controls.Selection
             return state;
         }
 
+        private protected override CollectionChangeState OnItemsRemoved(int index, IList items)
+        {
+            var state = base.OnItemsRemoved(index, items);
+            var shifted = false;
+
+            if (_children is object)
+            {
+                for (var i = 0; i < items.Count; i++)
+                {
+                    if (_children[index] is TreeSelectionNode<T> child)
+                        child.Source = null;
+                    _children.RemoveAt(index);
+                }
+
+                for (var i = index; i < _children.Count; ++i)
+                {
+                    _children[i]?.AncestorIndexesChanged(Path, index, -items.Count);
+                    shifted = true;
+                }
+            }
+
+            if (shifted)
+                state.ShiftDelta = shifted ? items.Count : 0;
+
+            return state;
+        }
+
         private bool AncestorIndexesChanged(IndexPath parentIndex, int shiftIndex, int shiftDelta)
         {
             var path = Path;
@@ -136,9 +163,9 @@ namespace Avalonia.Controls.Selection
             throw new NotImplementedException();
         }
 
-        private protected override void OnSelectionChanged(IReadOnlyList<T> deselectedItems)
+        private protected override void OnSelectionRemoved(int index, int count, IReadOnlyList<T> deselectedItems)
         {
-            throw new NotImplementedException();
+            _owner.OnSelectionChanged(Path, index, count, deselectedItems);
         }
 
         private TreeSelectionNode<T>? GetChild(int index, bool realize)
