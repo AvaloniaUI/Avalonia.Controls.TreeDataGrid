@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive.Linq;
@@ -79,54 +80,6 @@ namespace Avalonia.Controls.Selection
             return null;
         }
 
-        private protected override CollectionChangeState OnItemsAdded(int index, IList items)
-        {
-            var state = base.OnItemsAdded(index, items);
-            var shifted = false;
-            
-            if (_children is object)
-            {
-                _children.InsertMany(index, null, items.Count);
-
-                foreach (var child in _children)
-                {
-                    shifted |= child?.AncestorIndexesChanged(Path, index, items.Count) ?? false;
-                }
-            }
-
-            if (shifted)
-                state.ShiftDelta = shifted ? items.Count : 0;
-
-            return state;
-        }
-
-        private protected override CollectionChangeState OnItemsRemoved(int index, IList items)
-        {
-            var state = base.OnItemsRemoved(index, items);
-            var shifted = false;
-
-            if (_children is object)
-            {
-                for (var i = 0; i < items.Count; i++)
-                {
-                    if (_children[index] is TreeSelectionNode<T> child)
-                        child.Source = null;
-                    _children.RemoveAt(index);
-                }
-
-                for (var i = index; i < _children.Count; ++i)
-                {
-                    _children[i]?.AncestorIndexesChanged(Path, index, -items.Count);
-                    shifted = true;
-                }
-            }
-
-            if (shifted)
-                state.ShiftDelta = shifted ? items.Count : 0;
-
-            return state;
-        }
-
         private bool AncestorIndexesChanged(IndexPath parentIndex, int shiftIndex, int shiftDelta)
         {
             var path = Path;
@@ -149,21 +102,58 @@ namespace Avalonia.Controls.Selection
             return result;
         }
 
+        protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            _owner.OnNodeCollectionChangeStarted();
+            base.OnSourceCollectionChanged(e);
+
+            if (_children is null || _children.Count == 0)
+                return;
+
+            var shiftIndex = 0;
+            var shiftDelta = 0;
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    shiftIndex = e.NewStartingIndex;
+                    shiftDelta = e.NewItems.Count;
+
+                    _children.InsertMany(shiftIndex, null, shiftDelta);
+
+                    for (var i = shiftIndex + shiftDelta; i < _children.Count; ++i)
+                    {
+                        _children[i]?.AncestorIndexesChanged(Path, e.NewStartingIndex, e.NewItems.Count);
+                    }
+                    break;
+                //case NotifyCollectionChangedAction.Remove:
+                //    shiftIndex = e.OldStartingIndex;
+                //    shiftDelta = -e.OldItems.Count;
+                //    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            if (shiftDelta != 0)
+                _owner.OnIndexesChanged(Path, shiftIndex, shiftDelta);
+        }
+
         protected override void OnSourceCollectionChangeFinished()
         {
+            _owner.OnNodeCollectionChangeFinished();
         }
 
-        private protected override void OnIndexesChanged(int shiftIndex, int shiftDelta)
+        protected override void OnIndexesChanged(int shiftIndex, int shiftDelta)
         {
-            _owner.OnIndexesChanged(Path, shiftIndex, shiftDelta);
+            //_owner.OnIndexesChanged(Path, shiftIndex, shiftDelta);
         }
 
-        private protected override void OnSourceReset()
+        protected override void OnSourceReset()
         {
             throw new NotImplementedException();
         }
 
-        private protected override void OnSelectionRemoved(int index, int count, IReadOnlyList<T> deselectedItems)
+        protected override void OnSelectionRemoved(int index, int count, IReadOnlyList<T> deselectedItems)
         {
             _owner.OnSelectionRemoved(Path, index, count, deselectedItems);
         }

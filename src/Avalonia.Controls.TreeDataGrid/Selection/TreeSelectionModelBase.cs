@@ -235,15 +235,20 @@ namespace Avalonia.Controls.Selection
 
         internal void OnIndexesChanged(IndexPath parentIndex, int shiftIndex, int shiftDelta)
         {
+            if (_operation is null)
+                throw new AvaloniaInternalException($"OnIndexesChanged without prior call to {nameof(OnNodeCollectionChangeStarted)}.");
+
             IndexesChanged?.Invoke(this, new TreeSelectionModelIndexesChangedEventArgs(parentIndex, shiftIndex, shiftDelta));
 
             if (ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _selectedIndex))
             {
+                _operation.SelectedIndex = _selectedIndex;
                 RaisePropertyChanged(nameof(SelectedIndex));
             }
 
             if (ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _anchorIndex))
             {
+                _operation.AnchorIndex = _anchorIndex;
                 RaisePropertyChanged(nameof(AnchorIndex));
             }
         }
@@ -259,6 +264,18 @@ namespace Avalonia.Controls.Selection
                 o.AnchorIndex = default;
 
             o.DeselectedItems = deselectedItems;
+        }
+
+        internal void OnNodeCollectionChangeStarted()
+        {
+            if (_operation?.UpdateCount > 0)
+                throw new InvalidOperationException("Source collection was modified during selection update.");
+            BeginBatchUpdate();
+        }
+
+        internal void OnNodeCollectionChangeFinished()
+        {
+            EndBatchUpdate();
         }
 
         private IndexPath GetFirstSelectedIndex(TreeSelectionNode<T> node, IndexRanges? except = null)
