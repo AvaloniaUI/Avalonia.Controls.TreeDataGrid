@@ -409,7 +409,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(new IndexPath(0, 1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(0, 1) }, target.SelectedIndexes);
                 Assert.Equal("Node 0-1", target.SelectedItem!.Caption);
-                Assert.Equal(new[] { "Node 0-1" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new[] { "Node 0-1" }, target.SelectedItems.Select(x => x!.Caption));
                 Assert.Equal(0, raised);
             }
         }
@@ -562,7 +562,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(new IndexPath(0, 1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(0, 1) }, target.SelectedIndexes);
                 Assert.Equal("Node 0-1", target.SelectedItem!.Caption);
-                Assert.Equal(new[] { "Node 0-1" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new[] { "Node 0-1" }, target.SelectedItems.Select(x => x!.Caption));
                 Assert.Equal(0, raised);
             }
 
@@ -622,7 +622,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(new IndexPath(2), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(2) }, target.SelectedIndexes);
                 Assert.Equal("Node 1", target.SelectedItem!.Caption);
-                Assert.Equal(new[] { "Node 1" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new[] { "Node 1" }, target.SelectedItems.Select(x => x!.Caption));
                 Assert.Equal(new IndexPath(2), target.AnchorIndex);
                 Assert.Equal(1, indexesChangedRaised);
                 Assert.Equal(1, selectedIndexRaised);
@@ -663,7 +663,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(new IndexPath(0, 2), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(0, 2) }, target.SelectedIndexes);
                 Assert.Equal("Node 0-1", target.SelectedItem!.Caption);
-                Assert.Equal(new[] { "Node 0-1" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new[] { "Node 0-1" }, target.SelectedItems.Select(x => x!.Caption));
                 Assert.Equal(new IndexPath(0, 2), target.AnchorIndex);
                 Assert.Equal(1, indexesChangedRaised);
                 Assert.Equal(1, selectedIndexRaised);
@@ -704,7 +704,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(new IndexPath(1, 1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(1, 1) }, target.SelectedIndexes);
                 Assert.Equal("Node 0-1", target.SelectedItem!.Caption);
-                Assert.Equal(new[] { "Node 0-1" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new[] { "Node 0-1" }, target.SelectedItems.Select(x => x!.Caption));
                 Assert.Equal(new IndexPath(1, 1), target.AnchorIndex);
                 Assert.Equal(1, indexesChangedRaised);
                 Assert.Equal(1, selectedIndexRaised);
@@ -745,7 +745,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(new IndexPath(1, 0, 1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(1, 0, 1) }, target.SelectedIndexes);
                 Assert.Equal("Node 0-0-1", target.SelectedItem!.Caption);
-                Assert.Equal(new[] { "Node 0-0-1" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new[] { "Node 0-0-1" }, target.SelectedItems.Select(x => x!.Caption));
                 Assert.Equal(new IndexPath(1, 0, 1), target.AnchorIndex);
                 Assert.Equal(1, indexesChangedRaised);
                 Assert.Equal(1, selectedIndexRaised);
@@ -770,7 +770,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(new IndexPath(1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndexes);
                 Assert.Equal("Node 1", target.SelectedItem!.Caption);
-                Assert.Equal(new[] { "Node 1" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new[] { "Node 1" }, target.SelectedItems.Select(x => x!.Caption));
                 Assert.Equal(new IndexPath(1), target.AnchorIndex);
                 Assert.Equal(0, raised);
             }
