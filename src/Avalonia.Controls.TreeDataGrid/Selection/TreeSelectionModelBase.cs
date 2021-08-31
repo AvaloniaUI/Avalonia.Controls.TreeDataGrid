@@ -248,7 +248,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        internal void OnSelectionChanged(IndexPath parentIndex, int index, int count, IReadOnlyList<T> deselectedItems)
+        internal void OnSelectionRemoved(IndexPath parentIndex, int index, int count, IReadOnlyList<T> deselectedItems)
         {
             using var update = BatchUpdate();
             var o = update.Operation;

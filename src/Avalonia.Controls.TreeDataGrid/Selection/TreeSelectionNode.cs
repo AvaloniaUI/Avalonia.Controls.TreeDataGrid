@@ -165,7 +165,7 @@ namespace Avalonia.Controls.Selection
 
         private protected override void OnSelectionRemoved(int index, int count, IReadOnlyList<T> deselectedItems)
         {
-            _owner.OnSelectionChanged(Path, index, count, deselectedItems);
+            _owner.OnSelectionRemoved(Path, index, count, deselectedItems);
         }
 
         private TreeSelectionNode<T>? GetChild(int index, bool realize)
