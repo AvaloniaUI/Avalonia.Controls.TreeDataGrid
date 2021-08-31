@@ -280,32 +280,32 @@ namespace Avalonia.Controls.Selection
 
         private TreeSelectionNode<T>? GetNode(in IndexPath path)
         {
-            if (path == default)
+            var depth = path.GetSize();
+            TreeSelectionNode<T>? node = _root;
+
+            for (var i = 0; i < depth; ++i)
             {
-                return _root;
+                node = node!.GetChild(path.GetAt(i));
+                if (node is null)
+                    break;
             }
 
-            if (_root.TryGetNode(path, 0, false, out var result))
-            {
-                return result;
-            }
-
-            return null;
+            return node;
         }
 
-        private TreeSelectionNode<T> RealizeNode(in IndexPath path)
+        private TreeSelectionNode<T>? GetOrCreateNode(in IndexPath path)
         {
-            if (path == default)
+            var depth = path.GetSize();
+            TreeSelectionNode<T>? node = _root;
+
+            for (var i = 0; i < depth; ++i)
             {
-                return _root;
+                node = node!.GetOrCreateChild(path.GetAt(i));
+                if (node is null)
+                    break;
             }
 
-            if (_root.TryGetNode(path, 0, true, out var result))
-            {
-                return result;
-            }
-
-            throw new ArgumentOutOfRangeException();
+            return node;
         }
 
         private void CommitOperation(Operation operation)
@@ -364,10 +364,13 @@ namespace Avalonia.Controls.Selection
 
             foreach (var (parent, ranges) in selectedRanges.Ranges)
             {
-                var node = RealizeNode(parent);
+                var node = GetOrCreateNode(parent);
 
-                foreach (var range in ranges)
-                    result += node.CommitSelect(range);
+                if (node is object)
+                {
+                    foreach (var range in ranges)
+                        result += node.CommitSelect(range);
+                }
             }
 
             return result;
@@ -379,16 +382,19 @@ namespace Avalonia.Controls.Selection
 
             foreach (var (parent, ranges) in selectedRanges.Ranges)
             {
-                var node = RealizeNode(parent);
+                var node = GetOrCreateNode(parent);
 
-                foreach (var range in ranges)
-                    result += node.CommitDeselect(range);
+                if (node is object)
+                {
+                    foreach (var range in ranges)
+                        result += node.CommitDeselect(range);
+                }
             }
 
             return result;
         }
 
-        private static bool ShiftIndex(IndexPath parentIndex, int shiftIndex, int shiftDelta, ref IndexPath path)
+        internal static bool ShiftIndex(IndexPath parentIndex, int shiftIndex, int shiftDelta, ref IndexPath path)
         {
             if (parentIndex.IsAncestorOf(path) && path.GetAt(parentIndex.GetSize()) >= shiftIndex)
             {

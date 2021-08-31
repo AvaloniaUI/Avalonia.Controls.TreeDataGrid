@@ -35,6 +35,32 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal("Node 0-2", target.SelectedItem!.Caption);
                 Assert.Equal("Node 0-2", target.SelectedItems.Single()!.Caption);
             }
+            
+            [Fact]
+            public void Can_Set_Grandchild_SelectedIndex()
+            {
+                var data = CreateData(depth: 3);
+                var target = CreateTarget(data);
+                var raised = 0;
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Empty(e.DeselectedIndexes);
+                    Assert.Empty(e.DeselectedItems);
+                    Assert.Equal(new IndexPath(0, 0, 2), e.SelectedIndexes.Single());
+                    Assert.Equal("Node 0-0-2", e.SelectedItems.Single().Caption);
+                    ++raised;
+                };
+
+                target.SelectedIndex = new IndexPath(0, 0, 2);
+
+                Assert.Equal(1, raised);
+                Assert.Equal(new IndexPath(0, 0, 2), target.SelectedIndex);
+                Assert.Equal(new IndexPath(0, 0, 2), target.SelectedIndexes.Single());
+                Assert.Equal("Node 0-0-2", target.SelectedItem!.Caption);
+                Assert.Equal("Node 0-0-2", target.SelectedItems.Single()!.Caption);
+            }
+
 
             [Fact]
             public void Setting_SelectedIndex_Clears_Old_Selection()
@@ -679,7 +705,48 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(new[] { new IndexPath(1, 1) }, target.SelectedIndexes);
                 Assert.Equal("Node 0-1", target.SelectedItem!.Caption);
                 Assert.Equal(new[] { "Node 0-1" }, target.SelectedItems.Select(x => x.Caption));
-                Assert.Equal(new IndexPath(0, 2), target.AnchorIndex);
+                Assert.Equal(new IndexPath(1, 1), target.AnchorIndex);
+                Assert.Equal(1, indexesChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(0, selectionChangedRaised);
+            }
+
+            [Fact]
+            public void Adding_Root_Item_Before_Selected_Grandhild_Item_Updates_Indexes()
+            {
+                var data = CreateData(depth: 3);
+                var target = CreateTarget(data);
+                var selectionChangedRaised = 0;
+                var indexesChangedRaised = 0;
+                var selectedIndexRaised = 0;
+
+                target.SelectedIndex = new IndexPath(0, 0, 1);
+
+                target.SelectionChanged += (s, e) => ++selectionChangedRaised;
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+                };
+
+                target.IndexesChanged += (s, e) =>
+                {
+                    Assert.Equal(default, e.ParentIndex);
+                    Assert.Equal(0, e.StartIndex);
+                    Assert.Equal(1, e.Delta);
+                    ++indexesChangedRaised;
+                };
+
+                data.Insert(0, new Node { Caption = "new" });
+
+                Assert.Equal(new IndexPath(1, 0, 1), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(1, 0, 1) }, target.SelectedIndexes);
+                Assert.Equal("Node 0-0-1", target.SelectedItem!.Caption);
+                Assert.Equal(new[] { "Node 0-0-1" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new IndexPath(1, 0, 1), target.AnchorIndex);
                 Assert.Equal(1, indexesChangedRaised);
                 Assert.Equal(1, selectedIndexRaised);
                 Assert.Equal(0, selectionChangedRaised);
@@ -915,7 +982,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 #endif
         }
 
-        private static AvaloniaList<Node> CreateNodes(IndexPath parentId)
+        private static AvaloniaList<Node> CreateNodes(IndexPath parentId, int depth = 2)
         {
             var result = new AvaloniaList<Node>();
 
@@ -927,6 +994,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 {
                     Id = id,
                     Caption = "Node " + string.Join("-", id.ToArray()),
+                    TargetDepth = depth,
                 };
 
                 result.Add(node);
@@ -935,9 +1003,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             return result;
         }
 
-        private static AvaloniaList<Node> CreateData()
+        private static AvaloniaList<Node> CreateData(int depth = 2)
         {
-            return CreateNodes(default);
+            return CreateNodes(default, depth);
         }
 
         private static TestTreeSelectionModel CreateTarget(AvaloniaList<Node>? data = null)
@@ -950,6 +1018,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             public IndexPath Id { get; set; }
             public string? Caption { get; set; }
             public AvaloniaList<Node>? Children { get; set; }
+            public int TargetDepth { get; set; }
         }
 
         private class TestTreeSelectionModel : TreeSelectionModelBase<Node>
@@ -961,8 +1030,8 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             protected internal override IEnumerable<Node>? GetChildren(Node node)
             {
-                if (node.Children is null && node.Id.GetSize() < 2)
-                    node.Children = CreateNodes(node.Id);
+                if (node.Children is null && node.Id.GetSize() < node.TargetDepth)
+                    node.Children = CreateNodes(node.Id, node.TargetDepth);
                 return node.Children;
             }
         }

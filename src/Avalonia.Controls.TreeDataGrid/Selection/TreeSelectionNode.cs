@@ -32,7 +32,7 @@ namespace Avalonia.Controls.Selection
                 Source = _owner.GetChildren(parent.ItemsView[index]);
         }
 
-        public IndexPath Path { get; }
+        public IndexPath Path { get; private set; }
 
         public new IEnumerable? Source
         {
@@ -60,22 +60,66 @@ namespace Avalonia.Controls.Selection
 
         public int CommitSelect(IndexRange range) => CommitSelect(range.Begin, range.End);
         public int CommitDeselect(IndexRange range) => CommitDeselect(range.Begin, range.End);
+        public TreeSelectionNode<T>? GetChild(int index) => index < _children?.Count ? _children[index] : null;
 
-        public bool TryGetNode(
-            IndexPath path,
-            int depth,
-            bool realize,
-            [NotNullWhen(true)] out TreeSelectionNode<T>? result)
+        public TreeSelectionNode<T>? GetOrCreateChild(int index)
         {
-            if (depth == path.GetSize())
+            if (GetChild(index) is TreeSelectionNode<T> result)
+                return result;
+
+            var childCount = ItemsView is object ? ItemsView.Count : Math.Max(_children?.Count ?? 0, index);
+
+            if (index < childCount)
             {
-                result = this;
-                return true;
+                _children ??= new List<TreeSelectionNode<T>?>();
+                Resize(_children, childCount);
+                return _children[index] ??= new TreeSelectionNode<T>(_owner, this, index);
             }
 
-            var index = path.GetAt(depth);
-            result = GetChild(index, realize);
-            return result is object;
+            return null;
+        }
+
+        private protected override CollectionChangeState OnItemsAdded(int index, IList items)
+        {
+            var state = base.OnItemsAdded(index, items);
+            var shifted = false;
+            
+            if (_children is object)
+            {
+                _children.InsertMany(index, null, items.Count);
+
+                foreach (var child in _children)
+                {
+                    shifted |= child?.AncestorIndexesChanged(Path, index, items.Count) ?? false;
+                }
+            }
+
+            if (shifted)
+                state.ShiftDelta = shifted ? items.Count : 0;
+
+            return state;
+        }
+
+        private bool AncestorIndexesChanged(IndexPath parentIndex, int shiftIndex, int shiftDelta)
+        {
+            var path = Path;
+            var result = false;
+
+            if (ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref path))
+            {
+                Path = path;
+                result = true;
+            }
+
+            if (_children is object)
+            {
+                foreach (var child in _children)
+                {
+                    result |= child?.AncestorIndexesChanged(parentIndex, shiftIndex, shiftDelta) ?? false;
+                }
+            }
+
+            return result;
         }
 
         protected override void OnSourceCollectionChangeFinished()
@@ -151,6 +195,19 @@ namespace Avalonia.Controls.Selection
 
                 list.InsertMany(0, null, count - current);
             }
+        }
+
+        internal static bool ShiftIndex(IndexPath parentIndex, int shiftIndex, int shiftDelta, ref IndexPath path)
+        {
+            if (path.GetAt(parentIndex.GetSize()) >= shiftIndex)
+            {
+                var indexes = path.ToArray();
+                indexes[parentIndex.GetSize()] += shiftDelta;
+                path = new IndexPath(indexes);
+                return true;
+            }
+
+            return false;
         }
     }
 }
