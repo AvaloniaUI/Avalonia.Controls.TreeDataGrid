@@ -106,7 +106,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnEffectiveViewportChanged(object sender, EffectiveViewportChangedEventArgs e)
+        protected override void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
         {
             base.OnEffectiveViewportChanged(sender, e);
             Columns?.ViewportChanged(Viewport);
@@ -128,7 +128,7 @@ namespace Avalonia.Controls.Primitives
             base.OnPropertyChanged(change);
         }
 
-        private void OnColumnLayoutInvalidated(object sender, EventArgs e)
+        private void OnColumnLayoutInvalidated(object? sender, EventArgs e)
         {
             InvalidateMeasure();
             
@@ -139,12 +139,12 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void OnSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+        private void OnSelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs e)
         {
             UpdateSelection();
         }
 
-        private void OnSelectionIndexesChanged(object sender, SelectionModelIndexesChangedEventArgs e)
+        private void OnSelectionIndexesChanged(object? sender, SelectionModelIndexesChangedEventArgs e)
         {
             UpdateSelection();
         }

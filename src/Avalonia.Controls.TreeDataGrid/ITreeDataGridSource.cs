@@ -10,7 +10,6 @@ namespace Avalonia.Controls
     /// </summary>
     public interface ITreeDataGridSource
     {
-
         /// <summary>
         /// Event which would be triggered after SortBy method execution.
         /// </summary>
@@ -25,6 +24,11 @@ namespace Avalonia.Controls
         /// Gets the rows to be displayed.
         /// </summary>
         IRows Rows { get; }
+
+        /// <summary>
+        /// Gets or sets the selection model.
+        /// </summary>
+        ITreeDataGridSelectionModel Selection { get; set; }
 
         /// <summary>
         /// Requests to sort the source by the specified column.

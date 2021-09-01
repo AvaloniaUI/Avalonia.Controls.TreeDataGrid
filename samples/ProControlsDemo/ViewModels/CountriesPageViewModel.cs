@@ -26,25 +26,19 @@ namespace ProControlsDemo.ViewModels
                     new TextColumn<Country, int>("GDP", x => x.GDP, new GridLength(3, GridUnitType.Star)),
                 }
             };
-
-            Selection = new SelectionModel<IRow>(Source.Rows)
-            {
-                SingleSelect = false,
-            };
         }
 
         public FlatTreeDataGridSource<Country> Source { get; }
-        public SelectionModel<IRow> Selection { get; }
 
         public void AddCountry(Country country) => _data.Add(country);
 
         public void RemoveSelected()
         {
-            var selection = Selection.SelectedIndexes.ToList();
+            var selection = Source.Selection.SelectedIndexes.ToList();
 
             for (var i = selection.Count - 1; i >= 0; --i)
             {
-                _data.RemoveAt(selection[i]);
+                _data.RemoveAt(selection[i][0]);
             }
         }
     }

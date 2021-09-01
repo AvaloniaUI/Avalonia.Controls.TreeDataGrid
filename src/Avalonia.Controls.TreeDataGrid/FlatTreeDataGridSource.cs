@@ -16,6 +16,8 @@ namespace Avalonia.Controls
         private ItemsSourceViewFix<TModel> _itemsView;
         private AnonymousSortableRows<TModel>? _rows;
         private IComparer<TModel>? _comparer;
+        private ITreeDataGridSelectionModel? _selection;
+
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = items;
@@ -39,6 +41,19 @@ namespace Avalonia.Controls
                     _itemsView = ItemsSourceViewFix<TModel>.GetOrCreate(value);
                     _rows?.SetItems(_itemsView);
                 }
+            }
+        }
+
+        public ITreeDataGridSelectionModel Selection
+        {
+            get => _selection ?? throw new NotImplementedException();
+            set
+            {
+                if (value is null)
+                    throw new ArgumentNullException(nameof(value));
+                if (_selection is object)
+                    throw new InvalidOperationException("Selection model is already initialized.");
+                _selection = value;
             }
         }
 
