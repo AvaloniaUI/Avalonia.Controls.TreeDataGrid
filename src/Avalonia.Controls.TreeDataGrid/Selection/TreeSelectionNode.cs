@@ -96,7 +96,7 @@ namespace Avalonia.Controls.Selection
                     shiftIndex = e.OldStartingIndex;
                     shiftDelta = -e.OldItems.Count;
                     var change = OnItemsRemoved(shiftIndex, e.OldItems);
-                    indexesChanged = change.ShiftDelta > 0;
+                    indexesChanged = change.ShiftDelta != 0;
                     removed = change.RemovedItems;
                     break;
                 default:

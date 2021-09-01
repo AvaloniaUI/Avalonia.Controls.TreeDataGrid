@@ -252,6 +252,9 @@ namespace Avalonia.Controls.Selection
                     new TreeSelectionModelIndexesChangedEventArgs(parentIndex, shiftIndex, shiftDelta));
             }
 
+            var selectedIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _selectedIndex);
+            var anchorIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _anchorIndex);
+
             if (removed?.Count > 0 && (SelectionChanged is object || _untypedSelectionChanged is object))
             {
                 var e = new TreeSelectionModelSelectionChangedEventArgs<T>(deselectedItems: removed);
@@ -259,15 +262,10 @@ namespace Avalonia.Controls.Selection
                 _untypedSelectionChanged?.Invoke(this, e);
             }
 
-            if (ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _selectedIndex))
-            {
+            if (selectedIndexChanged)
                 RaisePropertyChanged(nameof(SelectedIndex));
-            }
-
-            if (ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _anchorIndex))
-            {
+            if (anchorIndexChanged)
                 RaisePropertyChanged(nameof(AnchorIndex));
-            }
         }
 
         internal void OnNodeCollectionChangeFinished()
@@ -436,7 +434,7 @@ namespace Avalonia.Controls.Selection
                 var changeDepth = parentIndex.GetSize();
                 var pathIndex = path.GetAt(changeDepth);
 
-                if (shiftDelta < 0 && pathIndex >= shiftIndex && pathIndex <= shiftIndex - shiftDelta)
+                if (shiftDelta < 0 && pathIndex >= shiftIndex && pathIndex < shiftIndex - shiftDelta)
                 {
                     // Item was removed, clear the path.
                     path = default;
