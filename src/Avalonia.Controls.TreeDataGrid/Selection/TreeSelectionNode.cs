@@ -108,18 +108,16 @@ namespace Avalonia.Controls.Selection
             {
                 for (var i = shiftIndex; i < _children.Count; ++i)
                 {
-                    if (_children[i] is TreeSelectionNode<T> child)
+                    var child = _children[i];
+
+                    if (shiftDelta < 1 && i >= shiftIndex && i < shiftIndex - shiftDelta)
                     {
-                        if (shiftDelta < 1 && i >= shiftIndex && i <= shiftIndex - shiftDelta)
-                        {
-                            child.AncestorRemoved(ref removed);
-                            _children.RemoveAt(i--);
-                        }
-                        else
-                        {
-                            child.AncestorIndexChanged(Path, shiftIndex, shiftDelta);
-                            indexesChanged = true;
-                        }
+                        child?.AncestorRemoved(ref removed);
+                    }
+                    else
+                    {
+                        child?.AncestorIndexChanged(Path, shiftIndex, shiftDelta);
+                        indexesChanged = true;
                     }
                 }
 
