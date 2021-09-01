@@ -1002,7 +1002,6 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, raised);
             }
 
-#if false
             [Fact]
             public void Replacing_Selected_Root_Item_Updates_State()
             {
@@ -1042,12 +1041,56 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Empty(target.SelectedIndexes);
                 Assert.Null(target.SelectedItem);
                 Assert.Empty(target.SelectedItems);
-                Assert.Equal(default, target.AnchorIndex);
                 Assert.Equal(1, selectionChangedRaised);
                 Assert.Equal(1, selectedIndexRaised);
                 Assert.Equal(1, selectedItemRaised);
             }
 
+            [Fact]
+            public void Replacing_Selected_Child_Item_Updates_State()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
+
+                target.Select(new IndexPath(1, 1));
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                };
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Empty(e.DeselectedIndexes);
+                    Assert.Equal(new[] { "Node 1-1" }, e.DeselectedItems.Select(x => x!.Caption));
+                    Assert.Empty(e.SelectedIndexes);
+                    Assert.Empty(e.SelectedItems);
+                    ++selectionChangedRaised;
+                };
+
+                data[1].Children![1] = new Node { Caption = "new" };
+
+                Assert.Equal(default, target.SelectedIndex);
+                Assert.Empty(target.SelectedIndexes);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+                Assert.Equal(1, selectionChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(1, selectedItemRaised);
+            }
+
+#if false
             [Fact]
             public void Resetting_Source_Updates_State()
             {

@@ -252,8 +252,18 @@ namespace Avalonia.Controls.Selection
                     new TreeSelectionModelIndexesChangedEventArgs(parentIndex, shiftIndex, shiftDelta));
             }
 
+            // Shift or clear the selected and anchor indexes according to the shift index/delta.
             var selectedIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _selectedIndex);
             var anchorIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _anchorIndex);
+            var selectedItemChanged = false;
+
+            // Check that the selected/anchor index is still selected in the node. It can get
+            // unselected as the result of a replace operation.
+            if (_selectedIndex != default && !IsSelected(_selectedIndex))
+            {
+                _selectedIndex = default;
+                selectedIndexChanged = selectedItemChanged = true;
+            }
 
             if (removed?.Count > 0 && (SelectionChanged is object || _untypedSelectionChanged is object))
             {
@@ -264,6 +274,8 @@ namespace Avalonia.Controls.Selection
 
             if (selectedIndexChanged)
                 RaisePropertyChanged(nameof(SelectedIndex));
+            if (selectedItemChanged)
+                RaisePropertyChanged(nameof(SelectedItem));
             if (anchorIndexChanged)
                 RaisePropertyChanged(nameof(AnchorIndex));
         }

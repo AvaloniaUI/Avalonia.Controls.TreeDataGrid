@@ -99,6 +99,14 @@ namespace Avalonia.Controls.Selection
                     indexesChanged = change.ShiftDelta != 0;
                     removed = change.RemovedItems;
                     break;
+                case NotifyCollectionChangedAction.Replace:
+                    var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems);
+                    var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems);
+                    shiftIndex = removeChange.ShiftIndex;
+                    shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
+                    indexesChanged = shiftDelta != 0;
+                    removed = removeChange.RemovedItems;
+                    break;
                 default:
                     throw new NotImplementedException();
             }
