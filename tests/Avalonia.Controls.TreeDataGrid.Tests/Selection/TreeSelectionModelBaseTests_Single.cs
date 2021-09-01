@@ -950,6 +950,36 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
 
             [Fact]
+            public void Removing_Child_Item_Before_Selected_Grandhild_Item_Updates_Indexes()
+            {
+                var data = CreateData(depth: 3);
+                var target = CreateTarget(data);
+                var selectionChangedRaised = 0;
+                var indexesChangedraised = 0;
+
+                target.SelectedIndex = new IndexPath(1, 1, 2);
+
+                target.SelectionChanged += (s, e) => ++selectionChangedRaised;
+
+                target.IndexesChanged += (s, e) =>
+                {
+                    Assert.Equal(0, e.StartIndex);
+                    Assert.Equal(-1, e.Delta);
+                    ++indexesChangedraised;
+                };
+
+                data[1].Children!.RemoveAt(0);
+
+                Assert.Equal(new IndexPath(1, 0, 2), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(1, 0, 2) }, target.SelectedIndexes);
+                Assert.Equal("Node 1-1-2", target.SelectedItem!.Caption);
+                Assert.Equal(new[] { "Node 1-1-2" }, target.SelectedItems.Select(x => x!.Caption));
+                Assert.Equal(new IndexPath(1, 0, 2), target.AnchorIndex);
+                Assert.Equal(1, indexesChangedraised);
+                Assert.Equal(0, selectionChangedRaised);
+            }
+
+            [Fact]
             public void Removing_Root_Item_After_Selected_Root_Item_Doesnt_Raise_Events()
             {
                 var data = CreateData();
