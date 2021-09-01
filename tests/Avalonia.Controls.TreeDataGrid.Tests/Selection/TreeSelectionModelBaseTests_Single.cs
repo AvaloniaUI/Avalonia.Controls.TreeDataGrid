@@ -61,7 +61,6 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal("Node 0-0-2", target.SelectedItems.Single()!.Caption);
             }
 
-
             [Fact]
             public void Setting_SelectedIndex_Clears_Old_Selection()
             {
