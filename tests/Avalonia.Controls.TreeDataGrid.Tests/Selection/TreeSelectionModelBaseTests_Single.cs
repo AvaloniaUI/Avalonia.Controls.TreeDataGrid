@@ -1089,19 +1089,17 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, selectedIndexRaised);
                 Assert.Equal(1, selectedItemRaised);
             }
-
 #if false
             [Fact]
-            public void Resetting_Source_Updates_State()
+            public void Resetting_Root_Updates_State()
             {
-                var target = CreateTarget();
-                var data = (AvaloniaList<string>)target.Source!;
+                var data = CreateData();
+                var target = CreateTarget(data);
                 var selectionChangedRaised = 0;
                 var selectedIndexRaised = 0;
                 var resetRaised = 0;
 
-                target.Source = data;
-                target.Select(1);
+                target.Select(new IndexPath(1));
 
                 target.PropertyChanged += (s, e) =>
                 {
@@ -1112,20 +1110,19 @@ namespace Avalonia.Controls.TreeDataGridTests
                 };
 
                 target.SelectionChanged += (s, e) => ++selectionChangedRaised;
-                target.SourceReset += (s, e) => ++resetRaised;
 
                 data.Clear();
 
-                Assert.Equal(-1, target.SelectedIndex);
+                Assert.Equal(default, target.SelectedIndex);
                 Assert.Empty(target.SelectedIndexes);
                 Assert.Null(target.SelectedItem);
                 Assert.Empty(target.SelectedItems);
-                Assert.Equal(-1, target.AnchorIndex);
+                Assert.Equal(default, target.AnchorIndex);
                 Assert.Equal(0, selectionChangedRaised);
                 Assert.Equal(1, resetRaised);
                 Assert.Equal(1, selectedIndexRaised);
             }
-
+#endif
             [Fact]
             public void Handles_Selection_Made_In_CollectionChanged()
             {
@@ -1139,24 +1136,22 @@ namespace Avalonia.Controls.TreeDataGridTests
                 // There's not much we can do about this situation because the order in which
                 // CollectionChanged handlers are called can't be known (the problem also exists with
                 // WPF). The best we can do is not select an invalid index.
-                var target = CreateTarget(createData: false);
-                var data = new AvaloniaList<string>();
+                var data = new AvaloniaList<Node>();
+                var target = CreateTarget(data);
 
                 data.CollectionChanged += (s, e) =>
                 {
-                    target.Select(0);
+                    target.Select(new IndexPath(0));
                 };
 
-                target.Source = data;
-                data.Add("foo");
+                data.Add(new Node { Caption = "foo" });
 
-                Assert.Equal(0, target.SelectedIndex);
-                Assert.Equal(new[] { 0 }, target.SelectedIndexes);
-                Assert.Equal("foo", target.SelectedItem);
-                Assert.Equal(new[] { "foo" }, target.SelectedItems);
-                Assert.Equal(0, target.AnchorIndex);
+                Assert.Equal(new IndexPath(0), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(0) }, target.SelectedIndexes);
+                Assert.Equal("foo", target.SelectedItem!.Caption);
+                Assert.Equal(new[] { "foo" }, target.SelectedItems.Select(x => x.Caption));
+                Assert.Equal(new IndexPath(0), target.AnchorIndex);
             }
-#endif
         }
 
         private static AvaloniaList<Node> CreateNodes(IndexPath parentId, int depth = 2)

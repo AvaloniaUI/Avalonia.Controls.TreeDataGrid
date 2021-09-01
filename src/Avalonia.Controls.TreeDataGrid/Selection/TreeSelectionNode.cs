@@ -108,7 +108,7 @@ namespace Avalonia.Controls.Selection
                     removed = removeChange.RemovedItems;
                     break;
                 default:
-                    throw new NotImplementedException();
+                    throw new NotSupportedException($"Collection {e.Action} not supported.");
             }
 
             // Adjust the paths of any child nodes.
