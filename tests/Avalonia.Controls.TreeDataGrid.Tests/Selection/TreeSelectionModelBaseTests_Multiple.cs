@@ -23,7 +23,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                     Assert.Empty(e.DeselectedIndexes);
                     Assert.Empty(e.DeselectedItems);
                     Assert.Equal(new IndexPath(0), e.SelectedIndexes.Single());
-                    Assert.Equal("Node 0", e.SelectedItems.Single().Caption);
+                    Assert.Equal("Node 0", e.SelectedItems.Single()!.Caption);
                     ++raised;
                 };
 
@@ -47,7 +47,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                     Assert.Empty(e.DeselectedIndexes);
                     Assert.Empty(e.DeselectedItems);
                     Assert.Equal(new IndexPath(0, 2), e.SelectedIndexes.Single());
-                    Assert.Equal("Node 0-2", e.SelectedItems.Single().Caption);
+                    Assert.Equal("Node 0-2", e.SelectedItems.Single()!.Caption);
                     ++raised;
                 };
 
@@ -579,7 +579,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             }
         }
 
-        private static AvaloniaList<Node> CreateNodes(IndexPath parentId)
+        private static AvaloniaList<Node> CreateNodes(IndexPath parentId, int depth = 2)
         {
             var result = new AvaloniaList<Node>();
 
@@ -591,6 +591,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 {
                     Id = id,
                     Caption = "Node " + string.Join("-", id.ToArray()),
+                    TargetDepth = depth,
                 };
 
                 result.Add(node);
@@ -599,9 +600,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             return result;
         }
 
-        private static AvaloniaList<Node> CreateData()
+        private static AvaloniaList<Node> CreateData(int depth = 2)
         {
-            return CreateNodes(default);
+            return CreateNodes(default, depth);
         }
 
         private static TestTreeSelectionModel CreateTarget(AvaloniaList<Node>? data = null)
@@ -614,6 +615,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             public IndexPath Id { get; set; }
             public string? Caption { get; set; }
             public AvaloniaList<Node>? Children { get; set; }
+            public int TargetDepth { get; set; }
         }
 
         private class TestTreeSelectionModel : TreeSelectionModelBase<Node>
@@ -621,13 +623,12 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             public TestTreeSelectionModel(AvaloniaList<Node> data)
                 : base(data)
             {
-                SingleSelect = false;
             }
 
             protected internal override IEnumerable<Node>? GetChildren(Node node)
             {
-                if (node.Children is null && node.Id.GetSize() < 2)
-                    node.Children = CreateNodes(node.Id);
+                if (node.Children is null && node.Id.GetSize() < node.TargetDepth)
+                    node.Children = CreateNodes(node.Id, node.TargetDepth);
                 return node.Children;
             }
         }
