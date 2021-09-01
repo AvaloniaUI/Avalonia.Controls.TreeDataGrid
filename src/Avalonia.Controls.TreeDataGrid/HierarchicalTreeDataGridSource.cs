@@ -121,14 +121,14 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("No expander column defined.");
 
             var items = (IEnumerable<TModel>?)Items;
-            var count = index.GetSize();
+            var count = index.Count();
 
             for (var depth = 0; depth < count - 1; ++depth)
             {
-                items = _expanderColumn.GetChildModels(items.ElementAt(index.GetAt(depth)));
+                items = _expanderColumn.GetChildModels(items.ElementAt(index[depth]));
             }
 
-            return items.ElementAt(index.GetLeaf()!.Value);
+            return items.ElementAt(index[^1]);
         }
 
         internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0) =>

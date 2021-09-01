@@ -416,7 +416,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 for (var i = 0; i < levelData.Count; ++i)
                 {
-                    var modelIndex = parent.CloneWithChildIndex(levelData.IndexOf(sortedData[i]));
+                    var modelIndex = parent.Append(levelData.IndexOf(sortedData[i]));
                     var model = GetModel(data, modelIndex);
                     var row = Assert.IsType<HierarchicalRow<Node>>(target.Rows[rowIndex]);
                     var shouldBeExpanded = expanded.Contains(modelIndex);
@@ -441,7 +441,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         private static Node GetModel(IList<Node> data, IndexPath path)
         {
-            var depth = path.GetSize();
+            var depth = path.Count;
             Node? node = null;
 
             if (depth == 0)
@@ -449,7 +449,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             for (var i = 0; i < depth; ++i)
             {
-                var j = path.GetAt(i);
+                var j = path[i];
                 node = node is null ? data[j] : node.Children![j];
             }
 

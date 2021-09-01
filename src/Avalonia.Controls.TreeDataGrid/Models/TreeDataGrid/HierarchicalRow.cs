@@ -29,7 +29,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             TModel model,
             Comparison<TModel>? comparison)
         {
-            if (modelIndex.GetSize() == 0)
+            if (modelIndex.Count() == 0)
                 throw new ArgumentException("Invalid model index");
 
             _controller = controller;
@@ -51,7 +51,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// To retrieve the index path to the model from the root data source, see
         /// <see cref="ModelIndexPath"/>.
         /// </remarks>
-        public int ModelIndex => ModelIndexPath.GetLeaf()!.Value;
+        public int ModelIndex => ModelIndexPath[^1];
 
         /// <summary>
         /// Gets the index path of the model in the data source.
@@ -59,7 +59,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public IndexPath ModelIndexPath { get; private set; }
 
         public object? Header => ModelIndexPath;
-        public int Indent => ModelIndexPath.GetSize() - 1;
+        public int Indent => ModelIndexPath.Count() - 1;
         public TModel Model { get; }
 
         public GridLength Height 
@@ -93,7 +93,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void UpdateModelIndex(int delta)
         {
-            ModelIndexPath = ModelIndexPath.GetParent().CloneWithChildIndex(ModelIndexPath.GetLeaf()!.Value + delta);
+            ModelIndexPath = ModelIndexPath[..^1].Append(ModelIndexPath[^1] + delta);
         }
 
         internal void SortChildren(Comparison<TModel>? comparison)
@@ -170,7 +170,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 return new HierarchicalRow<TModel>(
                     _owner._controller,
                     _owner._expanderColumn,
-                    _owner.ModelIndexPath.CloneWithChildIndex(modelIndex),
+                    _owner.ModelIndexPath.Append(modelIndex),
                     model,
                     _owner._comparison);
             }

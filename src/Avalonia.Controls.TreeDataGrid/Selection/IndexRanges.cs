@@ -21,7 +21,7 @@ namespace Avalonia.Controls.Selection
 
                     if (index < count)
                     {
-                        return parent.CloneWithChildIndex(IndexRange.GetAt(ranges, index));
+                        return parent.Append(IndexRange.GetAt(ranges, index));
                     }
 
                     index -= count;
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.Selection
 
         public void Add(in IndexPath index)
         {
-            var parent = index.GetParent();
+            var parent = index[..^1];
 
             if (!_ranges.TryGetValue(parent, out var ranges))
             {
@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Selection
                 _ranges.Add(parent, ranges);
             }
 
-            IndexRange.Add(ranges, new IndexRange(index.GetLeaf()!.Value));
+            IndexRange.Add(ranges, new IndexRange(index[^1]));
             ++Count;
         }
 
@@ -75,11 +75,11 @@ namespace Avalonia.Controls.Selection
 
         public bool Remove(in IndexPath index)
         {
-            var parent = index.GetParent();
+            var parent = index[..^1];
 
             if (_ranges.TryGetValue(parent, out var ranges))
             {
-                if (IndexRange.Remove(ranges, new IndexRange(index.GetLeaf()!.Value)) > 0)
+                if (IndexRange.Remove(ranges, new IndexRange(index[^1])) > 0)
                 {
                     --Count;
                     return true;
@@ -115,11 +115,11 @@ namespace Avalonia.Controls.Selection
 
         public bool Contains(in IndexPath index)
         {
-            var parent = index.GetParent();
+            var parent = index[..^1];
 
             if (_ranges.TryGetValue(parent, out var ranges))
             {
-                return IndexRange.Contains(ranges, index.GetLeaf()!.Value);
+                return IndexRange.Contains(ranges, index[^1]);
             }
 
             return false;
@@ -147,7 +147,7 @@ namespace Avalonia.Controls.Selection
                     var count = IndexRange.GetCount(ranges);
 
                     for (var i = 0; i < count; ++i)
-                        yield return parent.CloneWithChildIndex(IndexRange.GetAt(ranges, i));
+                        yield return parent.Append(IndexRange.GetAt(ranges, i));
                 }
             }
         }

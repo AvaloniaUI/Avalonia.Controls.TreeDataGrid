@@ -18,7 +18,7 @@ namespace Avalonia.Controls.Selection
             {
                 if (_owner.SingleSelect)
                 {
-                    return _owner.SelectedIndex.GetSize() > 0 ? 1 : 0;
+                    return _owner.SelectedIndex.Count > 0 ? 1 : 0;
                 }
                 else
                 {
@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Selection
         {
             if (_owner.SingleSelect)
             {
-                if (_owner.SelectedIndex.GetSize() != default)
+                if (_owner.SelectedIndex.Count != default)
                 {
                     yield return _owner.SelectedIndex;
                 }
@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Selection
             {
                 for (var i = range.Begin; i <= range.End; ++i)
                 {
-                    yield return node.Path.CloneWithChildIndex(i);
+                    yield return node.Path.Append(i);
                 }
             }
 

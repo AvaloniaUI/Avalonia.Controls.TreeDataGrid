@@ -1159,7 +1159,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             for (var i = 0; i < 5; ++i)
             {
-                var id = parentId.CloneWithChildIndex(i);
+                var id = parentId.Append(i);
 
                 var node = new Node
                 {
@@ -1201,7 +1201,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             protected internal override IEnumerable<Node>? GetChildren(Node node)
             {
-                if (node.Children is null && node.Id.GetSize() < node.TargetDepth)
+                if (node.Children is null && node.Id.Count < node.TargetDepth)
                     node.Children = CreateNodes(node.Id, node.TargetDepth);
                 return node.Children;
             }

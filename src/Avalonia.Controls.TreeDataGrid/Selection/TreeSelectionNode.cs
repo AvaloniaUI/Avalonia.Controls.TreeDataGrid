@@ -25,7 +25,7 @@ namespace Avalonia.Controls.Selection
             int index)
             : this(owner)
         {
-            Path = parent.Path.CloneWithChildIndex(index);
+            Path = parent.Path.Append(index);
             if (parent.ItemsView is object)
                 Source = _owner.GetChildren(parent.ItemsView[index]);
         }
@@ -245,10 +245,10 @@ namespace Avalonia.Controls.Selection
 
         internal static bool ShiftIndex(IndexPath parentIndex, int shiftIndex, int shiftDelta, ref IndexPath path)
         {
-            if (path.GetAt(parentIndex.GetSize()) >= shiftIndex)
+            if (path[parentIndex.Count] >= shiftIndex)
             {
                 var indexes = path.ToArray();
-                indexes[parentIndex.GetSize()] += shiftDelta;
+                indexes[parentIndex.Count] += shiftDelta;
                 path = new IndexPath(indexes);
                 return true;
             }

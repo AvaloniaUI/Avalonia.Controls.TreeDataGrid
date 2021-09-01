@@ -147,8 +147,8 @@ namespace Avalonia.Controls.Selection
         {
             if (index == default)
                 return false;
-            var node = GetNode(index.GetParent());
-            return IndexRange.Contains(node?.Ranges, index.GetLeaf()!.Value);
+            var node = GetNode(index[..^1]);
+            return IndexRange.Contains(node?.Ranges, index[^1]);
         }
 
         public void Select(IndexPath index)
@@ -180,7 +180,7 @@ namespace Avalonia.Controls.Selection
         protected virtual bool TryGetItemAt(IndexPath index, out T? result)
         {
             var items = (IReadOnlyList<T>?)_root.ItemsView;
-            var count = index.GetSize();
+            var count = index.Count;
 
             for (var i = 0; i < count; ++i)
             {
@@ -190,7 +190,7 @@ namespace Avalonia.Controls.Selection
                     return false;
                 }
 
-                var j = index.GetAt(i);
+                var j = index[i];
 
                 if (j < items.Count)
                 {
@@ -222,12 +222,10 @@ namespace Avalonia.Controls.Selection
 
             if (path != default)
             {
-                var node = GetNode(path.GetParent());
+                var node = GetNode(path[..^1]);
 
                 if (node is object)
-                {
-                    return node.ItemsView![path.GetLeaf()!.Value];
-                }
+                    return node.ItemsView![path[^1]];
             }
 
             throw new ArgumentOutOfRangeException();
@@ -293,7 +291,7 @@ namespace Avalonia.Controls.Selection
 
                 while (index < count)
                 {
-                    var result = node.Path.CloneWithChildIndex(IndexRange.GetAt(node.Ranges, index++));
+                    var result = node.Path.Append(IndexRange.GetAt(node.Ranges, index++));
                     if (except?.Contains(result) != true)
                         return result;
                 }
@@ -318,12 +316,12 @@ namespace Avalonia.Controls.Selection
 
         private TreeSelectionNode<T>? GetNode(in IndexPath path)
         {
-            var depth = path.GetSize();
+            var depth = path.Count;
             TreeSelectionNode<T>? node = _root;
 
             for (var i = 0; i < depth; ++i)
             {
-                node = node!.GetChild(path.GetAt(i));
+                node = node!.GetChild(path[i]);
                 if (node is null)
                     break;
             }
@@ -333,12 +331,12 @@ namespace Avalonia.Controls.Selection
 
         private TreeSelectionNode<T>? GetOrCreateNode(in IndexPath path)
         {
-            var depth = path.GetSize();
+            var depth = path.Count;
             TreeSelectionNode<T>? node = _root;
 
             for (var i = 0; i < depth; ++i)
             {
-                node = node!.GetOrCreateChild(path.GetAt(i));
+                node = node!.GetOrCreateChild(path[i]);
                 if (node is null)
                     break;
             }
@@ -441,10 +439,10 @@ namespace Avalonia.Controls.Selection
 
         internal static bool ShiftIndex(IndexPath parentIndex, int shiftIndex, int shiftDelta, ref IndexPath path)
         {
-            if (parentIndex.IsAncestorOf(path) && path.GetAt(parentIndex.GetSize()) >= shiftIndex)
+            if (parentIndex.IsAncestorOf(path) && path[parentIndex.Count] >= shiftIndex)
             {
-                var changeDepth = parentIndex.GetSize();
-                var pathIndex = path.GetAt(changeDepth);
+                var changeDepth = parentIndex.Count;
+                var pathIndex = path[changeDepth];
 
                 if (shiftDelta < 0 && pathIndex >= shiftIndex && pathIndex < shiftIndex - shiftDelta)
                 {

@@ -40,7 +40,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void Expand(IndexPath index)
         {
-            var count = index.GetSize();
+            var count = index.Count;
             var rows = (IReadOnlyList<HierarchicalRow<TModel>>?)_roots;
 
             for (var i = 0; i < count; ++i)
@@ -48,7 +48,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 if (rows is null)
                     break;
 
-                var modelIndex = index.GetAt(i);
+                var modelIndex = index[i];
                 var found = false;
 
                 foreach (var row in rows)
@@ -69,7 +69,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void Collapse(IndexPath index)
         {
-            var count = index.GetSize();
+            var count = index.Count;
             var rows = (IReadOnlyList<HierarchicalRow<TModel>>?)_roots;
 
             for (var i = 0; i < count; ++i)
@@ -77,7 +77,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 if (rows is null)
                     break;
 
-                var modelIndex = index.GetAt(i);
+                var modelIndex = index[i];
                 var found = false;
 
                 foreach (var row in rows)
@@ -163,7 +163,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0)
         {
-            if (index.GetSize() > 0)
+            if (index.Count > 0)
             {
                 for (var i = fromRowIndex; i < _rows.Count; ++i)
                 {
@@ -274,10 +274,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     return _rows.Count;
 
                 var row = _rows[rowIndex];
-                var depth = row.ModelIndexPath.GetSize();
+                var depth = row.ModelIndexPath.Count;
                 var i = rowIndex + 1;
 
-                while (i < _rows.Count && _rows[i].ModelIndexPath.GetSize() > depth)
+                while (i < _rows.Count && _rows[i].ModelIndexPath.Count > depth)
                     ++i;
 
                 return i - (rowIndex + 1);
