@@ -889,16 +889,15 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, selectedIndexRaised);
             }
 
-#if false
             [Fact]
-            public void Removing_Item_Before_Selected_Item_Updates_Indexes()
+            public void Removing_Root_Item_Before_Selected_Root_Item_Updates_Indexes()
             {
-                var target = CreateTarget();
-                var data = (AvaloniaList<string>)target.Source!;
+                var data = CreateData();
+                var target = CreateTarget(data);
                 var selectionChangedRaised = 0;
                 var indexesChangedraised = 0;
 
-                target.SelectedIndex = 1;
+                target.SelectedIndex = new IndexPath(1);
 
                 target.SelectionChanged += (s, e) => ++selectionChangedRaised;
 
@@ -911,15 +910,16 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 data.RemoveAt(0);
 
-                Assert.Equal(0, target.SelectedIndex);
-                Assert.Equal(new[] { 0 }, target.SelectedIndexes);
-                Assert.Equal("bar", target.SelectedItem);
-                Assert.Equal(new[] { "bar" }, target.SelectedItems);
-                Assert.Equal(0, target.AnchorIndex);
+                Assert.Equal(new IndexPath(0), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(0) }, target.SelectedIndexes);
+                Assert.Equal("Node 1", target.SelectedItem!.Caption);
+                Assert.Equal(new[] { "Node 1" }, target.SelectedItems.Select(x => x!.Caption));
+                Assert.Equal(new IndexPath(0), target.AnchorIndex);
                 Assert.Equal(1, indexesChangedraised);
                 Assert.Equal(0, selectionChangedRaised);
             }
 
+#if false
             [Fact]
             public void Removing_Item_After_Selected_Doesnt_Raise_Events()
             {
