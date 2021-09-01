@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace Avalonia.Controls.Models.TreeDataGrid
+namespace Avalonia.Controls.Selection
 {
     internal class IndexRanges : IReadOnlyList<IndexPath>
     {
-        private Dictionary<IndexPath, List<IndexRange>>? _ranges;
+        private SortedList<IndexPath, List<IndexRange>> _ranges = new();
 
         public IndexPath this[int index]
         {
@@ -31,11 +32,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         public int Count { get; private set; }
+        public IDictionary<IndexPath, List<IndexRange>> Ranges => _ranges;
 
         public void Add(in IndexPath index)
         {
-            _ranges ??= new Dictionary<IndexPath, List<IndexRange>>();
-
             var parent = index.GetParent();
 
             if (!_ranges.TryGetValue(parent, out var ranges))
@@ -48,11 +48,36 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             ++Count;
         }
 
+        public void Add(in IndexPath parent, in IndexRange range)
+        {
+            if (!_ranges.TryGetValue(parent, out var ranges))
+            {
+                ranges = new List<IndexRange>();
+                _ranges.Add(parent, ranges);
+            }
+
+            Count += IndexRange.Add(ranges, range);
+        }
+
+        public void Add(in IndexPath parent, List<IndexRange> ranges)
+        {
+            if (!_ranges.TryGetValue(parent, out var r))
+            {
+                _ranges.Add(parent, ranges);
+                Count += IndexRange.GetCount(ranges);
+            }
+            else
+            {
+                Count += IndexRange.Add(ranges, r);
+            }
+
+        }
+
         public bool Remove(in IndexPath index)
         {
             var parent = index.GetParent();
 
-            if (_ranges is object && _ranges.TryGetValue(parent, out var ranges))
+            if (_ranges.TryGetValue(parent, out var ranges))
             {
                 if (IndexRange.Remove(ranges, new IndexRange(index.GetLeaf()!.Value)) > 0)
                 {
@@ -64,11 +89,35 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return false;
         }
 
+        public bool Remove(in IndexPath parent, IndexRange range)
+        {
+            if (_ranges.TryGetValue(parent, out var existing))
+            {
+                var removed = IndexRange.Remove(existing, range);
+                Count -= removed;
+                return removed > 0;
+            }
+
+            return false;
+        }
+
+        public bool Remove(in IndexPath parent, IReadOnlyList<IndexRange> ranges)
+        {
+            if (_ranges.TryGetValue(parent, out var existing))
+            {
+                var removed = IndexRange.Remove(existing, ranges);
+                Count -= removed;
+                return removed > 0;
+            }
+
+            return false;
+        }
+
         public bool Contains(in IndexPath index)
         {
             var parent = index.GetParent();
 
-            if (_ranges is object && _ranges.TryGetValue(parent, out var ranges))
+            if (_ranges.TryGetValue(parent, out var ranges))
             {
                 return IndexRange.Contains(ranges, index.GetLeaf()!.Value);
             }
@@ -78,13 +127,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public bool ContainsDescendents(in IndexPath index)
         {
-            if (_ranges is object)
+            foreach (var i in _ranges.Keys)
             {
-                foreach (var i in _ranges.Keys)
-                {
-                    if (index == i || index.IsAncestorOf(i))
-                        return true;
-                }
+                if (index == i || index.IsAncestorOf(i))
+                    return true;
             }
 
             return false;

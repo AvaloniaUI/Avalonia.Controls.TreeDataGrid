@@ -130,6 +130,22 @@ namespace Avalonia.Controls
             }
         }
 
+        public IndexPath Truncate(int size)
+        {
+            if (size > GetSize())
+                throw new ArgumentException("Truncated size is larger than IndexPath size", nameof(size));
+            if (size == 0)
+                return default;
+            if (size == 1)
+                return new IndexPath(GetAt(0));
+            else 
+            {
+                var path = new int[size];
+                Array.Copy(_path!, 0, path, 0, size);
+                return new(path);
+            }
+        }
+
         public override string ToString()
         {
             if (_path != null)
@@ -168,7 +184,7 @@ namespace Avalonia.Controls
 
             return hashCode;
         }
-        
+
         internal bool IsAncestorOf(in IndexPath other)
         {
             if (other.GetSize() <= GetSize())
@@ -187,6 +203,24 @@ namespace Avalonia.Controls
             }
 
             return true;
+        }
+
+        internal bool IsParentOf(in IndexPath other)
+        {
+            var size = GetSize();
+
+            if (other.GetSize() == size + 1)
+            {
+                for (var i = 0; i < size; ++i)
+                {
+                    if (GetAt(i) != other.GetAt(i))
+                        return false;
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         internal int? GetLeaf()

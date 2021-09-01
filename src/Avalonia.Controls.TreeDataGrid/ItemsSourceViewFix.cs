@@ -9,23 +9,30 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Controls.Utils;
 
 #nullable enable
 
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Temporary local copy of ItemsSourceView until the upstream one is fixed to only subscribe to
-    /// _inner.CollectionChanged when it has CollectionChanged listeners.
+    /// Represents a standardized view of the supported interactions between a given ItemsSource
+    /// object and an <see cref="ItemsRepeater"/> control.
+    /// </summary>
+    /// <remarks>
+    /// Components written to work with ItemsRepeater should consume the
+    /// <see cref="ItemsRepeater.Items"/> via ItemsSourceView since this provides a normalized
+    /// view of the Items. That way, each component does not need to know if the source is an
+    /// IEnumerable, an IList, or something else.
     /// </remarks>
-    public class ItemsSourceViewFix : INotifyCollectionChanged
+    public class ItemsSourceViewFix : INotifyCollectionChanged, IDisposable
     {
         /// <summary>
         ///  Gets an empty <see cref="ItemsSourceViewFix"/>
         /// </summary>
         public static ItemsSourceViewFix Empty { get; } = new ItemsSourceViewFix(Array.Empty<object>());
 
-        private protected readonly IList _inner;
+        private IList? _inner;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
 
         /// <summary>
@@ -35,25 +42,22 @@ namespace Avalonia.Controls
         public ItemsSourceViewFix(IEnumerable source)
         {
             source = source ?? throw new ArgumentNullException(nameof(source));
-
-            if (source is IList list)
+            _inner = source switch
             {
-                _inner = list;
-            }
-            else if (source is IEnumerable<object> objectEnumerable)
-            {
-                _inner = new List<object>(objectEnumerable);
-            }
-            else
-            {
-                _inner = new List<object>(source.Cast<object>());
-            }
+                ItemsSourceViewFix => throw new ArgumentException("Cannot wrap an existing ItemsSourceView.", nameof(source)),
+                IList list => list,
+                INotifyCollectionChanged => throw new ArgumentException(
+                    "Collection implements INotifyCollectionChanged by not IList.",
+                    nameof(source)),
+                IEnumerable<object> iObj => new List<object>(iObj),
+                _ => new List<object>(source.Cast<object>())
+            };
         }
 
         /// <summary>
         /// Gets the number of items in the collection.
         /// </summary>
-        public int Count => _inner.Count;
+        public int Count => Inner.Count;
 
         /// <summary>
         /// Gets a value that indicates whether the items source can provide a unique key for each item.
@@ -62,6 +66,19 @@ namespace Avalonia.Controls
         /// TODO: Not yet implemented in Avalonia.
         /// </remarks>
         public bool HasKeyIndexMapping => false;
+
+        /// <summary>
+        /// Gets the inner collection.
+        /// </summary>
+        public IList Inner
+        {
+            get
+            {
+                if (_inner is null)
+                    ThrowDisposed();
+                return _inner!;
+            }
+        }
 
         /// <summary>
         /// Retrieves the item at the specified index.
@@ -77,6 +94,9 @@ namespace Avalonia.Controls
         {
             add
             {
+                if (_inner is null)
+                    ThrowDisposed();
+
                 if (_collectionChanged is null)
                 {
                     if (_inner is INotifyCollectionChanged incc)
@@ -90,6 +110,9 @@ namespace Avalonia.Controls
 
             remove
             {
+                if (_inner is null)
+                    ThrowDisposed();
+
                 _collectionChanged -= value;
 
                 if (_collectionChanged is null)
@@ -105,7 +128,12 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         public void Dispose()
         {
-            // TODO: Remove IDisposable from ItemsSourceView
+            if (_inner is INotifyCollectionChanged incc)
+            {
+                incc.CollectionChanged -= OnCollectionChanged;
+            }
+
+            _inner = null;
         }
 
         /// <summary>
@@ -113,9 +141,9 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        public object? GetAt(int index) => _inner[index];
+        public object? GetAt(int index) => Inner[index];
 
-        public int IndexOf(object? item) => _inner.IndexOf(item);
+        public int IndexOf(object? item) => Inner.IndexOf(item);
 
         public static ItemsSourceViewFix GetOrCreate(IEnumerable? items)
         {
@@ -159,6 +187,22 @@ namespace Avalonia.Controls
             throw new NotImplementedException();
         }
 
+        internal void AddListener(ICollectionChangedListener listener)
+        {
+            if (Inner is INotifyCollectionChanged incc)
+            {
+                CollectionChangedEventManager.Instance.AddListener(incc, listener);
+            }
+        }
+
+        internal void RemoveListener(ICollectionChangedListener listener)
+        {
+            if (Inner is INotifyCollectionChanged incc)
+            {
+                CollectionChangedEventManager.Instance.RemoveListener(incc, listener);
+            }
+        }
+
         protected void OnItemsSourceChanged(NotifyCollectionChangedEventArgs args)
         {
             _collectionChanged?.Invoke(this, args);
@@ -168,10 +212,10 @@ namespace Avalonia.Controls
         {
             OnItemsSourceChanged(e);
         }
+
+        private void ThrowDisposed() => throw new ObjectDisposedException(nameof(ItemsSourceViewFix));
     }
 
-    /// Temporary local copy of ItemsSourceView until the upstream one is fixed to only subscribe to
-    /// _inner.CollectionChanged when it has CollectionChanged listeners.
     public class ItemsSourceViewFix<T> : ItemsSourceViewFix, IReadOnlyList<T>
     {
         /// <summary>
@@ -208,10 +252,10 @@ namespace Avalonia.Controls
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
         [return: MaybeNull]
-        public new T GetAt(int index) => (T)_inner[index];
+        public new T GetAt(int index) => (T)Inner[index];
 
-        public IEnumerator<T> GetEnumerator() => _inner.Cast<T>().GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => Inner.Cast<T>().GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => Inner.GetEnumerator();
 
         public static new ItemsSourceViewFix<T> GetOrCreate(IEnumerable? items)
         {
