@@ -184,7 +184,7 @@ namespace Avalonia.Controls
 
             return hashCode;
         }
-        
+
         internal bool IsAncestorOf(in IndexPath other)
         {
             if (other.GetSize() <= GetSize())
@@ -203,6 +203,24 @@ namespace Avalonia.Controls
             }
 
             return true;
+        }
+
+        internal bool IsParentOf(in IndexPath other)
+        {
+            var size = GetSize();
+
+            if (other.GetSize() == size + 1)
+            {
+                for (var i = 0; i < size; ++i)
+                {
+                    if (GetAt(i) != other.GetAt(i))
+                        return false;
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         internal int? GetLeaf()

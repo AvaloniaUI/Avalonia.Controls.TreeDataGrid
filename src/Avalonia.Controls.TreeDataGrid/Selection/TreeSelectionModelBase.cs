@@ -233,49 +233,45 @@ namespace Avalonia.Controls.Selection
             throw new ArgumentOutOfRangeException();
         }
 
-        internal void OnIndexesChanged(IndexPath parentIndex, int shiftIndex, int shiftDelta)
+        internal void OnNodeCollectionChanged(
+            IndexPath parentIndex,
+            int shiftIndex,
+            int shiftDelta,
+            bool raiseIndexesChanged,
+            IReadOnlyList<T?>? removed)
         {
-            if (_operation is null)
-                throw new AvaloniaInternalException($"OnIndexesChanged without prior call to {nameof(OnNodeCollectionChangeStarted)}.");
+            if (_operation?.UpdateCount > 0)
+                throw new InvalidOperationException("Source collection was modified during selection update.");
+            if (shiftDelta == 0 && !(removed?.Count > 0))
+                return;
 
-            IndexesChanged?.Invoke(this, new TreeSelectionModelIndexesChangedEventArgs(parentIndex, shiftIndex, shiftDelta));
+            if (raiseIndexesChanged)
+            {
+                IndexesChanged?.Invoke(
+                    this,
+                    new TreeSelectionModelIndexesChangedEventArgs(parentIndex, shiftIndex, shiftDelta));
+            }
+
+            if (removed?.Count > 0 && (SelectionChanged is object || _untypedSelectionChanged is object))
+            {
+                var e = new TreeSelectionModelSelectionChangedEventArgs<T>(deselectedItems: removed);
+                SelectionChanged?.Invoke(this, e);
+                _untypedSelectionChanged?.Invoke(this, e);
+            }
 
             if (ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _selectedIndex))
             {
-                _operation.SelectedIndex = _selectedIndex;
                 RaisePropertyChanged(nameof(SelectedIndex));
             }
 
             if (ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _anchorIndex))
             {
-                _operation.AnchorIndex = _anchorIndex;
                 RaisePropertyChanged(nameof(AnchorIndex));
             }
         }
 
-        internal void OnSelectionRemoved(IndexPath parentIndex, int index, int count, IReadOnlyList<T> deselectedItems)
-        {
-            using var update = BatchUpdate();
-            var o = update.Operation;
-
-            if (_selectedIndex != default && (_selectedIndex == parentIndex || parentIndex.IsAncestorOf(_selectedIndex)))
-                o.SelectedIndex = default;
-            if (_anchorIndex != default && (_anchorIndex == parentIndex || parentIndex.IsAncestorOf(_anchorIndex)))
-                o.AnchorIndex = default;
-
-            o.DeselectedItems = deselectedItems;
-        }
-
-        internal void OnNodeCollectionChangeStarted()
-        {
-            if (_operation?.UpdateCount > 0)
-                throw new InvalidOperationException("Source collection was modified during selection update.");
-            BeginBatchUpdate();
-        }
-
         internal void OnNodeCollectionChangeFinished()
         {
-            EndBatchUpdate();
         }
 
         private IndexPath GetFirstSelectedIndex(TreeSelectionNode<T> node, IndexRanges? except = null)
@@ -437,10 +433,24 @@ namespace Avalonia.Controls.Selection
         {
             if (parentIndex.IsAncestorOf(path) && path.GetAt(parentIndex.GetSize()) >= shiftIndex)
             {
-                var indexes = path.ToArray();
-                indexes[parentIndex.GetSize()] += shiftDelta;
-                path = new IndexPath(indexes);
-                return true;
+                var changeDepth = parentIndex.GetSize();
+                var pathIndex = path.GetAt(changeDepth);
+
+                if (shiftDelta < 0 && pathIndex >= shiftIndex && pathIndex <= shiftIndex - shiftDelta)
+                {
+                    // Item was removed, clear the path.
+                    path = default;
+                    return true;
+                }
+
+                if (pathIndex >= shiftIndex)
+                {
+                    // Item remains, but index was shifted.
+                    var indexes = path.ToArray();
+                    indexes[changeDepth] += shiftDelta;
+                    path = new IndexPath(indexes);
+                    return true;
+                }
             }
 
             return false;
@@ -484,7 +494,7 @@ namespace Avalonia.Controls.Selection
             public IndexPath SelectedIndex { get; set; }
             public IndexRanges? SelectedRanges { get; set; }
             public IndexRanges? DeselectedRanges { get; set; }
-            public IReadOnlyList<T>? DeselectedItems { get; set; }
+            public IReadOnlyList<T?>? DeselectedItems { get; set; }
         }
     }
 }

@@ -154,14 +154,9 @@ namespace Avalonia.Controls.Selection
             }
 
             if (shiftDelta != 0)
-            {
                 OnIndexesChanged(shiftIndex, shiftDelta);
-            }
-
             if (removed is object)
-            {
                 OnSelectionRemoved(shiftIndex, -shiftDelta, removed);
-            }
         }
 
         /// <summary>
@@ -200,7 +195,9 @@ namespace Avalonia.Controls.Selection
         /// Called by <see cref="OnSourceCollectionChanged(NotifyCollectionChangedEventArgs)"/>,
         /// detailing the items removed by a collection change.
         /// </summary>
-        protected abstract void OnSelectionRemoved(int index, int count, IReadOnlyList<T?> deselectedItems);
+        protected virtual void OnSelectionRemoved(int index, int count, IReadOnlyList<T?> deselectedItems)
+        {
+        }
 
         /// <summary>
         /// If <see cref="RangesEnabled"/>, adds the specified range to the selection.

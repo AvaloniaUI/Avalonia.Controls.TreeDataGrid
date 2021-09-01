@@ -2,9 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 
 #nullable enable
@@ -80,62 +77,60 @@ namespace Avalonia.Controls.Selection
             return null;
         }
 
-        private bool AncestorIndexesChanged(IndexPath parentIndex, int shiftIndex, int shiftDelta)
-        {
-            var path = Path;
-            var result = false;
-
-            if (ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref path))
-            {
-                Path = path;
-                result = true;
-            }
-
-            if (_children is object)
-            {
-                foreach (var child in _children)
-                {
-                    result |= child?.AncestorIndexesChanged(parentIndex, shiftIndex, shiftDelta) ?? false;
-                }
-            }
-
-            return result;
-        }
-
         protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            _owner.OnNodeCollectionChangeStarted();
-            base.OnSourceCollectionChanged(e);
-
-            if (_children is null || _children.Count == 0)
-                return;
-
             var shiftIndex = 0;
             var shiftDelta = 0;
+            var indexesChanged = false;
+            List<T?>? removed = null;
 
+            // Adjust the selection in this node according to the collection change.
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
                     shiftIndex = e.NewStartingIndex;
                     shiftDelta = e.NewItems.Count;
-
-                    _children.InsertMany(shiftIndex, null, shiftDelta);
-
-                    for (var i = shiftIndex + shiftDelta; i < _children.Count; ++i)
-                    {
-                        _children[i]?.AncestorIndexesChanged(Path, e.NewStartingIndex, e.NewItems.Count);
-                    }
+                    indexesChanged = OnItemsAdded(shiftIndex, e.NewItems).ShiftDelta > 0;
                     break;
-                //case NotifyCollectionChangedAction.Remove:
-                //    shiftIndex = e.OldStartingIndex;
-                //    shiftDelta = -e.OldItems.Count;
-                //    break;
+                case NotifyCollectionChangedAction.Remove:
+                    shiftIndex = e.OldStartingIndex;
+                    shiftDelta = -e.OldItems.Count;
+                    var change = OnItemsRemoved(shiftIndex, e.OldItems);
+                    indexesChanged = change.ShiftDelta > 0;
+                    removed = change.RemovedItems;
+                    break;
                 default:
                     throw new NotImplementedException();
             }
 
-            if (shiftDelta != 0)
-                _owner.OnIndexesChanged(Path, shiftIndex, shiftDelta);
+            // Adjust the paths of any child nodes.
+            if (_children?.Count > 0 && shiftDelta != 0)
+            {
+                for (var i = shiftIndex; i < _children.Count; ++i)
+                {
+                    if (_children[i] is TreeSelectionNode<T> child)
+                    {
+                        if (shiftDelta < 1 && i >= shiftIndex && i <= shiftIndex - shiftDelta)
+                        {
+                            child.AncestorRemoved(ref removed);
+                            _children.RemoveAt(i--);
+                        }
+                        else
+                        {
+                            child.AncestorIndexChanged(Path, shiftIndex, shiftDelta);
+                            indexesChanged = true;
+                        }
+                    }
+                }
+
+                if (shiftDelta > 0)
+                    _children.InsertMany(shiftIndex, null, shiftDelta);
+                else
+                    _children.RemoveRange(shiftIndex, -shiftDelta);
+            }
+
+            if (shiftDelta != 0 || removed?.Count> 0)
+                _owner.OnNodeCollectionChanged(Path, shiftIndex, shiftDelta, indexesChanged, removed);
         }
 
         protected override void OnSourceCollectionChangeFinished()
@@ -143,19 +138,9 @@ namespace Avalonia.Controls.Selection
             _owner.OnNodeCollectionChangeFinished();
         }
 
-        protected override void OnIndexesChanged(int shiftIndex, int shiftDelta)
-        {
-            //_owner.OnIndexesChanged(Path, shiftIndex, shiftDelta);
-        }
-
         protected override void OnSourceReset()
         {
             throw new NotImplementedException();
-        }
-
-        protected override void OnSelectionRemoved(int index, int count, IReadOnlyList<T> deselectedItems)
-        {
-            _owner.OnSelectionRemoved(Path, index, count, deselectedItems);
         }
 
         private TreeSelectionNode<T>? GetChild(int index, bool realize)
@@ -193,6 +178,44 @@ namespace Avalonia.Controls.Selection
             }
 
             return null;
+        }
+
+        private void AncestorIndexChanged(IndexPath parentIndex, int shiftIndex, int shiftDelta)
+        {
+            var path = Path;
+
+            if (ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref path))
+                Path = path;
+
+            if (_children is object)
+            {
+                foreach (var child in _children)
+                {
+                    child?.AncestorIndexChanged(parentIndex, shiftIndex, shiftDelta);
+                }
+            }
+        }
+
+        private void AncestorRemoved(ref List<T?>? removed)
+        {
+            if (Ranges.Count > 0)
+            {
+                removed ??= new();
+
+                foreach (var range in Ranges)
+                {
+                    for (var i = range.Begin; i <= range.End; i++)
+                        removed.Add(ItemsView![i]);
+                }
+            }
+
+            if (_children is object)
+            {
+                foreach (var child in _children)
+                    child?.AncestorRemoved(ref removed);
+            }
+
+            Source = null;
         }
 
         private static void Resize(List<TreeSelectionNode<T>?> list, int count)

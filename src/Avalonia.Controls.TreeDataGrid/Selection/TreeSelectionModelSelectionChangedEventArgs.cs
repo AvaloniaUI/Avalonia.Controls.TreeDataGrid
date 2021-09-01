@@ -38,8 +38,8 @@ namespace Avalonia.Controls.Selection
         public TreeSelectionModelSelectionChangedEventArgs(
             IReadOnlyList<IndexPath>? deselectedIndexes = null,
             IReadOnlyList<IndexPath>? selectedIndexes = null,
-            IReadOnlyList<T>? deselectedItems = null,
-            IReadOnlyList<T>? selectedItems = null)
+            IReadOnlyList<T?>? deselectedItems = null,
+            IReadOnlyList<T?>? selectedItems = null)
         {
             DeselectedIndexes = deselectedIndexes ?? Array.Empty<IndexPath>();
             SelectedIndexes = selectedIndexes ?? Array.Empty<IndexPath>();
@@ -60,12 +60,12 @@ namespace Avalonia.Controls.Selection
         /// <summary>
         /// Gets the items that were removed from the selection.
         /// </summary>
-        public new IReadOnlyList<T> DeselectedItems { get; }
+        public new IReadOnlyList<T?> DeselectedItems { get; }
 
         /// <summary>
         /// Gets the items that were added to the selection.
         /// </summary>
-        public new IReadOnlyList<T> SelectedItems { get; }
+        public new IReadOnlyList<T?> SelectedItems { get; }
 
         protected override IReadOnlyList<object?> GetUntypedDeselectedItems()
         {
@@ -81,8 +81,8 @@ namespace Avalonia.Controls.Selection
 
         private class Untyped : IReadOnlyList<object?>
         {
-            private readonly IReadOnlyList<T> _source;
-            public Untyped(IReadOnlyList<T> source) => _source = source;
+            private readonly IReadOnlyList<T?> _source;
+            public Untyped(IReadOnlyList<T?> source) => _source = source;
             public object? this[int index] => _source[index];
             public int Count => _source.Count;
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

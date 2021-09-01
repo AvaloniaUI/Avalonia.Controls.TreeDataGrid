@@ -712,7 +712,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
 
             [Fact]
-            public void Adding_Root_Item_Before_Selected_Grandhild_Item_Updates_Indexes()
+            public void Adding_Root_Item_Before_Selected_Grandchild_Item_Updates_Indexes()
             {
                 var data = CreateData(depth: 3);
                 var target = CreateTarget(data);
