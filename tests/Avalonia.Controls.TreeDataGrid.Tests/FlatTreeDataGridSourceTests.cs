@@ -197,6 +197,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                 {
                     Assert.Equal(NotifyCollectionChangedAction.Add, e.Action);
                     Assert.Equal(0, e.NewStartingIndex);
+                    Assert.Equal(1, e.NewItems!.Count);
+                    Assert.Equal(10, ((IModelIndexableRow)e.NewItems[0]!).ModelIndex);
                     ++raised;
                 };
 
@@ -221,6 +223,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                 {
                     Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
                     Assert.Equal(4, e.OldStartingIndex);
+                    Assert.Equal(1, e.OldItems!.Count);
+                    Assert.Equal(5, ((IModelIndexableRow)e.OldItems[0]!).ModelIndex);
                     ++raised;
                 };
 
@@ -351,8 +355,17 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             private static void AssertRows(IRows rows, IList<Row> data)
             {
+                Assert.Equal(data.Count, rows.Count);
+
                 var sortedData = data.OrderByDescending(x => x.Id).ToList();
-                FlatTreeDataGridSourceTests.AssertRows(rows, sortedData);
+
+                for (var i = 0; i < data.Count; ++i)
+                {
+                    var row = (IRow<Row>)rows[i];
+                    var indexable = (IModelIndexableRow)row;
+                    Assert.Same(sortedData[i], row.Model);
+                    Assert.Equal(data.IndexOf(row.Model), indexable.ModelIndex);
+                }
             }
         }
 

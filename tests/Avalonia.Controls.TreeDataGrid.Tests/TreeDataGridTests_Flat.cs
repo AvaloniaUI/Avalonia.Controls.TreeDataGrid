@@ -62,15 +62,12 @@ namespace Avalonia.Controls.TreeDataGridTests
             target.RowSelection!.Select(3);
             target.RowSelection.Select(4);
             target.RowSelection.Select(5);
-            Assert.Equal(3, target.RowSelection.SelectedIndexes.Count);
-            Assert.Equal(3, target.RowSelection.SelectedIndexes[0]);
-            Assert.Equal(4, target.RowSelection.SelectedIndexes[1]);
-            Assert.Equal(5, target.RowSelection.SelectedIndexes[2]);
-            ////target.Source!.SortBy(target.Columns![0], System.ComponentModel.ListSortDirection.Ascending, target.Selection);
 
-            Assert.Equal(1, target.RowSelection.SelectedIndexes[0]);
-            Assert.Equal(2, target.RowSelection.SelectedIndexes[1]);
-            Assert.Equal(3, target.RowSelection.SelectedIndexes[2]);
+            AssertInteractionSelection(target, 3, 4, 5);
+
+            target.Source!.SortBy(target.Columns![0], System.ComponentModel.ListSortDirection.Ascending);
+
+            AssertInteractionSelection(target, 1, 2, 3);
         }
 
         [Fact]
@@ -82,16 +79,25 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             target.RowSelection!.Select(0);
             target.RowSelection.Select(5);
-            Assert.Equal(2, target.RowSelection.SelectedIndexes.Count);
-            Assert.Equal(0, target.RowSelection.SelectedIndexes[0]);
-            Assert.Equal(5, target.RowSelection.SelectedIndexes[1]);
-            ////target.Source!.SortBy(target.Columns![0], System.ComponentModel.ListSortDirection.Descending, target.Selection);
+
+            AssertInteractionSelection(target, 0, 5);
+            
+            target.Source!.SortBy(target.Columns![0], System.ComponentModel.ListSortDirection.Descending);
 
             ///There are 100 items in the collection.
             ///Their IDs are in range 0..99 so when we order IDs column in Descending order the latest element of the collection would be with
             ///ID 0(index 99 in collection),first with ID 99
-            Assert.Equal(94, target.RowSelection.SelectedIndexes[0]);
-            Assert.Equal(99, target.RowSelection.SelectedIndexes[1]);
+            AssertInteractionSelection(target, 94, 99);
+        }
+
+        private void AssertInteractionSelection(TreeDataGrid target, params int[] selected)
+        {
+            var selection = (ITreeDataGridSelectionInteraction)target.RowSelection!;
+
+            for (var i = 0; i < target.Rows!.Count; ++i)
+            {
+                Assert.Equal(selected.Contains(i), selection.IsRowSelected(i));
+            }
         }
 
         [Fact]
@@ -264,12 +270,11 @@ namespace Avalonia.Controls.TreeDataGridTests
             if (models == null)
             {
                 items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
-                new Model
-                {
-                    Id = x,
-                    Title = "Item " + x,
-                }));
-
+                    new Model
+                    {
+                        Id = x,
+                        Title = "Item " + x,
+                    }));
             }
             else
             {
@@ -278,6 +283,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
 
             var source = new FlatTreeDataGridSource<Model>(items);
+            source.RowSelection.SingleSelect = false;
 
             if (columns is object)
             {

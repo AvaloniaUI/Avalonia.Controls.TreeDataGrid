@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>Avalonia.Controls.TreeDataGridTests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>

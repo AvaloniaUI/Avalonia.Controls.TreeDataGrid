@@ -382,7 +382,7 @@ namespace Avalonia.Controls
                 }
 
                 var column = _source.Columns[columnHeader.ColumnIndex];
-                ////_source.SortBy(column, _userSortDirection, _rowSelection!);
+                _source.SortBy(column, _userSortDirection);
             }
         }
     }
