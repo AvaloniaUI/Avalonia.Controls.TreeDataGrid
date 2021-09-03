@@ -25,8 +25,34 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </returns>
         (int index, double y) GetRowAt(double y);
 
+        /// <summary>
+        /// Given a model index, returns an index into <see cref="Rows"/>.
+        /// </summary>
+        /// <param name="modelIndex">The model index.</param>
+        /// <returns>The row index, or -1 if the model index is not displayed.</returns>
+        int ModelIndexToRowIndex(IndexPath modelIndex);
+
+        /// <summary>
+        /// Given a row index, returns a model index.
+        /// </summary>
+        /// <param name="rowIndex">The row index.</param>
+        /// <returns>The row index, or -1 if the row index is not valid.</returns>
+        IndexPath RowIndexToModelIndex(int rowIndex);
+
+        /// <summary>
+        /// Realizes a cell model for display on-screen.
+        /// </summary>
+        /// <param name="column">The cell's column.</param>
+        /// <param name="columnIndex">The index of the cell's column.</param>
+        /// <param name="rowIndex">The index of the cell's row.</param>
         ICell RealizeCell(IColumn column, int columnIndex, int rowIndex);
 
+        /// <summary>
+        /// Unrealizes a cell model realized with <see cref="RealizeCell(IColumn, int, int)"/>.
+        /// </summary>
+        /// <param name="cell">The cell model.</param>
+        /// <param name="columnIndex">The index of the cell's column.</param>
+        /// <param name="rowIndex">The index of the cell's row.</param>
         void UnrealizeCell(ICell cell, int columnIndex, int rowIndex);
     }
 }

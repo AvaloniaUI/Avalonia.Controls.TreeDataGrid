@@ -184,7 +184,8 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
             public override ICell CreateCell(IRow<Model> row)
             {
-                return new TextCell<string>($"{Header} Row {row.ModelIndex}");
+                var indexable = (IModelIndexableRow)row;
+                return new TextCell<string>($"{Header} Row {indexable.ModelIndex}");
             }
 
             public override Comparison<Model>? GetComparison(ListSortDirection direction)

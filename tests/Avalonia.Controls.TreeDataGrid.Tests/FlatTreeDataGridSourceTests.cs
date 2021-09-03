@@ -381,8 +381,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             for (var i = 0; i < data.Count; ++i)
             {
                 var row = (IRow<Row>)rows[i];
+                var indexable = (IModelIndexableRow)row;
                 Assert.Same(row.Model, data[i]);
-                Assert.Equal(i, row.ModelIndex);
+                Assert.Equal(i, indexable.ModelIndex);
             }
         }
 

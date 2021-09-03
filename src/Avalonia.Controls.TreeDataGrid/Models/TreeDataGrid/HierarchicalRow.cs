@@ -12,6 +12,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public class HierarchicalRow<TModel> : NotifyingBase,
         IExpanderRow<TModel>,
         IIndentedRow,
+        IModelIndexableRow,
         IDisposable
     {
         private readonly IExpanderRowController<TModel> _controller;

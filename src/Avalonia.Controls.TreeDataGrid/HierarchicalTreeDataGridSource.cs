@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
@@ -14,17 +14,17 @@ namespace Avalonia.Controls
     /// row may have multiple columns.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource,
+    public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource<TModel>,
         IDisposable,
         IExpanderRowController<TModel>
-        where TModel : class
     {
         private IEnumerable<TModel> _items;
         private ItemsSourceViewFix<TModel> _itemsView;
         private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
         private Comparison<TModel>? _comparison;
-        private ITreeDataGridSelectionModel<TModel>? _selection;
+        private ITreeDataGridRowSelectionModel<TModel>? _selection;
+        private bool _isSelectionSet;
 
         public HierarchicalTreeDataGridSource(TModel item)
             : this(new[] { item })
@@ -56,26 +56,27 @@ namespace Avalonia.Controls
         public IRows Rows => GetOrCreateRows();
         public ColumnList<TModel> Columns { get; }
 
-        public ITreeDataGridSelectionModel<TModel> Selection
+        public ITreeDataGridRowSelectionModel<TModel>? Selection
         {
-            get => _selection ?? throw new NotImplementedException();
+            get
+            {
+                if (_selection == null && !_isSelectionSet)
+                    _selection = new TreeDataGridRowSelectionModel<TModel>(this);
+                return _selection;
+            }
             set
             {
                 if (value is null)
                     throw new ArgumentNullException(nameof(value));
                 if (_selection is object)
-                    throw new InvalidOperationException("Selection model is already set.");
+                    throw new InvalidOperationException("Selection is already initialized.");
                 _selection = value;
+                _isSelectionSet = true;
             }
         }
 
         IColumns ITreeDataGridSource.Columns => Columns;
-        
-        ITreeDataGridSelectionModel ITreeDataGridSource.Selection
-        {
-            get => Selection;
-            set => Selection = (ITreeDataGridSelectionModel<TModel>)value;
-        }
+        ITreeDataGridSelection? ITreeDataGridSource.Selection => Selection;
 
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanding;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanded;
@@ -87,13 +88,49 @@ namespace Avalonia.Controls
         public void Expand(IndexPath index) => GetOrCreateRows().Expand(index);
         public void Collapse(IndexPath index) => GetOrCreateRows().Collapse(index);
 
+        public bool TryGetModelAt(IndexPath index, [NotNullWhen(true)] out TModel? result)
+        {
+            if (_expanderColumn is null)
+                throw new InvalidOperationException("No expander column defined.");
+
+            var items = (IEnumerable<TModel>?)Items;
+            var count = index.Count;
+
+            for (var depth = 0; depth < count; ++depth)
+            {
+                var i = index[depth];
+
+                if (i < items.Count())
+                {
+                    var e = items.ElementAt(i);
+
+                    if (depth < count - 1)
+                    {
+                        items = _expanderColumn.GetChildModels(e);
+                    }
+                    else
+                    {
+                        result = e;
+                        return true;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            result = default;
+            return false;
+        }
+
         public void Sort(Comparison<TModel>? comparison)
         {
             _comparison = comparison;
             _rows?.Sort(_comparison);
         }
 
-        public bool SortBy(IColumn? column, ListSortDirection direction, ISelectionModel selection)
+        public bool SortBy(IColumn? column, ListSortDirection direction)
         {
             if (column is IColumn<TModel> columnBase &&
                 Columns.Contains(columnBase) &&
@@ -137,20 +174,10 @@ namespace Avalonia.Controls
         {
         }
 
-        internal TModel GetModelAt(in IndexPath index)
+        internal IEnumerable<TModel>? GetModelChildren(TModel model)
         {
-            if (_expanderColumn is null)
-                throw new InvalidOperationException("No expander column defined.");
-
-            var items = (IEnumerable<TModel>?)Items;
-            var count = index.Count();
-
-            for (var depth = 0; depth < count - 1; ++depth)
-            {
-                items = _expanderColumn.GetChildModels(items.ElementAt(index[depth]));
-            }
-
-            return items.ElementAt(index[^1]);
+            _ = _expanderColumn ?? throw new InvalidOperationException("No expander column defined.");
+            return _expanderColumn.GetChildModels(model);
         }
 
         internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0) =>

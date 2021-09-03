@@ -86,6 +86,27 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
         }
 
+        public int ModelIndexToRowIndex(IndexPath modelIndex)
+        {
+            if (modelIndex.Count != 1)
+                return -1;
+
+            var i = modelIndex[0];
+
+            if (_sortedItems is null)
+                return i >= 0 && i < _items.Count ? modelIndex[0] : -1;
+            else
+                throw new NotImplementedException();
+        }
+
+        public IndexPath RowIndexToModelIndex(int rowIndex)
+        {
+            if (_sortedItems is null)
+                return rowIndex;
+            else
+                throw new NotImplementedException();
+        }
+
         public void Sort(IComparer<TModel>? comparer, ISelectionModel? selection = null)
         {
             _comparer = comparer;

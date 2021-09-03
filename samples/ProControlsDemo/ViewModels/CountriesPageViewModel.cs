@@ -26,6 +26,7 @@ namespace ProControlsDemo.ViewModels
                     new TextColumn<Country, int>("GDP", x => x.GDP, new GridLength(3, GridUnitType.Star)),
                 }
             };
+            Source.RowSelection!.SingleSelect = false;
         }
 
         public FlatTreeDataGridSource<Country> Source { get; }
@@ -34,7 +35,7 @@ namespace ProControlsDemo.ViewModels
 
         public void RemoveSelected()
         {
-            var selection = Source.Selection.SelectedIndexes.ToList();
+            var selection = ((ITreeSelectionModel)Source.Selection).SelectedIndexes.ToList();
 
             for (var i = selection.Count - 1; i >= 0; --i)
             {

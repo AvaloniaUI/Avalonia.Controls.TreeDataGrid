@@ -14,14 +14,14 @@ namespace Avalonia.Controls.Primitives
                 o => o.Columns,
                 (o, v) => o.Columns = v);
 
-        public static readonly DirectProperty<TreeDataGridRowsPresenter, ISelectionModel?> SelectionProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGridRowsPresenter, ISelectionModel?>(
+        public static readonly DirectProperty<TreeDataGridRowsPresenter, ITreeDataGridSelectionInteraction?> SelectionProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridRowsPresenter, ITreeDataGridSelectionInteraction?>(
                 nameof(Selection),
                 o => o.Selection,
                 (o, v) => o.Selection = v);
 
         private IColumns? _columns;
-        private ISelectionModel? _selection;
+        private ITreeDataGridSelectionInteraction? _selection;
 
         public IColumns? Columns
         {
@@ -29,7 +29,7 @@ namespace Avalonia.Controls.Primitives
             set => SetAndRaise(ColumnsProperty, ref _columns, value);
         }
 
-        public ISelectionModel? Selection
+        public ITreeDataGridSelectionInteraction? Selection
         {
             get => _selection;
             set
@@ -41,7 +41,6 @@ namespace Avalonia.Controls.Primitives
                     if (_selection is object)
                     {
                         _selection.SelectionChanged -= OnSelectionChanged;
-                        _selection.IndexesChanged -= OnSelectionIndexesChanged;
                     }
 
                     _selection = value;
@@ -49,13 +48,12 @@ namespace Avalonia.Controls.Primitives
                     if (_selection is object)
                     {
                         _selection.SelectionChanged += OnSelectionChanged;
-                        _selection.IndexesChanged += OnSelectionIndexesChanged;
                     }
 
                     RaisePropertyChanged(
                         SelectionProperty,
-                        new Optional<ISelectionModel?>(oldValue),
-                        new BindingValue<ISelectionModel?>(_selection));
+                        new Optional<ITreeDataGridSelectionInteraction?>(oldValue),
+                        new BindingValue<ITreeDataGridSelectionInteraction?>(_selection));
                 }
             }
         }
@@ -71,11 +69,7 @@ namespace Avalonia.Controls.Primitives
         {
             var row = (TreeDataGridRow)element;
             row.Realize(ElementFactory, Columns, (IRows?)Items, index);
-
-            if (_selection is { } selection)
-            {
-                row.IsSelected = selection.IsSelected(index);
-            }
+            row.IsSelected = _selection?.IsRowSelected(rowModel) == true;
         }
 
         protected override void UpdateElementIndex(IControl element, int index)
@@ -101,7 +95,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if (element is TreeDataGridRow row)
                 {
-                    row.IsSelected = _selection?.IsSelected(row.RowIndex) == true;
+                    row.IsSelected = _selection?.IsRowSelected(row.RowIndex) == true;
                 }
             }
         }
@@ -139,12 +133,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void OnSelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs e)
-        {
-            UpdateSelection();
-        }
-
-        private void OnSelectionIndexesChanged(object? sender, SelectionModelIndexesChangedEventArgs e)
+        private void OnSelectionChanged(object? sender, EventArgs e)
         {
             UpdateSelection();
         }

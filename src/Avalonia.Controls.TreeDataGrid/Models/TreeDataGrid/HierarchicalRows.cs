@@ -136,6 +136,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             (cell as IDisposable)?.Dispose();
         }
 
+        public int ModelIndexToRowIndex(IndexPath modelIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IndexPath RowIndexToModelIndex(int rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
         public override IEnumerator<HierarchicalRow<TModel>> GetEnumerator() => _rows.GetEnumerator();
         IEnumerator<IRow> IEnumerable<IRow>.GetEnumerator() => _rows.GetEnumerator();
 

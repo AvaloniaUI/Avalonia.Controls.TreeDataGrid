@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The model type.</typeparam>
     /// <typeparam name="TRow">The row type.</typeparam>
     public abstract class SortableRowsBase<TModel, TRow> : ReadOnlyListBase<TRow>, IDisposable
-        where TRow : IRow<TModel>, IDisposable
+        where TRow : IRow<TModel>, IModelIndexableRow, IDisposable
     {
         private ItemsSourceViewFix<TModel> _items;
         private Comparison<TModel>? _comparison;
