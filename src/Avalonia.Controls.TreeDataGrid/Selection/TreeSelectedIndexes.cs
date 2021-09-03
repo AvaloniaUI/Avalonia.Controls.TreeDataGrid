@@ -12,31 +12,23 @@ namespace Avalonia.Controls.Selection
 
         public TreeSelectedIndexes(TreeSelectionModelBase<T> owner) => _owner = owner;
 
-        public int Count
-        {
-            get
-            {
-                if (_owner.SingleSelect)
-                {
-                    return _owner.SelectedIndex.Count > 0 ? 1 : 0;
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
-            }
-        }
+        public int Count => _owner.Count;
 
         public IndexPath this[int index]
         {
             get
             {
-                if (index >= Count)
-                {
+                if (index < 0 || index >= Count)
                     throw new IndexOutOfRangeException("The index was out of range.");
-                }
 
-                throw new NotImplementedException();
+                if (_owner.SingleSelect)
+                    return _owner.SelectedIndex;
+                else
+                {
+                    var next = 0;
+                    TryGetElementAt(_owner.Root, index, ref next, out var result);
+                    return result;
+                }
             }
         }
 
@@ -45,9 +37,7 @@ namespace Avalonia.Controls.Selection
             if (_owner.SingleSelect)
             {
                 if (_owner.SelectedIndex.Count != default)
-                {
                     yield return _owner.SelectedIndex;
-                }
             }
             else
             {
@@ -63,9 +53,7 @@ namespace Avalonia.Controls.Selection
             foreach (var range in node.Ranges)
             {
                 for (var i = range.Begin; i <= range.End; ++i)
-                {
                     yield return node.Path.Append(i);
-                }
             }
 
             if (node.Children is object)
@@ -79,6 +67,31 @@ namespace Avalonia.Controls.Selection
                     }
                 }
             }
+        }
+
+        private bool TryGetElementAt(TreeSelectionNode<T> node, int target, ref int next, out IndexPath result)
+        {
+            var nodeCount = IndexRange.GetCount(node.Ranges);
+
+            if (target < next + nodeCount)
+            {
+                result = node.Path.Append(IndexRange.GetAt(node.Ranges, target - next));
+                return true;
+            }
+
+            next += nodeCount;
+
+            if (node.Children is object)
+            {
+                foreach (var child in node.Children)
+                {
+                    if (child is object && TryGetElementAt(child, target, ref next, out result))
+                        return true;
+                }
+            }
+
+            result = default;
+            return false;
         }
     }
 }

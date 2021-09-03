@@ -241,6 +241,23 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
         public class SelectedIndexes
         {
             [Fact]
+            public void Can_Get_Items_Via_Indexer()
+            {
+                var target = CreateTarget();
+
+                target.Select(0);
+                target.Select(1);
+                target.Select(new IndexPath(1, 2));
+                target.Select(new IndexPath(2, 3));
+
+                Assert.Equal(4, target.SelectedIndexes.Count);
+                Assert.Equal(new IndexPath(0), target.SelectedIndexes[0]);
+                Assert.Equal(new IndexPath(1), target.SelectedIndexes[1]);
+                Assert.Equal(new IndexPath(1, 2), target.SelectedIndexes[2]);
+                Assert.Equal(new IndexPath(2, 3), target.SelectedIndexes[3]);
+            }
+
+            [Fact]
             public void PropertyChanged_Is_Raised_When_SelectedIndex_Changes()
             {
                 var target = CreateTarget();
@@ -249,6 +266,45 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(target.SelectedIndexes))
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.SelectedIndex = new IndexPath(1);
+
+                Assert.Equal(1, raised);
+            }
+        }
+
+        public class SelectedItems
+        {
+            [Fact]
+            public void Can_Get_Items_Via_Indexer()
+            {
+                var target = CreateTarget();
+
+                target.Select(0);
+                target.Select(1);
+                target.Select(new IndexPath(1, 2));
+                target.Select(new IndexPath(2, 3));
+
+                Assert.Equal(4, target.SelectedItems.Count);
+                Assert.Equal("Node 0", target.SelectedItems[0]!.Caption);
+                Assert.Equal("Node 1", target.SelectedItems[1]!.Caption);
+                Assert.Equal("Node 1-2", target.SelectedItems[2]!.Caption);
+                Assert.Equal("Node 2-3", target.SelectedItems[3]!.Caption);
+            }
+
+            [Fact]
+            public void PropertyChanged_Is_Raised_When_SelectedIndex_Changes()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedItems))
                     {
                         ++raised;
                     }

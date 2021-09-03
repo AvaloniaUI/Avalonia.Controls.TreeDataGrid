@@ -12,31 +12,23 @@ namespace Avalonia.Controls.Selection
 
         public TreeSelectedItemsBase(TreeSelectionModelBase<T> owner) => _owner = owner;
 
-        public int Count
+        public int Count => _owner.Count;
+
+        public T? this[int index]
         {
             get
             {
+                if (index < 0 || index >= Count)
+                    throw new IndexOutOfRangeException("The index was out of range.");
+
                 if (_owner.SingleSelect)
-                {
-                    return _owner.SelectedIndex.Count > 0 ? 1 : 0;
-                }
+                    return _owner.SelectedItem;
                 else
                 {
-                    throw new NotImplementedException();
+                    var next = 0;
+                    TryGetElementAt(_owner.Root, index, ref next, out var result);
+                    return result;
                 }
-            }
-        }
-
-        public T this[int index]
-        {
-            get
-            {
-                if (index >= Count)
-                {
-                    throw new IndexOutOfRangeException("The index was out of range.");
-                }
-
-                throw new NotImplementedException();
             }
         }
 
@@ -79,6 +71,31 @@ namespace Avalonia.Controls.Selection
                     }
                 }
             }
+        }
+
+        private bool TryGetElementAt(TreeSelectionNode<T> node, int target, ref int next, out T? result)
+        {
+            var nodeCount = IndexRange.GetCount(node.Ranges);
+
+            if (target < next + nodeCount)
+            {
+                result = node.ItemsView![IndexRange.GetAt(node.Ranges, target - next)];
+                return true;
+            }
+
+            next += nodeCount;
+
+            if (node.Children is object)
+            {
+                foreach (var child in node.Children)
+                {
+                    if (child is object && TryGetElementAt(child, target, ref next, out result))
+                        return true;
+                }
+            }
+
+            result = default;
+            return false;
         }
     }
 

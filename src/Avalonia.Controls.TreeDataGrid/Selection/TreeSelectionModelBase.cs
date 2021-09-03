@@ -11,6 +11,7 @@ namespace Avalonia.Controls.Selection
     public abstract class TreeSelectionModelBase<T> : ITreeSelectionModel, INotifyPropertyChanged
     {
         private TreeSelectionNode<T> _root;
+        private int _count;
         private bool _singleSelect = true;
         private IndexPath _anchorIndex;
         private IndexPath _selectedIndex;
@@ -30,7 +31,18 @@ namespace Avalonia.Controls.Selection
             Source = source;
         }
 
-        public int Count { get; }
+        public int Count 
+        {
+            get => _count;
+            private set
+            {
+                if (_count != value)
+                {
+                    _count = value;
+                    RaisePropertyChanged(nameof(Count));
+                }
+            }
+        }
 
         public bool SingleSelect 
         {
@@ -270,6 +282,8 @@ namespace Avalonia.Controls.Selection
                 _untypedSelectionChanged?.Invoke(this, e);
             }
 
+            Count += (raiseIndexesChanged ? shiftDelta : 0) - (removed?.Count ?? 0);
+
             if (selectedIndexChanged)
                 RaisePropertyChanged(nameof(SelectedIndex));
             if (selectedItemChanged)
@@ -381,6 +395,8 @@ namespace Avalonia.Controls.Selection
                 SelectionChanged?.Invoke(this, e);
                 _untypedSelectionChanged?.Invoke(this, e);
             }
+
+            Count += (operation.SelectedRanges?.Count ?? 0) - (operation?.DeselectedRanges?.Count ?? 0);
 
             if (oldSelectedIndex != _selectedIndex)
             {
