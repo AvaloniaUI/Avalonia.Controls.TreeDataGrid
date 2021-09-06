@@ -98,6 +98,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         protected abstract TRow CreateRow(int modelIndex, TModel model);
 
+        protected int ModelIndexToRowIndex(int modelIndex)
+        {
+            if (_sortedIndexes is null)
+                return modelIndex >= 0 && modelIndex < _items.Count ? modelIndex : -1;
+            else
+                return SortHelper<int>.BinarySearch(_sortedIndexes, modelIndex, _compareItemsByIndex);
+        }
+
+        protected int RowIndexToModelIndex(int rowIndex) => _sortedIndexes?[rowIndex] ?? rowIndex;
+
         private List<TRow> GetOrCreateRows()
         {
             if (_unsortedRows is null)

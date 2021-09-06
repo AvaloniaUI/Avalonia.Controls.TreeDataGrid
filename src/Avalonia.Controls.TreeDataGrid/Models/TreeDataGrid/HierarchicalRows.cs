@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using Avalonia.Controls.Utils;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
@@ -138,12 +139,23 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public int ModelIndexToRowIndex(IndexPath modelIndex)
         {
-            throw new NotImplementedException();
+            if (modelIndex == default)
+                return -1;
+            
+            for (var i = 0; i < _rows.Count; ++i)
+            {
+                if (_rows[i].ModelIndexPath == modelIndex)
+                    return i;
+            }
+
+            return -1;
         }
 
         public IndexPath RowIndexToModelIndex(int rowIndex)
         {
-            throw new NotImplementedException();
+            if (rowIndex >= 0 && rowIndex < _rows.Count)
+                return _rows[rowIndex].ModelIndexPath;
+            return default;
         }
 
         public override IEnumerator<HierarchicalRow<TModel>> GetEnumerator() => _rows.GetEnumerator();

@@ -71,6 +71,7 @@ namespace ProControlsDemo.ViewModels
                 }
             };
 
+            Source.Selection!.SingleSelect = false;
             Source.Selection.SelectionChanged += SelectionChanged;
         }
 
