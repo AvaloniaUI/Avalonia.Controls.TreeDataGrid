@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 
 namespace Avalonia.Controls.Selection
@@ -42,6 +43,32 @@ namespace Avalonia.Controls.Selection
             }
 
             return false;
+        }
+
+        void ITreeDataGridSelectionInteraction.OnKeyDown(TreeDataGrid sender, KeyEventArgs e)
+        {
+            if (!e.Handled)
+            {
+                var direction = e.Key.ToNavigationDirection();
+                var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
+                var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+
+                if (direction.HasValue)
+                {
+                    var focused = GetFocusedRow(sender);
+
+                    if (focused is object && !ctrl)
+                    {
+                        e.Handled = TryKeyExpandCollapse(sender, direction.Value, focused);
+                    }
+
+                    if (!e.Handled && (!ctrl || shift))
+                    {
+                        e.Handled = MoveSelection(sender, direction.Value, shift, focused);
+                    }
+                }
+            }
+
         }
 
         void ITreeDataGridSelectionInteraction.OnPointerPressed(TreeDataGrid sender, PointerPressedEventArgs e)
@@ -161,6 +188,87 @@ namespace Avalonia.Controls.Selection
             {
                 if (!treeDataGrid.QueryCancelSelection())
                     SelectedIndex = modelIndex;
+            }
+        }
+
+        private TreeDataGridRow? GetFocusedRow(TreeDataGrid treeDataGrid)
+        {
+            var focus = FocusManager.Instance;
+            TreeDataGridRow? focused = null;
+            if (focus.Current is IControl current)
+                treeDataGrid.TryGetRow(current, out focused);
+            return focused;
+        }
+
+        private bool TryKeyExpandCollapse(
+            TreeDataGrid treeDataGrid,
+            NavigationDirection direction,
+            TreeDataGridRow focused)
+        {
+            if (treeDataGrid.RowsPresenter is null || focused.RowIndex < 0)
+                return false;
+
+            var row = _source.Rows[focused.RowIndex];
+
+            if (row is IExpander expander)
+            {
+                if (direction == NavigationDirection.Right && !expander.IsExpanded)
+                {
+                    expander.IsExpanded = true;
+                    return true;
+                }
+                else if (direction == NavigationDirection.Left && expander.IsExpanded)
+                {
+                    expander.IsExpanded = false;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool MoveSelection(
+            TreeDataGrid treeDataGrid,
+            NavigationDirection direction,
+            bool rangeModifier,
+            TreeDataGridRow? focused)
+        {
+            if (treeDataGrid.RowsPresenter is null || _source.Columns.Count == 0 || _source.Rows.Count == 0)
+                return false;
+
+            var currentRowIndex = focused?.RowIndex ?? _source.Rows.ModelIndexToRowIndex(SelectedIndex);
+            int newRowIndex;
+
+            if (direction == NavigationDirection.First || direction == NavigationDirection.Last)
+            {
+                newRowIndex = direction == NavigationDirection.First ? 0 : _source.Rows.Count - 1;
+            }
+            else
+            {
+                (int x, int y) step = direction switch
+                {
+                    NavigationDirection.Up => (0, -1),
+                    NavigationDirection.Down => (0, 1),
+                    NavigationDirection.Left => (-1, 0),
+                    NavigationDirection.Right => (1, 0),
+                    _ => (0, 0)
+                };
+
+                newRowIndex = Math.Max(0, Math.Min(currentRowIndex + step.y, _source.Rows.Count - 1));
+            }
+
+            if (newRowIndex != currentRowIndex)
+                UpdateSelection(treeDataGrid, newRowIndex, true, rangeModifier);
+
+            if (newRowIndex != currentRowIndex)
+            {
+                treeDataGrid.RowsPresenter?.BringIntoView(newRowIndex);
+                treeDataGrid.TryGetRow(newRowIndex)?.Focus();
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
     }

@@ -222,11 +222,6 @@ namespace Avalonia.Controls
 
         protected virtual IElementFactory CreateElementFactory() => new TreeDataGridElementFactory();
 
-        protected bool MoveSelection(NavigationDirection direction, bool rangeModifier)
-        {
-            return MoveSelection(direction, rangeModifier, GetFocusedRow());
-        }
-
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
@@ -263,81 +258,6 @@ namespace Avalonia.Controls
         {
             base.OnPointerReleased(e);
             _selection?.OnPointerReleased(this, e);
-        }
-
-        private TreeDataGridRow? GetFocusedRow()
-        {
-            var focus = FocusManager.Instance;
-            TreeDataGridRow? focused = null;
-            if (focus.Current is IControl current)
-                TryGetRow(current, out focused);
-            return focused;
-        }
-
-        private bool MoveSelection(NavigationDirection direction, bool rangeModifier, TreeDataGridRow? focused)
-        {
-            return false;
-            ////if (Source is null || RowsPresenter is null || Source.Columns.Count == 0 || Source.Rows.Count == 0)
-            ////    return false;
-
-            ////var currentRowIndex = focused?.RowIndex ?? _rowSelectionView?.SelectedIndex ?? 0;
-            ////int newRowIndex;
-
-            ////if (direction == NavigationDirection.First || direction == NavigationDirection.Last)
-            ////{
-            ////    newRowIndex = direction == NavigationDirection.First ? 0 : Source.Rows.Count - 1;
-            ////}
-            ////else
-            ////{
-            ////    (int x, int y) step = direction switch
-            ////    {
-            ////        NavigationDirection.Up => (0, -1),
-            ////        NavigationDirection.Down => (0, 1),
-            ////        NavigationDirection.Left => (-1, 0),
-            ////        NavigationDirection.Right => (1, 0),
-            ////        _ => (0, 0)
-            ////    };
-
-            ////    newRowIndex = Math.Max(0, Math.Min(currentRowIndex + step.y, Source.Rows.Count - 1));
-            ////}
-
-            ////if (newRowIndex != currentRowIndex)
-            ////    UpdateSelection(newRowIndex, true, rangeModifier);
-
-            ////if (newRowIndex != currentRowIndex)
-            ////{
-            ////    RowsPresenter?.BringIntoView(newRowIndex);
-            ////    TryGetRow(newRowIndex)?.Focus();
-            ////    return true;
-            ////}
-            ////else
-            ////{
-            ////    return false;
-            ////}
-        }
-
-        private bool TryKeyExpandCollapse(NavigationDirection direction, TreeDataGridRow focused)
-        {
-            if (Source is null || RowsPresenter is null || focused.RowIndex < 0)
-                return false;
-
-            var row = Source.Rows[focused.RowIndex];
-
-            if (row is IExpander expander)
-            {
-                if (direction == NavigationDirection.Right && !expander.IsExpanded)
-                {
-                    expander.IsExpanded = true;
-                    return true;
-                }
-                else if (direction == NavigationDirection.Left && expander.IsExpanded)
-                {
-                    expander.IsExpanded = false;
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         internal void RaiseCellClearing(TreeDataGridCell cell, int columnIndex, int rowIndex)
