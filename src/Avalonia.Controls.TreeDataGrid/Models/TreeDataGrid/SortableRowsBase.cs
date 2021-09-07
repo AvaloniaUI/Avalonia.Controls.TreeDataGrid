@@ -314,8 +314,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 var endIndex = startIndex + count;
 
                 // Remove the rows from the unsorted rows.
-                for (var i = startIndex; i < endIndex; ++i)
-                    _unsortedRows.RemoveAt(_sortedIndexes![i]);
+                _unsortedRows.RemoveRange(startIndex, count);
 
                 // Iterate the sorted indexes, raising a collection changed event for the
                 // items removed, and updating the indexes of the subsequent items.

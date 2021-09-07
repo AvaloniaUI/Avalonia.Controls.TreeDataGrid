@@ -151,6 +151,25 @@ namespace Avalonia.Controls.TreeDataGridTests
             [Theory]
             [InlineData(false)]
             [InlineData(true)]
+            public void Supports_Removing_Child_Rows_At_Start(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+
+                target.Expand(new IndexPath(0));
+                Assert.Equal(10, target.Rows.Count);
+
+                var raised = 0;
+                target.Rows.CollectionChanged += (s, e) => ++raised;
+
+                data[0].Children!.RemoveRange(0, 2);
+
+                AssertState(target, data, 8, sorted, new IndexPath(0));
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
             public void Supports_Replacing_Root_Row(bool sorted)
             {
                 var data = CreateData();
