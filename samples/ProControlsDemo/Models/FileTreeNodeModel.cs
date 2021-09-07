@@ -165,6 +165,7 @@ namespace ProControlsDemo.Models
                     if (_children[i].Path == e.FullPath)
                     {
                         _children.RemoveAt(i);
+                        System.Diagnostics.Debug.WriteLine($"Removed {e.FullPath}");
                         break;
                     }
                 }
@@ -177,10 +178,10 @@ namespace ProControlsDemo.Models
             {
                 foreach (var child in _children!)
                 {
-                    if (child.Path == e.FullPath)
+                    if (child.Path == e.OldFullPath)
                     {
                         child.Path = e.FullPath;
-                        child.Name = e.Name;
+                        child.Name = e.Name ?? string.Empty;
                         break;
                     }
                 }
