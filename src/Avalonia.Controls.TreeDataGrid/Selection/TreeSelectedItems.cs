@@ -106,17 +106,8 @@ namespace Avalonia.Controls.Selection
 
         IEnumerator<object?> IEnumerable<object?>.GetEnumerator()
         {
-            if (_owner.SingleSelect)
-            {
-                if (_owner.SelectedIndex.Count > 0)
-                {
-                    yield return _owner.SelectedItem;
-                }
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
+            foreach (var i in this)
+                yield return i;
         }
     }
 }
