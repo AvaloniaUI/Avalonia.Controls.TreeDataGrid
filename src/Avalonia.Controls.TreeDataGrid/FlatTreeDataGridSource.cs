@@ -64,7 +64,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public TreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as TreeDataGridRowSelectionModel<TModel>;
+        public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
 
         public void Dispose() => _rows?.Dispose();
 

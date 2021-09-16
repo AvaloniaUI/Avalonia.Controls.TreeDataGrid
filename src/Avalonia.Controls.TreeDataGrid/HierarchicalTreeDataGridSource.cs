@@ -23,7 +23,7 @@ namespace Avalonia.Controls
         private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
         private Comparison<TModel>? _comparison;
-        private ITreeDataGridRowSelectionModel<TModel>? _selection;
+        private ITreeDataGridSelection? _selection;
         private bool _isSelectionSet;
 
         public HierarchicalTreeDataGridSource(TModel item)
@@ -56,7 +56,7 @@ namespace Avalonia.Controls
         public IRows Rows => GetOrCreateRows();
         public ColumnList<TModel> Columns { get; }
 
-        public ITreeDataGridRowSelectionModel<TModel>? Selection
+        public ITreeDataGridSelection? Selection
         {
             get
             {
@@ -75,8 +75,9 @@ namespace Avalonia.Controls
             }
         }
 
+        public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
+
         IColumns ITreeDataGridSource.Columns => Columns;
-        ITreeDataGridSelection? ITreeDataGridSource.Selection => Selection;
 
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanding;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanded;

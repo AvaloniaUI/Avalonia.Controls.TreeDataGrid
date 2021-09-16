@@ -71,8 +71,8 @@ namespace ProControlsDemo.ViewModels
                 }
             };
 
-            Source.Selection!.SingleSelect = false;
-            Source.Selection.SelectionChanged += SelectionChanged;
+            Source.RowSelection!.SingleSelect = false;
+            Source.RowSelection.SelectionChanged += SelectionChanged;
         }
 
         public HierarchicalTreeDataGridSource<FileTreeNodeModel> Source { get; }
