@@ -41,6 +41,8 @@ namespace Avalonia.Controls
                     _items = value;
                     _itemsView = ItemsSourceViewFix<TModel>.GetOrCreate(value);
                     _rows?.SetItems(_itemsView);
+                    if (_selection is object)
+                        _selection.Source = value;
                 }
             }
         }

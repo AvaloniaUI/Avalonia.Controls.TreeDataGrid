@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
@@ -25,6 +26,12 @@ namespace Avalonia.Controls.Selection
         {
             add => _viewSelectionChanged += value;
             remove => _viewSelectionChanged -= value;
+        }
+
+        IEnumerable? ITreeDataGridSelection.Source
+        {
+            get => Source;
+            set => Source = value;
         }
 
         bool ITreeDataGridSelectionInteraction.IsRowSelected(IRow rowModel)

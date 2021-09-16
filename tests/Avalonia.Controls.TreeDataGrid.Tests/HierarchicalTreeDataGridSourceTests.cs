@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 using Xunit;
 
 namespace Avalonia.Controls.TreeDataGridTests
@@ -357,6 +358,24 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 Assert.False(expander.ShowExpander);
                 Assert.False(expander.IsExpanded);
+            }
+        }
+
+        public class Selection
+        {
+            [Fact]
+            public void Reassigning_Source_Updates_Selection_Model_Source()
+            {
+                var data1 = CreateData();
+                var data2 = CreateData(5);
+                var target = CreateTarget(data1, false);
+
+                // Ensure selection model is created.
+                Assert.Same(data1, ((ITreeDataGridSelection?)target.RowSelection)!.Source);
+
+                target.Items = data2;
+
+                Assert.Same(data2, ((ITreeDataGridSelection?)target.RowSelection)!.Source);
             }
         }
 

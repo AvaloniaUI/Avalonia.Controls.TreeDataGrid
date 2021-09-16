@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections;
 
 namespace Avalonia.Controls.Selection
 {
     public interface ITreeDataGridSelection
     {
+        IEnumerable? Source { get; set; }
     }
 }
