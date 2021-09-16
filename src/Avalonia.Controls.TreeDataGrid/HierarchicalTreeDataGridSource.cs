@@ -101,9 +101,9 @@ namespace Avalonia.Controls
             {
                 var i = index[depth];
 
-                if (i < items.Count())
+                if (i < items?.Count())
                 {
-                    var e = items.ElementAt(i);
+                    var e = items.ElementAt(i)!;
 
                     if (depth < count - 1)
                     {
@@ -198,12 +198,12 @@ namespace Avalonia.Controls
             return _rows;
         }
 
-        private void OnColumnsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnColumnsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    if (_expanderColumn is null)
+                    if (_expanderColumn is null && e.NewItems is object)
                     {
                         foreach (var i in e.NewItems)
                         {
