@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
@@ -10,6 +11,43 @@ namespace Avalonia.Controls.TreeDataGridTests
 {
     public class TreeSelectionModelBaseTests_Single
     {
+        public class Source
+        {
+            [Fact]
+            public void Changing_Source_To_NonNull_First_Clears_Old_Selection()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.SelectedIndex = new IndexPath(0, 2);
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Equal(new[] { new IndexPath(0, 2) }, e.DeselectedIndexes);
+                    Assert.Equal("Node 0-2", e.DeselectedItems.Single()!.Caption);
+                    Assert.Empty(e.SelectedIndexes);
+                    Assert.Empty(e.SelectedItems);
+                    ++raised;
+                };
+
+                target.Source = CreateData(depth: 1);
+
+                Assert.Equal(-1, target.SelectedIndex);
+                Assert.Empty(target.SelectedIndexes);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+                Assert.Equal(1, raised);
+            }
+
+            [Fact]
+            public void Can_Assign_ValueType_Collection_To_SelectionModel_Of_Object()
+            {
+                var target = (ISelectionModel)new SelectionModel<object>();
+
+                target.Source = new[] { 1, 2, 3 };
+            }
+        }
+
         public class SelectedIndex
         {
             [Fact]
@@ -1197,6 +1235,12 @@ namespace Avalonia.Controls.TreeDataGridTests
             public TestTreeSelectionModel(AvaloniaList<Node> data)
                 : base(data)
             {
+            }
+
+            public new IEnumerable? Source
+            {
+                get => base.Source;
+                set => base.Source = value;
             }
 
             protected internal override IEnumerable<Node>? GetChildren(Node node)

@@ -94,15 +94,27 @@ namespace Avalonia.Controls.Selection
         IEnumerable? ITreeSelectionModel.Source
         {
             get => Source;
-            set => Source = (IEnumerable<T>?)value;
+            set => throw new NotSupportedException();
         }
 
         internal TreeSelectionNode<T> Root => _root;
 
-        protected IEnumerable? Source 
+        protected IEnumerable? Source
         {
             get => _root.Source;
-            set => _root.Source = value;
+            set
+            {
+                if (_root.Source != value)
+                {
+                    if (_root.Source is object && value is object)
+                    {
+                        using var update = BatchUpdate();
+                        Clear();
+                    }
+
+                    _root.Source = value;
+                }
+            }
         }
 
         public event EventHandler<TreeSelectionModelSelectionChangedEventArgs<T>>? SelectionChanged;
