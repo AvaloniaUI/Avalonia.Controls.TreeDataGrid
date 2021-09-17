@@ -247,9 +247,9 @@ namespace Avalonia.Controls.TreeDataGridTests
                 target.Rows.CollectionChanged += (s, e) =>
                 {
                     if (e.Action == NotifyCollectionChangedAction.Add)
-                        rowsAddedRaised += e.NewItems.Count;
+                        rowsAddedRaised += e.NewItems!.Count;
                     else if (e.Action == NotifyCollectionChangedAction.Remove)
-                        rowsRemovedRaised += e.OldItems.Count;
+                        rowsRemovedRaised += e.OldItems!.Count;
                 };
 
                 target.Items = CreateData(10);
@@ -257,6 +257,32 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(10, target.Rows.Count);
                 Assert.Equal(5, rowsRemovedRaised);
                 Assert.Equal(10, rowsAddedRaised);
+            }
+
+            [Fact]
+            public void Selects_Correct_Item_After_Items_Reassigned()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, false);
+                var raised = 0;
+
+                target.RowSelection!.Select(new IndexPath(1, 0));
+
+                var newData = CreateData(10);
+                newData[1].Children![0].Caption = "New Selection";
+                target.Items = newData;
+                
+
+                target.RowSelection!.SelectionChanged += (s, e) =>
+                {
+                    Assert.Equal(new IndexPath(1, 0), e.SelectedIndexes.Single());
+                    Assert.Equal("New Selection", e.SelectedItems.Single()!.Caption);
+                    ++raised;
+                };
+
+                target.RowSelection!.Select(new IndexPath(1, 0)); 
+                
+                Assert.Equal(1, raised);
             }
         }
 
