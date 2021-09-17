@@ -233,87 +233,6 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 AssertState(target, data, 10, false, new IndexPath(0));
             }
-
-            [Theory]
-            [InlineData(false)]
-            [InlineData(true)]
-            public void Can_Reassign_Items(bool sorted)
-            {
-                var data = CreateData();
-                var target = CreateTarget(data, sorted);
-                var rowsAddedRaised = 0;
-                var rowsRemovedRaised = 0;
-
-                Assert.Equal(5, target.Rows.Count);
-
-                target.Rows.CollectionChanged += (s, e) =>
-                {
-                    if (e.Action == NotifyCollectionChangedAction.Add)
-                        rowsAddedRaised += e.NewItems!.Count;
-                    else if (e.Action == NotifyCollectionChangedAction.Remove)
-                        rowsRemovedRaised += e.OldItems!.Count;
-                };
-
-                target.Items = CreateData(10);
-
-                Assert.Equal(10, target.Rows.Count);
-                Assert.Equal(5, rowsRemovedRaised);
-                Assert.Equal(10, rowsAddedRaised);
-            }
-
-            [Theory]
-            [InlineData(false)]
-            [InlineData(true)]
-            public void Can_Reassign_Items_With_Expanded_Node(bool sorted)
-            {
-                var data = CreateData();
-                var target = CreateTarget(data, sorted);
-                var rowsAddedRaised = 0;
-                var rowsRemovedRaised = 0;
-
-                target.Expand(0);
-                Assert.Equal(10, target.Rows.Count);
-
-                target.Rows.CollectionChanged += (s, e) =>
-                {
-                    if (e.Action == NotifyCollectionChangedAction.Add)
-                        rowsAddedRaised += e.NewItems!.Count;
-                    else if (e.Action == NotifyCollectionChangedAction.Remove)
-                        rowsRemovedRaised += e.OldItems!.Count;
-                };
-
-                target.Items = CreateData(12);
-
-                Assert.Equal(12, target.Rows.Count);
-                Assert.Equal(10, rowsRemovedRaised);
-                Assert.Equal(12, rowsAddedRaised);
-            }
-
-            [Fact]
-            public void Selects_Correct_Item_After_Items_Reassigned()
-            {
-                var data = CreateData();
-                var target = CreateTarget(data, false);
-                var raised = 0;
-
-                target.RowSelection!.Select(new IndexPath(1, 0));
-
-                var newData = CreateData(10);
-                newData[1].Children![0].Caption = "New Selection";
-                target.Items = newData;
-                
-
-                target.RowSelection!.SelectionChanged += (s, e) =>
-                {
-                    Assert.Equal(new IndexPath(1, 0), e.SelectedIndexes.Single());
-                    Assert.Equal("New Selection", e.SelectedItems.Single()!.Caption);
-                    ++raised;
-                };
-
-                target.RowSelection!.Select(new IndexPath(1, 0)); 
-                
-                Assert.Equal(1, raised);
-            }
         }
 
         public class Expansion
@@ -432,6 +351,89 @@ namespace Avalonia.Controls.TreeDataGridTests
                 target.Items = data2;
 
                 Assert.Same(data2, ((ITreeDataGridSelection?)target.RowSelection)!.Source);
+            }
+        }
+
+        public class Items
+        {
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Can_Reassign_Items(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+                var rowsAddedRaised = 0;
+                var rowsRemovedRaised = 0;
+
+                Assert.Equal(5, target.Rows.Count);
+
+                target.Rows.CollectionChanged += (s, e) =>
+                {
+                    if (e.Action == NotifyCollectionChangedAction.Add)
+                        rowsAddedRaised += e.NewItems!.Count;
+                    else if (e.Action == NotifyCollectionChangedAction.Remove)
+                        rowsRemovedRaised += e.OldItems!.Count;
+                };
+
+                target.Items = CreateData(10);
+
+                Assert.Equal(10, target.Rows.Count);
+                Assert.Equal(5, rowsRemovedRaised);
+                Assert.Equal(10, rowsAddedRaised);
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Can_Reassign_Items_With_Expanded_Node(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+                var rowsAddedRaised = 0;
+                var rowsRemovedRaised = 0;
+
+                target.Expand(0);
+                Assert.Equal(10, target.Rows.Count);
+
+                target.Rows.CollectionChanged += (s, e) =>
+                {
+                    if (e.Action == NotifyCollectionChangedAction.Add)
+                        rowsAddedRaised += e.NewItems!.Count;
+                    else if (e.Action == NotifyCollectionChangedAction.Remove)
+                        rowsRemovedRaised += e.OldItems!.Count;
+                };
+
+                target.Items = CreateData(12);
+
+                Assert.Equal(12, target.Rows.Count);
+                Assert.Equal(10, rowsRemovedRaised);
+                Assert.Equal(12, rowsAddedRaised);
+            }
+
+            [Fact]
+            public void Selects_Correct_Item_After_Items_Reassigned()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, false);
+                var raised = 0;
+
+                target.RowSelection!.Select(new IndexPath(1, 0));
+
+                var newData = CreateData(10);
+                newData[1].Children![0].Caption = "New Selection";
+                target.Items = newData;
+
+                target.RowSelection!.SelectionChanged += (s, e) =>
+                {
+                    Assert.Equal(new IndexPath(1, 0), e.SelectedIndexes.Single());
+                    Assert.Equal("New Selection", e.SelectedItems.Single()!.Caption);
+                    ++raised;
+                };
+
+                target.RowSelection!.Select(new IndexPath(1, 0));
+
+                Assert.Equal(1, raised);
             }
         }
 
