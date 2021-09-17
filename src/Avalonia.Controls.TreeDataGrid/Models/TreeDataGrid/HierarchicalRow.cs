@@ -176,7 +176,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     _owner._comparison);
             }
 
-            private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
             {
                 _owner._controller.OnChildCollectionChanged(_owner, e);
             }

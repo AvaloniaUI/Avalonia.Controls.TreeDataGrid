@@ -234,11 +234,13 @@ namespace Avalonia.Controls.TreeDataGridTests
                 AssertState(target, data, 10, false, new IndexPath(0));
             }
 
-            [Fact]
-            public void Can_Reassign_Items()
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Can_Reassign_Items(bool sorted)
             {
                 var data = CreateData();
-                var target = CreateTarget(data, false);
+                var target = CreateTarget(data, sorted);
                 var rowsAddedRaised = 0;
                 var rowsRemovedRaised = 0;
 
@@ -257,6 +259,34 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(10, target.Rows.Count);
                 Assert.Equal(5, rowsRemovedRaised);
                 Assert.Equal(10, rowsAddedRaised);
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Can_Reassign_Items_With_Expanded_Node(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+                var rowsAddedRaised = 0;
+                var rowsRemovedRaised = 0;
+
+                target.Expand(0);
+                Assert.Equal(10, target.Rows.Count);
+
+                target.Rows.CollectionChanged += (s, e) =>
+                {
+                    if (e.Action == NotifyCollectionChangedAction.Add)
+                        rowsAddedRaised += e.NewItems!.Count;
+                    else if (e.Action == NotifyCollectionChangedAction.Remove)
+                        rowsRemovedRaised += e.OldItems!.Count;
+                };
+
+                target.Items = CreateData(12);
+
+                Assert.Equal(12, target.Rows.Count);
+                Assert.Equal(10, rowsRemovedRaised);
+                Assert.Equal(12, rowsAddedRaised);
             }
 
             [Fact]
