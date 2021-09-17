@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -9,27 +13,30 @@ using Avalonia.Layout;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ProControlsDemo.Models;
+using ReactiveUI;
 
 namespace ProControlsDemo.ViewModels
 {
-    class FilesPageViewModel
+    class FilesPageViewModel : ReactiveObject
     {
         private FileTreeNodeModel _root;
         private Bitmap _folderIcon;
         private Bitmap _fileIcon;
+        private string _selectedDrive;
 
         public FilesPageViewModel()
         {
             var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
-            
+
             using (var s = assetLoader.Open(new Uri("avares://ProControlsDemo/Assets/file.png")))
                 _fileIcon = new Bitmap(s);
             using (var s = assetLoader.Open(new Uri("avares://ProControlsDemo/Assets/folder.png")))
                 _folderIcon = new Bitmap(s);
 
-            _root = new FileTreeNodeModel(@"c:\", isDirectory: true, isRoot: true);
+            Drives = DriveInfo.GetDrives().Select(x => x.Name).ToList();
+            _selectedDrive = "C:\\";
 
-            Source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(_root)
+            Source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(new FileTreeNodeModel[0])
             {
                 Columns =
                 {
@@ -73,6 +80,21 @@ namespace ProControlsDemo.ViewModels
 
             Source.RowSelection!.SingleSelect = false;
             Source.RowSelection.SelectionChanged += SelectionChanged;
+
+            this.WhenAnyValue(x => x.SelectedDrive)
+                .Subscribe(x =>
+                {
+                    _root = new FileTreeNodeModel(_selectedDrive, isDirectory: true, isRoot: true);
+                    Source.Items = new[] { _root };
+                });
+        }
+
+        public IList<string> Drives { get; }
+
+        public string SelectedDrive
+        {
+            get => _selectedDrive;
+            set => this.RaiseAndSetIfChanged(ref _selectedDrive, value);
         }
 
         public HierarchicalTreeDataGridSource<FileTreeNodeModel> Source { get; }
@@ -112,9 +134,9 @@ namespace ProControlsDemo.ViewModels
         private void SelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs<FileTreeNodeModel> e)
         {
             foreach (var i in e.DeselectedItems)
-                System.Diagnostics.Trace.WriteLine($"Deselected '{i.Path}'");
+                System.Diagnostics.Trace.WriteLine($"Deselected '{i?.Path}'");
             foreach (var i in e.SelectedItems)
-                System.Diagnostics.Trace.WriteLine($"Selected '{i.Path}'");
+                System.Diagnostics.Trace.WriteLine($"Selected '{i?.Path}'");
         }
     }
 }

@@ -28,6 +28,10 @@
     </TabItem>
     <TabItem Header="Files">
       <DockPanel>
+		<ComboBox Items="{Binding Files.Drives}"
+				  SelectedItem="{Binding Files.SelectedDrive}"
+				  Margin="0 4"
+				  DockPanel.Dock="Top"/>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
         <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}"/>
       </DockPanel>
