@@ -83,8 +83,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 if (comparison is object)
                 {
-                    var comparer = new FuncComparer<TModel>(comparison);
-                    _sortedIndexes = StableSort.SortedMap<TModel>(_items, _compareItemsByIndex);
+                    _sortedIndexes = StableSort.SortedMap(_items, _compareItemsByIndex);
                 }
                 else
                 {
@@ -121,33 +120,25 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
                 if (_comparison is object)
                 {
-                    _sortedIndexes = StableSort.SortedMap<TModel>(_items, _compareItemsByIndex);
+                    _sortedIndexes = StableSort.SortedMap(_items, _compareItemsByIndex);
                 }
             }
 
             return _unsortedRows;
         }
 
-        private void Reset(List<TRow> rows)
+        private void ResetRows()
         {
-            foreach (var row in rows)
+            if (_unsortedRows is object)
             {
-                row.Dispose();
+                foreach (var row in _unsortedRows)
+                {
+                    row.Dispose();
+                }
             }
 
-            rows.Clear();
+            _unsortedRows = null;
             _sortedIndexes = null;
-
-            for (var i = 0; i < _items.Count; ++i)
-            {
-                rows.Add(CreateRow(i, _items[i]));
-            }
-
-            if (_comparison is object)
-            {
-                var comparer = new FuncComparer<TModel>(_comparison);
-                _sortedIndexes = StableSort.SortedMap<TModel>(_items, _compareItemsByIndex);
-            }
         }
 
         private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -248,7 +239,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                             e.OldStartingIndex));
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    Reset(_unsortedRows);
+                    ResetRows();
                     CollectionChanged?.Invoke(this, e);
                     break;
                 default:
@@ -341,7 +332,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     Add(e.NewStartingIndex, e.NewItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    Reset(_unsortedRows);
+                    ResetRows();
                     CollectionChanged?.Invoke(this, e);
                     break;
                 default:
