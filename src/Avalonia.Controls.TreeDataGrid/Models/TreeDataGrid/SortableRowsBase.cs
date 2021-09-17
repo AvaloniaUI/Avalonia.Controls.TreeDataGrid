@@ -136,30 +136,17 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             }
 
             rows.Clear();
+            _sortedIndexes = null;
 
-            if (_comparison is null)
+            for (var i = 0; i < _items.Count; ++i)
             {
-                for (var i = 0; i < _items.Count; ++i)
-                {
-                    rows.Add(CreateRow(i, _items[i]));
-                }
+                rows.Add(CreateRow(i, _items[i]));
             }
-            else
+
+            if (_comparison is object)
             {
-                var sorted = new (int index, TModel model)[_items.Count];
-                var c = _comparison;
-
-                for (var i = 0; i < _items.Count; ++i)
-                {
-                    sorted[i] = (i, _items[i]);
-                }
-
-                Array.Sort(sorted, (x, y) => c(x.model, y.model));
-
-                foreach (var i in sorted)
-                {
-                    rows.Add(CreateRow(i.index, i.model));
-                }
+                var comparer = new FuncComparer<TModel>(_comparison);
+                _sortedIndexes = StableSort.SortedMap<TModel>(_items, _compareItemsByIndex);
             }
         }
 
