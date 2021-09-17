@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
+using Avalonia.Diagnostics;
 using Xunit;
 
 namespace Avalonia.Controls.TreeDataGridTests.Selection
@@ -1176,6 +1177,22 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 Assert.Equal("foo", target.SelectedItem!.Caption);
                 Assert.Equal(new[] { "foo" }, target.SelectedItems.Select(x => x!.Caption));
                 Assert.Equal(new IndexPath(0), target.AnchorIndex);
+            }
+
+            [Fact]
+            public void Clearing_Node_Selection_Unsubscribes_From_CollectionChanged()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+
+                target.Select(new IndexPath(1, 1));
+
+                var debug = (INotifyCollectionChangedDebug)data[1].Children!;
+                Assert.Single(debug.GetCollectionChangedSubscribers());
+
+                target.Deselect(new IndexPath(1, 1));
+
+                Assert.Null(debug.GetCollectionChangedSubscribers());
             }
         }
 

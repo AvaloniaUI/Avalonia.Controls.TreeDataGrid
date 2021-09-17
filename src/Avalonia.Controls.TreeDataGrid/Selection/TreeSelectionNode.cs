@@ -38,7 +38,24 @@ namespace Avalonia.Controls.Selection
             set => base.Source = value;
         }
 
-        internal IReadOnlyList<TreeSelectionNode<T>?>? Children => _children;
+        public bool HasChildren
+        {
+            get
+            {
+                if (_children is null)
+                    return false;
+
+                foreach (var child in _children)
+                {
+                    if (child is object)
+                        return true;
+                }
+
+                return false;
+            }
+        }
+
+        public IReadOnlyList<TreeSelectionNode<T>?>? Children => _children;
 
         public void Clear(TreeSelectionModelBase<T>.Operation operation)
         {
@@ -75,6 +92,26 @@ namespace Avalonia.Controls.Selection
             }
 
             return null;
+        }
+
+        public void PruneEmptyChildren()
+        {
+            if (_children is null)
+                return;
+
+            for (var i = 0; i < _children.Count; ++i)
+            {
+                if (_children[i] is TreeSelectionNode<T> node)
+                {
+                    node.PruneEmptyChildren();
+                    
+                    if (node.Ranges.Count == 0 && !node.HasChildren)
+                    {
+                        node.Source = null;
+                        _children[i] = null;
+                    }
+                }
+            }
         }
 
         protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)

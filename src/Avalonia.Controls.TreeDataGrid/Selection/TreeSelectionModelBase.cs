@@ -409,6 +409,7 @@ namespace Avalonia.Controls.Selection
             }
 
             Count += (operation.SelectedRanges?.Count ?? 0) - (operation?.DeselectedRanges?.Count ?? 0);
+            _root.PruneEmptyChildren();
 
             if (oldSelectedIndex != _selectedIndex)
             {
