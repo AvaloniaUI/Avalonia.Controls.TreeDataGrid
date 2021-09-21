@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using Avalonia.Controls.Utils;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
@@ -40,7 +41,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void Expand(IndexPath index)
         {
-            var count = index.GetSize();
+            var count = index.Count;
             var rows = (IReadOnlyList<HierarchicalRow<TModel>>?)_roots;
 
             for (var i = 0; i < count; ++i)
@@ -48,7 +49,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 if (rows is null)
                     break;
 
-                var modelIndex = index.GetAt(i);
+                var modelIndex = index[i];
                 var found = false;
 
                 foreach (var row in rows)
@@ -69,7 +70,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void Collapse(IndexPath index)
         {
-            var count = index.GetSize();
+            var count = index.Count;
             var rows = (IReadOnlyList<HierarchicalRow<TModel>>?)_roots;
 
             for (var i = 0; i < count; ++i)
@@ -77,7 +78,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 if (rows is null)
                     break;
 
-                var modelIndex = index.GetAt(i);
+                var modelIndex = index[i];
                 var found = false;
 
                 foreach (var row in rows)
@@ -136,6 +137,27 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             (cell as IDisposable)?.Dispose();
         }
 
+        public int ModelIndexToRowIndex(IndexPath modelIndex)
+        {
+            if (modelIndex == default)
+                return -1;
+            
+            for (var i = 0; i < _rows.Count; ++i)
+            {
+                if (_rows[i].ModelIndexPath == modelIndex)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        public IndexPath RowIndexToModelIndex(int rowIndex)
+        {
+            if (rowIndex >= 0 && rowIndex < _rows.Count)
+                return _rows[rowIndex].ModelIndexPath;
+            return default;
+        }
+
         public override IEnumerator<HierarchicalRow<TModel>> GetEnumerator() => _rows.GetEnumerator();
         IEnumerator<IRow> IEnumerable<IRow>.GetEnumerator() => _rows.GetEnumerator();
 
@@ -163,7 +185,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0)
         {
-            if (index.GetSize() > 0)
+            if (index.Count > 0)
             {
                 for (var i = fromRowIndex; i < _rows.Count; ++i)
                 {
@@ -274,10 +296,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     return _rows.Count;
 
                 var row = _rows[rowIndex];
-                var depth = row.ModelIndexPath.GetSize();
+                var depth = row.ModelIndexPath.Count;
                 var i = rowIndex + 1;
 
-                while (i < _rows.Count && _rows[i].ModelIndexPath.GetSize() > depth)
+                while (i < _rows.Count && _rows[i].ModelIndexPath.Count > depth)
                     ++i;
 
                 return i - (rowIndex + 1);

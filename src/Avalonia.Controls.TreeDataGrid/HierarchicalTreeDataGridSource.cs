@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
@@ -14,16 +14,17 @@ namespace Avalonia.Controls
     /// row may have multiple columns.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource,
+    public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource<TModel>,
         IDisposable,
         IExpanderRowController<TModel>
-        where TModel : class
     {
         private IEnumerable<TModel> _items;
         private ItemsSourceViewFix<TModel> _itemsView;
         private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
         private Comparison<TModel>? _comparison;
+        private ITreeDataGridSelection? _selection;
+        private bool _isSelectionSet;
 
         public HierarchicalTreeDataGridSource(TModel item)
             : this(new[] { item })
@@ -37,7 +38,7 @@ namespace Avalonia.Controls
             Columns = new ColumnList<TModel>();
             Columns.CollectionChanged += OnColumnsCollectionChanged;
         }
-        public event Action? Sorted;
+
         public IEnumerable<TModel> Items 
         {
             get => _items;
@@ -48,22 +49,83 @@ namespace Avalonia.Controls
                     _items = value;
                     _itemsView = ItemsSourceViewFix<TModel>.GetOrCreate(value);
                     _rows?.SetItems(_itemsView);
+                    if (_selection is object)
+                        _selection.Source = value;
                 }
             }
         }
 
         public IRows Rows => GetOrCreateRows();
         public ColumnList<TModel> Columns { get; }
+
+        public ITreeDataGridSelection? Selection
+        {
+            get
+            {
+                if (_selection == null && !_isSelectionSet)
+                    _selection = new TreeDataGridRowSelectionModel<TModel>(this);
+                return _selection;
+            }
+            set
+            {
+                if (value is null)
+                    throw new ArgumentNullException(nameof(value));
+                if (_selection is object)
+                    throw new InvalidOperationException("Selection is already initialized.");
+                _selection = value;
+                _isSelectionSet = true;
+            }
+        }
+
+        public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
+
         IColumns ITreeDataGridSource.Columns => Columns;
 
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanding;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowExpanded;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsing;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsed;
+        public event Action? Sorted;
 
         public void Dispose() => _rows?.Dispose();
         public void Expand(IndexPath index) => GetOrCreateRows().Expand(index);
         public void Collapse(IndexPath index) => GetOrCreateRows().Collapse(index);
+
+        public bool TryGetModelAt(IndexPath index, [NotNullWhen(true)] out TModel? result)
+        {
+            if (_expanderColumn is null)
+                throw new InvalidOperationException("No expander column defined.");
+
+            var items = (IEnumerable<TModel>?)Items;
+            var count = index.Count;
+
+            for (var depth = 0; depth < count; ++depth)
+            {
+                var i = index[depth];
+
+                if (i < items?.Count())
+                {
+                    var e = items.ElementAt(i)!;
+
+                    if (depth < count - 1)
+                    {
+                        items = _expanderColumn.GetChildModels(e);
+                    }
+                    else
+                    {
+                        result = e;
+                        return true;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            result = default;
+            return false;
+        }
 
         public void Sort(Comparison<TModel>? comparison)
         {
@@ -71,7 +133,7 @@ namespace Avalonia.Controls
             _rows?.Sort(_comparison);
         }
 
-        public bool SortBy(IColumn? column, ListSortDirection direction, ISelectionModel selection)
+        public bool SortBy(IColumn? column, ListSortDirection direction)
         {
             if (column is IColumn<TModel> columnBase &&
                 Columns.Contains(columnBase) &&
@@ -115,20 +177,10 @@ namespace Avalonia.Controls
         {
         }
 
-        internal TModel GetModelAt(in IndexPath index)
+        internal IEnumerable<TModel>? GetModelChildren(TModel model)
         {
-            if (_expanderColumn is null)
-                throw new InvalidOperationException("No expander column defined.");
-
-            var items = (IEnumerable<TModel>?)Items;
-            var count = index.GetSize();
-
-            for (var depth = 0; depth < count - 1; ++depth)
-            {
-                items = _expanderColumn.GetChildModels(items.ElementAt(index.GetAt(depth)));
-            }
-
-            return items.ElementAt(index.GetLeaf()!.Value);
+            _ = _expanderColumn ?? throw new InvalidOperationException("No expander column defined.");
+            return _expanderColumn.GetChildModels(model);
         }
 
         internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0) =>
@@ -148,12 +200,12 @@ namespace Avalonia.Controls
             return _rows;
         }
 
-        private void OnColumnsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnColumnsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    if (_expanderColumn is null)
+                    if (_expanderColumn is null && e.NewItems is object)
                     {
                         foreach (var i in e.NewItems)
                         {

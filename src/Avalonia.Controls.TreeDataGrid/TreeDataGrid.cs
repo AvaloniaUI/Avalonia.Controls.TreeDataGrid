@@ -35,6 +35,13 @@ namespace Avalonia.Controls
                 o => o.Rows,
                 (o, v) => o.Rows = v);
 
+        [Browsable(false)]
+        public static readonly DirectProperty<TreeDataGrid, ITreeDataGridSelectionInteraction?> SelectionInteractionProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGrid, ITreeDataGridSelectionInteraction?>(
+                nameof(SelectionInteraction),
+                o => o.SelectionInteraction,
+                (o, v) => o.SelectionInteraction = v);
+
         public static readonly DirectProperty<TreeDataGrid, IScrollable?> ScrollProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, IScrollable?>(
                 nameof(Scroll),
@@ -42,12 +49,6 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<bool> ShowColumnHeadersProperty =
             AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(ShowColumnHeaders), true);
-
-        public static readonly DirectProperty<TreeDataGrid, ISelectionModel?> SelectionProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGrid, ISelectionModel?>(
-                nameof(Selection),
-                o => o.Selection,
-                (o, v) => o.Selection = v);
 
         public static readonly DirectProperty<TreeDataGrid, ITreeDataGridSource?> SourceProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, ITreeDataGridSource?>(
@@ -59,7 +60,7 @@ namespace Avalonia.Controls
         private IColumns? _columns;
         private IRows? _rows;
         private IScrollable? _scroll;
-        private ISelectionModel? _selection;
+        private ITreeDataGridSelectionInteraction? _selection;
         private IControl? _userSortColumn;
         private ListSortDirection _userSortDirection;
         private TreeDataGridCellEventArgs? _cellArgs;
@@ -96,6 +97,13 @@ namespace Avalonia.Controls
             private set => SetAndRaise(RowsProperty, ref _rows, value);
         }
 
+        [Browsable(false)]
+        public ITreeDataGridSelectionInteraction? SelectionInteraction
+        {
+            get => _selection;
+            private set => SetAndRaise(SelectionInteractionProperty, ref _selection, value);
+        }
+
         public TreeDataGridColumnHeadersPresenter? ColumnHeadersPresenter { get; private set; }
         public TreeDataGridRowsPresenter? RowsPresenter { get; private set; }
         
@@ -111,11 +119,7 @@ namespace Avalonia.Controls
             set => SetValue(ShowColumnHeadersProperty, value);
         }
 
-        public ISelectionModel? Selection
-        {
-            get => _selection;
-            set => SetAndRaise(SelectionProperty, ref _selection, value);
-        }
+        public ITreeSelectionModel? RowSelection => Source?.Selection as ITreeSelectionModel;
 
         public ITreeDataGridSource? Source
         {
@@ -128,10 +132,12 @@ namespace Avalonia.Controls
                     {
                         value.Sorted += Source_Sorted;
                     }
+                    
                     if (_source!=null)
                     {
                         _source.Sorted -= Source_Sorted;
                     }
+                    
                     void Source_Sorted()
                     {
                         RowsPresenter?.RecycleAllElements();
@@ -142,6 +148,7 @@ namespace Avalonia.Controls
                     _source = value;
                     Columns = _source?.Columns;
                     Rows = _source?.Rows;
+                    SelectionInteraction = value?.Selection as ITreeDataGridSelectionInteraction;
                     RaisePropertyChanged(
                         SourceProperty,
                         new Optional<ITreeDataGridSource?>(oldSource),
@@ -152,7 +159,7 @@ namespace Avalonia.Controls
 
         public event EventHandler<TreeDataGridCellEventArgs>? CellClearing;
         public event EventHandler<TreeDataGridCellEventArgs>? CellPrepared;
-        public event CancelEventHandler SelectionChanging;
+        public event CancelEventHandler? SelectionChanging;
 
         public IControl? TryGetCell(int columnIndex, int rowIndex)
         {
@@ -170,159 +177,7 @@ namespace Avalonia.Controls
             return RowsPresenter?.TryGetElement(rowIndex) as TreeDataGridRow;
         }
 
-        public bool TryGetRowModel<TModel>(IControl element, [MaybeNullWhen(false)] out TModel result)
-        {
-            if (Source is object &&
-                TryGetRow(element, out var row) &&
-                row.RowIndex < Source.Rows.Count &&
-                Source.Rows[row.RowIndex] is IRow<TModel> rowWithModel)
-            {
-                result = rowWithModel.Model;
-                return true;
-            }
-
-            result = default;
-            return false;
-        }
-
-        protected virtual IElementFactory CreateElementFactory() => new TreeDataGridElementFactory();
-
-        protected bool MoveSelection(NavigationDirection direction, bool rangeModifier)
-        {
-            return MoveSelection(direction, rangeModifier, GetFocusedRow());
-        }
-
-        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-        {
-            base.OnApplyTemplate(e);
-            ColumnHeadersPresenter = e.NameScope.Find<TreeDataGridColumnHeadersPresenter>("PART_ColumnHeadersPresenter");
-            RowsPresenter = e.NameScope.Find<TreeDataGridRowsPresenter>("PART_RowsPresenter");
-            Scroll = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
-        }
-
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            if (!e.Handled)
-            {
-                var direction = e.Key.ToNavigationDirection();
-                var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
-                var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
-
-                if (direction.HasValue)
-                {
-                    var focused = GetFocusedRow();
-
-                    if (focused is object && !ctrl)
-                    {
-                        e.Handled = TryKeyExpandCollapse(direction.Value, focused);
-                    }
-
-                    if (!e.Handled && (!ctrl || shift))
-                    {
-                        e.Handled = MoveSelection(direction.Value, shift, focused);
-                    }
-                }
-            }
-
-            base.OnKeyDown(e);
-        }
-
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
-        {
-            base.OnPointerPressed(e);
-
-            if (Source is null || _selection is null || e.Handled)
-                return;
-
-            if (e.Source is IControl source && TryGetRow(source, out var row))
-            {
-                var point = e.GetCurrentPoint(this);
-
-                UpdateSelection(
-                    row.RowIndex,
-                    select: true,
-                    rangeModifier: e.KeyModifiers.HasFlag(KeyModifiers.Shift),
-                    toggleModifier: e.KeyModifiers.HasFlag(KeyModifiers.Control),
-                    rightButton: point.Properties.IsRightButtonPressed);
-                e.Handled = true;
-            }
-        }
-
-        private TreeDataGridRow? GetFocusedRow()
-        {
-            var focus = FocusManager.Instance;
-            TreeDataGridRow? focused = null;
-            if (focus.Current is IControl current)
-                TryGetRow(current, out focused);
-            return focused;
-        }
-
-        private bool MoveSelection(NavigationDirection direction, bool rangeModifier, TreeDataGridRow? focused)
-        {
-            if (Source is null || RowsPresenter is null || Source.Columns.Count == 0 || Source.Rows.Count == 0)
-                return false;
-
-            var currentRowIndex = focused?.RowIndex ?? Selection?.SelectedIndex ?? 0;
-            int newRowIndex;
-
-            if (direction == NavigationDirection.First || direction == NavigationDirection.Last)
-            {
-                newRowIndex = direction == NavigationDirection.First ? 0 : Source.Rows.Count - 1;
-            }
-            else
-            {
-                (int x, int y) step = direction switch
-                {
-                    NavigationDirection.Up => (0, -1),
-                    NavigationDirection.Down => (0, 1),
-                    NavigationDirection.Left => (-1, 0),
-                    NavigationDirection.Right => (1, 0),
-                    _ => (0, 0)
-                };
-
-                newRowIndex = Math.Max(0, Math.Min(currentRowIndex + step.y, Source.Rows.Count - 1));
-            }
-
-            if (newRowIndex != currentRowIndex)
-                UpdateSelection(newRowIndex, true, rangeModifier);
-
-            if (newRowIndex != currentRowIndex)
-            {
-                RowsPresenter?.BringIntoView(newRowIndex);
-                TryGetRow(newRowIndex)?.Focus();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private bool TryKeyExpandCollapse(NavigationDirection direction, TreeDataGridRow focused)
-        {
-            if (Source is null || RowsPresenter is null || focused.RowIndex < 0)
-                return false;
-
-            var row = Source.Rows[focused.RowIndex];
-
-            if (row is IExpander expander)
-            {
-                if (direction == NavigationDirection.Right && !expander.IsExpanded)
-                {
-                    expander.IsExpanded = true;
-                    return true;
-                }
-                else if (direction == NavigationDirection.Left && expander.IsExpanded)
-                {
-                    expander.IsExpanded = false;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool TryGetRow(IControl? element, [MaybeNullWhen(false)] out TreeDataGridRow result)
+        public bool TryGetRow(IControl? element, [MaybeNullWhen(false)] out TreeDataGridRow result)
         {
             if (element is TreeDataGridRow row && row.RowIndex >= 0)
             {
@@ -341,73 +196,68 @@ namespace Avalonia.Controls
             return result is object;
         }
 
-        private void UpdateSelection(
-            int index,
-            bool select = true,
-            bool rangeModifier = false,
-            bool toggleModifier = false,
-            bool rightButton = false)
+        public bool TryGetRowModel<TModel>(IControl element, [MaybeNullWhen(false)] out TModel result)
         {
-            if (Source is null || _selection is null || index < 0 || index >= Source.Rows.Count)
+            if (Source is object &&
+                TryGetRow(element, out var row) &&
+                row.RowIndex < Source.Rows.Count &&
+                Source.Rows[row.RowIndex] is IRow<TModel> rowWithModel)
             {
-                return;
+                result = rowWithModel.Model;
+                return true;
             }
 
-            var mode = _selection.SingleSelect ? SelectionMode.Single : SelectionMode.Multiple;
-            var multi = (mode & SelectionMode.Multiple) != 0;
-            var toggle = (toggleModifier || (mode & SelectionMode.Toggle) != 0);
-            var range = multi && rangeModifier;
-
-            if (!select)
-            {
-                if (_selection.IsSelected(index) && !SelectionCanceled())
-                    _selection.Deselect(index);
-            }
-            else if (rightButton)
-            {
-                if (_selection.IsSelected(index) == false && !SelectionCanceled())
-                {
-                    _selection.SelectedIndex = index;
-                }
-            }
-            else if (range)
-            {
-                if (!SelectionCanceled())
-                {
-                    using var operation = _selection.BatchUpdate();
-                    _selection.Clear();
-                    _selection.SelectRange(_selection.AnchorIndex, index);
-                }
-            }
-            else if (multi && toggle)
-            {
-                if (!SelectionCanceled())
-                {
-                    if (_selection.IsSelected(index) == true)
-                        _selection.Deselect(index);
-                    else
-                        _selection.Select(index);
-                }
-            }
-            else if (toggle)
-            {
-                if (!SelectionCanceled())
-                    _selection.SelectedIndex = (_selection.SelectedIndex == index) ? -1 : index;
-            }
-            else if (_selection.SelectedIndex != index || _selection.Count > 1)
-            {
-                if (!SelectionCanceled())
-                    _selection.SelectedIndex = index;
-            }
+            result = default;
+            return false;
         }
 
-        private bool SelectionCanceled()
+        public bool QueryCancelSelection()
         {
             if (SelectionChanging is null)
                 return false;
             var e = new CancelEventArgs();
             SelectionChanging(this, e);
             return e.Cancel;
+        }
+
+        protected virtual IElementFactory CreateElementFactory() => new TreeDataGridElementFactory();
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+            ColumnHeadersPresenter = e.NameScope.Find<TreeDataGridColumnHeadersPresenter>("PART_ColumnHeadersPresenter");
+            RowsPresenter = e.NameScope.Find<TreeDataGridRowsPresenter>("PART_RowsPresenter");
+            Scroll = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            _selection?.OnKeyDown(this, e);
+        }
+
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            base.OnKeyUp(e);
+            _selection?.OnKeyUp(this, e);
+        }
+
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+            _selection?.OnPointerPressed(this, e);
+        }
+
+        protected override void OnPointerMoved(PointerEventArgs e)
+        {
+            base.OnPointerMoved(e);
+            _selection?.OnPointerMoved(this, e);
+        }
+
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+            _selection?.OnPointerReleased(this, e);
         }
 
         internal void RaiseCellClearing(TreeDataGridCell cell, int columnIndex, int rowIndex)
@@ -432,7 +282,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnClick(object sender, RoutedEventArgs e)
+        private void OnClick(object? sender, RoutedEventArgs e)
         {
             if (_source is object &&
                 e.Source is TreeDataGridColumnHeader columnHeader &&
@@ -452,7 +302,7 @@ namespace Avalonia.Controls
                 }
 
                 var column = _source.Columns[columnHeader.ColumnIndex];
-                _source.SortBy(column, _userSortDirection, _selection!);
+                _source.SortBy(column, _userSortDirection);
             }
         }
     }

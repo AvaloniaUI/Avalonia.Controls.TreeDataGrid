@@ -10,12 +10,15 @@ namespace Avalonia.Controls
     /// A data source for a <see cref="TreeDataGrid"/> which displays a flat grid.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public class FlatTreeDataGridSource<TModel> : ITreeDataGridSource, IDisposable
+    public class FlatTreeDataGridSource<TModel> : ITreeDataGridSource<TModel>, IDisposable
     {
         private IEnumerable<TModel> _items;
         private ItemsSourceViewFix<TModel> _itemsView;
         private AnonymousSortableRows<TModel>? _rows;
         private IComparer<TModel>? _comparer;
+        private ITreeDataGridSelection? _selection;
+        private bool _isSelectionSet;
+
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = items;
@@ -38,13 +41,36 @@ namespace Avalonia.Controls
                     _items = value;
                     _itemsView = ItemsSourceViewFix<TModel>.GetOrCreate(value);
                     _rows?.SetItems(_itemsView);
+                    if (_selection is object)
+                        _selection.Source = value;
                 }
             }
         }
 
+        public ITreeDataGridSelection? Selection
+        {
+            get
+            {
+                if (_selection == null && !_isSelectionSet)
+                    _selection = new TreeDataGridRowSelectionModel<TModel>(this);
+                return _selection;
+            }
+            set
+            {
+                if (value is null)
+                    throw new ArgumentNullException(nameof(value));
+                if (_selection is object)
+                    throw new InvalidOperationException("Selection is already initialized.");
+                _selection = value;
+                _isSelectionSet = true;
+            }
+        }
+
+        public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
+
         public void Dispose() => _rows?.Dispose();
 
-        bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction, ISelectionModel selection)
+        bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)
         {
             if (column is IColumn<TModel> typedColumn)
             {
@@ -56,7 +82,7 @@ namespace Avalonia.Controls
                 if (comparer is object)
                 {
                     _comparer = comparer is object ? new FuncComparer<TModel>(comparer) : null;
-                    _rows?.Sort(_comparer, selection);
+                    _rows?.Sort(_comparer);
                     Sorted?.Invoke();
                     foreach (var c in Columns)
                         c.SortDirection = c == column ? direction : null;

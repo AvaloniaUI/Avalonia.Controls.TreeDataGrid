@@ -4,12 +4,15 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Avalonia.Controls
 {
-    public readonly struct IndexPath : IComparable<IndexPath>, IEquatable<IndexPath>
+    public readonly struct IndexPath : IReadOnlyList<int>,
+        IComparable<IndexPath>,
+        IEquatable<IndexPath>
     {
         public static readonly IndexPath Unselected = default;
 
@@ -20,12 +23,6 @@ namespace Avalonia.Controls
         {
             _index = index + 1;
             _path = null;
-        }
-
-        public IndexPath(int groupIndex, int itemIndex)
-        {
-            _index = 0;
-            _path = new[] { groupIndex, itemIndex };
         }
 
         public IndexPath(params int[] indexes)
@@ -58,24 +55,24 @@ namespace Avalonia.Controls
             _path[basePath.Length] = index;
         }
 
-        public int GetSize() => _path?.Length ?? (_index == 0 ? 0 : 1);
+        public int Count => _path?.Length ?? (_index == 0 ? 0 : 1);
 
-        public int GetAt(int index)
+        public int this[int index]
         {
-            if (index >= GetSize())
+            get
             {
-                throw new IndexOutOfRangeException();
+                if (index >= Count)
+                    throw new IndexOutOfRangeException();
+                return _path?[index] ?? (_index - 1);
             }
-
-            return _path?[index] ?? (_index - 1);
         }
 
         public int CompareTo(IndexPath other)
         {
             var rhsPath = other;
             int compareResult = 0;
-            int lhsCount = GetSize();
-            int rhsCount = rhsPath.GetSize();
+            int lhsCount = Count;
+            int rhsCount = rhsPath.Count;
 
             if (lhsCount == 0 || rhsCount == 0)
             {
@@ -87,12 +84,12 @@ namespace Avalonia.Controls
                 // both paths are non-empty, but can be of different size
                 for (int i = 0; i < Math.Min(lhsCount, rhsCount); i++)
                 {
-                    if (GetAt(i) < rhsPath.GetAt(i))
+                    if (this[i] < rhsPath[i])
                     {
                         compareResult = -1;
                         break;
                     }
-                    else if (GetAt(i) > rhsPath.GetAt(i))
+                    else if (this[i] > rhsPath[i])
                     {
                         compareResult = 1;
                         break;
@@ -104,51 +101,48 @@ namespace Avalonia.Controls
             }
 
             if (compareResult != 0)
-            {
                 compareResult = compareResult > 0 ? 1 : -1;
-            }
 
             return compareResult;
         }
 
-        public IndexPath CloneWithChildIndex(int childIndex)
+        public IndexPath Append(int childIndex)
         {
             if (childIndex < 0)
                 throw new ArgumentException("Invalid child index", nameof(childIndex));
 
             if (_path != null)
-            {
                 return new IndexPath(_path, childIndex);
-            }
             else if (_index != 0)
-            {
                 return new IndexPath(_index - 1, childIndex);
-            }
             else
-            {
                 return new IndexPath(childIndex);
-            }
         }
 
         public override string ToString()
         {
             if (_path != null)
-            {
-                return "R" + string.Join(".", _path);
-            }
+                return $"({string.Join(".", _path)})";
             else if (_index != 0)
-            {
-                return "R" + (_index - 1);
-            }
+                return $"({_index - 1})";
             else
-            {
-                return "R";
-            }
+                return "()";
         }
 
         public override bool Equals(object? obj) => obj is IndexPath other && Equals(other);
 
         public bool Equals(IndexPath other) => CompareTo(other) == 0;
+
+        public IEnumerator<int> GetEnumerator()
+        {
+            IEnumerator<int> EnumerateSingleOrEmpty(int index)
+            {
+                if (index != 0)
+                    yield return index - 1;
+            }
+
+            return ((IEnumerable<int>?)_path)?.GetEnumerator() ?? EnumerateSingleOrEmpty(_index);
+        }
 
         public override int GetHashCode()
         {
@@ -157,9 +151,7 @@ namespace Avalonia.Controls
             if (_path != null)
             {
                 foreach (var i in _path)
-                {
                     hashCode = hashCode * -1521134295 + i.GetHashCode();
-                }
             }
             else
             {
@@ -168,83 +160,82 @@ namespace Avalonia.Controls
 
             return hashCode;
         }
-        
-        internal bool IsAncestorOf(in IndexPath other)
+
+        public bool IsAncestorOf(in IndexPath other)
         {
-            if (other.GetSize() <= GetSize())
+            if (other.Count <= Count)
             {
                 return false;
             }
 
-            var size = GetSize();
+            var size = Count;
 
             for (int i = 0; i < size; i++)
             {
-                if (GetAt(i) != other.GetAt(i))
-                {
+                if (this[i] != other[i])
                     return false;
-                }
             }
 
             return true;
         }
 
-        internal int? GetLeaf()
+        public bool IsParentOf(in IndexPath other)
         {
-            if (GetSize() > 0)
+            var size = Count;
+
+            if (other.Count == size + 1)
             {
-                return GetAt(GetSize() - 1);
+                for (var i = 0; i < size; ++i)
+                {
+                    if (this[i] != other[i])
+                        return false;
+                }
+
+                return true;
             }
 
-            return null;
+            return false;
         }
 
-        internal IndexPath GetParent()
+        public IndexPath Slice(int start, int length)
         {
-            if (GetSize() == 0)
-            {
-                throw new InvalidOperationException("Cannot get parent of root index.");
-            }
+            if (start < 0 || start + length > Count)
+                throw new ArgumentOutOfRangeException("Invalid IndexPath slice.");
 
-            if (_path is null)
-            {
+            if (length == 0)
                 return default;
-            }
-            else if (_path.Length == 2)
-            {
-                return new IndexPath(_path[0]);
-            }
+            if (length == 1)
+                return new(this[start]);
             else
             {
-                var path = new int[_path.Length - 1];
-                Array.Copy(_path, path, _path.Length - 1);
-                return new IndexPath(path);
+                var slice = new int[length];
+                Array.Copy(_path!, start, slice, 0, length);
+                return new(slice);
             }
         }
 
-        internal int[] ToArray()
+        public int[] ToArray()
         {
-            var result = new int[GetSize()];
+            var result = new int[Count];
 
             if (_path is object)
-            {
                 _path.CopyTo(result, 0);
-            }
             else if (result.Length > 0)
-            {
                 result[0] = _index - 1;
-            }
 
             return result;
         }
 
-        public static bool operator <(IndexPath x, IndexPath y) { return x.CompareTo(y) < 0; }
-        public static bool operator >(IndexPath x, IndexPath y) { return x.CompareTo(y) > 0; }
-        public static bool operator <=(IndexPath x, IndexPath y) { return x.CompareTo(y) <= 0; }
-        public static bool operator >=(IndexPath x, IndexPath y) { return x.CompareTo(y) >= 0; }
-        public static bool operator ==(IndexPath x, IndexPath y) { return x.CompareTo(y) == 0; }
-        public static bool operator !=(IndexPath x, IndexPath y) { return x.CompareTo(y) != 0; }
-        public static bool operator ==(IndexPath? x, IndexPath? y) { return (x ?? default).CompareTo(y ?? default) == 0; }
-        public static bool operator !=(IndexPath? x, IndexPath? y) { return (x ?? default).CompareTo(y ?? default) != 0; }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public static implicit operator IndexPath(int index) => new IndexPath(index);
+        public static bool operator <(IndexPath x, IndexPath y) => x.CompareTo(y) < 0;
+        public static bool operator >(IndexPath x, IndexPath y) => x.CompareTo(y) > 0;
+        public static bool operator <=(IndexPath x, IndexPath y) => x.CompareTo(y) <= 0;
+        public static bool operator >=(IndexPath x, IndexPath y) => x.CompareTo(y) >= 0;
+        public static bool operator ==(IndexPath x, IndexPath y) => x.CompareTo(y) == 0;
+        public static bool operator !=(IndexPath x, IndexPath y) => x.CompareTo(y) != 0;
+        public static bool operator ==(IndexPath? x, IndexPath? y) => (x ?? default).CompareTo(y ?? default) == 0;
+        public static bool operator !=(IndexPath? x, IndexPath? y) => (x ?? default).CompareTo(y ?? default) != 0;
     }
 }

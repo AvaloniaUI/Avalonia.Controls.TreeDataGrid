@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 using Xunit;
 
 namespace Avalonia.Controls.TreeDataGridTests
@@ -197,6 +198,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                 {
                     Assert.Equal(NotifyCollectionChangedAction.Add, e.Action);
                     Assert.Equal(0, e.NewStartingIndex);
+                    Assert.Equal(1, e.NewItems!.Count);
+                    Assert.Equal(10, ((IModelIndexableRow)e.NewItems[0]!).ModelIndex);
                     ++raised;
                 };
 
@@ -221,6 +224,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                 {
                     Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
                     Assert.Equal(4, e.OldStartingIndex);
+                    Assert.Equal(1, e.OldItems!.Count);
+                    Assert.Equal(5, ((IModelIndexableRow)e.OldItems[0]!).ModelIndex);
                     ++raised;
                 };
 
@@ -351,8 +356,35 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             private static void AssertRows(IRows rows, IList<Row> data)
             {
+                Assert.Equal(data.Count, rows.Count);
+
                 var sortedData = data.OrderByDescending(x => x.Id).ToList();
-                FlatTreeDataGridSourceTests.AssertRows(rows, sortedData);
+
+                for (var i = 0; i < data.Count; ++i)
+                {
+                    var row = (IRow<Row>)rows[i];
+                    var indexable = (IModelIndexableRow)row;
+                    Assert.Same(sortedData[i], row.Model);
+                    Assert.Equal(data.IndexOf(row.Model), indexable.ModelIndex);
+                }
+            }
+        }
+
+        public class Selection
+        {
+            [Fact]
+            public void Reassigning_Source_Updates_Selection_Model_Source()
+            {
+                var data1 = CreateData();
+                var data2 = CreateData(5);
+                var target = CreateTarget(data1);
+
+                // Ensure selection model is created.
+                Assert.Same(data1, ((ITreeDataGridSelection?)target.RowSelection)!.Source);
+
+                target.Items = data2;
+
+                Assert.Same(data2, ((ITreeDataGridSelection?)target.RowSelection)!.Source);
             }
         }
 
@@ -381,8 +413,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             for (var i = 0; i < data.Count; ++i)
             {
                 var row = (IRow<Row>)rows[i];
+                var indexable = (IModelIndexableRow)row;
                 Assert.Same(row.Model, data[i]);
-                Assert.Equal(i, row.ModelIndex);
+                Assert.Equal(i, indexable.ModelIndex);
             }
         }
 

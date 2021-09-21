@@ -12,14 +12,15 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// In a flat grid where rows cannot be resized, it is not necessary to persist any information
     /// about rows; the same row object can be updated and reused when a new row is requested.
     /// </remarks>
-    internal class AnonymousRow<TModel> : IRow<TModel>
+    internal class AnonymousRow<TModel> : IRow<TModel>, IModelIndexableRow
     {
-        private int _index;
+        private int _modelIndex;
         [AllowNull] private TModel _model;
 
-        public object? Header => _index;
+        public object? Header => _modelIndex;
         public TModel Model => _model;
-        public int ModelIndex => _index;
+        public int ModelIndex => _modelIndex;
+        public IndexPath ModelIndexPath => _modelIndex;
 
         public GridLength Height
         {
@@ -27,9 +28,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             set { }
         }
 
-        public AnonymousRow<TModel> Update(int index, TModel model)
+        public AnonymousRow<TModel> Update(int modelIndex, TModel model)
         {
-            _index = index;
+            _modelIndex = modelIndex;
             _model = model;
             return this;
         }

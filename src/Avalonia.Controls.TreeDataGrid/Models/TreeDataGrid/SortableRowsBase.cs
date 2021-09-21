@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -12,27 +13,54 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The model type.</typeparam>
     /// <typeparam name="TRow">The row type.</typeparam>
     public abstract class SortableRowsBase<TModel, TRow> : ReadOnlyListBase<TRow>, IDisposable
-        where TRow : IRow<TModel>, IDisposable
+        where TRow : IRow<TModel>, IModelIndexableRow, IDisposable
     {
+        private readonly Comparison<int> _compareItemsByIndex;
         private ItemsSourceViewFix<TModel> _items;
         private Comparison<TModel>? _comparison;
-        private List<TRow>? _rows;
+        private List<TRow>? _unsortedRows;
+        private List<int>? _sortedIndexes;
 
         public SortableRowsBase(ItemsSourceViewFix<TModel> items, Comparison<TModel>? comparison)
         {
             _items = items;
             _items.CollectionChanged += OnItemsCollectionChanged;
             _comparison = comparison;
+            _compareItemsByIndex = CompareItemsByIndex;
         }
 
-        public override TRow this[int index] => Rows[index];
-        public override int Count => _rows?.Count ?? _items.Count;
-        private List<TRow> Rows => _rows ??= CreateRows();
+        public override int Count => _unsortedRows?.Count ?? _items.Count;
+
+        public override TRow this[int index]
+        {
+            get
+            {
+                if (_sortedIndexes is null)
+                    return UnsortedRows[index];
+                else
+                    return UnsortedRows[_sortedIndexes[index]];
+            }
+        }
+
+        private List<TRow> UnsortedRows => GetOrCreateRows();
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         public virtual void Dispose() => SetItems(ItemsSourceViewFix<TModel>.Empty);
-        public override IEnumerator<TRow> GetEnumerator() => Rows.GetEnumerator();
+
+        public override IEnumerator<TRow> GetEnumerator()
+        {
+            IEnumerator<TRow> GetSortedEnumerator()
+            {
+                var rows = UnsortedRows;
+
+                foreach (var i in _sortedIndexes!)
+                    yield return rows[i];
+            }
+
+            GetOrCreateRows();
+            return _sortedIndexes is object ? GetSortedEnumerator() : UnsortedRows.GetEnumerator();
+        }
 
         public void SetItems(ItemsSourceViewFix<TModel> items)
         {
@@ -45,68 +73,60 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
         }
 
-        public void Sort(Comparison<TModel>? comparison)
+        public virtual void Sort(Comparison<TModel>? comparison)
         {
             _comparison = comparison;
 
-            if (_rows is object)
+            if (_unsortedRows is object)
             {
                 if (comparison is object)
-                {
-                    var comparer = new FuncComparer<TModel>(comparison);
-                    _rows = _rows.OrderBy(x => x.Model, comparer).ToList();
-                }
+                    _sortedIndexes = StableSort.SortedMap(_items, _compareItemsByIndex);
                 else
-                {
-                    _rows.Sort((x, y) => x.ModelIndex.CompareTo(y.ModelIndex));
-                }
+                    _sortedIndexes = null;
 
+                var foo = this.ToArray();
                 CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
             }
         }
 
         protected abstract TRow CreateRow(int modelIndex, TModel model);
 
-        private List<TRow> CreateRows()
+        protected int ModelIndexToRowIndex(int modelIndex)
         {
-            var result = new List<TRow>(_items.Count);
-            Reset(result);
-            return result;
+            if (_sortedIndexes is null)
+                return modelIndex >= 0 && modelIndex < _items.Count ? modelIndex : -1;
+            else
+                return SortHelper<int>.BinarySearch(_sortedIndexes, modelIndex, _compareItemsByIndex);
         }
 
-        private void Reset(List<TRow> rows)
+        protected int RowIndexToModelIndex(int rowIndex) => _sortedIndexes?[rowIndex] ?? rowIndex;
+
+        private List<TRow> GetOrCreateRows()
         {
-            foreach (var row in rows)
+            if (_unsortedRows is null)
             {
-                row.Dispose();
-            }
-
-            rows.Clear();
-
-            if (_comparison is null)
-            {
-                for (var i = 0; i < _items.Count; ++i)
-                {
-                    rows.Add(CreateRow(i, _items[i]));
-                }
-            }
-            else
-            {
-                var sorted = new (int index, TModel model)[_items.Count];
-                var c = _comparison;
+                _unsortedRows = new List<TRow>(_items.Count);
 
                 for (var i = 0; i < _items.Count; ++i)
-                {
-                    sorted[i] = (i, _items[i]);
-                }
+                    _unsortedRows.Add(CreateRow(i, _items[i]));
 
-                Array.Sort(sorted, (x, y) => c(x.model, y.model));
-
-                foreach (var i in sorted)
-                {
-                    rows.Add(CreateRow(i.index, i.model));
-                }
+                if (_comparison is object)
+                    _sortedIndexes = StableSort.SortedMap(_items, _compareItemsByIndex);
             }
+
+            return _unsortedRows;
+        }
+
+        private void ResetRows()
+        {
+            if (_unsortedRows is object)
+            {
+                foreach (var row in _unsortedRows)
+                    row.Dispose();
+            }
+
+            _unsortedRows = null;
+            _sortedIndexes = null;
         }
 
         private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -119,54 +139,48 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private void OnItemsCollectionChangedUnsorted(NotifyCollectionChangedEventArgs e)
         {
-            if (_rows is null)
+            if (_unsortedRows is null)
                 return;
 
             void Add(int index, IList items)
             {
                 foreach (TModel model in items)
                 {
-                    _rows.Insert(index, CreateRow(index, model));
+                    _unsortedRows.Insert(index, CreateRow(index, model));
                     ++index;
                 }
 
-                while (index < _rows.Count)
-                {
-                    _rows[index++].UpdateModelIndex(items.Count);
-                }
+                while (index < _unsortedRows.Count)
+                    _unsortedRows[index++].UpdateModelIndex(items.Count);
             }
 
             void Remove(int index, int count)
             {
                 for (var i = index; i < index + count; ++i)
-                {
-                    _rows[i].Dispose();
-                }
+                    _unsortedRows[i].Dispose();
 
-                _rows.RemoveRange(index, count);
+                _unsortedRows.RemoveRange(index, count);
 
-                while (index < _rows.Count)
-                {
-                    _rows[index++].UpdateModelIndex(-count);
-                }
+                while (index < _unsortedRows.Count)
+                    _unsortedRows[index++].UpdateModelIndex(-count);
             }
 
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    Add(e.NewStartingIndex, e.NewItems);
+                    Add(e.NewStartingIndex, e.NewItems!);
                     CollectionChanged?.Invoke(
                         this,
                         new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Add,
-                            new ListSpan(_rows, e.NewStartingIndex, e.NewItems.Count),
+                            new ListSpan(_unsortedRows, e.NewStartingIndex, e.NewItems!.Count),
                             e.NewStartingIndex));
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     {
                         var oldItems = CollectionChanged is object ?
-                            _rows.Slice(e.OldStartingIndex, e.OldItems.Count) : null;
-                        Remove(e.OldStartingIndex, e.OldItems.Count);
+                            _unsortedRows.Slice(e.OldStartingIndex, e.OldItems!.Count) : null;
+                        Remove(e.OldStartingIndex, e.OldItems!.Count);
                         CollectionChanged?.Invoke(
                             this,
                             new NotifyCollectionChangedEventArgs(
@@ -178,36 +192,36 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 case NotifyCollectionChangedAction.Replace:
                     {
                         var index = e.OldStartingIndex;
-                        var count = e.OldItems.Count;
-                        var oldItems = CollectionChanged is object ? _rows.Slice(index, count) : null;
+                        var count = e.OldItems!.Count;
+                        var oldItems = CollectionChanged is object ? _unsortedRows.Slice(index, count) : null;
                         
                         for (var i = 0; i < count; ++i)
                         {
-                            _rows[index + i] = CreateRow(index + i, (TModel)e.NewItems[i]);
+                            _unsortedRows[index + i] = CreateRow(index + i, (TModel)e.NewItems![i]!);
                         }
 
                         CollectionChanged?.Invoke(
                             this,
                             new NotifyCollectionChangedEventArgs(
                                 NotifyCollectionChangedAction.Replace,
-                                new ListSpan(_rows, index, count),
-                                oldItems,
+                                new ListSpan(_unsortedRows, index, count),
+                                oldItems!,
                                 index));
                     }
                     break;
                 case NotifyCollectionChangedAction.Move:
-                    Remove(e.OldStartingIndex, e.OldItems.Count);
-                    Add(e.NewStartingIndex, e.NewItems);
+                    Remove(e.OldStartingIndex, e.OldItems!.Count);
+                    Add(e.NewStartingIndex, e.NewItems!);
                     CollectionChanged?.Invoke(
                         this,
                         new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Move,
-                            new ListSpan(_rows, e.NewStartingIndex, e.NewItems.Count),
+                            new ListSpan(_unsortedRows, e.NewStartingIndex, e.NewItems!.Count),
                             e.NewStartingIndex,
                             e.OldStartingIndex));
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    Reset(_rows);
+                    ResetRows();
                     CollectionChanged?.Invoke(this, e);
                     break;
                 default:
@@ -217,81 +231,110 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private void OnItemsCollectionChangedSorted(NotifyCollectionChangedEventArgs e)
         {
-            if (_rows is null)
+            if (_unsortedRows is null)
                 return;
 
-            void Add(int index, IList items)
+            void Add(int startIndex, int count)
             {
-                foreach (var row in _rows)
+                // Add the new rows to the unsorted rows.
+                for (var i = startIndex; i < startIndex + count; ++i)
+                    _unsortedRows.Insert(i, CreateRow(i, _items[i]));
+                
+                // Update the indexes of subsequent rows.
+                for (var i = startIndex + count; i < _unsortedRows.Count; ++i)
+                    _unsortedRows[i].UpdateModelIndex(count);
+
+                // Update the indexes of subsequent sorted indexes.
+                for (var i = 0; i < _sortedIndexes!.Count; i++)
                 {
-                    if (row.ModelIndex >= index)
-                        row.UpdateModelIndex(items.Count);
+                    var ix = _sortedIndexes[i];
+                    if (ix >= startIndex)
+                        _sortedIndexes[i] = ix + count;
                 }
 
-                foreach (TModel model in items)
+                // Insert the new row into the correct place in the sorted indexes.
+                for (var i = 0; i < count; ++i)
                 {
-                    var rowIndex = _rows.BinarySearch(model, _comparison!);
-                    var row = CreateRow(index, model);
-                    if (rowIndex < 0)
-                        rowIndex = ~rowIndex;
-                    _rows.Insert(rowIndex, row);
+                    var index = SortHelper<int>.BinarySearch(_sortedIndexes, startIndex + i, _compareItemsByIndex);
+                    if (index < 0)
+                        index = ~index;
+                    _sortedIndexes.Insert(index, startIndex + i);
                     CollectionChanged?.Invoke(
                         this,
                         new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Add,
-                            row,
-                            rowIndex));
-                    ++rowIndex;
+                            _unsortedRows[startIndex + i],
+                            index));
                 }
             }
 
-            void Remove(int index, IList items)
+            void Remove(int startIndex, IList removed)
             {
-                foreach (TModel model in items)
-                {
-                    var rowIndex = _rows.BinarySearch(model, _comparison!);
+                var count = removed.Count;
+                var endIndex = startIndex + count;
 
-                    if (rowIndex >= 0)
+                // Remove the rows from the unsorted rows.
+                _unsortedRows.RemoveRange(startIndex, count);
+
+                // Iterate the sorted indexes, raising a collection changed event for the
+                // items removed, and updating the indexes of the subsequent items.
+                for (var i = 0; i < _sortedIndexes!.Count; i++)
+                {
+                    var ix = _sortedIndexes[i];
+                    if (ix >= startIndex && ix < endIndex)
                     {
-                        var row = _rows[rowIndex];
-                        row.Dispose();
-                        _rows.RemoveAt(rowIndex);
+                        _sortedIndexes.RemoveAt(i);
                         CollectionChanged?.Invoke(
                             this,
                             new NotifyCollectionChangedEventArgs(
                                 NotifyCollectionChangedAction.Remove,
-                                row,
-                                rowIndex));
+                                (TModel)removed[ix - startIndex]!,
+                                i));
+                        --i;
                     }
-                }
-
-                foreach (var row in _rows)
-                {
-                    if (row.ModelIndex >= index)
-                        row.UpdateModelIndex(-items.Count);
+                    else if (ix >= endIndex)
+                    {
+                        _sortedIndexes[i] = ix - count;
+                        _unsortedRows[_sortedIndexes[i]].UpdateModelIndex(-removed.Count);
+                    }
                 }
             }
 
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    Add(e.NewStartingIndex, e.NewItems);
+                    Add(e.NewStartingIndex, e.NewItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    Remove(e.OldStartingIndex, e.OldItems);
+                    Remove(e.OldStartingIndex, e.OldItems!);
                     break;
                 case NotifyCollectionChangedAction.Replace:
                 case NotifyCollectionChangedAction.Move:
-                    Remove(e.OldStartingIndex, e.OldItems);
-                    Add(e.NewStartingIndex, e.NewItems);
+                    Remove(e.OldStartingIndex, e.OldItems!);
+                    Add(e.NewStartingIndex, e.NewItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    Reset(_rows);
+                    ResetRows();
                     CollectionChanged?.Invoke(this, e);
                     break;
                 default:
                     throw new NotSupportedException();
             }
+        }
+
+        private int CompareItemsByIndex(int index1, int index2)
+        {
+            int c = _comparison!(_items[index1], _items[index2]);
+
+            if (c == 0)
+            {
+                return index1 - index2; // ensure stability of sort
+            }
+
+            // -c will result in a negative value for int.MinValue (-int.MinValue == int.MinValue).
+            // Flipping keys earlier is more likely to trigger something strange in a comparer,
+            // particularly as it comes to the sort being stable.
+            return (c > 0) ? 1 : -1;
         }
     }
 }
