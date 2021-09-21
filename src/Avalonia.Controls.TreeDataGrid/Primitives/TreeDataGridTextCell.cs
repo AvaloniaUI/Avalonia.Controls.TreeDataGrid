@@ -52,7 +52,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void EditKeyDown(object sender, KeyEventArgs e)
+        private void EditKeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
@@ -66,6 +66,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void EditLostFocus(object sender, RoutedEventArgs e) => EndEdit();
+        private void EditLostFocus(object? sender, RoutedEventArgs e) => EndEdit();
     }
 }

@@ -35,7 +35,7 @@ namespace ProControlsDemo.ViewModels
 
         public void RemoveSelected()
         {
-            var selection = ((ITreeSelectionModel)Source.Selection).SelectedIndexes.ToList();
+            var selection = ((ITreeSelectionModel)Source.Selection!).SelectedIndexes.ToList();
 
             for (var i = selection.Count - 1; i >= 0; --i)
             {

@@ -188,7 +188,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 return new TextCell<string>($"{Header} Row {indexable.ModelIndex}");
             }
 
-            public override Comparison<Model>? GetComparison(ListSortDirection direction)
+            public override Comparison<Model?>? GetComparison(ListSortDirection direction)
             {
                 throw new NotImplementedException();
             }

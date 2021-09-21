@@ -330,7 +330,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                     Assert.Empty(e.DeselectedIndexes);
                     Assert.Empty(e.DeselectedItems);
                     Assert.Equal(new IndexPath(0, 2), e.SelectedIndexes.Single());
-                    Assert.Equal("Node 0-2", e.SelectedItems.Single().Caption);
+                    Assert.Equal("Node 0-2", e.SelectedItems.Single()!.Caption);
                     ++raised;
                 };
 
@@ -356,7 +356,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                     Assert.Empty(e.DeselectedIndexes);
                     Assert.Empty(e.DeselectedItems);
                     Assert.Equal(new IndexPath(0, 2), e.SelectedIndexes.Single());
-                    Assert.Equal("Node 0-2", e.SelectedItems.Single().Caption);
+                    Assert.Equal("Node 0-2", e.SelectedItems.Single()!.Caption);
                     ++raised;
                 };
 
@@ -416,7 +416,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.SelectionChanged += (s, e) =>
                 {
                     Assert.Equal(new[] { new IndexPath(0, 1) }, e.DeselectedIndexes);
-                    Assert.Equal(new[] { "Node 0-1" }, e.DeselectedItems.Select(x => x.Caption));
+                    Assert.Equal(new[] { "Node 0-1" }, e.DeselectedItems.Select(x => x?.Caption));
                     Assert.Empty(e.SelectedIndexes);
                     Assert.Empty(e.SelectedItems);
                     ++raised;
@@ -459,7 +459,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.SelectionChanged += (s, e) =>
                 {
                     Assert.Equal(new[] { new IndexPath(0, 1), new IndexPath(0, 2) }, e.DeselectedIndexes);
-                    Assert.Equal(new[] { "Node 0-1", "Node 0-2" }, e.DeselectedItems.Select(x => x.Caption));
+                    Assert.Equal(new[] { "Node 0-1", "Node 0-2" }, e.DeselectedItems.Select(x => x?.Caption));
                     Assert.Empty(e.SelectedIndexes);
                     Assert.Empty(e.SelectedItems);
                     ++raised;
@@ -576,7 +576,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.SelectionChanged += (s, e) =>
                 {
                     Assert.Equal(new[] { new IndexPath(0, 2), new IndexPath(0, 3) }, e.DeselectedIndexes);
-                    Assert.Equal(new[] { "Node 0-2", "Node 0-3" }, e.DeselectedItems.Select(x => x.Caption));
+                    Assert.Equal(new[] { "Node 0-2", "Node 0-3" }, e.DeselectedItems.Select(x => x?.Caption));
                     Assert.Empty(e.SelectedIndexes);
                     Assert.Empty(e.SelectedItems);
                     ++raised;

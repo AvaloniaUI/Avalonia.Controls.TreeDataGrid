@@ -2,7 +2,7 @@
 {
     internal class Country
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public string Region { get; private set; }
         public int Population { get; private set; }
         //Square Miles

@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <param name="options">Additional column options.</param>
         public TextColumn(
             object? header,
-            Expression<Func<TModel, TValue>> getter,
+            Expression<Func<TModel, TValue?>> getter,
             GridLength? width = null,
             ColumnOptions<TModel>? options = null)
             : base(header, getter, null, width, options)
@@ -48,8 +48,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <param name="options">Additional column options.</param>
         public TextColumn(
             object? header,
-            Expression<Func<TModel, TValue>> getter,
-            Action<TModel, TValue> setter,
+            Expression<Func<TModel, TValue?>> getter,
+            Action<TModel, TValue?> setter,
             GridLength? width = null,
             ColumnOptions<TModel>? options = null)
             : base(header, getter, setter, width, options)

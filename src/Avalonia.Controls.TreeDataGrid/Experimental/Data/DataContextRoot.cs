@@ -4,7 +4,7 @@
 
 namespace Avalonia.Experimental.Data
 {
-    internal class DataContextRoot<T> : SingleSubscriberObservableBase<T>
+    internal class DataContextRoot<T> : SingleSubscriberObservableBase<T?>
         where T : class
     {
         private readonly IStyledElement _source;
@@ -25,7 +25,7 @@ namespace Avalonia.Experimental.Data
             _source.PropertyChanged -= PropertyChanged;
         }
 
-        private void PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == StyledElement.DataContextProperty)
             {

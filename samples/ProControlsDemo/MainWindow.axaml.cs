@@ -74,9 +74,9 @@ namespace ProControlsDemo
         {
             var tabItem = (TabItem)_tabs.SelectedItem!;
             var treeDataGrid = (TreeDataGrid)((Control)tabItem.Content).GetLogicalDescendants()
-                .FirstOrDefault(x => x is TreeDataGrid tl);
+                .First(x => x is TreeDataGrid tl);
             var textBlock = (TextBlock)((Control)tabItem.Content).GetLogicalDescendants()
-                .FirstOrDefault(x => x is TextBlock tb && tb.Classes.Contains("realized-count"));
+                .First(x => x is TextBlock tb && tb.Classes.Contains("realized-count"));
             var rows = treeDataGrid.RowsPresenter!;
             var realizedRowCount = rows.RealizedElements.Count;
             var unrealizedRowCount = ((ILogical)rows).LogicalChildren.Count - realizedRowCount;

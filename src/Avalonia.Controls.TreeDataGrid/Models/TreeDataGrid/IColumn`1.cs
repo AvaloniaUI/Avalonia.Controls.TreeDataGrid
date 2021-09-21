@@ -24,6 +24,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <returns>
         /// The comparison function or null if sorting cannot be performed on the column.
         /// </returns>
-        Comparison<TModel>? GetComparison(ListSortDirection direction);
+        Comparison<TModel?>? GetComparison(ListSortDirection direction);
     }
 }

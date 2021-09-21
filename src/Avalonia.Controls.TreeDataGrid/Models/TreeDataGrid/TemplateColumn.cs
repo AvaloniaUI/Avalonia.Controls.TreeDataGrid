@@ -12,8 +12,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TValue">The column data type.</typeparam>
     public class TemplateColumn<TModel> : ColumnBase<TModel>
     {
-        private readonly Comparison<TModel>? _sortAscending;
-        private readonly Comparison<TModel>? _sortDescending;
+        private readonly Comparison<TModel?>? _sortAscending;
+        private readonly Comparison<TModel?>? _sortDescending;
 
         public TemplateColumn(
             object? header,
@@ -39,7 +39,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <returns>The cell.</returns>
         public override ICell CreateCell(IRow<TModel> row) => new TemplateCell(row.Model, CellTemplate);
 
-        public override Comparison<TModel>? GetComparison(ListSortDirection direction)
+        public override Comparison<TModel?>? GetComparison(ListSortDirection direction)
         {
             return direction switch
             {

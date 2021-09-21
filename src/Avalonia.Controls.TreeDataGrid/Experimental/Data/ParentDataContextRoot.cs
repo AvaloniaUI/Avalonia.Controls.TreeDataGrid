@@ -6,7 +6,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Experimental.Data
 {
-    internal class ParentDataContextRoot<T> : SingleSubscriberObservableBase<T>
+    internal class ParentDataContextRoot<T> : SingleSubscriberObservableBase<T?>
         where T : class
     {
         private readonly IVisual _source;
@@ -62,7 +62,7 @@ namespace Avalonia.Experimental.Data
             }
         }
 
-        private void SourcePropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void SourcePropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == Visual.VisualParentProperty)
             {
@@ -72,7 +72,7 @@ namespace Avalonia.Experimental.Data
             }
         }
 
-        private void ParentPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void ParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == StyledElement.DataContextProperty)
             {
