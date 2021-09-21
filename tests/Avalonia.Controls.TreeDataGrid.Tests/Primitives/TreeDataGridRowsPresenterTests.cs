@@ -134,6 +134,23 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         }
 
         [Fact]
+        public void Handles_Unrealized_Rows_Being_Removed_From_End()
+        {
+            using var app = App();
+
+            var (target, scroll, items) = CreateTarget();
+
+            Assert.Equal(new Size(100, 1000), scroll.Extent);
+            AssertRowIndexes(target, 0, 10);
+            AssertRecyclable(target, 0);
+
+            items.RemoveRange(90, 10);
+
+            AssertRowIndexes(target, 0, 10);
+            AssertRecyclable(target, 0);
+        }
+
+        [Fact]
         public void Realized_Children_Should_Not_Be_Removed()
         {
             using var app = App();
