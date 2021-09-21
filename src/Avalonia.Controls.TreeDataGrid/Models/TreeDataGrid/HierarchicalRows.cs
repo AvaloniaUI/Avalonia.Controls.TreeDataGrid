@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private readonly IExpanderRowController<TModel> _controller;
         private readonly RootRows _roots;
         private readonly IExpanderColumn<TModel> _expanderColumn;
-        private readonly List<HierarchicalRow<TModel>> _rows;
+        private readonly List<HierarchicalRow<TModel>> _flattenedRows;
         private Comparison<TModel>? _comparison;
 
         public HierarchicalRows(
@@ -29,13 +29,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _roots.CollectionChanged += OnRootsCollectionChanged;
             _expanderColumn = expanderColumn;
             _comparison = comparison;
-            _rows = new List<HierarchicalRow<TModel>>();
+            _flattenedRows = new List<HierarchicalRow<TModel>>();
             InitializeRows();
         }
 
-        public override HierarchicalRow<TModel> this[int index] => _rows[index];
-        IRow IReadOnlyList<IRow>.this[int index] => _rows[index];
-        public override int Count => _rows.Count;
+        public override HierarchicalRow<TModel> this[int index] => _flattenedRows[index];
+        IRow IReadOnlyList<IRow>.this[int index] => _flattenedRows[index];
+        public override int Count => _flattenedRows.Count;
 
         public void Dispose() => _roots.Dispose();
 
@@ -122,7 +122,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             _comparison = comparison;
             _roots.Sort(comparison);
-            _rows.Clear();
+            _flattenedRows.Clear();
             InitializeRows();
             CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
 
@@ -142,9 +142,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             if (modelIndex == default)
                 return -1;
             
-            for (var i = 0; i < _rows.Count; ++i)
+            for (var i = 0; i < _flattenedRows.Count; ++i)
             {
-                if (_rows[i].ModelIndexPath == modelIndex)
+                if (_flattenedRows[i].ModelIndexPath == modelIndex)
                     return i;
             }
 
@@ -153,13 +153,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public IndexPath RowIndexToModelIndex(int rowIndex)
         {
-            if (rowIndex >= 0 && rowIndex < _rows.Count)
-                return _rows[rowIndex].ModelIndexPath;
+            if (rowIndex >= 0 && rowIndex < _flattenedRows.Count)
+                return _flattenedRows[rowIndex].ModelIndexPath;
             return default;
         }
 
-        public override IEnumerator<HierarchicalRow<TModel>> GetEnumerator() => _rows.GetEnumerator();
-        IEnumerator<IRow> IEnumerable<IRow>.GetEnumerator() => _rows.GetEnumerator();
+        public override IEnumerator<HierarchicalRow<TModel>> GetEnumerator() => _flattenedRows.GetEnumerator();
+        IEnumerator<IRow> IEnumerable<IRow>.GetEnumerator() => _flattenedRows.GetEnumerator();
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
@@ -187,9 +187,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             if (index.Count > 0)
             {
-                for (var i = fromRowIndex; i < _rows.Count; ++i)
+                for (var i = fromRowIndex; i < _flattenedRows.Count; ++i)
                 {
-                    if (index == _rows[i].ModelIndexPath)
+                    if (index == _flattenedRows[i].ModelIndexPath)
                         return i;
                 }
             }
@@ -210,7 +210,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private int AddRowsAndDescendants(int index, HierarchicalRow<TModel> row)
         {
             var i = index;
-            _rows.Insert(i++, row);
+            _flattenedRows.Insert(i++, row);
 
             if (row.Children is object)
             {
@@ -243,7 +243,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                         this,
                         new NotifyCollectionChangedEventArgs(
                             NotifyCollectionChangedAction.Add,
-                            new ListSpan(_rows, start, index - start),
+                            new ListSpan(_flattenedRows, start, index - start),
                             start));
                 }
             }
@@ -258,12 +258,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
                 for (var i = 0; i < count; ++i)
                 {
-                    var row = _rows[i + index];
+                    var row = _flattenedRows[i + index];
                     if (oldItems is object)
                         oldItems[i] = row;
                 }
 
-                _rows.RemoveRange(index, count);
+                _flattenedRows.RemoveRange(index, count);
                 
                 if (oldItems is object)
                 {
@@ -282,7 +282,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
                 while (count > 0)
                 {
-                    var row = _rows[i];
+                    var row = _flattenedRows[i];
                     i += (row.Children?.Count ?? 0) + 1;
                     --count;
                 }
@@ -293,13 +293,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             int GetDescendentRowCount(int rowIndex)
             {
                 if (rowIndex == -1)
-                    return _rows.Count;
+                    return _flattenedRows.Count;
 
-                var row = _rows[rowIndex];
+                var row = _flattenedRows[rowIndex];
                 var depth = row.ModelIndexPath.Count;
                 var i = rowIndex + 1;
 
-                while (i < _rows.Count && _rows[i].ModelIndexPath.Count > depth)
+                while (i < _flattenedRows.Count && _flattenedRows[i].ModelIndexPath.Count > depth)
                     ++i;
 
                 return i - (rowIndex + 1);
@@ -318,7 +318,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     {
                         var parent = GetRowIndex(parentIndex);
                         var start = Advance(parent + 1, e.OldStartingIndex);
-                        var end = Advance(start, e.OldItems.Count);
+                        var end = Advance(start, e.OldItems!.Count);
                         Remove(start, end - start, true);
                     }
                     break;
@@ -326,7 +326,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     {
                         var parent = GetRowIndex(parentIndex);
                         var start = Advance(parent + 1, e.OldStartingIndex);
-                        var end = Advance(start, e.OldItems.Count);
+                        var end = Advance(start, e.OldItems!.Count);
                         Remove(start, end - start, true);
                         Add(start, e.NewItems, true);
                     }
@@ -335,7 +335,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     {
                         var parent = GetRowIndex(parentIndex);
                         var fromStart = Advance(parent + 1, e.OldStartingIndex);
-                        var fromEnd = Advance(fromStart, e.OldItems.Count);
+                        var fromEnd = Advance(fromStart, e.OldItems!.Count);
                         var to = Advance(parent + 1, e.NewStartingIndex);
                         Remove(fromStart, fromEnd - fromStart, true);
                         Add(to, e.NewItems, true);
@@ -344,7 +344,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 case NotifyCollectionChangedAction.Reset:
                     {
                         var parentRowIndex = GetRowIndex(parentIndex);
-                        var children = parentRowIndex >= 0 ? _rows[parentRowIndex].Children : _roots;
+                        var children = parentRowIndex >= 0 ? _flattenedRows[parentRowIndex].Children : _roots;
                         var count = GetDescendentRowCount(parentRowIndex);
                         Remove(parentRowIndex + 1, count, true);
                         Add(parentRowIndex + 1, children, true);
@@ -355,7 +355,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             }
         }
 
-        private void OnRootsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnRootsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             OnCollectionChanged(default, e);
         }
