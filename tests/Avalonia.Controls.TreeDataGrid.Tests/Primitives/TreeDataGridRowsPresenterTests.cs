@@ -363,6 +363,29 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRowIndexes(target, 1, 10);
         }
 
+        [Fact]
+        public void Handles_Bringing_Item_Into_View_Which_Will_Already_Be_In_View_When_Created()
+        {
+            using var app = App();
+
+            var (target, scroll, _) = CreateTarget();
+
+            // Clear the items and do a layout to simulate starting from an empty state.
+            var items = target.Items;
+            target.Items = null;
+            Layout(target);
+
+            // Assign the items.
+            target.Items = items;
+
+            // Now bring the first item into view before it's created. There was an issue here where
+            // the presenter will wait for a viewport update which will never come because the item
+            // will be placed in the existing viewport.
+            target.BringIntoView(0);
+
+            AssertRowIndexes(target, 0, 10);
+        }
+
         private static void AssertRowIndexes(TreeDataGridRowsPresenter? target, int firstRowIndex, int rowCount)
         {
             Assert.NotNull(target);
