@@ -114,7 +114,7 @@ namespace Avalonia.Controls.Primitives
                 // Try to bring the item into view and do a layout pass.
                 _anchorElement.BringIntoView();
 
-                _isWaitingForViewportUpdate = true;
+                _isWaitingForViewportUpdate = !Viewport.Contains(rect);
                 root.LayoutManager.ExecuteLayoutPass();
                 _isWaitingForViewportUpdate = false;
 
