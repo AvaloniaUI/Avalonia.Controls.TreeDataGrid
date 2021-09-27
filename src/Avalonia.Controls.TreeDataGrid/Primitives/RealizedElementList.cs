@@ -167,10 +167,17 @@ namespace Avalonia.Controls.Primitives
 
             if (endIndex < 0)
             {
-                // The removed range was before the realized elements. Update the first index.
+                // The removed range was before the realized elements. Update the first index and
+                // the indexes of the realized elements.
                 _firstIndex -= count;
+
+                for (var i = 0; i < _elements.Count; ++i)
+                {
+                    if (_elements[i] is IControl element)
+                        updateElementIndex(element, _firstIndex + i);
+                }
             }
-            else
+            else if (startIndex < _elements.Count)
             {
                 // Recycle and remove the affected elements.
                 var start = Math.Max(startIndex, 0);
