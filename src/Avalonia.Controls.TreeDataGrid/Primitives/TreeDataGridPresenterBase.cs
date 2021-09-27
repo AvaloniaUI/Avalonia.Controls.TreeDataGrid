@@ -419,7 +419,7 @@ namespace Avalonia.Controls.Primitives
             _realizedElements.RecycleElementsBefore(index, _recycleElement);
         }
 
-        private void OnChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             void Add(IList items)
             {
@@ -448,16 +448,16 @@ namespace Avalonia.Controls.Primitives
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    Add(e.NewItems);
+                    Add(e.NewItems!);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    Remove(e.OldItems);
+                    Remove(e.OldItems!);
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
-                    Remove(e.OldItems);
-                    Add(e.NewItems);
+                    Remove(e.OldItems!);
+                    Add(e.NewItems!);
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
@@ -470,10 +470,10 @@ namespace Avalonia.Controls.Primitives
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems.Count, _updateElementIndex);
+                    _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems.Count, _updateElementIndex, _recycleElement);
+                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElement);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     RecycleAllElements();

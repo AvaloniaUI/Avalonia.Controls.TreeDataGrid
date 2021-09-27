@@ -283,7 +283,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
 
             var source = new FlatTreeDataGridSource<Model>(items);
-            source.RowSelection.SingleSelect = false;
+            source.RowSelection!.SingleSelect = false;
 
             if (columns is object)
             {

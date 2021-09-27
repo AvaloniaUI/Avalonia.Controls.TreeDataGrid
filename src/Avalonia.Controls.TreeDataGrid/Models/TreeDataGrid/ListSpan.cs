@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         bool IList.IsReadOnly => true;
         int ICollection.Count => _count;
         bool ICollection.IsSynchronized => false;
-        object? ICollection.SyncRoot => null;
+        object ICollection.SyncRoot => this;
 
         public IEnumerator GetEnumerator()
         {
@@ -39,13 +39,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 yield return _items[_index + i];
         }
 
-        int IList.Add(object value) => throw new NotSupportedException();
+        int IList.Add(object? value) => throw new NotSupportedException();
         void IList.Clear() => throw new NotSupportedException();
-        bool IList.Contains(object value) => throw new NotSupportedException();
+        bool IList.Contains(object? value) => throw new NotSupportedException();
         void ICollection.CopyTo(Array array, int index) => throw new NotSupportedException();
-        int IList.IndexOf(object value) => throw new NotSupportedException();
-        void IList.Insert(int index, object value) => throw new NotSupportedException();
-        void IList.Remove(object value) => throw new NotSupportedException();
+        int IList.IndexOf(object? value) => throw new NotSupportedException();
+        void IList.Insert(int index, object? value) => throw new NotSupportedException();
+        void IList.Remove(object? value) => throw new NotSupportedException();
         void IList.RemoveAt(int index) => throw new NotSupportedException();
     }
 }

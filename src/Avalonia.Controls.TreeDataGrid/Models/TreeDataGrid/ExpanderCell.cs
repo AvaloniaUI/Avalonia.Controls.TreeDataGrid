@@ -37,7 +37,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             (_inner as IDisposable)?.Dispose();
         }
 
-        private void RowPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void RowPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(Row.IsExpanded) ||
                 e.PropertyName == nameof(Row.ShowExpander))

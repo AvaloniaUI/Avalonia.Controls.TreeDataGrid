@@ -154,7 +154,7 @@ namespace Avalonia.Experimental.Data
             return Mode == BindingMode.Default ? property.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
         }
 
-        private IObservable<TIn> GetRoot(IAvaloniaObject target, AvaloniaProperty property)
+        private IObservable<TIn?> GetRoot(IAvaloniaObject target, AvaloniaProperty property)
         {
             if (Source.HasValue)
             {

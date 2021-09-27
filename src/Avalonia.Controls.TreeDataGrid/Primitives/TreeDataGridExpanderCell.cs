@@ -133,7 +133,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void ModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void ModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (_model is null)
                 return;

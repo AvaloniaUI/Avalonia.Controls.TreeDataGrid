@@ -68,7 +68,7 @@ namespace Avalonia.Controls.Primitives
             base.OnPropertyChanged(change);
         }
 
-        private void OnColumnLayoutInvalidated(object sender, EventArgs e)
+        private void OnColumnLayoutInvalidated(object? sender, EventArgs e)
         {
             InvalidateMeasure();
         }

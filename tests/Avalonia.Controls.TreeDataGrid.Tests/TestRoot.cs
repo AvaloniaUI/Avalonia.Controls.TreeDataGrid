@@ -28,8 +28,8 @@ namespace Avalonia.Controls.TreeDataGridTests
         public ILayoutManager LayoutManager { get; set; }
         public double RenderScaling => 1;
         public IRenderer? Renderer { get; set; }
-        public IAccessKeyHandler? AccessKeyHandler => null;
-        public IKeyboardNavigationHandler? KeyboardNavigationHandler => null;
+        public IAccessKeyHandler AccessKeyHandler => throw new NotImplementedException();
+        public IKeyboardNavigationHandler KeyboardNavigationHandler => throw new NotImplementedException();
         public IInputElement? PointerOverElement { get; set; }
         public IMouseDevice? MouseDevice { get; set; }
         public bool ShowAccessKeys { get; set; }

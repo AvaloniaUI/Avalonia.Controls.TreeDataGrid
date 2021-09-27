@@ -24,7 +24,7 @@ namespace Avalonia.Experimental.Data.Core
         IDescription
             where TIn : class
     {
-        private readonly IObservable<TIn> _rootSource;
+        private readonly IObservable<TIn?> _rootSource;
         private readonly Func<TIn, TOut> _read;
         private readonly Action<TIn, TOut>? _write;
         private readonly Link[]? _chain;
@@ -35,7 +35,7 @@ namespace Avalonia.Experimental.Data.Core
         private int _publishCount;
 
         public TypedBindingExpression(
-            IObservable<TIn> root,
+            IObservable<TIn?> root,
             Func<TIn, TOut> read,
             Action<TIn, TOut>? write,
             Func<TIn, object>[] links,
@@ -119,9 +119,9 @@ namespace Avalonia.Experimental.Data.Core
             }
         }
 
-        private void RootChanged(TIn value)
+        private void RootChanged(TIn? value)
         {
-            _root = new WeakReference<TIn>(value);
+            _root = value is null ? null : new WeakReference<TIn>(value);
             _flags |= Flags.RootHasFired;
             StopListeningToChain(0);
             ListenToChain(0);
@@ -307,8 +307,11 @@ namespace Avalonia.Experimental.Data.Core
             return -1;
         }
 
-        private void ChainPropertyChanged(object sender)
+        private void ChainPropertyChanged(object? sender)
         {
+            if (sender is null)
+                return;
+
             var index = ChainIndexOf(sender);
 
             if (index != -1)
@@ -320,9 +323,9 @@ namespace Avalonia.Experimental.Data.Core
             PublishValue();
         }
 
-        private void ChainPropertyChanged(object sender, PropertyChangedEventArgs e) => ChainPropertyChanged(sender);
-        private void ChainPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e) => ChainPropertyChanged(sender);
-        private void ChainCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) => ChainPropertyChanged(sender);
+        private void ChainPropertyChanged(object? sender, PropertyChangedEventArgs e) => ChainPropertyChanged(sender);
+        private void ChainPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) => ChainPropertyChanged(sender);
+        private void ChainCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => ChainPropertyChanged(sender);
 
         private struct Link
         {

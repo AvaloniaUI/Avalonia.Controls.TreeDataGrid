@@ -93,7 +93,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <returns>The cell.</returns>
         public abstract ICell CreateCell(IRow<TModel> row);
 
-        public abstract Comparison<TModel>? GetComparison(ListSortDirection direction);
+        public abstract Comparison<TModel?>? GetComparison(ListSortDirection direction);
 
         void ISetColumnLayout.SetActualWidth(double width) => ActualWidth = width;
         void ISetColumnLayout.SetWidth(GridLength width) => SetWidth(width);

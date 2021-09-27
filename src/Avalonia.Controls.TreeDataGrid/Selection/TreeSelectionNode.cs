@@ -126,19 +126,19 @@ namespace Avalonia.Controls.Selection
             {
                 case NotifyCollectionChangedAction.Add:
                     shiftIndex = e.NewStartingIndex;
-                    shiftDelta = e.NewItems.Count;
+                    shiftDelta = e.NewItems!.Count;
                     indexesChanged = OnItemsAdded(shiftIndex, e.NewItems).ShiftDelta > 0;
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     shiftIndex = e.OldStartingIndex;
-                    shiftDelta = -e.OldItems.Count;
+                    shiftDelta = -e.OldItems!.Count;
                     var change = OnItemsRemoved(shiftIndex, e.OldItems);
                     indexesChanged = change.ShiftDelta != 0;
                     removed = change.RemovedItems;
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems);
-                    var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems);
+                    var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
+                    var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
                     shiftIndex = removeChange.ShiftIndex;
                     shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
                     indexesChanged = shiftDelta != 0;

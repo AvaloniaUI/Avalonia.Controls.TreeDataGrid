@@ -19,7 +19,7 @@ namespace ProControlsDemo.ViewModels
 {
     class FilesPageViewModel : ReactiveObject
     {
-        private FileTreeNodeModel _root;
+        private FileTreeNodeModel? _root;
         private Bitmap _folderIcon;
         private Bitmap _fileIcon;
         private string _selectedDrive;

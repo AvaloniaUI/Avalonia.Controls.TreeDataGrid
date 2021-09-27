@@ -96,10 +96,16 @@ namespace ProControlsDemo.Models
             return result;
         }
 
-        public static Comparison<FileTreeNodeModel> SortAscending<T>(Func<FileTreeNodeModel, T> selector)
+        public static Comparison<FileTreeNodeModel?> SortAscending<T>(Func<FileTreeNodeModel, T> selector)
         {
             return (x, y) =>
             {
+                if (x is null && y is null)
+                    return 0;
+                else if (x is null)
+                    return -1;
+                else if (y is null)
+                    return 1;
                 if (x.IsDirectory == y.IsDirectory)
                     return Comparer<T>.Default.Compare(selector(x), selector(y));
                 else if (x.IsDirectory)
@@ -109,10 +115,16 @@ namespace ProControlsDemo.Models
             };
         }
 
-        public static Comparison<FileTreeNodeModel> SortDescending<T>(Func<FileTreeNodeModel, T> selector)
+        public static Comparison<FileTreeNodeModel?> SortDescending<T>(Func<FileTreeNodeModel, T> selector)
         {
             return (x, y) =>
             {
+                if (x is null && y is null)
+                    return 0;
+                else if (x is null)
+                    return 1;
+                else if (y is null)
+                    return -1;
                 if (x.IsDirectory == y.IsDirectory)
                     return Comparer<T>.Default.Compare(selector(y), selector(x));
                 else if (x.IsDirectory)

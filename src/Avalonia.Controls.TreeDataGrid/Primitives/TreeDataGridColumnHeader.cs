@@ -119,7 +119,7 @@ namespace Avalonia.Controls.Primitives
             base.OnPropertyChanged(change);
         }
 
-        private void OnModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(IColumn.CanUserResize) ||
                 e.PropertyName == nameof(IColumn.Header) ||
@@ -127,7 +127,7 @@ namespace Avalonia.Controls.Primitives
                 UpdatePropertiesFromModel();
         }
 
-        private void OnOwnerPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void OnOwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (_owner is null)
                 return;

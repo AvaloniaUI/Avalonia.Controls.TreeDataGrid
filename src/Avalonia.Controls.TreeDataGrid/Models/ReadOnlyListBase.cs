@@ -19,16 +19,16 @@ namespace Avalonia.Controls.Models
         bool IList.IsFixedSize => false;
         bool IList.IsReadOnly => true;
         bool ICollection.IsSynchronized => false;
-        object? ICollection.SyncRoot => null;
+        object ICollection.SyncRoot => this;
 
         public abstract IEnumerator<T> GetEnumerator();
 
-        int IList.Add(object value) => throw new NotSupportedException();
+        int IList.Add(object? value) => throw new NotSupportedException();
         void IList.Clear() => throw new NotSupportedException();
-        void IList.Insert(int index, object value) => throw new NotSupportedException();
-        void IList.Remove(object value) => throw new NotSupportedException();
+        void IList.Insert(int index, object? value) => throw new NotSupportedException();
+        void IList.Remove(object? value) => throw new NotSupportedException();
         void IList.RemoveAt(int index) => throw new NotSupportedException();
-        bool IList.Contains(object value) => ((IList)this).IndexOf(value) != -1;
+        bool IList.Contains(object? value) => ((IList)this).IndexOf(value) != -1;
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         void ICollection.CopyTo(Array array, int index)
@@ -37,7 +37,7 @@ namespace Avalonia.Controls.Models
                 array.SetValue(this[i], i + index);
         }
 
-        int IList.IndexOf(object value)
+        int IList.IndexOf(object? value)
         {
             for (var i = 0; i < Count; ++i)
             {

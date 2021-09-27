@@ -17,8 +17,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         where TModel : class
     {
         private bool _canUserSort;
-        private readonly Comparison<TModel>? _sortAscending;
-        private readonly Comparison<TModel>? _sortDescending;
+        private readonly Comparison<TModel?>? _sortAscending;
+        private readonly Comparison<TModel?>? _sortDescending;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnBase{TModel, TValue}"/> class.
@@ -37,8 +37,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <param name="options">Additional column options.</param>
         public ColumnBase(
             object? header,
-            Expression<Func<TModel, TValue>> getter,
-            Action<TModel, TValue>? setter,
+            Expression<Func<TModel, TValue?>> getter,
+            Action<TModel, TValue?>? setter,
             GridLength? width,
             ColumnOptions<TModel>? options)
             : base(header, width, options)
@@ -55,14 +55,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets the function which selects the column value from the model.
         /// </summary>
-        public Func<TModel, TValue> ValueSelector { get; }
+        public Func<TModel, TValue?> ValueSelector { get; }
 
         /// <summary>
         /// Gets a binding which selects the column value from the model.
         /// </summary>
-        public TypedBinding<TModel, TValue> Binding { get; }
+        public TypedBinding<TModel, TValue?> Binding { get; }
 
-        public override Comparison<TModel>? GetComparison(ListSortDirection direction)
+        public override Comparison<TModel?>? GetComparison(ListSortDirection direction)
         {
             if (!_canUserSort)
                 return null;
@@ -85,15 +85,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 default);
         }
 
-        private int DefaultSortAscending(TModel x, TModel y)
+        private int DefaultSortAscending(TModel? x, TModel? y)
         {
+            if (x is null || y is null)
+                return Comparer<TModel>.Default.Compare(x, y);
             var a = ValueSelector(x);
             var b = ValueSelector(y);
             return Comparer<TValue>.Default.Compare(a, b);
         }
 
-        private int DefaultSortDescending(TModel x, TModel y)
+        private int DefaultSortDescending(TModel? x, TModel? y)
         {
+            if (x is null || y is null)
+                return -Comparer<TModel>.Default.Compare(x, y);
             var a = ValueSelector(x);
             var b = ValueSelector(y);
             return Comparer<TValue>.Default.Compare(b, a);

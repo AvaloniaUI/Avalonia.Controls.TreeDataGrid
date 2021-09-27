@@ -40,18 +40,18 @@ namespace Avalonia.Controls.Primitives
         {
             return data switch
             {
-                TemplateCell _ => typeof(TreeDataGridTemplateCell).FullName,
-                IExpanderCell _ => typeof(TreeDataGridExpanderCell).FullName,
-                ICell _ => typeof(TreeDataGridTextCell).FullName,
-                IColumn _ => typeof(TreeDataGridColumnHeader).FullName,
-                IRow _ => typeof(TreeDataGridRow).FullName,
+                TemplateCell _ => typeof(TreeDataGridTemplateCell).FullName!,
+                IExpanderCell _ => typeof(TreeDataGridExpanderCell).FullName!,
+                ICell _ => typeof(TreeDataGridTextCell).FullName!,
+                IColumn _ => typeof(TreeDataGridColumnHeader).FullName!,
+                IRow _ => typeof(TreeDataGridRow).FullName!,
                 _ => throw new NotSupportedException(),
             };
         }
 
         protected virtual string GetElementRecycleKey(IControl element)
         {
-            return element.GetType().FullName;
+            return element.GetType().FullName!;
         }
 
         private IControl GetElement(object data, IControl? parent)

@@ -70,12 +70,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public bool HasChildren(TModel model) => _hasChildrenSelector?.Invoke(model) ?? true;
         public IEnumerable<TModel>? GetChildModels(TModel model) => _childSelector(model);
-        public Comparison<TModel>? GetComparison(ListSortDirection direction) => _inner.GetComparison(direction);
+        public Comparison<TModel?>? GetComparison(ListSortDirection direction) => _inner.GetComparison(direction);
 
         void ISetColumnLayout.SetActualWidth(double width) => ActualWidth = width;
         void ISetColumnLayout.SetWidth(GridLength width) => SetWidth(width);
 
-        private void OnInnerPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnInnerPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(CanUserResize) ||
                 e.PropertyName == nameof(Header) ||

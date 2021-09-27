@@ -202,7 +202,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 throw new NotImplementedException();
             }
 
-            public override Comparison<string>? GetComparison(ListSortDirection direction)
+            public override Comparison<string?>? GetComparison(ListSortDirection direction)
             {
                 throw new NotImplementedException();
             }
