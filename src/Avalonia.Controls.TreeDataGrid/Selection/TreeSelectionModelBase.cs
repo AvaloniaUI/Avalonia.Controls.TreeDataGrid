@@ -120,6 +120,7 @@ namespace Avalonia.Controls.Selection
         public event EventHandler<TreeSelectionModelSelectionChangedEventArgs<T>>? SelectionChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
         public event EventHandler<TreeSelectionModelIndexesChangedEventArgs>? IndexesChanged;
+        public event EventHandler<TreeSelectionModelSourceResetEventArgs>? SourceReset;
 
         event EventHandler<TreeSelectionModelSelectionChangedEventArgs>? ITreeSelectionModel.SelectionChanged
         {
@@ -279,11 +280,11 @@ namespace Avalonia.Controls.Selection
             var anchorIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _anchorIndex);
             var selectedItemChanged = false;
 
-            // Check that the selected/anchor index is still selected in the node. It can get
+            // Check that the selected index is still selected in the node. It can get
             // unselected as the result of a replace operation.
             if (_selectedIndex != default && !IsSelected(_selectedIndex))
             {
-                _selectedIndex = default;
+                _selectedIndex = GetFirstSelectedIndex(_root);
                 selectedIndexChanged = selectedItemChanged = true;
             }
 
@@ -304,8 +305,28 @@ namespace Avalonia.Controls.Selection
                 RaisePropertyChanged(nameof(AnchorIndex));
         }
 
-        internal void OnNodeCollectionChangeFinished()
+        protected internal virtual void OnNodeCollectionReset(IndexPath parentIndex)
         {
+            var selectedIndexChanged = false;
+            var anchorIndexChanged = false;
+            var selectedItemChanged = false;
+
+            // Check that the selected index is still selected in the node. It can get
+            // unselected as the result of a replace operation.
+            if (_selectedIndex != default && !IsSelected(_selectedIndex))
+            {
+                _selectedIndex = GetFirstSelectedIndex(_root);
+                selectedIndexChanged = selectedItemChanged = true;
+            }
+
+            SourceReset?.Invoke(this, new TreeSelectionModelSourceResetEventArgs(parentIndex));
+
+            if (selectedIndexChanged)
+                RaisePropertyChanged(nameof(SelectedIndex));
+            if (selectedItemChanged)
+                RaisePropertyChanged(nameof(SelectedItem));
+            if (anchorIndexChanged)
+                RaisePropertyChanged(nameof(AnchorIndex));
         }
 
         private IndexPath GetFirstSelectedIndex(TreeSelectionNode<T> node, IndexRanges? except = null)
