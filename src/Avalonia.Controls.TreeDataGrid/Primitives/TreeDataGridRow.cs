@@ -103,7 +103,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (change.Property == IsSelectedProperty)
             {
-                PseudoClasses.Set(":selected", change.NewValue.GetValueOrDefault<bool>());
+                PseudoClasses.Set(":selected", IsSelected);
             }
             
             base.OnPropertyChanged(change);
