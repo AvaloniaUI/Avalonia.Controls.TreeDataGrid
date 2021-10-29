@@ -1115,15 +1115,16 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 Assert.Equal(1, selectedIndexRaised);
                 Assert.Equal(1, selectedItemRaised);
             }
-#if false
+
             [Fact]
-            public void Resetting_Root_Updates_State()
+            public void Resetting_Root_Items_Clears_Selection()
             {
                 var data = CreateData();
                 var target = CreateTarget(data);
                 var selectionChangedRaised = 0;
                 var selectedIndexRaised = 0;
-                var resetRaised = 0;
+                var selectedItemRaised = 0;
+                var sourceResetRaised = 0;
 
                 target.Select(new IndexPath(1));
 
@@ -1133,9 +1134,19 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                     {
                         ++selectedIndexRaised;
                     }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
                 };
 
-                target.SelectionChanged += (s, e) => ++selectionChangedRaised;
+                target.SelectionChanged += (s, e) =>++selectionChangedRaised;
+                target.SourceReset += (s, e) =>
+                {
+                    Assert.Equal(default, e.ParentIndex);
+                    ++sourceResetRaised;
+                };
 
                 data.Clear();
 
@@ -1143,12 +1154,98 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 Assert.Empty(target.SelectedIndexes);
                 Assert.Null(target.SelectedItem);
                 Assert.Empty(target.SelectedItems);
-                Assert.Equal(default, target.AnchorIndex);
                 Assert.Equal(0, selectionChangedRaised);
-                Assert.Equal(1, resetRaised);
                 Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(1, selectedItemRaised);
             }
-#endif
+
+            [Fact]
+            public void Resetting_Child_Items_Clears_Selection()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
+                var sourceResetRaised = 0;
+
+                target.Select(new IndexPath(1, 1));
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                };
+
+                target.SelectionChanged += (s, e) => ++selectionChangedRaised;
+                target.SourceReset += (s, e) =>
+                {
+                    Assert.Equal(new IndexPath(1), e.ParentIndex);
+                    ++sourceResetRaised;
+                };
+
+                data[1].Children!.Clear();
+
+                Assert.Equal(default, target.SelectedIndex);
+                Assert.Empty(target.SelectedIndexes);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+                Assert.Equal(0, selectionChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(1, selectedItemRaised);
+            }
+
+            [Fact]
+            public void Resetting_Child_Items_Updates_SelectedItem_To_First_Selected_Item()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
+                var sourceResetRaised = 0;
+
+                target.Select(new IndexPath(1, 1));
+                target.Select(new IndexPath(2, 1));
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                };
+
+                target.SelectionChanged += (s, e) => ++selectionChangedRaised;
+                target.SourceReset += (s, e) =>
+                {
+                    Assert.Equal(new IndexPath(1), e.ParentIndex);
+                    ++sourceResetRaised;
+                };
+
+                data[1].Children!.Clear();
+
+                Assert.Equal(new IndexPath(2, 1), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(2, 1) }, target.SelectedIndexes);
+                Assert.Equal("Node 2-1", target.SelectedItem!.Caption);
+                Assert.Equal("Node 2-1", target.SelectedItems.Single()!.Caption);
+                Assert.Equal(0, selectionChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(1, selectedItemRaised);
+            }
+
             [Fact]
             public void Handles_Selection_Made_In_CollectionChanged()
             {

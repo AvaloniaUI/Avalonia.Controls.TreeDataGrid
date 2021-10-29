@@ -144,6 +144,9 @@ namespace Avalonia.Controls.Selection
                     indexesChanged = shiftDelta != 0;
                     removed = removeChange.RemovedItems;
                     break;
+                case NotifyCollectionChangedAction.Reset:
+                    OnSourceReset();
+                    break;
                 default:
                     throw new NotSupportedException($"Collection {e.Action} not supported.");
             }
@@ -176,14 +179,10 @@ namespace Avalonia.Controls.Selection
                 _owner.OnNodeCollectionChanged(Path, shiftIndex, shiftDelta, indexesChanged, removed);
         }
 
-        protected override void OnSourceCollectionChangeFinished()
-        {
-            _owner.OnNodeCollectionChangeFinished();
-        }
-
         protected override void OnSourceReset()
         {
-            throw new NotImplementedException();
+            CommitDeselect(new IndexRange(0, int.MaxValue));
+            _owner.OnNodeCollectionReset(Path);
         }
 
         private TreeSelectionNode<T>? GetChild(int index, bool realize)
