@@ -93,7 +93,7 @@ namespace Avalonia.Controls.Primitives
         {
             foreach (var element in LogicalChildren)
             {
-                if (element is TreeDataGridRow row)
+                if (element is TreeDataGridRow { RowIndex: >= 0 } row)
                 {
                     row.IsSelected = _selection?.IsRowSelected(row.RowIndex) == true;
                 }
