@@ -50,7 +50,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Called by the <see cref="TreeDataGrid"/> when a measure pass has completed.
         /// </summary>
-        void MeasureFinished();
+        void MeasureEnd();
 
         /// <summary>
         /// Sets the width of a column.

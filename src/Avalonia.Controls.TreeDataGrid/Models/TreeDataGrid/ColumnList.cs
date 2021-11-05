@@ -8,36 +8,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// </summary>
     public class ColumnList<TModel> : NotifyingListBase<IColumn<TModel>>, IColumns
     {
-        private bool _sizeStarColumnsAtEndOfMeasure = true;
         private double _viewportWidth;
 
         public event EventHandler? LayoutInvalidated;
 
         public Size CellMeasured(int columnIndex, int rowIndex, Size size)
         {
-            var column = this[columnIndex];
-
-            switch (column.Width.GridUnitType)
-            {
-                case GridUnitType.Auto:
-                    if (!column.ActualWidth.HasValue || size.Width > column.ActualWidth)
-                    {
-                        _sizeStarColumnsAtEndOfMeasure = true;
-                        ((ISetColumnLayout)column).SetActualWidth(size.Width);
-                        LayoutInvalidated?.Invoke(this, EventArgs.Empty);
-                    }
-
-                    return new Size(column.ActualWidth!.Value, size.Height);
-                case GridUnitType.Pixel:
-                    return new Size(column.Width.Value, size.Height);
-                case GridUnitType.Star:
-                    if (column.ActualWidth.HasValue)
-                        return new Size(column.ActualWidth.Value, size.Height);
-                    else
-                        return size;
-                default:
-                    throw new InvalidOperationException("Invalid column width.");
-            }
+            var column = (IUpdateColumnLayout)this[columnIndex];
+            return new Size(column.CellMeasured(size.Width, rowIndex), size.Height);
         }
 
         public (int index, double x) GetColumnAt(double x)
@@ -50,9 +28,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 var end = start + column.ActualWidth;
                 if (x >= start && x < end)
                     return (i, start);
-                if (!column.ActualWidth.HasValue)
+                if (double.IsNaN(column.ActualWidth))
                     return (-1, -1);
-                start += column.ActualWidth.Value;
+                start += column.ActualWidth;
             }
 
             return (-1, -1);
@@ -69,9 +47,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 if (column.Width.IsStar)
                     hasStar = true;
-                else if (column.ActualWidth.HasValue)
+                else if (!double.IsNaN(column.ActualWidth))
                 {
-                    totalMeasured += column.ActualWidth.Value;
+                    totalMeasured += column.ActualWidth;
                     ++measuredCount;
                 }
                 else
@@ -94,12 +72,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return totalMeasured;
         }
 
-        public void MeasureFinished()
-        {
-            if (_sizeStarColumnsAtEndOfMeasure)
-                SizeStarColumns();
-            _sizeStarColumnsAtEndOfMeasure = false;
-        }
+        public void MeasureEnd() => UpdateColumnSizes();
 
         public void SetColumnWidth(int columnIndex, GridLength width)
         {
@@ -107,9 +80,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             if (width != column.Width)
             {
-                ((ISetColumnLayout)column).SetWidth(width);
+                ((IUpdateColumnLayout)column).SetWidth(width);
                 LayoutInvalidated?.Invoke(this, EventArgs.Empty);
-                SizeStarColumns();
+                UpdateColumnSizes();
             }
         }
 
@@ -118,24 +91,27 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             if (_viewportWidth != viewport.Width)
             {
                 _viewportWidth = viewport.Width;
-                SizeStarColumns();
+                UpdateColumnSizes();
             }
         }
 
         IColumn IReadOnlyList<IColumn>.this[int index] => this[index];
         IEnumerator<IColumn> IEnumerable<IColumn>.GetEnumerator() => GetEnumerator();
 
-        private void SizeStarColumns()
+        private void UpdateColumnSizes()
         {
             var totalStars = 0.0;
             var availableSpace = _viewportWidth;
 
-            foreach (var column in this)
+            foreach (IUpdateColumnLayout column in this)
             {
-                if (column.Width.IsStar)
+                if (!column.Width.IsStar)
+                {
+                    column.CommitActualWidth();
+                    availableSpace -= column.ActualWidth;
+                }
+                else
                     totalStars += column.Width.Value;
-                else if (column.ActualWidth.HasValue)
-                    availableSpace -= column.ActualWidth.Value;
             }
 
             if (totalStars == 0)
@@ -143,17 +119,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             var invalidated = false;
 
-            foreach (var column in this)
+            foreach (IUpdateColumnLayout column in this)
             {
                 if (column.Width.IsStar)
                 {
-                    var actualWidth = Math.Max(0, availableSpace * (column.Width.Value / totalStars));
-
-                    if (column.ActualWidth != actualWidth)
-                    {
-                        ((ISetColumnLayout)column).SetActualWidth(actualWidth);
-                        invalidated = true;
-                    }
+                    var oldSize = column.ActualWidth;
+                    column.CommitActualWidth(availableSpace, totalStars);
+                    invalidated |= oldSize != column.ActualWidth;
                 }
             }
 

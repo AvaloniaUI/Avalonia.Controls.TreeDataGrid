@@ -7,11 +7,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// Base class for columns which select cell values from a model.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public abstract class ColumnBase<TModel> : NotifyingBase, IColumn<TModel>, ISetColumnLayout
+    public abstract class ColumnBase<TModel> : NotifyingBase, IColumn<TModel>, IUpdateColumnLayout
     {
-        private double? _actualWidth;
+        private double _actualWidth = double.NaN;
         private bool? _canUserResize;
         private GridLength _width;
+        private GridLength _minimumWidth;
+        private double _autoWidth;
         private object? _header;
         private ListSortDirection? _sortDirection;
 
@@ -29,6 +31,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             ColumnOptions<TModel>? options)
         {
             _canUserResize = options?.CanUserResizeColumn;
+            _minimumWidth = options?.MinimumWidth ?? new GridLength(30, GridUnitType.Pixel);
             _header = header;
             SetWidth(width ?? GridLength.Auto);
         }
@@ -36,7 +39,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets the actual width of the column after measurement.
         /// </summary>
-        public double? ActualWidth
+        public double ActualWidth
         {
             get => _actualWidth;
             private set => RaiseAndSetIfChanged(ref _actualWidth, value);
@@ -95,8 +98,47 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public abstract Comparison<TModel?>? GetComparison(ListSortDirection direction);
 
-        void ISetColumnLayout.SetActualWidth(double width) => ActualWidth = width;
-        void ISetColumnLayout.SetWidth(GridLength width) => SetWidth(width);
+        double IUpdateColumnLayout.CellMeasured(double width, int rowIndex)
+        {
+            _autoWidth = Math.Max(_autoWidth, width);
+            return double.IsNaN(ActualWidth) ? width : ActualWidth;
+        }
+
+        void IUpdateColumnLayout.CommitActualWidth()
+        {
+            if (Width.IsStar)
+                return;
+
+            var width = Width.GridUnitType switch
+            {
+                GridUnitType.Auto => _autoWidth,
+                GridUnitType.Pixel => Width.Value,
+                _ => throw new NotSupportedException(),
+            };
+
+            ActualWidth = CoerceActualWidth(width);
+        }
+
+        void IUpdateColumnLayout.CommitActualWidth(double availableWidth, double totalStars)
+        {
+            if (!Width.IsStar)
+                return;
+
+            var width = (availableWidth / totalStars) * Width.Value;
+            ActualWidth = CoerceActualWidth(width);
+        }
+
+        void IUpdateColumnLayout.SetWidth(GridLength width) => SetWidth(width);
+
+        private double CoerceActualWidth(double width)
+        {
+            return _minimumWidth.GridUnitType switch
+            {
+                GridUnitType.Auto => Math.Max(width, _autoWidth),
+                GridUnitType.Pixel => Math.Max(width, _minimumWidth.Value),
+                _ => width,
+            };
+        }
 
         private void SetWidth(GridLength width)
         {
