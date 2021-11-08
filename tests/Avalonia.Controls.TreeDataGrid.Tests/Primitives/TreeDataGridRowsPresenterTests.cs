@@ -19,10 +19,10 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         public void Nth_Child_Handles_Deletion_And_Addition_Correctly()
         {
             using var app = App();
-            var (target, scroll, _) = CreateTarget(additionalStyles:
+            var (target, scroll, items) = CreateTarget(additionalStyles:
                 new List<IStyle>
                 {
-                    new Style(x => x.OfType<TreeDataGrid>().Descendant().OfType<TreeDataGridRow>().NthChild(2,0))
+                    new Style(x => x.OfType<TreeDataGridRowsPresenter>().Descendant().OfType<TreeDataGridRow>().NthChild(2,0))
                     {
                         Setters =
                         {
@@ -32,9 +32,35 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 });
 
             Layout(target);
-            var test = target.GetVisualChildren().Cast<TreeDataGridRow>().Select(x => x.Background);
-           // Assert.Equal(.)
-            throw new NotImplementedException();
+
+            int CountEvenRedRows(TreeDataGridRowsPresenter presenter)
+            {
+                return target.GetVisualChildren().Cast<TreeDataGridRow>().Select(x => x.Background)
+                                             .Where((x, i) => (i + 1) % 2 == 0 && x is SolidColorBrush brush && brush.Color == Color.Parse("Red")).Count();
+            }
+
+            var count = CountEvenRedRows(target) == 5;
+
+            Assert.True(count);
+
+            Assert.True(items.Count == 100);
+
+            items.RemoveAt(0);
+            items.RemoveAt(0);
+
+            Assert.True(items.Count == 98);
+
+            Layout(target);
+
+            count = CountEvenRedRows(target) == 5;
+
+            Assert.True(count);
+
+            items.Add(new Model() { Id = 101, Title = "Item 101" });
+
+            count = CountEvenRedRows(target) == 5;
+
+            Assert.True(count);
         }
 
         [Fact]
