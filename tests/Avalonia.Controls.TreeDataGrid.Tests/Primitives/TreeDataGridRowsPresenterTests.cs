@@ -39,9 +39,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                                              .Where((x, i) => (i + 1) % 2 == 0 && x is SolidColorBrush brush && brush.Color == Color.Parse("Red")).Count();
             }
 
-            var count = CountEvenRedRows(target) == 5;
-
-            Assert.True(count);
+            Assert.True(CountEvenRedRows(target) == 5);
 
             Assert.True(items.Count == 100);
 
@@ -52,15 +50,15 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
             Layout(target);
 
-            count = CountEvenRedRows(target) == 5;
-
-            Assert.True(count);
+            Assert.True(CountEvenRedRows(target) == 5);
 
             items.Add(new Model() { Id = 101, Title = "Item 101" });
 
-            count = CountEvenRedRows(target) == 5;
+            Assert.True(items.Count == 99);
 
-            Assert.True(count);
+            Layout(target); 
+
+            Assert.True(CountEvenRedRows(target) == 5);
         }
 
         [Fact]
