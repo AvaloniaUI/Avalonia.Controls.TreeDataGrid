@@ -197,7 +197,7 @@ namespace Avalonia.Controls.TreeDataGridTests
         }
 
         [Fact]
-        public void Can_Replace_Items_When_Displaying_Child_Items_Followed_By_Root_Items()
+        public void Can_Reassign_Items_When_Displaying_Child_Items_Followed_By_Root_Items()
         {
             using var app = App();
 
