@@ -212,7 +212,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             // of the first root item together with subsequent root items.
             source.Expand(new IndexPath(0));
             Layout(target);
-            target.Scroll!.Offset = new Vector(0, 9700);
+            target.Scroll!.Offset = new Vector(0, 1970);
             Layout(target);
 
             var firstRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements.First()!;
@@ -259,7 +259,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             // of the first root item together with subsequent root items.
             source.Expand(new IndexPath(0, 0));
             Layout(target);
-            target.Scroll!.Offset = new Vector(0, 9700);
+            target.Scroll!.Offset = new Vector(0, 1970);
             Layout(target);
 
             var firstRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements.First()!;
@@ -303,7 +303,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             // of the first root item together with subsequent root items.
             source.Expand(new IndexPath(0));
             Layout(target);
-            target.Scroll!.Offset = new Vector(0, 9700);
+            target.Scroll!.Offset = new Vector(0, 1970);
             Layout(target);
 
             var firstRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements.First()!;
@@ -343,7 +343,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             // of the first root item together with subsequent root items.
             source.Expand(new IndexPath(0, 0));
             Layout(target);
-            target.Scroll!.Offset = new Vector(0, 9700);
+            target.Scroll!.Offset = new Vector(0, 1970);
             Layout(target);
 
             var firstRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements.First()!;
