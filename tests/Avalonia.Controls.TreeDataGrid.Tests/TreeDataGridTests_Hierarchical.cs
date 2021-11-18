@@ -319,8 +319,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             Layout(target);
 
-            firstRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements[0]!;
-            Assert.Equal(0, firstRow.RowIndex);
+            Assert.Empty(target.RowsPresenter!.RealizedElements);
             Assert.Equal(new Vector(0, 0), target.Scroll!.Offset);
         }
 
@@ -356,6 +355,8 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             // Clear the child items.
             ((AvaloniaList<Model>)source.Items)[0].Children!.Clear();
+
+            Layout(target);
 
             firstRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements[0]!;
             Assert.Equal(0, firstRow.RowIndex);
