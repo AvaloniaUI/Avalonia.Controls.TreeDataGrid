@@ -206,12 +206,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             var expander = Assert.IsType<TreeDataGridExpanderCell>(cell);
 
             // Add a a few more root items.
-            ((AvaloniaList<Model>)source.Items).AddRange(Enumerable.Range(0, 5).Select(x =>
-                new Model
-                {
-                    Id = x + 2,
-                    Title = "Root " + (x + 2),
-                }));
+            ((AvaloniaList<Model>)source.Items).AddRange(CreateModels("Root ", 5, firstIndex: 2));
 
             // Expand the first root item and scroll down such that we're displaying some children
             // of the first root item together with subsequent root items.
@@ -246,6 +241,53 @@ namespace Avalonia.Controls.TreeDataGridTests
         }
 
         [Fact]
+        public void Can_Reassign_Items_When_Displaying_Grandchild_Items_Followed_By_Root_Items()
+        {
+            using var app = App();
+
+            var (target, source) = CreateTarget();
+            var cell = target.TryGetCell(0, 0);
+            var expander = Assert.IsType<TreeDataGridExpanderCell>(cell);
+
+            // Add a a few more root items.
+            ((AvaloniaList<Model>)source.Items).AddRange(CreateModels("Root ", 5, firstIndex: 2));
+
+            // Add some grandchildren.
+            ((AvaloniaList<Model>)source.Items)[0].Children!.AddRange(CreateModels("Item 0-0-", 100));
+
+            // Expand the first child item and scroll down such that we're displaying some children
+            // of the first root item together with subsequent root items.
+            source.Expand(new IndexPath(0, 0));
+            Layout(target);
+            target.Scroll!.Offset = new Vector(0, 9700);
+            Layout(target);
+
+            var firstRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements.First()!;
+            var lastRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements.Last()!;
+            var firstRowModel = (IRow<Model>)source.Rows[firstRow.RowIndex];
+            var lastRowModel = (IRow<Model>)source.Rows[lastRow.RowIndex];
+
+            Assert.Equal("Item 0-0-96", firstRowModel.Model.Title);
+            Assert.Equal("Root 6", lastRowModel.Model.Title);
+
+            // Replace the items with a single item.
+            source.Items = new AvaloniaList<Model>
+            {
+                new Model
+                {
+                    Id = 0,
+                    Title = "Root 0",
+                },
+            };
+
+            Layout(target);
+
+            firstRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements[0]!;
+            Assert.Equal(0, firstRow.RowIndex);
+            Assert.Equal(new Vector(0, 0), target.Scroll!.Offset);
+        }
+
+        [Fact]
         public void Can_Reset_Items_When_Displaying_Child_Items_Followed_By_Root_Items()
         {
             using var app = App();
@@ -255,12 +297,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             var expander = Assert.IsType<TreeDataGridExpanderCell>(cell);
 
             // Add a a few more root items.
-            ((AvaloniaList<Model>)source.Items).AddRange(Enumerable.Range(0, 5).Select(x =>
-                new Model
-                {
-                    Id = x + 2,
-                    Title = "Root " + (x + 2),
-                }));
+            ((AvaloniaList<Model>)source.Items).AddRange(CreateModels("Root ", 5, firstIndex: 2));
 
             // Expand the first root item and scroll down such that we're displaying some children
             // of the first root item together with subsequent root items.
@@ -287,6 +324,44 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(new Vector(0, 0), target.Scroll!.Offset);
         }
 
+        [Fact]
+        public void Can_Reset_Child_Items_When_Displaying_Grandchild_Items_Followed_By_Root_Items()
+        {
+            using var app = App();
+
+            var (target, source) = CreateTarget();
+            var cell = target.TryGetCell(0, 0);
+            var expander = Assert.IsType<TreeDataGridExpanderCell>(cell);
+
+            // Add a a few more root items.
+            ((AvaloniaList<Model>)source.Items).AddRange(CreateModels("Root ", 5, firstIndex: 2));
+
+            // Add some grandchildren.
+            ((AvaloniaList<Model>)source.Items)[0].Children!.AddRange(CreateModels("Item 0-0-", 100));
+
+            // Expand the first child item and scroll down such that we're displaying some children
+            // of the first root item together with subsequent root items.
+            source.Expand(new IndexPath(0, 0));
+            Layout(target);
+            target.Scroll!.Offset = new Vector(0, 9700);
+            Layout(target);
+
+            var firstRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements.First()!;
+            var lastRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements.Last()!;
+            var firstRowModel = (IRow<Model>)source.Rows[firstRow.RowIndex];
+            var lastRowModel = (IRow<Model>)source.Rows[lastRow.RowIndex];
+
+            Assert.Equal("Item 0-0-96", firstRowModel.Model.Title);
+            Assert.Equal("Root 6", lastRowModel.Model.Title);
+
+            // Clear the child items.
+            ((AvaloniaList<Model>)source.Items)[0].Children!.Clear();
+
+            firstRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements[0]!;
+            Assert.Equal(0, firstRow.RowIndex);
+            Assert.Equal(new Vector(0, 0), target.Scroll!.Offset);
+        }
+
         private static (TreeDataGrid, HierarchicalTreeDataGridSource<Model>) CreateTarget()
         {
             var items = new AvaloniaList<Model>
@@ -295,12 +370,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 {
                     Id = 0,
                     Title = "Root 0",
-                    Children = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
-                        new Model
-                        {
-                            Id = 100 + x,
-                            Title = "Item 0-" + x,
-                        }))
+                    Children = new AvaloniaList<Model>(CreateModels("Item 0-", 100))
                 },
                 new Model
                 {
@@ -360,6 +430,20 @@ namespace Avalonia.Controls.TreeDataGridTests
             var scope = AvaloniaLocator.EnterScope();
             AvaloniaLocator.CurrentMutable.Bind<IStyler>().ToLazy(() => new Styler());
             return scope;
+        }
+
+        private static IEnumerable<Model> CreateModels(
+            string titlePrefix,
+            int count,
+            int firstIndex = 0,
+            int firstId = 100)
+        {
+            return Enumerable.Range(0, count).Select(x =>
+                new Model
+                {
+                    Id = firstId + firstIndex + x,
+                    Title = titlePrefix + (firstIndex + x),
+                });
         }
 
         private class Model : NotifyingBase
