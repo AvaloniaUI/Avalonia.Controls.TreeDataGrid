@@ -136,6 +136,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             {
                 Template = TestTemplates.ScrollViewerTemplate(),
                 Content = target,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
             };
 
             var root = new TestRoot
