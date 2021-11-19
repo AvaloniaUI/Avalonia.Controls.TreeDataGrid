@@ -11,10 +11,10 @@
     <None Remove="Assets\folder.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.0" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.0" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.0" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0" />
+    <PackageReference Include="Avalonia" Version="0.10.10" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.10" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.10" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.10" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Controls.TreeDataGrid\Avalonia.Controls.TreeDataGrid.csproj" />
