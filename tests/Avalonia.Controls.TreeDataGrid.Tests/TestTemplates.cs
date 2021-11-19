@@ -39,6 +39,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                         {
                             Name = "PART_ScrollViewer",
                             Template = ScrollViewerTemplate(),
+                            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                             Content = new TreeDataGridRowsPresenter
                             {
                                 Name = "PART_RowsPresenter",
