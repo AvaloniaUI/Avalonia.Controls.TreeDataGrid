@@ -46,7 +46,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-        public virtual void Dispose() => SetItems(ItemsSourceViewFix<TModel>.Empty);
+        public virtual void Dispose()
+        {
+            SetItems(ItemsSourceViewFix<TModel>.Empty);
+            GC.SuppressFinalize(this);
+        }
 
         public override IEnumerator<TRow> GetEnumerator()
         {
@@ -324,7 +328,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private int CompareItemsByIndex(int index1, int index2)
         {
-            int c = _comparison!(_items[index1], _items[index2]);
+            var c = _comparison!(_items[index1], _items[index2]);
 
             if (c == 0)
             {

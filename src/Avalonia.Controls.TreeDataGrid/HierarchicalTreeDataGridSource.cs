@@ -87,7 +87,12 @@ namespace Avalonia.Controls
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsed;
         public event Action? Sorted;
 
-        public void Dispose() => _rows?.Dispose();
+        public void Dispose()
+        {
+            _rows?.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
         public void Expand(IndexPath index) => GetOrCreateRows().Expand(index);
         public void Collapse(IndexPath index) => GetOrCreateRows().Collapse(index);
 

@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Selection
 {
     internal class IndexRanges : IReadOnlyList<IndexPath>
     {
-        private SortedList<IndexPath, List<IndexRange>> _ranges = new();
+        private readonly SortedList<IndexPath, List<IndexRange>> _ranges = new();
 
         public IndexPath this[int index]
         {

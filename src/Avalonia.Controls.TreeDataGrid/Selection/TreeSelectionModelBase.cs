@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Selection
 {
     public abstract class TreeSelectionModelBase<T> : ITreeSelectionModel, INotifyPropertyChanged
     {
-        private TreeSelectionNode<T> _root;
+        private readonly TreeSelectionNode<T> _root;
         private int _count;
         private bool _singleSelect = true;
         private IndexPath _anchorIndex;
@@ -241,7 +241,7 @@ namespace Avalonia.Controls.Selection
         internal T GetSelectedItemAt(in IndexPath path)
         {
             if (path == default)
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(path));
             if (Source is null)
                 throw new InvalidOperationException("Cannot get item from null Source.");
 
@@ -253,7 +253,7 @@ namespace Avalonia.Controls.Selection
                     return node.ItemsView![path[^1]];
             }
 
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(path));
         }
 
         internal void OnNodeCollectionChanged(
@@ -364,7 +364,7 @@ namespace Avalonia.Controls.Selection
         private TreeSelectionNode<T>? GetNode(in IndexPath path)
         {
             var depth = path.Count;
-            TreeSelectionNode<T>? node = _root;
+            var node = _root;
 
             for (var i = 0; i < depth; ++i)
             {
@@ -379,7 +379,7 @@ namespace Avalonia.Controls.Selection
         private TreeSelectionNode<T>? GetOrCreateNode(in IndexPath path)
         {
             var depth = path.Count;
-            TreeSelectionNode<T>? node = _root;
+            var node = _root;
 
             for (var i = 0; i < depth; ++i)
             {

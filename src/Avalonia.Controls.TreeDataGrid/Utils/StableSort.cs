@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Utils
         public static List<int> SortedMap<T>(IReadOnlyList<T> elements, Comparison<int> compare)
         {
             var map = new List<int>(elements.Count);
-            for (int i = 0; i < elements.Count; i++)
+            for (var i = 0; i < elements.Count; i++)
             {
                 map.Add(i);
             }

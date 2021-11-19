@@ -68,7 +68,11 @@ namespace Avalonia.Controls
 
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
 
-        public void Dispose() => _rows?.Dispose();
+        public void Dispose()
+        {
+            _rows?.Dispose();
+            GC.SuppressFinalize(this);
+        }
 
         bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)
         {

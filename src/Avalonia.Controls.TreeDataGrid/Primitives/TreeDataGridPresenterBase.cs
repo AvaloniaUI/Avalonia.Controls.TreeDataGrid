@@ -206,7 +206,7 @@ namespace Avalonia.Controls.Primitives
 
             if (_children.Count > _realizedElements.Elements.Count && _realizedElements.Elements.Count > 0 && _realizedElements.Count == Items.Count)
             {
-                for (int i = _children.Count - 1; i >= _realizedElements.Elements.Count; i--)
+                for (var i = _children.Count - 1; i >= _realizedElements.Elements.Count; i--)
                 {
                     if (!_realizedElements.Elements.Contains(_children.ElementAt(i)))
                     {

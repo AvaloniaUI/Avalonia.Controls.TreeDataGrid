@@ -9,7 +9,7 @@ namespace Avalonia.Data.Core.Parsers
     public class ExpressionChainVisitor<TIn> : ExpressionVisitor
     {
         private readonly LambdaExpression _rootExpression;
-        private List<Func<TIn, object>> _links = new();
+        private readonly List<Func<TIn, object>> _links = new();
         private Expression? _head;
 
         public ExpressionChainVisitor(LambdaExpression expression)

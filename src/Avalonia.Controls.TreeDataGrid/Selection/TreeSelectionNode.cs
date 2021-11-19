@@ -227,7 +227,7 @@ namespace Avalonia.Controls.Selection
 
         private static void Resize(List<TreeSelectionNode<T>?> list, int count)
         {
-            int current = list.Count;
+            var current = list.Count;
 
             if (count < current)
             {

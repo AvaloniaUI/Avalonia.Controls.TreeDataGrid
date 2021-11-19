@@ -262,7 +262,7 @@ namespace Avalonia.Controls.Selection
                     // The range is after the inserted items, need to shift the range right
                     if (range.End >= index)
                     {
-                        int begin = range.Begin;
+                        var begin = range.Begin;
 
                         // If the index left of newIndex is inside the range,
                         // Split the range and remember the left piece to add later
@@ -312,7 +312,7 @@ namespace Avalonia.Controls.Selection
         {
             var count = items.Count;
             var removedRange = new IndexRange(index, index + count - 1);
-            bool shifted = false;
+            var shifted = false;
             List<T?>? removed = null;
 
             if (_ranges is not null)

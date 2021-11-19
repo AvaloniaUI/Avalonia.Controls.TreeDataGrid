@@ -37,7 +37,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         IRow IReadOnlyList<IRow>.this[int index] => _flattenedRows[index];
         public override int Count => _flattenedRows.Count;
 
-        public void Dispose() => _roots.Dispose();
+        public void Dispose()
+        {
+            _roots.Dispose();
+            GC.SuppressFinalize(this);
+        }
 
         public void Expand(IndexPath index)
         {

@@ -17,11 +17,11 @@ using ReactiveUI;
 
 namespace ProControlsDemo.ViewModels
 {
-    class FilesPageViewModel : ReactiveObject
+    internal class FilesPageViewModel : ReactiveObject
     {
+        private readonly Bitmap _folderIcon;
+        private readonly Bitmap _fileIcon;
         private FileTreeNodeModel? _root;
-        private Bitmap _folderIcon;
-        private Bitmap _fileIcon;
         private string _selectedDrive;
 
         public FilesPageViewModel()
@@ -36,7 +36,7 @@ namespace ProControlsDemo.ViewModels
             Drives = DriveInfo.GetDrives().Select(x => x.Name).ToList();
             _selectedDrive = "C:\\";
 
-            Source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(new FileTreeNodeModel[0])
+            Source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(Array.Empty<FileTreeNodeModel>())
             {
                 Columns =
                 {

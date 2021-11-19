@@ -18,10 +18,10 @@ namespace Avalonia.Controls.Utils
 
     internal class CollectionChangedEventManager : IWeakSubscriber<NotifyCollectionChangedEventArgs>
     {
-        public static CollectionChangedEventManager Instance { get; } = new CollectionChangedEventManager();
-
-        private ConditionalWeakTable<INotifyCollectionChanged, List<WeakReference<ICollectionChangedListener>>> _entries =
+        private readonly ConditionalWeakTable<INotifyCollectionChanged, List<WeakReference<ICollectionChangedListener>>> _entries =
             new();
+
+        public static CollectionChangedEventManager Instance { get; } = new CollectionChangedEventManager();
 
         private CollectionChangedEventManager()
         {

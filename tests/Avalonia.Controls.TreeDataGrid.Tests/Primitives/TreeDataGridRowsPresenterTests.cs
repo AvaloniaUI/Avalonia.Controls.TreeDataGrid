@@ -231,7 +231,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Layout(target);
             var children = target.GetVisualChildren();
 
-            for (int i = 0; i < children.Count(); i++)
+            for (var i = 0; i < children.Count(); i++)
             {
                 Assert.Equal(children.ElementAt(i), target.RealizedElements[i]);
             }
