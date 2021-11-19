@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Selection
                 {
                     var focused = GetFocusedRow(sender);
 
-                    if (focused is object && !ctrl)
+                    if (focused is not null && !ctrl)
                     {
                         e.Handled = TryKeyExpandCollapse(sender, direction.Value, focused);
                     }
@@ -252,7 +252,7 @@ namespace Avalonia.Controls.Selection
             }
             else
             {
-                (int x, int y) step = direction switch
+                (var x, var y) = direction switch
                 {
                     NavigationDirection.Up => (0, -1),
                     NavigationDirection.Down => (0, 1),
@@ -261,7 +261,7 @@ namespace Avalonia.Controls.Selection
                     _ => (0, 0)
                 };
 
-                newRowIndex = Math.Max(0, Math.Min(currentRowIndex + step.y, _source.Rows.Count - 1));
+                newRowIndex = Math.Max(0, Math.Min(currentRowIndex + y, _source.Rows.Count - 1));
             }
 
             if (newRowIndex != currentRowIndex)

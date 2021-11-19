@@ -9,7 +9,7 @@ namespace ProControlsDemo.ViewModels
 {
     internal class CountriesPageViewModel
     {
-        private ObservableCollection<Country> _data;
+        private readonly ObservableCollection<Country> _data;
 
         public CountriesPageViewModel()
         {

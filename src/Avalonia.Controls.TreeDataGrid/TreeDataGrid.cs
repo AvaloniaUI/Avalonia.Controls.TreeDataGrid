@@ -191,9 +191,9 @@ namespace Avalonia.Controls
                 if (result?.RowIndex >= 0)
                     break;
                 element = result;
-            } while (result is object);
+            } while (result is not null);
 
-            return result is object;
+            return result is not null;
         }
 
         public bool TryGetRowModel<TModel>(IControl element, [MaybeNullWhen(false)] out TModel result)
@@ -262,7 +262,7 @@ namespace Avalonia.Controls
 
         internal void RaiseCellClearing(TreeDataGridCell cell, int columnIndex, int rowIndex)
         {
-            if (CellClearing is object)
+            if (CellClearing is not null)
             {
                 _cellArgs ??= new TreeDataGridCellEventArgs();
                 _cellArgs.Update(cell, columnIndex, rowIndex);
@@ -273,7 +273,7 @@ namespace Avalonia.Controls
 
         internal void RaiseCellPrepared(TreeDataGridCell cell, int columnIndex, int rowIndex)
         {
-            if (CellPrepared is object)
+            if (CellPrepared is not null)
             {
                 _cellArgs ??= new TreeDataGridCellEventArgs();
                 _cellArgs.Update(cell, columnIndex, rowIndex);

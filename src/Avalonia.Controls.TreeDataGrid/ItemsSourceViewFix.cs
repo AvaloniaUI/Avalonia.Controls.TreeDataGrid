@@ -134,6 +134,7 @@ namespace Avalonia.Controls
             }
 
             _inner = null;
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

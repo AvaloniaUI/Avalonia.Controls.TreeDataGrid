@@ -16,7 +16,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public abstract class ColumnBase<TModel, TValue> : ColumnBase<TModel>
         where TModel : class
     {
-        private bool _canUserSort;
+        private readonly bool _canUserSort;
         private readonly Comparison<TModel?>? _sortAscending;
         private readonly Comparison<TModel?>? _sortDescending;
 

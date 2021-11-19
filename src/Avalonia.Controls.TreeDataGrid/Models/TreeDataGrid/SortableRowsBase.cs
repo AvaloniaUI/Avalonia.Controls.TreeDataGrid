@@ -46,7 +46,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-        public virtual void Dispose() => SetItems(ItemsSourceViewFix<TModel>.Empty);
+        public virtual void Dispose()
+        {
+            SetItems(ItemsSourceViewFix<TModel>.Empty);
+            GC.SuppressFinalize(this);
+        }
 
         public override IEnumerator<TRow> GetEnumerator()
         {
@@ -59,7 +63,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             }
 
             GetOrCreateRows();
-            return _sortedIndexes is object ? GetSortedEnumerator() : UnsortedRows.GetEnumerator();
+            return _sortedIndexes is not null ? GetSortedEnumerator() : UnsortedRows.GetEnumerator();
         }
 
         public void SetItems(ItemsSourceViewFix<TModel> items)
@@ -77,9 +81,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             _comparison = comparison;
 
-            if (_unsortedRows is object)
+            if (_unsortedRows is not null)
             {
-                if (comparison is object)
+                if (comparison is not null)
                     _sortedIndexes = StableSort.SortedMap(_items, _compareItemsByIndex);
                 else
                     _sortedIndexes = null;
@@ -110,7 +114,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 for (var i = 0; i < _items.Count; ++i)
                     _unsortedRows.Add(CreateRow(i, _items[i]));
 
-                if (_comparison is object)
+                if (_comparison is not null)
                     _sortedIndexes = StableSort.SortedMap(_items, _compareItemsByIndex);
             }
 
@@ -119,7 +123,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private void ResetRows()
         {
-            if (_unsortedRows is object)
+            if (_unsortedRows is not null)
             {
                 foreach (var row in _unsortedRows)
                     row.Dispose();
@@ -178,7 +182,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     {
-                        var oldItems = CollectionChanged is object ?
+                        var oldItems = CollectionChanged is not null ?
                             _unsortedRows.Slice(e.OldStartingIndex, e.OldItems!.Count) : null;
                         Remove(e.OldStartingIndex, e.OldItems!.Count);
                         CollectionChanged?.Invoke(
@@ -193,7 +197,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     {
                         var index = e.OldStartingIndex;
                         var count = e.OldItems!.Count;
-                        var oldItems = CollectionChanged is object ? _unsortedRows.Slice(index, count) : null;
+                        var oldItems = CollectionChanged is not null ? _unsortedRows.Slice(index, count) : null;
                         
                         for (var i = 0; i < count; ++i)
                         {
@@ -324,7 +328,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private int CompareItemsByIndex(int index1, int index2)
         {
-            int c = _comparison!(_items[index1], _items[index2]);
+            var c = _comparison!(_items[index1], _items[index2]);
 
             if (c == 0)
             {

@@ -1,12 +1,10 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
 
 namespace ProControlsDemo
 {
-    class Program
+    internal class Program
     {
         // Initialization code. Don't use any Avalonia, third-party APIs or any
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized

@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Models
     public class NotifyingListBase<T> : Collection<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
         private const string IndexerName = "Item[]";
-        private readonly SimpleMonitor _monitor = new SimpleMonitor();
+        private readonly SimpleMonitor _monitor = new();
         private BatchUpdateType _batchUpdate;
 
         public NotifyingListBase()
@@ -175,7 +175,7 @@ namespace Avalonia.Controls.Models
         {
             CheckReentrancy();
             
-            T originalItem = this[index];
+            var originalItem = this[index];
             base.SetItem(index, item);
 
             if (_batchUpdate == BatchUpdateType.None)
@@ -236,19 +236,10 @@ namespace Avalonia.Controls.Models
 
         private class SimpleMonitor : IDisposable
         {
-            public void Enter()
-            {
-                ++_busyCount;
-            }
-
-            public void Dispose()
-            {
-                --_busyCount;
-            }
-
-            public bool Busy { get { return _busyCount > 0; } }
-
-            int _busyCount;
+            private int _busyCount;
+            public void Enter() => ++_busyCount;
+            public void Dispose() => --_busyCount;
+            public bool Busy => _busyCount > 0;
         }
 
         private enum BatchUpdateType

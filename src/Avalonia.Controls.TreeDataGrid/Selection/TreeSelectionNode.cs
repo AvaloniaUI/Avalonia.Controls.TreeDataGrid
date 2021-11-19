@@ -8,7 +8,9 @@ using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls.Selection
 {
+#pragma warning disable CS0436 // Type conflicts with imported type
     internal class TreeSelectionNode<T> : SelectionNodeBase<T>
+#pragma warning restore CS0436 // Type conflicts with imported type
     {
         private readonly TreeSelectionModelBase<T> _owner;
         private List<TreeSelectionNode<T>?>? _children;
@@ -26,7 +28,7 @@ namespace Avalonia.Controls.Selection
             : this(owner)
         {
             Path = parent.Path.Append(index);
-            if (parent.ItemsView is object)
+            if (parent.ItemsView is not null)
                 Source = _owner.GetChildren(parent.ItemsView[index]);
         }
 
@@ -47,7 +49,7 @@ namespace Avalonia.Controls.Selection
 
                 foreach (var child in _children)
                 {
-                    if (child is object)
+                    if (child is not null)
                         return true;
                 }
 
@@ -66,7 +68,7 @@ namespace Avalonia.Controls.Selection
                     operation.DeselectedRanges.Add(Path, range);
             }
 
-            if (_children is object)
+            if (_children is not null)
             {
                 foreach (var child in _children)
                     child?.Clear(operation);
@@ -82,7 +84,7 @@ namespace Avalonia.Controls.Selection
             if (GetChild(index) is TreeSelectionNode<T> result)
                 return result;
 
-            var childCount = ItemsView is object ? ItemsView.Count : Math.Max(_children?.Count ?? 0, index);
+            var childCount = ItemsView is not null ? ItemsView.Count : Math.Max(_children?.Count ?? 0, index);
 
             if (index < childCount)
             {
@@ -185,43 +187,6 @@ namespace Avalonia.Controls.Selection
             _owner.OnNodeCollectionReset(Path);
         }
 
-        private TreeSelectionNode<T>? GetChild(int index, bool realize)
-        {
-            if (realize)
-            {
-                _children ??= new List<TreeSelectionNode<T>?>();
-
-                if (ItemsView is null)
-                {
-                    if (_children.Count < index + 1)
-                    {
-                        Resize(_children, index + 1);
-                    }
-
-                    return _children[index] ??= new TreeSelectionNode<T>(_owner, this, index);
-                }
-                else
-                {
-                    if (_children.Count > ItemsView.Count)
-                    {
-                        throw new Exception("!!!");
-                    }
-
-                    Resize(_children, ItemsView.Count);
-                    return _children[index] ??= new TreeSelectionNode<T>(_owner, this, index);
-                }
-            }
-            else
-            {
-                if (_children?.Count > index)
-                {
-                    return _children[index];
-                }
-            }
-
-            return null;
-        }
-
         private void AncestorIndexChanged(IndexPath parentIndex, int shiftIndex, int shiftDelta)
         {
             var path = Path;
@@ -229,7 +194,7 @@ namespace Avalonia.Controls.Selection
             if (ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref path))
                 Path = path;
 
-            if (_children is object)
+            if (_children is not null)
             {
                 foreach (var child in _children)
                 {
@@ -251,7 +216,7 @@ namespace Avalonia.Controls.Selection
                 }
             }
 
-            if (_children is object)
+            if (_children is not null)
             {
                 foreach (var child in _children)
                     child?.AncestorRemoved(ref removed);
@@ -262,7 +227,7 @@ namespace Avalonia.Controls.Selection
 
         private static void Resize(List<TreeSelectionNode<T>?> list, int count)
         {
-            int current = list.Count;
+            var current = list.Count;
 
             if (count < current)
             {

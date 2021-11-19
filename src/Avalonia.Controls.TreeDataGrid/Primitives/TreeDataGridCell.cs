@@ -83,7 +83,7 @@ namespace Avalonia.Controls.Primitives
             base.OnAttachedToLogicalTree(e);
 
             // The cell may be realized before being parented. In this case raise the CellPrepared event here.
-            if (_treeDataGrid is object && ColumnIndex >= 0 && RowIndex >= 0)
+            if (_treeDataGrid is not null && ColumnIndex >= 0 && RowIndex >= 0)
                 _treeDataGrid.RaiseCellPrepared(this, ColumnIndex, RowIndex);
         }
 

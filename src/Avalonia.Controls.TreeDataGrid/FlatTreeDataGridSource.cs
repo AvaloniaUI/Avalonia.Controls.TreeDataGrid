@@ -68,7 +68,11 @@ namespace Avalonia.Controls
 
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
 
-        public void Dispose() => _rows?.Dispose();
+        public void Dispose()
+        {
+            _rows?.Dispose();
+            GC.SuppressFinalize(this);
+        }
 
         bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)
         {
@@ -79,9 +83,9 @@ namespace Avalonia.Controls
 
                 var comparer = typedColumn.GetComparison(direction);
 
-                if (comparer is object)
+                if (comparer is not null)
                 {
-                    _comparer = comparer is object ? new FuncComparer<TModel>(comparer) : null;
+                    _comparer = comparer is not null ? new FuncComparer<TModel>(comparer) : null;
                     _rows?.Sort(_comparer);
                     Sorted?.Invoke();
                     foreach (var c in Columns)
@@ -96,11 +100,6 @@ namespace Avalonia.Controls
         private AnonymousSortableRows<TModel> CreateRows()
         {
             return new AnonymousSortableRows<TModel>(_itemsView, _comparer);
-        }
-
-        private ICell CreateCell(IRow<TModel> row, int columnIndex)
-        {
-            return Columns[columnIndex].CreateCell(row);
         }
     }
 }

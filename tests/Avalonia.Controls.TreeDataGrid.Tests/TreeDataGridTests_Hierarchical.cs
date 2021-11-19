@@ -49,18 +49,18 @@ namespace Avalonia.Controls.TreeDataGridTests
             var (target, source) = CreateTarget();
 
             Assert.NotNull(target.RowsPresenter);
-            Assert.Equal(2, target.RowsPresenter!.RealizedElements.Count());
+            Assert.Equal(2, target.RowsPresenter!.RealizedElements.Count);
             Assert.Equal(2, target.RowsPresenter!.GetLogicalChildren().Count());
 
             source.Expand(new IndexPath(0));
 
             Assert.Equal(102, source.Rows.Count);
-            Assert.Equal(102, target.RowsPresenter!.RealizedElements.Count());
+            Assert.Equal(102, target.RowsPresenter!.RealizedElements.Count);
             Assert.Equal(2, target.RowsPresenter!.GetLogicalChildren().Count());
 
             Layout(target);
 
-            Assert.Equal(10, target.RowsPresenter!.RealizedElements.Count());
+            Assert.Equal(10, target.RowsPresenter!.RealizedElements.Count);
             Assert.Equal(10, target.RowsPresenter!.GetLogicalChildren().Count());
         }
 
@@ -76,7 +76,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             items.Add(new Model { Id = -1, Title = "Added" });
             Layout(target);
 
-            Assert.Equal(3, target.RowsPresenter!.RealizedElements.Count());
+            Assert.Equal(3, target.RowsPresenter!.RealizedElements.Count);
             Assert.Equal(3, target.RowsPresenter!.GetLogicalChildren().Count());
         }
 
@@ -98,7 +98,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             children.Add(new Model { Id = -2, Title = "Second" });
             Layout(target);
 
-            Assert.Equal(4, target.RowsPresenter!.RealizedElements.Count());
+            Assert.Equal(4, target.RowsPresenter!.RealizedElements.Count);
             Assert.Equal(4, target.RowsPresenter!.GetLogicalChildren().Count());
         }
 
@@ -170,7 +170,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             var (target, source) = CreateTarget();
             var items = (IList<Model>)source.Items;
 
-            ((TestRoot)target.Parent).Child = null;
+            ((TestRoot)target.Parent!).Child = null;
 
             for (var i = 0; i < items.Count; ++i)
             {

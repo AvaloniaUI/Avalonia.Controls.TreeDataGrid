@@ -21,25 +21,25 @@ namespace Avalonia.Controls.Primitives
                 o => o.ElementFactory,
                 (o, v) => o.ElementFactory = v);
 
-        public static DirectProperty<TreeDataGridPresenterBase<TItem>, IReadOnlyList<TItem>?> ItemsProperty =
+        public static readonly DirectProperty<TreeDataGridPresenterBase<TItem>, IReadOnlyList<TItem>?> ItemsProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridPresenterBase<TItem>, IReadOnlyList<TItem>?>(
                 nameof(Items),
                 o => o.Items,
                 (o, v) => o.Items = v);
 
-        private static readonly Rect s_invalidViewport = new Rect(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
+        private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
+        private readonly Action<IControl> _recycleElement;
+        private readonly Action<IControl, int> _updateElementIndex;
         private int _anchorIndex = -1;
         private IControl? _anchorElement;
-        private readonly Controls _children = new Controls();
+        private readonly Controls _children = new();
         private IElementFactory? _elementFactory;
         private ElementFactoryGetArgs? _getArgs;
         private bool _isWaitingForViewportUpdate;
         private IReadOnlyList<TItem>? _items;
-        private RealizedElementList _measureElements = new RealizedElementList();
-        private RealizedElementList _realizedElements = new RealizedElementList();
+        private RealizedElementList _measureElements = new();
+        private RealizedElementList _realizedElements = new();
         private ElementFactoryRecycleArgs? _recycleArgs;
-        private Action<IControl> _recycleElement;
-        private Action<IControl, int> _updateElementIndex;
 
         public TreeDataGridPresenterBase()
         {
@@ -201,14 +201,12 @@ namespace Avalonia.Controls.Primitives
             RecycleElementsAfter(_measureElements.LastModelIndex);
 
             // And swap the measureElements and realizedElements collection.
-            var tmp = _realizedElements;
-            _realizedElements = _measureElements;
-            _measureElements = tmp;
+            (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
             _measureElements.ResetForReuse();
 
             if (_children.Count > _realizedElements.Elements.Count && _realizedElements.Elements.Count > 0 && _realizedElements.Count == Items.Count)
             {
-                for (int i = _children.Count - 1; i >= _realizedElements.Elements.Count; i--)
+                for (var i = _children.Count - 1; i >= _realizedElements.Elements.Count; i--)
                 {
                     if (!_realizedElements.Elements.Contains(_children.ElementAt(i)))
                     {

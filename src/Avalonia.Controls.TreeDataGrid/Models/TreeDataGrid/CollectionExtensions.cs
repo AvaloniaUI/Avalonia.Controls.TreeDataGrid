@@ -9,7 +9,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     internal static class CollectionExtensions
     {
         public static readonly NotifyCollectionChangedEventArgs ResetEvent =
-            new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+            new(NotifyCollectionChangedAction.Reset);
 
         public static int BinarySearch<TRow, TModel>(
             this IReadOnlyList<TRow> items,
@@ -67,7 +67,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private class FastRepeat<T> : ICollection<T>
         {
-            public static readonly FastRepeat<T> Instance = new FastRepeat<T>();
+            public static readonly FastRepeat<T> Instance = new();
             public int Count { get; set; }
             public bool IsReadOnly => true;
             [AllowNull] public T Item { get; set; }

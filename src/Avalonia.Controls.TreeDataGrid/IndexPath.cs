@@ -70,9 +70,9 @@ namespace Avalonia.Controls
         public int CompareTo(IndexPath other)
         {
             var rhsPath = other;
-            int compareResult = 0;
-            int lhsCount = Count;
-            int rhsCount = rhsPath.Count;
+            var compareResult = 0;
+            var lhsCount = Count;
+            var rhsCount = rhsPath.Count;
 
             if (lhsCount == 0 || rhsCount == 0)
             {
@@ -82,7 +82,7 @@ namespace Avalonia.Controls
             else
             {
                 // both paths are non-empty, but can be of different size
-                for (int i = 0; i < Math.Min(lhsCount, rhsCount); i++)
+                for (var i = 0; i < Math.Min(lhsCount, rhsCount); i++)
                 {
                     if (this[i] < rhsPath[i])
                     {
@@ -135,7 +135,7 @@ namespace Avalonia.Controls
 
         public IEnumerator<int> GetEnumerator()
         {
-            IEnumerator<int> EnumerateSingleOrEmpty(int index)
+            static IEnumerator<int> EnumerateSingleOrEmpty(int index)
             {
                 if (index != 0)
                     yield return index - 1;
@@ -170,7 +170,7 @@ namespace Avalonia.Controls
 
             var size = Count;
 
-            for (int i = 0; i < size; i++)
+            for (var i = 0; i < size; i++)
             {
                 if (this[i] != other[i])
                     return false;
@@ -200,7 +200,7 @@ namespace Avalonia.Controls
         public IndexPath Slice(int start, int length)
         {
             if (start < 0 || start + length > Count)
-                throw new ArgumentOutOfRangeException("Invalid IndexPath slice.");
+                throw new IndexOutOfRangeException("Invalid IndexPath slice.");
 
             if (length == 0)
                 return default;
@@ -218,7 +218,7 @@ namespace Avalonia.Controls
         {
             var result = new int[Count];
 
-            if (_path is object)
+            if (_path is not null)
                 _path.CopyTo(result, 0);
             else if (result.Length > 0)
                 result[0] = _index - 1;
@@ -228,7 +228,7 @@ namespace Avalonia.Controls
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public static implicit operator IndexPath(int index) => new IndexPath(index);
+        public static implicit operator IndexPath(int index) => new(index);
         public static bool operator <(IndexPath x, IndexPath y) => x.CompareTo(y) < 0;
         public static bool operator >(IndexPath x, IndexPath y) => x.CompareTo(y) > 0;
         public static bool operator <=(IndexPath x, IndexPath y) => x.CompareTo(y) <= 0;

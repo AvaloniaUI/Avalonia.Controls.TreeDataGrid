@@ -56,12 +56,12 @@ namespace Avalonia.Controls.Utils
             Debug.Assert(items != null, "Check the arguments in the caller!");
             Debug.Assert(index >= 0 && length >= 0 && (items.Count - index >= length), "Check the arguments in the caller!");
 
-            int lo = index;
-            int hi = index + length - 1;
+            var lo = index;
+            var hi = index + length - 1;
             while (lo <= hi)
             {
-                int i = lo + ((hi - lo) >> 1);
-                int order = compare(items[i], value);
+                var i = lo + ((hi - lo) >> 1);
+                var order = compare(items[i], value);
 
                 if (order == 0) return i;
                 if (order < 0)
@@ -83,9 +83,7 @@ namespace Avalonia.Controls.Utils
 
             if (comparer(keys[i], keys[j]) > 0)
             {
-                T key = keys[i];
-                keys[i] = keys[j];
-                keys[j] = key;
+                (keys[j], keys[i]) = (keys[i], keys[j]);
             }
         }
 
@@ -94,9 +92,7 @@ namespace Avalonia.Controls.Utils
         {
             Debug.Assert(i != j);
 
-            T t = a[i];
-            a[i] = a[j];
-            a[j] = t;
+            (a[j], a[i]) = (a[i], a[j]);
         }
 
         private static void IntrospectiveSort(Span<T> keys, Comparison<T> comparer)
@@ -115,7 +111,7 @@ namespace Avalonia.Controls.Utils
             Debug.Assert(depthLimit >= 0);
             Debug.Assert(comparer != null);
 
-            int partitionSize = keys.Length;
+            var partitionSize = keys.Length;
             while (partitionSize > 1)
             {
                 if (partitionSize <= 16)
@@ -146,7 +142,7 @@ namespace Avalonia.Controls.Utils
                 }
                 depthLimit--;
 
-                int p = PickPivotAndPartition(keys.Slice(0, partitionSize), comparer);
+                var p = PickPivotAndPartition(keys.Slice(0, partitionSize), comparer);
 
                 // Note we've already partitioned around the pivot and do not have to move the pivot again.
                 IntroSort(keys[(p + 1)..partitionSize], depthLimit, comparer);
@@ -159,17 +155,17 @@ namespace Avalonia.Controls.Utils
             Debug.Assert(keys.Length >= 16);
             Debug.Assert(comparer != null);
 
-            int hi = keys.Length - 1;
+            var hi = keys.Length - 1;
 
             // Compute median-of-three.  But also partition them, since we've done the comparison.
-            int middle = hi >> 1;
+            var middle = hi >> 1;
 
             // Sort lo, mid and hi appropriately, then pick mid as the pivot.
             SwapIfGreater(keys, comparer, 0, middle);  // swap the low with the mid point
             SwapIfGreater(keys, comparer, 0, hi);   // swap the low with the high
             SwapIfGreater(keys, comparer, middle, hi); // swap the middle with the high
 
-            T pivot = keys[middle];
+            var pivot = keys[middle];
             Swap(keys, middle, hi - 1);
             int left = 0, right = hi - 1;  // We already partitioned lo and hi and put the pivot in hi - 1.  And we pre-increment & decrement below.
 
@@ -197,13 +193,13 @@ namespace Avalonia.Controls.Utils
             Debug.Assert(comparer != null);
             Debug.Assert(!keys.IsEmpty);
 
-            int n = keys.Length;
-            for (int i = n >> 1; i >= 1; i--)
+            var n = keys.Length;
+            for (var i = n >> 1; i >= 1; i--)
             {
                 DownHeap(keys, i, n, comparer);
             }
 
-            for (int i = n; i > 1; i--)
+            for (var i = n; i > 1; i--)
             {
                 Swap(keys, 0, i - 1);
                 DownHeap(keys, 1, i - 1, comparer);
@@ -214,10 +210,10 @@ namespace Avalonia.Controls.Utils
         {
             Debug.Assert(comparer != null);
 
-            T d = keys[i - 1];
+            var d = keys[i - 1];
             while (i <= n >> 1)
             {
-                int child = 2 * i;
+                var child = 2 * i;
                 if (child < n && comparer(keys[child - 1], keys[child]) < 0)
                 {
                     child++;
@@ -235,11 +231,11 @@ namespace Avalonia.Controls.Utils
 
         private static void InsertionSort(Span<T> keys, Comparison<T> comparer)
         {
-            for (int i = 0; i < keys.Length - 1; i++)
+            for (var i = 0; i < keys.Length - 1; i++)
             {
-                T t = keys[i + 1];
+                var t = keys[i + 1];
 
-                int j = i;
+                var j = i;
                 while (j >= 0 && comparer(t, keys[j]) < 0)
                 {
                     keys[j + 1] = keys[j];

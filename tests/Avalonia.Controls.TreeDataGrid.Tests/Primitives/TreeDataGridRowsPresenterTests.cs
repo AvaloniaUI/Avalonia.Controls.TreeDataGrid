@@ -125,11 +125,11 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
             var (target, _, items) = CreateTarget();
 
-            Assert.Equal(10, target.RealizedElements.Count());
+            Assert.Equal(10, target.RealizedElements.Count);
 
             items.Insert(2, new Model { Id = 100, Title = "New" });
 
-            Assert.Equal(11, target.RealizedElements.Count());
+            Assert.Equal(11, target.RealizedElements.Count);
 
             var indexes = GetRealizedRowIndexes(target);
 
@@ -157,7 +157,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
             var (target, _, items) = CreateTarget();
 
-            Assert.Equal(10, target.RealizedElements.Count());
+            Assert.Equal(10, target.RealizedElements.Count);
 
             var toRecycle = target.RealizedElements.ElementAt(2);
             items.RemoveAt(2);
@@ -231,7 +231,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Layout(target);
             var children = target.GetVisualChildren();
 
-            for (int i = 0; i < children.Count(); i++)
+            for (var i = 0; i < children.Count(); i++)
             {
                 Assert.Equal(children.ElementAt(i), target.RealizedElements[i]);
             }
@@ -274,7 +274,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
             var (target, _, items) = CreateTarget();
 
-            Assert.Equal(10, target.RealizedElements.Count());
+            Assert.Equal(10, target.RealizedElements.Count);
 
             var toRecycle = target.RealizedElements.ElementAt(0);
             var item = items[0];
@@ -316,7 +316,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             scroll.Offset = new Vector(0, 10);
             Layout(target);
 
-            Assert.Equal(10, target.RealizedElements.Count());
+            Assert.Equal(10, target.RealizedElements.Count);
 
             var toRecycle = target.RealizedElements.Skip(4).Take(6).ToList();
             items.RemoveRange(5, 10);
@@ -350,7 +350,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             scroll.Offset = new Vector(0, 10);
             Layout(target);
 
-            Assert.Equal(10, target.RealizedElements.Count());
+            Assert.Equal(10, target.RealizedElements.Count);
 
             // Remove all items using RemoveRange.
             items.RemoveRange(0, items.Count);
@@ -370,7 +370,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             scroll.Offset = new Vector(0, 100);
             Layout(target);
 
-            Assert.Equal(10, target.RealizedElements.Count());
+            Assert.Equal(10, target.RealizedElements.Count);
 
             // Remove all but the first five items.
             items.RemoveRange(5, 95);
@@ -386,9 +386,11 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         {
             using var app = App();
 
-            var columns = new ColumnList<Model>();
-            columns.Add(new TextColumn<Model, int>("ID", x => x.Id, new GridLength(1, GridUnitType.Star)));
-            columns.Add(new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(1, GridUnitType.Star)));
+            var columns = new ColumnList<Model>
+            {
+                new TextColumn<Model, int>("ID", x => x.Id, new GridLength(1, GridUnitType.Star)),
+                new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(1, GridUnitType.Star))
+            };
 
             var (target, _, _) = CreateTarget(columns: columns);
 

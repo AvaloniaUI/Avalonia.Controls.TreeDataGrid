@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public class TextCell<T> : NotifyingBase, ICell, IDisposable, IEditableObject
     {
         private readonly ISubject<BindingValue<T>>? _binding;
-        private IDisposable? _subscription;
+        private readonly IDisposable? _subscription;
         [AllowNull] private T _value;
         [AllowNull] private T _cancelValue;
         private bool _isEditing;
@@ -77,6 +77,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             }
         }
 
-        public void Dispose() => _subscription?.Dispose();
+        public void Dispose()
+        {
+            _subscription?.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }

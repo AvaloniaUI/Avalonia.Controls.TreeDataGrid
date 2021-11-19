@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Selection
 {
     internal class IndexRanges : IReadOnlyList<IndexPath>
     {
-        private SortedList<IndexPath, List<IndexRange>> _ranges = new();
+        private readonly SortedList<IndexPath, List<IndexRange>> _ranges = new();
 
         public IndexPath this[int index]
         {
@@ -138,7 +138,7 @@ namespace Avalonia.Controls.Selection
 
         public IEnumerator<IndexPath> GetEnumerator()
         {
-            if (_ranges is object)
+            if (_ranges is not null)
             {
                 foreach (var r in _ranges)
                 {

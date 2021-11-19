@@ -37,7 +37,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         IRow IReadOnlyList<IRow>.this[int index] => _flattenedRows[index];
         public override int Count => _flattenedRows.Count;
 
-        public void Dispose() => _roots.Dispose();
+        public void Dispose()
+        {
+            _roots.Dispose();
+            GC.SuppressFinalize(this);
+        }
 
         public void Expand(IndexPath index)
         {
@@ -253,19 +257,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 if (count == 0)
                     return;
 
-                var oldItems = raise && CollectionChanged is object ?
+                var oldItems = raise && CollectionChanged is not null ?
                     new HierarchicalRow<TModel>[count] : null;
 
                 for (var i = 0; i < count; ++i)
                 {
                     var row = _flattenedRows[i + index];
-                    if (oldItems is object)
+                    if (oldItems is not null)
                         oldItems[i] = row;
                 }
 
                 _flattenedRows.RemoveRange(index, count);
                 
-                if (oldItems is object)
+                if (oldItems is not null)
                 {
                     CollectionChanged!(
                         this,

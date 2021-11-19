@@ -60,7 +60,7 @@ namespace Avalonia.Controls.Selection
             {
                 foreach (var child in node.Children)
                 {
-                    if (child is object)
+                    if (child is not null)
                     {
                         foreach (var i in EnumerateNode(child))
                             yield return i;
@@ -85,7 +85,7 @@ namespace Avalonia.Controls.Selection
             {
                 foreach (var child in node.Children)
                 {
-                    if (child is object && TryGetElementAt(child, target, ref next, out result))
+                    if (child is not null && TryGetElementAt(child, target, ref next, out result))
                         return true;
                 }
             }

@@ -41,7 +41,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 if (_comparer is null)
                     return _row.Update(index, _items[index]);
 
-                _sortedIndexes ??= CreateSortedIndexes(_comparer);
+                _sortedIndexes ??= CreateSortedIndexes();
                 var modelIndex = _sortedIndexes[index];
                 return _row.Update(modelIndex, _items[modelIndex]);
             }
@@ -52,7 +52,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-        public void Dispose() => SetItems(ItemsSourceViewFix<TModel>.Empty);
+        public void Dispose()
+        {
+            SetItems(ItemsSourceViewFix<TModel>.Empty);
+            GC.SuppressFinalize(this);
+        }
 
         public (int index, double y) GetRowAt(double y)
         {
@@ -107,7 +111,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public void Sort(IComparer<TModel>? comparer)
         {
             _comparer = comparer;
-            _sortedIndexes = comparer is object ? CreateSortedIndexes(comparer) : null;
+            _sortedIndexes = comparer is object ? CreateSortedIndexes() : null;
         }
 
         public void UnrealizeCell(ICell cell, int columnIndex, int rowIndex)
@@ -117,7 +121,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         IEnumerator<IRow> IEnumerable<IRow>.GetEnumerator() => GetEnumerator();
 
-        private List<int> CreateSortedIndexes(IComparer<TModel> comparer)
+        private List<int> CreateSortedIndexes()
         {
             return StableSort.SortedMap(_items, _compareItemsByIndex);
         }
@@ -237,7 +241,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     Add(e.NewStartingIndex, e.NewItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    _sortedIndexes = CreateSortedIndexes(_comparer!);
+                    _sortedIndexes = CreateSortedIndexes();
                     CollectionChanged?.Invoke(this, e);
                     break;
                 default:
@@ -247,7 +251,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private int CompareItemsByIndex(int index1, int index2)
         {
-            int c = _comparer!.Compare(_items[index1], _items[index2]);
+            var c = _comparer!.Compare(_items[index1], _items[index2]);
 
             if (c == 0)
             {

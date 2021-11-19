@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Primitives
 {
     public class TreeDataGridCellsPresenter : TreeDataGridPresenterBase<IColumn>
     {
-        public static readonly StyledProperty<IBrush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush?> BackgroundProperty =
             TemplatedControl.BackgroundProperty.AddOwner<TreeDataGridCellsPresenter>();
 
         public static readonly DirectProperty<TreeDataGridCellsPresenter, IRows?> RowsProperty =
@@ -18,7 +18,7 @@ namespace Avalonia.Controls.Primitives
 
         private IRows? _rows;
 
-        public IBrush Background
+        public IBrush? Background
         {
             get => GetValue(BackgroundProperty);
             set => SetValue(BackgroundProperty, value);

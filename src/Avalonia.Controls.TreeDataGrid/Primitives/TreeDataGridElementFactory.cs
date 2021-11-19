@@ -5,7 +5,7 @@ namespace Avalonia.Controls.Primitives
 {
     public class TreeDataGridElementFactory : IElementFactory
     {
-        private readonly RecyclePool _recyclePool = new RecyclePool();
+        private readonly RecyclePool _recyclePool = new();
 
         public IControl Build(object data)
         {
