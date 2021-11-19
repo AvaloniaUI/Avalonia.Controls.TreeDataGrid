@@ -3,11 +3,10 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Data;
 using Avalonia.Layout;
-using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TreeDataGridRowsPresenter : TreeDataGridPresenterBase<IRow>, IChildIndexProvider
+    public class TreeDataGridRowsPresenter : TreeDataGridPresenterBase<IRow>
     {
         public static readonly DirectProperty<TreeDataGridRowsPresenter, IColumns?> ColumnsProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridRowsPresenter, IColumns?>(
@@ -23,8 +22,6 @@ namespace Avalonia.Controls.Primitives
 
         private IColumns? _columns;
         private ITreeDataGridSelectionInteraction? _selection;
-
-        public event EventHandler<ChildIndexChangedEventArgs>? ChildIndexChanged;
 
         public IColumns? Columns
         {
@@ -73,19 +70,16 @@ namespace Avalonia.Controls.Primitives
             var row = (TreeDataGridRow)element;
             row.Realize(ElementFactory, Columns, (IRows?)Items, index);
             row.IsSelected = _selection?.IsRowSelected(rowModel) == true;
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
         protected override void UpdateElementIndex(IControl element, int index)
         {
             ((TreeDataGridRow)element).UpdateIndex(index);
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
         protected override void UnrealizeElement(IControl element)
         {
             ((TreeDataGridRow)element).Unrealize();
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -131,7 +125,7 @@ namespace Avalonia.Controls.Primitives
         private void OnColumnLayoutInvalidated(object? sender, EventArgs e)
         {
             InvalidateMeasure();
-
+            
             foreach (var element in RealizedElements)
             {
                 if (element is TreeDataGridRow row)
@@ -142,27 +136,6 @@ namespace Avalonia.Controls.Primitives
         private void OnSelectionChanged(object? sender, EventArgs e)
         {
             UpdateSelection();
-        }
-
-        public int GetChildIndex(ILogical child)
-        {
-            if (child is TreeDataGridRow row)
-            {
-                return row.RowIndex;
-            }
-            return -1;
-
-        }
-
-        public bool TryGetTotalCount(out int count)
-        {
-            if (Items != null)
-            {
-                count = Items.Count;
-                return true;
-            }
-            count = 0;
-            return false;
         }
     }
 }

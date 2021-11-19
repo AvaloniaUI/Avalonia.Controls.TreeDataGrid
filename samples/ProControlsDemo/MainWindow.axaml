@@ -23,13 +23,7 @@
           <Button Click="AddCountryClick">Add</Button>
           <Button Command="{Binding Countries.RemoveSelected}">Remove</Button>
         </StackPanel>
-        <TreeDataGrid Name="countries" Source="{Binding Countries.Source}">
-          <TreeDataGrid.Styles>
-            <Style Selector="TreeDataGrid TreeDataGridRow:nth-last-child(2n)">
-              <Setter Property="Background"  Value="Red"/>
-            </Style>
-          </TreeDataGrid.Styles>
-        </TreeDataGrid>
+        <TreeDataGrid Name="countries" Source="{Binding Countries.Source}"/>
       </DockPanel>
     </TabItem>
     <TabItem Header="Files">
@@ -39,13 +33,7 @@
 				  Margin="0 4"
 				  DockPanel.Dock="Top"/>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
-        <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}">
-          <TreeDataGrid.Styles>
-            <Style Selector="TreeDataGrid TreeDataGridRow:nth-child(2n)">
-              <Setter Property="Background"  Value="Red"/>
-            </Style>
-          </TreeDataGrid.Styles>
-        </TreeDataGrid>
+        <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}"/>
       </DockPanel>
     </TabItem>
   </TabControl>
