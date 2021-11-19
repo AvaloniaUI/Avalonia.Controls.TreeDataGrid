@@ -155,7 +155,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             var (target, items) = CreateTarget();
 
-            ((TestRoot)target.Parent).Child = null;
+            ((TestRoot)target.Parent!).Child = null;
 
             for (var i = 0; i < items.Count; ++i)
             {

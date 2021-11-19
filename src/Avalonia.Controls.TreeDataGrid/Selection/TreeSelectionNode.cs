@@ -8,7 +8,9 @@ using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls.Selection
 {
+#pragma warning disable CS0436 // Type conflicts with imported type
     internal class TreeSelectionNode<T> : SelectionNodeBase<T>
+#pragma warning restore CS0436 // Type conflicts with imported type
     {
         private readonly TreeSelectionModelBase<T> _owner;
         private List<TreeSelectionNode<T>?>? _children;

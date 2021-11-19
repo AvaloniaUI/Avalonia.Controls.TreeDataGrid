@@ -46,7 +46,7 @@ namespace Avalonia.Experimental.Data
             }
         }
 
-        private void StartListeningToDataContext(IVisual visual)
+        private void StartListeningToDataContext(IVisual? visual)
         {
             if (visual is IStyledElement styled)
             {
@@ -54,7 +54,7 @@ namespace Avalonia.Experimental.Data
             }
         }
 
-        private void StopListeningToDataContext(IVisual visual)
+        private void StopListeningToDataContext(IVisual? visual)
         {
             if (visual is IStyledElement styled)
             {
