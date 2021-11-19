@@ -435,6 +435,26 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRowIndexes(target, 0, 10);
         }
 
+        [Fact]
+        public void Assigns_Row_DataContexts()
+        {
+            using var app = App();
+
+            var (target, scroll, items) = CreateTarget();
+            var lastRow = (TreeDataGridRow)target.RealizedElements.Last()!;
+
+            for (var i = 0; i < 10; ++i)
+            {
+                Assert.Same(items[i], target.RealizedElements[i]!.DataContext);
+            }
+
+            items.RemoveRange(0, 99);
+            Layout(target);
+
+            Assert.Equal(-1, lastRow.RowIndex);
+            Assert.Null(lastRow.DataContext);
+        }
+
         private static void AssertRowIndexes(TreeDataGridRowsPresenter? target, int firstRowIndex, int rowCount)
         {
             Assert.NotNull(target);
