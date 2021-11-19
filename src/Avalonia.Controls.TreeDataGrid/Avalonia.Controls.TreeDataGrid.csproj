@@ -4,6 +4,6 @@
     <RootNamespace>Avalonia.Controls</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.10" />
+    <PackageReference Include="Avalonia" Version="0.10.0" />
   </ItemGroup>
 </Project>

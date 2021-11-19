@@ -6,7 +6,6 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 using Xunit;
@@ -15,52 +14,6 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 {
     public class TreeDataGridRowsPresenterTests
     {
-        [Fact]
-        public void Nth_Child_Handles_Deletion_And_Addition_Correctly()
-        {
-            using var app = App();
-            var (target, scroll, items) = CreateTarget(additionalStyles:
-                new List<IStyle>
-                {
-                    new Style(x => x.OfType<TreeDataGridRowsPresenter>().Descendant().OfType<TreeDataGridRow>().NthChild(2,0))
-                    {
-                        Setters =
-                        {
-                            new Setter(TreeDataGridRow.BackgroundProperty,new SolidColorBrush(Color.Parse("Red"))),
-                        }
-                    }
-                });
-
-            Layout(target);
-
-            int CountEvenRedRows(TreeDataGridRowsPresenter presenter)
-            {
-                return target.GetVisualChildren().Cast<TreeDataGridRow>().Select(x => x.Background)
-                                             .Where((x, i) => (i + 1) % 2 == 0 && x is SolidColorBrush brush && brush.Color == Color.Parse("Red")).Count();
-            }
-
-            Assert.True(CountEvenRedRows(target) == 5);
-
-            Assert.True(items.Count == 100);
-
-            items.RemoveAt(0);
-            items.RemoveAt(0);
-
-            Assert.True(items.Count == 98);
-
-            Layout(target);
-
-            Assert.True(CountEvenRedRows(target) == 5);
-
-            items.Add(new Model() { Id = 101, Title = "Item 101" });
-
-            Assert.True(items.Count == 99);
-
-            Layout(target); 
-
-            Assert.True(CountEvenRedRows(target) == 5);
-        }
-
         [Fact]
         public void Creates_Initial_Rows()
         {
@@ -234,7 +187,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             for (int i = 0; i < children.Count(); i++)
             {
                 Assert.Equal(children.ElementAt(i), target.RealizedElements[i]);
-            }
+            }  
         }
 
         [Fact]
@@ -482,7 +435,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         }
 
         private static (TreeDataGridRowsPresenter, ScrollViewer, AvaloniaList<Model>) CreateTarget(
-            IColumns? columns = null, List<IStyle>? additionalStyles = null)
+            IColumns? columns = null)
         {
             var items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
                 new Model
@@ -521,14 +474,6 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 },
                 Child = scrollViewer,
             };
-
-            if (additionalStyles != null)
-            {
-                foreach (var item in additionalStyles)
-                {
-                    root.Styles.Add(item);
-                }
-            }
 
             root.LayoutManager.ExecuteInitialLayoutPass();
             return (target, scrollViewer, items);
