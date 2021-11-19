@@ -277,6 +277,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 var count = removed.Count;
                 var endIndex = startIndex + count;
 
+                // Dispose the removed rows.
+                for (var i = 0; i < count; ++i)
+                    _unsortedRows[startIndex + i].Dispose();
+
                 // Remove the rows from the unsorted rows.
                 _unsortedRows.RemoveRange(startIndex, count);
 

@@ -93,6 +93,56 @@ namespace Avalonia.Controls.TreeDataGridTests
             [Theory]
             [InlineData(false)]
             [InlineData(true)]
+            public void Supports_Removing_Root_Row(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+
+                Assert.Equal(5, target.Rows.Count);
+
+                var raised = 0;
+                target.Rows.CollectionChanged += (s, e) => ++raised;
+
+                data.RemoveAt(1);
+
+                AssertState(target, data, 4, sorted);
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Removing_Expanded_Root_Row_Unsubscribes_From_CollectionChanged(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+                var toRemove = data[1];
+
+                target.Expand(1);
+                Assert.Equal(1, toRemove.Children!.CollectionChangedSubscriberCount());
+
+                data.RemoveAt(1);
+                Assert.Equal(0, toRemove.Children!.CollectionChangedSubscriberCount());
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Removing_Expanded_Root_Row_With_Expanded_Child_Unsubscribes_From_CollectionChanged(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+                var toRemove = data[1].Children![1];
+
+                target.Expand(new IndexPath(1, 1));
+                Assert.Equal(1, toRemove.Children!.CollectionChangedSubscriberCount());
+
+                data.RemoveAt(1);
+                Assert.Equal(0, toRemove.Children!.CollectionChangedSubscriberCount());
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
             public void Supports_Adding_Child_Row(bool sorted)
             {
                 var data = CreateData();
@@ -409,6 +459,40 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(12, target.Rows.Count);
                 Assert.Equal(10, rowsRemovedRaised);
                 Assert.Equal(12, rowsAddedRaised);
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Reassigning_Items_With_Expanded_Root_Node_Unsubscribes_From_CollectionChanged(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+                var toRemove = data[1];
+
+                target.Expand(1);
+                Assert.Equal(1, toRemove.Children!.CollectionChangedSubscriberCount());
+
+                target.Items = CreateData(12);
+
+                Assert.Equal(0, toRemove.Children!.CollectionChangedSubscriberCount());
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Reassigning_Items_With_Expanded_Child_Node_Unsubscribes_From_CollectionChanged(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+                var toRemove = data[1].Children![1];
+
+                target.Expand(new IndexPath(1, 1));
+                Assert.Equal(1, toRemove.Children!.CollectionChangedSubscriberCount());
+
+                target.Items = CreateData(12);
+
+                Assert.Equal(0, toRemove.Children!.CollectionChangedSubscriberCount());
             }
 
             [Fact]

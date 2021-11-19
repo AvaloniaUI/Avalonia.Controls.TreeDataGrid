@@ -162,6 +162,7 @@ namespace Avalonia.Controls.Primitives
 
             // Get the removal start and end index within the realized _elements collection.
             var first = FirstModelIndex;
+            var last = LastModelIndex;
             var startIndex = modelIndex - first;
             var endIndex = (modelIndex + count) - first;
 
@@ -191,6 +192,11 @@ namespace Avalonia.Controls.Primitives
 
                 _elements.RemoveRange(start, end - start);
                 _sizes!.RemoveRange(start, end - start);
+
+                // If the remove started before and ended within our realized elements, then our new
+                // first index will be the index where the remove started.
+                if (startIndex < modelIndex && end < last)
+                    _firstIndex = first = modelIndex;
 
                 // Update the indexes of the elements after the removed range.
                 end = _elements.Count;
