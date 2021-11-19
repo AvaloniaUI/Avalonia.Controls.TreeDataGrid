@@ -30,7 +30,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             TModel model,
             Comparison<TModel>? comparison)
         {
-            if (modelIndex.Count() == 0)
+            if (modelIndex.Count == 0)
                 throw new ArgumentException("Invalid model index");
 
             _controller = controller;
@@ -60,7 +60,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public IndexPath ModelIndexPath { get; private set; }
 
         public object? Header => ModelIndexPath;
-        public int Indent => ModelIndexPath.Count() - 1;
+        public int Indent => ModelIndexPath.Count - 1;
         public TModel Model { get; }
 
         public GridLength Height 

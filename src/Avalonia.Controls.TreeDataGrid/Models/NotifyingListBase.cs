@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Models
     public class NotifyingListBase<T> : Collection<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
         private const string IndexerName = "Item[]";
-        private readonly SimpleMonitor _monitor = new SimpleMonitor();
+        private readonly SimpleMonitor _monitor = new();
         private BatchUpdateType _batchUpdate;
 
         public NotifyingListBase()

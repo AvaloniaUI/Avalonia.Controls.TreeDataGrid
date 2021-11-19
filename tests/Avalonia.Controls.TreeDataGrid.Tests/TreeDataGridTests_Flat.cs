@@ -90,16 +90,6 @@ namespace Avalonia.Controls.TreeDataGridTests
             AssertInteractionSelection(target, 94, 99);
         }
 
-        private void AssertInteractionSelection(TreeDataGrid target, params int[] selected)
-        {
-            var selection = (ITreeDataGridSelectionInteraction)target.RowSelection!;
-
-            for (var i = 0; i < target.Rows!.Count; ++i)
-            {
-                Assert.Equal(selected.Contains(i), selection.IsRowSelected(i));
-            }
-        }
-
         [Fact]
         public void Should_Subscribe_To_Models_For_Initial_Rows()
         {
@@ -260,6 +250,16 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             Assert.Equal(2, clearingRaised);
             Assert.Equal(2, preparedRaised);
+        }
+
+        private static void AssertInteractionSelection(TreeDataGrid target, params int[] selected)
+        {
+            var selection = (ITreeDataGridSelectionInteraction)target.RowSelection!;
+
+            for (var i = 0; i < target.Rows!.Count; ++i)
+            {
+                Assert.Equal(selected.Contains(i), selection.IsRowSelected(i));
+            }
         }
 
         private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(IEnumerable<Model>? models = null,

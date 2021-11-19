@@ -21,7 +21,7 @@ namespace Avalonia.Controls.Utils
         public static CollectionChangedEventManager Instance { get; } = new CollectionChangedEventManager();
 
         private ConditionalWeakTable<INotifyCollectionChanged, List<WeakReference<ICollectionChangedListener>>> _entries =
-            new ConditionalWeakTable<INotifyCollectionChanged, List<WeakReference<ICollectionChangedListener>>>();
+            new();
 
         private CollectionChangedEventManager()
         {

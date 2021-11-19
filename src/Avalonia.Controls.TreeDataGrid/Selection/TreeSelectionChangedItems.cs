@@ -27,7 +27,7 @@ namespace Avalonia.Controls.Selection
 
         public static TreeSelectionChangedItems<T>? Create(TreeSelectionModelBase<T> owner, IndexRanges? ranges)
         {
-            return ranges is object ? new TreeSelectionChangedItems<T>(owner, ranges) : null;
+            return ranges is not null ? new TreeSelectionChangedItems<T>(owner, ranges) : null;
         }
     }
 }

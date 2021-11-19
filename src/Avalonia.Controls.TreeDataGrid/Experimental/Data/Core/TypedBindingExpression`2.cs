@@ -62,8 +62,8 @@ namespace Avalonia.Experimental.Data.Core
         public void OnNext(BindingValue<TOut> value)
         {
             if (value.HasValue &&
-                _write is object &&
-                _root is object &&
+                _write is not null &&
+                _root is not null &&
                 _root.TryGetTarget(out var root))
             {
                 try
@@ -173,7 +173,7 @@ namespace Avalonia.Experimental.Data.Core
                 {
                     var link = _chain[i];
 
-                    if (link.Value is object && link.Value.TryGetTarget(out var o))
+                    if (link.Value is not null && link.Value.TryGetTarget(out var o))
                     {
                         UnsubscribeToChanges(o);
                     }

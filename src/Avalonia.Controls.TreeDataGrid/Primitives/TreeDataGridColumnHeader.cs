@@ -82,7 +82,7 @@ namespace Avalonia.Controls.Primitives
 
             _resizer = e.NameScope.Find<Thumb>("PART_Resizer");
 
-            if (_resizer is object)
+            if (_resizer is not null)
             {
                 _resizer.DragDelta += ResizerDragDelta;
             }
@@ -108,10 +108,10 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == ParentProperty)
             {
-                if (_owner is object)
+                if (_owner is not null)
                     _owner.PropertyChanged -= OnOwnerPropertyChanged;
                 _owner = change.NewValue.GetValueOrDefault<IControl>()?.TemplatedParent as TreeDataGrid;
-                if (_owner is object)
+                if (_owner is not null)
                     _owner.PropertyChanged += OnOwnerPropertyChanged;
                 UpdatePropertiesFromModel();
             }

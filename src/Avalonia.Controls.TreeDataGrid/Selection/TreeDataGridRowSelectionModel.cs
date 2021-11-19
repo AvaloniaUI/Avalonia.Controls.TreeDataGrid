@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Selection
                 {
                     var focused = GetFocusedRow(sender);
 
-                    if (focused is object && !ctrl)
+                    if (focused is not null && !ctrl)
                     {
                         e.Handled = TryKeyExpandCollapse(sender, direction.Value, focused);
                     }

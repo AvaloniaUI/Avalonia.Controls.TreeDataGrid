@@ -9,7 +9,7 @@ namespace Avalonia.Data.Core.Parsers
     public class ExpressionChainVisitor<TIn> : ExpressionVisitor
     {
         private readonly LambdaExpression _rootExpression;
-        private List<Func<TIn, object>> _links = new List<Func<TIn, object>>();
+        private List<Func<TIn, object>> _links = new();
         private Expression? _head;
 
         public ExpressionChainVisitor(LambdaExpression expression)
@@ -36,7 +36,7 @@ namespace Avalonia.Data.Core.Parsers
         {
             var result = base.VisitMember(node);
 
-            if (node.Expression is object &&
+            if (node.Expression is not null &&
                 node.Expression == _head &&
                 node.Expression.Type.IsValueType == false)
             {
@@ -52,7 +52,7 @@ namespace Avalonia.Data.Core.Parsers
         {
             var result = base.VisitMethodCall(node);
 
-            if (node.Object is object &&
+            if (node.Object is not null &&
                 node.Object == _head &&
                 node.Type.IsValueType == false)
             {

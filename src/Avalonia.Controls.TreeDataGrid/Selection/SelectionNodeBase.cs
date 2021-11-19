@@ -155,7 +155,7 @@ namespace Avalonia.Controls.Selection
 
             if (shiftDelta != 0)
                 OnIndexesChanged(shiftIndex, shiftDelta);
-            if (removed is object)
+            if (removed is not null)
                 OnSelectionRemoved(shiftIndex, -shiftDelta, removed);
         }
 
@@ -251,7 +251,7 @@ namespace Avalonia.Controls.Selection
             var count = items.Count;
             var shifted = false;
 
-            if (_ranges is object)
+            if (_ranges is not null)
             {
                 List<IndexRange>? toAdd = null;
 
@@ -279,7 +279,7 @@ namespace Avalonia.Controls.Selection
                     }
                 }
 
-                if (toAdd is object)
+                if (toAdd is not null)
                 {
                     foreach (var range in toAdd)
                     {
@@ -315,7 +315,7 @@ namespace Avalonia.Controls.Selection
             bool shifted = false;
             List<T?>? removed = null;
 
-            if (_ranges is object)
+            if (_ranges is not null)
             {
                 var deselected = new List<IndexRange>();
 

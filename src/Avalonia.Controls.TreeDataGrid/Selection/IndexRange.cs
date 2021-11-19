@@ -5,7 +5,7 @@ namespace Avalonia.Controls.Selection
 {
     internal readonly struct IndexRange : IEquatable<IndexRange>
     {
-        private static readonly IndexRange s_invalid = new IndexRange(int.MinValue, int.MinValue);
+        private static readonly IndexRange s_invalid = new(int.MinValue, int.MinValue);
 
         public IndexRange(int index)
         {

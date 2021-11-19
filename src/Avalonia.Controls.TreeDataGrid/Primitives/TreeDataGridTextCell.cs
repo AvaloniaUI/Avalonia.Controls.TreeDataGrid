@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnApplyTemplate(e);
 
-            if (_edit is object)
+            if (_edit is not null)
             {
                 _edit.KeyDown -= EditKeyDown;
                 _edit.LostFocus -= EditLostFocus;
@@ -43,7 +43,7 @@ namespace Avalonia.Controls.Primitives
 
             _edit = e.NameScope.Find<TextBox>("PART_Edit");
 
-            if (_edit is object)
+            if (_edit is not null)
             {
                 _edit.SelectAll();
                 _edit.Focus();

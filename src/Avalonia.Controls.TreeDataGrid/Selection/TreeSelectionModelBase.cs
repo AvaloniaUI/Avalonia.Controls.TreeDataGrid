@@ -128,7 +128,7 @@ namespace Avalonia.Controls.Selection
             remove => _untypedSelectionChanged -= value;
         }
 
-        public BatchUpdateOperation BatchUpdate() => new BatchUpdateOperation(this);
+        public BatchUpdateOperation BatchUpdate() => new(this);
 
         public void BeginBatchUpdate()
         {
@@ -249,7 +249,7 @@ namespace Avalonia.Controls.Selection
             {
                 var node = GetNode(path[..^1]);
 
-                if (node is object)
+                if (node is not null)
                     return node.ItemsView![path[^1]];
             }
 
@@ -288,7 +288,7 @@ namespace Avalonia.Controls.Selection
                 selectedIndexChanged = selectedItemChanged = true;
             }
 
-            if (removed?.Count > 0 && (SelectionChanged is object || _untypedSelectionChanged is object))
+            if (removed?.Count > 0 && (SelectionChanged is not null || _untypedSelectionChanged is not null))
             {
                 var e = new TreeSelectionModelSelectionChangedEventArgs<T>(deselectedItems: removed);
                 SelectionChanged?.Invoke(this, e);
@@ -348,7 +348,7 @@ namespace Avalonia.Controls.Selection
             {
                 foreach (var child in node.Children)
                 {
-                    if (child is object)
+                    if (child is not null)
                     {
                         var i = GetFirstSelectedIndex(child, except);
                         
@@ -400,17 +400,17 @@ namespace Avalonia.Controls.Selection
             _selectedIndex = operation.SelectedIndex;
             _anchorIndex = operation.AnchorIndex;
 
-            if (operation.SelectedRanges is object)
+            if (operation.SelectedRanges is not null)
             {
                 indexesChanged |= CommitSelect(operation.SelectedRanges) > 0;
             }
 
-            if (operation.DeselectedRanges is object)
+            if (operation.DeselectedRanges is not null)
             {
                 indexesChanged |= CommitDeselect(operation.DeselectedRanges) > 0;
             }
 
-            if ((SelectionChanged is object || _untypedSelectionChanged is object) &&
+            if ((SelectionChanged is not null || _untypedSelectionChanged is not null) &&
                 (operation.DeselectedRanges?.Count > 0 ||
                  operation.SelectedRanges?.Count > 0 ||
                  operation.DeselectedItems is object))
@@ -459,7 +459,7 @@ namespace Avalonia.Controls.Selection
             {
                 var node = GetOrCreateNode(parent);
 
-                if (node is object)
+                if (node is not null)
                 {
                     foreach (var range in ranges)
                         result += node.CommitSelect(range);
@@ -477,7 +477,7 @@ namespace Avalonia.Controls.Selection
             {
                 var node = GetOrCreateNode(parent);
 
-                if (node is object)
+                if (node is not null)
                 {
                     foreach (var range in ranges)
                         result += node.CommitDeselect(range);

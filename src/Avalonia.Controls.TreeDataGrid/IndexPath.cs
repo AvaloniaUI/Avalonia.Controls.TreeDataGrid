@@ -218,7 +218,7 @@ namespace Avalonia.Controls
         {
             var result = new int[Count];
 
-            if (_path is object)
+            if (_path is not null)
                 _path.CopyTo(result, 0);
             else if (result.Length > 0)
                 result[0] = _index - 1;
@@ -228,7 +228,7 @@ namespace Avalonia.Controls
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public static implicit operator IndexPath(int index) => new IndexPath(index);
+        public static implicit operator IndexPath(int index) => new(index);
         public static bool operator <(IndexPath x, IndexPath y) => x.CompareTo(y) < 0;
         public static bool operator >(IndexPath x, IndexPath y) => x.CompareTo(y) > 0;
         public static bool operator <=(IndexPath x, IndexPath y) => x.CompareTo(y) <= 0;
