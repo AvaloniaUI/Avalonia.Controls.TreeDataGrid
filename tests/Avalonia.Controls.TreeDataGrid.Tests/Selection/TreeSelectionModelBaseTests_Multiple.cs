@@ -166,6 +166,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             {
                 var data = new AvaloniaList<Node>();
                 var target = CreateTarget(data);
+                _ = new MockBinding(target, data);
 
                 data.Add(new Node());
 
