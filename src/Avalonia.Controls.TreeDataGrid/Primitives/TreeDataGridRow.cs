@@ -70,6 +70,7 @@ namespace Avalonia.Controls.Primitives
             ElementFactory = elementFactory;
             Columns = columns;
             Rows = rows;
+            DataContext = rows?[rowIndex].Model;
             UpdateIndex(rowIndex);
         }
 
@@ -87,6 +88,7 @@ namespace Avalonia.Controls.Primitives
         public void Unrealize()
         {
             RowIndex = -1;
+            DataContext = null;
             CellsPresenter?.Unrealize();
         }
 

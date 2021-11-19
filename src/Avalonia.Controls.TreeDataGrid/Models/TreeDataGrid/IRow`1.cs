@@ -9,7 +9,12 @@
         /// <summary>
         /// Gets the row model.
         /// </summary>
-        TModel Model { get; }
+        new TModel Model { get; }
+
+        /// <summary>
+        /// Gets the untyped row model.
+        /// </summary>
+        object? IRow.Model => Model;
 
         /// <summary>
         /// Updates the model index due to a change in the data source.
