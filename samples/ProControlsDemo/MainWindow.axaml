@@ -26,7 +26,7 @@
         <TreeDataGrid Name="countries" Source="{Binding Countries.Source}">
           <TreeDataGrid.Styles>
             <Style Selector="TreeDataGrid TreeDataGridRow:nth-last-child(2n)">
-              <Setter Property="Background"  Value="Red"/>
+              <Setter Property="Background"  Value="#fff8f8f8"/>
             </Style>
           </TreeDataGrid.Styles>
         </TreeDataGrid>
@@ -42,7 +42,7 @@
         <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}">
           <TreeDataGrid.Styles>
             <Style Selector="TreeDataGrid TreeDataGridRow:nth-child(2n)">
-              <Setter Property="Background"  Value="Red"/>
+              <Setter Property="Background"  Value="#fff8f8f8"/>
             </Style>
           </TreeDataGrid.Styles>
         </TreeDataGrid>
