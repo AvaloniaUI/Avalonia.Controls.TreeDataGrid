@@ -40,6 +40,7 @@ namespace Avalonia.Controls.Primitives
         private RealizedElementList _measureElements = new();
         private RealizedElementList _realizedElements = new();
         private ElementFactoryRecycleArgs? _recycleArgs;
+        private double _lastEstimatedElementSizeU = 25;
 
         public TreeDataGridPresenterBase()
         {
@@ -361,18 +362,23 @@ namespace Avalonia.Controls.Primitives
         private double EstimateElementSizeU()
         {
             var count = _realizedElements.Count;
-            var divisor = count;
+            var divisor = 0.0;
             var total = 0.0;
 
             for (var i = 0; i < count; ++i)
             {
                 if (_realizedElements.Elements[i] is object)
+                {
                     total += _realizedElements.SizeU[i];
-                else
-                    --divisor;
+                    ++divisor;
+                }
             }
 
-            return count > 0 && total > 0 ? total / divisor : 25;
+            if (divisor == 0 || total == 0)
+                return _lastEstimatedElementSizeU;
+
+            _lastEstimatedElementSizeU = total / divisor;
+            return _lastEstimatedElementSizeU;
         }
 
         private Rect EstimateViewport()

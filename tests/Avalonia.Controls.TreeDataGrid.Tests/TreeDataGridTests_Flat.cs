@@ -252,6 +252,152 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(2, preparedRaised);
         }
 
+        public class RemoveItems
+        {
+            [Fact]
+            public void Can_Remove_Range_Within_Realized_Elements()
+            {
+                using var app = App();
+
+                var (target, items) = CreateTarget();
+
+                target.Scroll!.Offset = new Vector(0, 100);
+                Layout(target);
+
+                AssertRowIndexes(target, 10, 10);
+
+                items.RemoveRange(12, 4);
+                Layout(target);
+
+                AssertRowIndexes(target, 10, 10);
+                Assert.Equal(new Vector(0, 100), target.Scroll.Offset);
+            }
+
+            [Fact]
+            public void Can_Remove_Range_Within_Realized_Elements_When_Scrolled_To_End()
+            {
+                using var app = App();
+
+                var (target, items) = CreateTarget(itemCount: 20);
+
+                target.Scroll!.Offset = new Vector(0, 100);
+                Layout(target);
+
+                AssertRowIndexes(target, 10, 10);
+
+                items.RemoveRange(12, 4);
+                Layout(target);
+
+                AssertRowIndexes(target, 6, 10);
+                Assert.Equal(new Vector(0, 60), target.Scroll.Offset);
+            }
+
+            [Fact]
+            public void Can_Remove_Range_Of_All_Realized_Elements()
+            {
+                using var app = App();
+
+                var (target, items) = CreateTarget();
+
+                target.Scroll!.Offset = new Vector(0, 100);
+                Layout(target);
+
+                AssertRowIndexes(target, 10, 10);
+
+                items.RemoveRange(10, 10);
+                Layout(target);
+
+                AssertRowIndexes(target, 10, 10);
+                Assert.Equal(new Vector(0, 100), target.Scroll.Offset);
+            }
+
+            [Fact]
+            public void Can_Remove_Range_Of_All_Realized_Elements_When_Scrolled_To_End()
+            {
+                using var app = App();
+
+                var (target, items) = CreateTarget(itemCount: 20);
+
+                target.Scroll!.Offset = new Vector(0, 100);
+                Layout(target);
+
+                AssertRowIndexes(target, 10, 10);
+
+                items.RemoveRange(10, 10);
+                Layout(target);
+
+                AssertRowIndexes(target, 0, 10);
+                Assert.Equal(new Vector(0, 0), target.Scroll.Offset);
+            }
+
+            [Fact]
+            public void Can_Remove_Range_Spanning_Beginning_Of_Realized_Elements_When_Scrolled_To_End()
+            {
+                using var app = App();
+
+                var (target, items) = CreateTarget(itemCount: 20);
+
+                target.Scroll!.Offset = new Vector(0, 100);
+                Layout(target);
+
+                AssertRowIndexes(target, 10, 10);
+
+                items.RemoveRange(5, 10);
+                Layout(target);
+
+                AssertRowIndexes(target, 0, 10);
+                Assert.Equal(new Vector(0, 0), target.Scroll.Offset);
+            }
+
+            [Fact]
+            public void Can_Remove_Range_Spanning_End_Of_Realized_Elements()
+            {
+                using var app = App();
+
+                var (target, items) = CreateTarget();
+
+                target.Scroll!.Offset = new Vector(0, 100);
+                Layout(target);
+
+                AssertRowIndexes(target, 10, 10);
+
+                items.RemoveRange(15, 10);
+                Layout(target);
+
+                AssertRowIndexes(target, 10, 10);
+                Assert.Equal(new Vector(0, 100), target.Scroll.Offset);
+            }
+        }
+
+        private static void AssertRowIndexes(TreeDataGrid target, int firstRowIndex, int rowCount)
+        {
+            var presenter = target.RowsPresenter;
+
+            Assert.NotNull(presenter);
+
+            var rowIndexes = presenter.GetLogicalChildren()
+                .Cast<TreeDataGridRow>()
+                .Where(x => x.IsVisible)
+                .Select(x => x.RowIndex)
+                .OrderBy(x => x)
+                .ToList();
+
+            Assert.Equal(
+                Enumerable.Range(firstRowIndex, rowCount),
+                rowIndexes);
+
+            rowIndexes = presenter!.RealizedElements
+                .Cast<TreeDataGridRow>()
+                .Where(x => x.IsVisible)
+                .Select(x => x.RowIndex)
+                .OrderBy(x => x)
+                .ToList();
+
+            Assert.Equal(
+                Enumerable.Range(firstRowIndex, rowCount),
+                rowIndexes);
+        }
+
         private static void AssertInteractionSelection(TreeDataGrid target, params int[] selected)
         {
             var selection = (ITreeDataGridSelectionInteraction)target.RowSelection!;
@@ -264,12 +410,13 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(IEnumerable<Model>? models = null,
             IEnumerable<IColumn<Model>>? columns = null,
+            int itemCount = 100,
             bool runLayout = true)
         {
             AvaloniaList<Model>? items = null;
             if (models == null)
             {
-                items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
+                items = new AvaloniaList<Model>(Enumerable.Range(0, itemCount).Select(x =>
                     new Model
                     {
                         Id = x,
