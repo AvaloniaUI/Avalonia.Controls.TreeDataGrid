@@ -85,7 +85,13 @@ namespace Avalonia.Controls.Selection
         public IndexPath AnchorIndex 
         {
             get => _anchorIndex;
-            set => _anchorIndex = value;
+            set
+            {
+                if (!TryGetItemAt(value, out _))
+                    return;
+                using var update = BatchUpdate();
+                update.Operation.AnchorIndex = value;
+            }
         }
 
         object? ITreeSelectionModel.SelectedItem => SelectedItem;
