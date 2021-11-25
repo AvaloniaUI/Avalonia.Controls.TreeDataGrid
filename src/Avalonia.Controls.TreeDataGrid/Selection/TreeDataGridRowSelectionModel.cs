@@ -54,6 +54,9 @@ namespace Avalonia.Controls.Selection
 
         void ITreeDataGridSelectionInteraction.OnKeyDown(TreeDataGrid sender, KeyEventArgs e)
         {
+            if (sender.RowsPresenter is null)
+                return;
+
             if (!e.Handled)
             {
                 var direction = e.Key.ToNavigationDirection();
@@ -62,16 +65,20 @@ namespace Avalonia.Controls.Selection
 
                 if (direction.HasValue)
                 {
-                    var focused = GetFocusedRow(sender);
+                    var anchorRowIndex = _source.Rows.ModelIndexToRowIndex(AnchorIndex);
+                    
+                    sender.RowsPresenter.BringIntoView(anchorRowIndex);
 
-                    if (focused is not null && !ctrl)
+                    var anchor = sender.TryGetRow(anchorRowIndex);
+
+                    if (anchor is not null && !ctrl)
                     {
-                        e.Handled = TryKeyExpandCollapse(sender, direction.Value, focused);
+                        e.Handled = TryKeyExpandCollapse(sender, direction.Value, anchor);
                     }
 
                     if (!e.Handled && (!ctrl || shift))
                     {
-                        e.Handled = MoveSelection(sender, direction.Value, shift, focused);
+                        e.Handled = MoveSelection(sender, direction.Value, shift, anchor);
                     }
                 }
             }
@@ -196,15 +203,6 @@ namespace Avalonia.Controls.Selection
                 if (!treeDataGrid.QueryCancelSelection())
                     SelectedIndex = modelIndex;
             }
-        }
-
-        private TreeDataGridRow? GetFocusedRow(TreeDataGrid treeDataGrid)
-        {
-            var focus = FocusManager.Instance;
-            TreeDataGridRow? focused = null;
-            if (focus.Current is IControl current)
-                treeDataGrid.TryGetRow(current, out focused);
-            return focused;
         }
 
         private bool TryKeyExpandCollapse(
