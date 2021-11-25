@@ -561,6 +561,95 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             }
         }
 
+        public class RangeAnchorIndex
+        {
+            [Fact]
+            public void Setting_SelectedIndex_Sets_RangeAnchorIndex()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.RangeAnchorIndex))
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.SelectedIndex = new IndexPath(0, 1);
+
+                Assert.Equal(new IndexPath(0, 1), target.RangeAnchorIndex);
+                Assert.Equal(1, raised);
+            }
+
+            [Fact]
+            public void Setting_SelectedIndex_To_Empty_Doesnt_Clear_RangeAnchorIndex()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.SelectedIndex = new IndexPath(0, 1);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.AnchorIndex))
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.SelectedIndex = default;
+
+                Assert.Equal(new IndexPath(0, 1), target.RangeAnchorIndex);
+                Assert.Equal(0, raised);
+            }
+
+            [Fact]
+            public void Select_Doesnt_Set_RangeAnchorIndex()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.SelectedIndex = new IndexPath(0, 0);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.AnchorIndex))
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.Select(new IndexPath(0, 1));
+
+                Assert.Equal(new IndexPath(0, 0), target.RangeAnchorIndex);
+                Assert.Equal(1, raised);
+            }
+
+            [Fact]
+            public void Deselect_Doesnt_Clear_RangeAnchorIndex()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.SelectedIndex = new IndexPath(0, 0);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.AnchorIndex))
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.Deselect(new IndexPath(0, 0));
+
+                Assert.Equal(new IndexPath(0, 0), target.RangeAnchorIndex);
+                Assert.Equal(0, raised);
+            }
+        }
+
         public class SingleSelect
         {
             [Fact]

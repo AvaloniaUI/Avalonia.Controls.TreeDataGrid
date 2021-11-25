@@ -162,7 +162,7 @@ namespace Avalonia.Controls.Selection
             {
                 if (!treeDataGrid.QueryCancelSelection())
                 {
-                    var anchor = AnchorIndex;
+                    var anchor = RangeAnchorIndex;
                     var i = Math.Max(_source.Rows.ModelIndexToRowIndex(anchor), 0);
                     var step = i < rowIndex ? 1 : -1;
 
@@ -174,13 +174,12 @@ namespace Avalonia.Controls.Selection
                         {
                             var m = _source.Rows.RowIndexToModelIndex(i);
                             Select(m);
+                            anchor = m;
                             if (i == rowIndex)
                                 break;
                             i += step;
                         }
                     }
-
-                    AnchorIndex = anchor;
                 }
             }
             else if (multi && toggle)

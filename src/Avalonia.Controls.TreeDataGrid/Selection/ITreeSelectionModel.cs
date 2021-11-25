@@ -55,12 +55,25 @@ namespace Avalonia.Controls.Selection
         /// <remarks>
         /// The anchor index holds the index of the item from which non-ranged keyboard selection
         /// will start, i.e. in a vertical list it will hold the item from which selection should
-        /// be moved by pressing the up or down arrow key.
+        /// be moved by pressing the up or down arrow key. This is usually the last selected item.
         /// 
-        /// It is automatically set when selecting an index via
+        /// <see cref="AnchorIndex"/> is automatically set when selecting an item via
         /// <see cref="SelectedIndex"/> or <see cref="Select(IndexPath)"/>.
         /// </remarks>
         IndexPath AnchorIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the range anchor index.
+        /// </summary>
+        /// <remarks>
+        /// The range anchor index holds the index of the item from which ranged selection will
+        /// start, i.e. when shift-clicking an item it represents the start of the range to be 
+        /// selected whereas the shift-clicked item will be the end of the range.
+        /// 
+        /// <see cref="RangeAnchorIndex"/> is set when selecting an item via
+        /// <see cref="SelectedIndex"/> but not via <see cref="Select(IndexPath)"/>.
+        /// </remarks>
+        IndexPath RangeAnchorIndex { get; set; }
 
         /// <summary>
         /// Gets the number of selected items.
