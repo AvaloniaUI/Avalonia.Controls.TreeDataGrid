@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 
 namespace Avalonia.Controls.Selection
 {
@@ -117,7 +118,7 @@ namespace Avalonia.Controls.Selection
                     row.RowIndex,
                     select: true,
                     rangeModifier: e.KeyModifiers.HasFlag(KeyModifiers.Shift),
-                    toggleModifier: e.KeyModifiers.HasFlag(KeyModifiers.Control),
+                    toggleModifier: e.KeyModifiers.HasFlag(AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>().CommandModifiers),
                     rightButton: point.Properties.IsRightButtonPressed);
                 e.Handled = true;
             }
