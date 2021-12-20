@@ -2,9 +2,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:ProControlsDemo.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ProControlsDemo.MainWindow"
-        Title="ProControlsDemo">
+        Title="ProControlsDemo"
+        x:DataType="viewModels:MainWindowViewModel" x:CompileBindings="True">
   <TabControl Name="tabs">
     <TabItem Header="Countries">
       <DockPanel>
@@ -21,7 +23,7 @@
           <Label Target="gdpTextBox">_GDP</Label>
           <TextBox Name="gdpTextBox">600000</TextBox>
           <Button Click="AddCountryClick">Add</Button>
-          <Button Command="{Binding Countries.RemoveSelected}">Remove</Button>
+          <Button Command="{Binding Countries.RemoveSelected}" x:CompileBindings="False">Remove</Button>
         </StackPanel>
         <TreeDataGrid Name="countries" Source="{Binding Countries.Source}">
           <TreeDataGrid.Styles>
