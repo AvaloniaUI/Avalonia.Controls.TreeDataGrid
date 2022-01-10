@@ -89,6 +89,22 @@ namespace ProControlsDemo.ViewModels
         {
             var transactions = new List<HistoryItemViewModelBase>();
 
+            var rand = new Random(100);
+            
+            for (var i = 0; i < 1_000; i++)
+            {
+                var item = new HistoryItemViewModelBase()
+                {
+                    IsConfirmed = rand.NextDouble() > 0.5,
+                    DateString = $"{DateTime.Now.ToLocalTime():MM/dd/yy HH:mm}",
+                    Label = new List<string>(new [] { "Label1", "Label2" }),
+                    IncomingAmount = $"{rand.NextDouble()}",
+                    OutgoingAmount = $"{rand.NextDouble()}",
+                    Balance = $"{rand.NextDouble()}",
+                };
+                transactions.Add(item);
+            }
+
             _data = new ObservableCollection<HistoryItemViewModelBase>(transactions);
 
 			// [Column]			[View]						[Header]		[Width]		[MinWidth]		[MaxWidth]	[CanUserSort]
