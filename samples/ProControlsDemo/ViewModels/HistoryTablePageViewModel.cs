@@ -91,7 +91,7 @@ namespace ProControlsDemo.ViewModels
 
             var rand = new Random(100);
             
-            for (var i = 0; i < 1_000; i++)
+            for (var i = 0; i < 10_000; i++)
             {
                 var item = new HistoryItemViewModelBase()
                 {
