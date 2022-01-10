@@ -2,8 +2,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:ProControlsDemo.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ProControlsDemo.Views.History.Columns.IndicatorsColumnView">
-
+             x:Class="ProControlsDemo.Views.History.Columns.IndicatorsColumnView"
+             x:DataType="viewModels:HistoryItemViewModelBase" x:CompileBindings="True">
+    <UserControl.Resources>
+        <StreamGeometry x:Key="checkmark_filled">M4.03033009,13.4696699 C3.73743687,13.1767767 3.26256313,13.1767767 2.96966991,13.4696699 C2.6767767,13.7625631 2.6767767,14.2374369 2.96966991,14.5303301 L9.96966991,21.5303301 C10.2625631,21.8232233 10.7374369,21.8232233 11.0303301,21.5303301 L25.0303301,7.53033009 C25.3232233,7.23743687 25.3232233,6.76256313 25.0303301,6.46966991 C24.7374369,6.1767767 24.2625631,6.1767767 23.9696699,6.46966991 L10.5,19.9393398 L4.03033009,13.4696699 Z</StreamGeometry>
+        <StreamGeometry x:Key="clock_regular">M24,5 C34.4934102,5 43,13.5065898 43,24 C43,34.4934102 34.4934102,43 24,43 C13.5065898,43 5,34.4934102 5,24 C5,13.5065898 13.5065898,5 24,5 Z M24,7.5 C14.8873016,7.5 7.5,14.8873016 7.5,24 C7.5,33.1126984 14.8873016,40.5 24,40.5 C33.1126984,40.5 40.5,33.1126984 40.5,24 C40.5,14.8873016 33.1126984,7.5 24,7.5 Z M22.75,12 C23.3972087,12 23.9295339,12.4918747 23.9935464,13.1221948 L24,13.25 L24,24 L30.75,24 C31.4403559,24 32,24.5596441 32,25.25 C32,25.8972087 31.5081253,26.4295339 30.8778052,26.4935464 L30.75,26.5 L22.75,26.5 C22.1027913,26.5 21.5704661,26.0081253 21.5064536,25.3778052 L21.5,25.25 L21.5,13.25 C21.5,12.5596441 22.0596441,12 22.75,12 Z</StreamGeometry>
+    </UserControl.Resources>
+    <Panel>
+        <!-- Confirmed -->
+        <PathIcon IsVisible="{Binding IsConfirmed}"
+                  Data="{StaticResource checkmark_filled}"
+                  Foreground="{DynamicResource SystemAccentColor}"
+                  Height="11"
+                  ToolTip.Tip="Confirmed" />
+        <!-- Pending -->
+        <PathIcon IsVisible="{Binding !IsConfirmed}"
+                  Data="{StaticResource clock_regular}"
+                  Height="14"
+                  Opacity="0.6"
+                  ToolTip.Tip="Pending" />
+    </Panel>
 </UserControl>
 
