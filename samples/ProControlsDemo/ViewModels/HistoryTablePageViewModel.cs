@@ -22,17 +22,17 @@ namespace ProControlsDemo.ViewModels
         
 	    public int Id { get; }
 
-	    public List<string>? FilteredLabel { get; protected set; }
+	    public List<string>? FilteredLabel { get; set; }
 
-	    public List<string>? Label { get; protected set; }
+	    public List<string>? Label { get; set; }
 
-	    public bool IsCoinJoin { get; protected set; }
+	    public bool IsCoinJoin { get; set; }
 
-	    public string? Balance { get; protected set; }
+	    public string? Balance { get; set; }
 
-	    public string? OutgoingAmount { get; protected set; }
+	    public string? OutgoingAmount { get; set; }
 
-	    public string? IncomingAmount { get; protected set; }
+	    public string? IncomingAmount { get; set; }
 
 	    public static Comparison<HistoryItemViewModelBase?> SortAscending<T>(Func<HistoryItemViewModelBase, T> selector)
 	    {
