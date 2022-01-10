@@ -6,7 +6,16 @@
         x:Class="ProControlsDemo.MainWindow"
         Title="ProControlsDemo">
   <TabControl Name="tabs">
-    <TabItem Header="Countries">
+      <TabItem Header="History">
+          <TreeDataGrid Source="{Binding History.Source}">
+              <TreeDataGrid.Styles>
+                  <Style Selector="TreeDataGridRow">
+                      <Setter Property="Height" Value="37.5" />
+                  </Style>
+              </TreeDataGrid.Styles>
+          </TreeDataGrid>
+      </TabItem>
+      <TabItem Header="Countries">
       <DockPanel>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
         <StackPanel DockPanel.Dock="Right" Spacing="4">
