@@ -7,7 +7,7 @@
         Title="ProControlsDemo">
   <TabControl Name="tabs">
       <TabItem Header="History">
-          <TreeDataGrid Source="{Binding History.Source}">
+          <TreeDataGrid Source="{Binding History.Source}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
               <TreeDataGrid.Styles>
                   <Style Selector="TreeDataGridRow">
                       <Setter Property="Height" Value="37.5" />
