@@ -3,9 +3,18 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="clr-namespace:ProControlsDemo.ViewModels"
+             xmlns:c="clr-namespace:WalletWasabi.Fluent.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ProControlsDemo.Views.History.Columns.OutgoingColumnView"
              x:DataType="viewModels:HistoryItemViewModelBase" x:CompileBindings="True">
-    <Label Content="{Binding OutgoingAmount}"/>
+    <Panel Name="Panel" HorizontalAlignment="Stretch">
+        <c:PrivacyContentControl
+            HorizontalAlignment="Center"
+            IsVisible="{Binding !!OutgoingAmount}"
+            Content="{Binding OutgoingAmount}"
+            Classes="monoSpaced"
+            FontSize="15"
+            NumberOfPrivacyChars="9" />
+    </Panel>
 </UserControl>
 
