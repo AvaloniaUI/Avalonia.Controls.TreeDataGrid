@@ -159,8 +159,8 @@ namespace ProControlsDemo.ViewModels
 	                    },
                         // TODO: 
                         // STAR SIZING DOES NOT WORK HERE!
-	                    //width: new GridLength(1, GridUnitType.Star)),
-                        width: new GridLength(0, GridUnitType.Auto)),
+	                    width: new GridLength(1, GridUnitType.Star)),
+                        //width: new GridLength(0, GridUnitType.Auto)),
                     // Incoming
                     new TemplateColumn<HistoryItemViewModelBase>(
 	                    "Incoming (₿)",
