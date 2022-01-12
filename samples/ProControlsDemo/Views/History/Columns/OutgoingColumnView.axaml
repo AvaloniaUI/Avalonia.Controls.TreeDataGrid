@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="clr-namespace:ProControlsDemo.ViewModels"
              xmlns:c="clr-namespace:WalletWasabi.Fluent.Controls"
+             xmlns:converters="clr-namespace:WalletWasabi.Fluent.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ProControlsDemo.Views.History.Columns.OutgoingColumnView"
              x:DataType="viewModels:HistoryItemViewModelBase" x:CompileBindings="True">
@@ -11,7 +12,7 @@
         <c:PrivacyContentControl
             HorizontalAlignment="Center"
             IsVisible="{Binding !!OutgoingAmount}"
-            Content="{Binding OutgoingAmount}"
+            Content="{Binding OutgoingAmount, Converter={x:Static converters:MoneyConverters.ToFormattedString}}"
             Classes="monoSpaced"
             FontSize="15"
             NumberOfPrivacyChars="9" />
