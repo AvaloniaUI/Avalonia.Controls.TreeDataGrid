@@ -77,10 +77,10 @@ namespace Avalonia.Controls.Primitives
         {
             var column = ((IColumns)Items!)[index];
 
-            if (!column.ActualWidth.HasValue)
+            if (double.IsNaN(column.ActualWidth))
                 throw new AvaloniaInternalException("Attempt to arrange cell before measure.");
 
-            rect = rect.WithWidth(column.ActualWidth.Value);
+            rect = rect.WithWidth(column.ActualWidth);
             element.Arrange(rect);
             return rect;
         }

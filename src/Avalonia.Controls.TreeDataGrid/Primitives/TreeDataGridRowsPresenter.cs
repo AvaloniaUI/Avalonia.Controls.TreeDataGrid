@@ -91,7 +91,7 @@ namespace Avalonia.Controls.Primitives
         protected override Size MeasureOverride(Size availableSize)
         {
             var result = base.MeasureOverride(availableSize);
-            Columns?.MeasureFinished();
+            Columns?.MeasureEnd();
             return result;
         }
 
