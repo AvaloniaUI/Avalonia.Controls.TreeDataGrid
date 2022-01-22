@@ -8,6 +8,7 @@ using Avalonia.Styling;
 using Avalonia.VisualTree;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Xunit;
 using Enumerable = System.Linq.Enumerable;
@@ -65,7 +66,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             AssertInteractionSelection(target, 3, 4, 5);
 
-            target.Source!.SortBy(target.Columns![0], System.ComponentModel.ListSortDirection.Ascending);
+            target.Source!.SortBy(target.Columns![0], ListSortDirection.Ascending);
 
             AssertInteractionSelection(target, 1, 2, 3);
         }
@@ -82,7 +83,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             AssertInteractionSelection(target, 0, 5);
             
-            target.Source!.SortBy(target.Columns![0], System.ComponentModel.ListSortDirection.Descending);
+            target.Source!.SortBy(target.Columns![0], ListSortDirection.Descending);
 
             ///There are 100 items in the collection.
             ///Their IDs are in range 0..99 so when we order IDs column in Descending order the latest element of the collection would be with
@@ -366,6 +367,41 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 AssertRowIndexes(target, 10, 10);
                 Assert.Equal(new Vector(0, 100), target.Scroll.Offset);
+            }
+
+            [Fact]
+            public void Can_Remove_Selected_Item()
+            {
+                using var app = App();
+
+                var (target, items) = CreateTarget();
+
+                Layout(target);
+                target.RowSelection!.Select(3);
+
+                Assert.Equal(3, target.RowSelection.SelectedIndex);
+
+                items.RemoveAt(3);
+
+                Assert.Equal(-1, target.RowSelection.SelectedIndex);
+            }
+
+            [Fact]
+            public void Can_Remove_Selected_Item_Sorted()
+            {
+                using var app = App();
+
+                var (target, items) = CreateTarget();
+                target.Source!.SortBy(target.Columns![0], ListSortDirection.Descending);
+
+                Layout(target);
+                target.RowSelection!.Select(3);
+
+                Assert.Equal(3, target.RowSelection.SelectedIndex);
+
+                items.RemoveAt(3);
+
+                Assert.Equal(-1, target.RowSelection.SelectedIndex);
             }
         }
 
