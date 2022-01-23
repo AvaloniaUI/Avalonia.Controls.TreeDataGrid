@@ -15,12 +15,19 @@ namespace Avalonia.Controls.Selection
         private readonly ITreeDataGridSource<T> _source;
         private EventHandler? _viewSelectionChanged;
         private Point _pressedPoint;
+        private bool _raiseViewSelectionChanged;
 
         public TreeDataGridRowSelectionModel(ITreeDataGridSource<T> source)
             : base(source.Items)
         {
             _source = source;
-            SelectionChanged += (s,e) => _viewSelectionChanged?.Invoke(this, e);
+            SelectionChanged += (s, e) =>
+            {
+                if (!IsSourceCollectionChanging)
+                    _viewSelectionChanged?.Invoke(this, e);
+                else
+                    _raiseViewSelectionChanged = true;
+            };
         }
 
         event EventHandler? ITreeDataGridSelectionInteraction.SelectionChanged
@@ -105,6 +112,15 @@ namespace Avalonia.Controls.Selection
             }
 
             return null;
+        }
+
+        protected override void OnSourceCollectionChangeFinished()
+        {
+            if (_raiseViewSelectionChanged)
+            {
+                _viewSelectionChanged?.Invoke(this, EventArgs.Empty);
+                _raiseViewSelectionChanged = false;
+            }
         }
 
         private void PointerSelect(TreeDataGrid sender, PointerEventArgs e)
