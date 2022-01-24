@@ -13,6 +13,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private bool? _canUserResize;
         private GridLength _width;
         private GridLength _minimumWidth;
+        private GridLength _maximumWidth;
         private double _autoWidth;
         private object? _header;
         private ListSortDirection? _sortDirection;
@@ -32,6 +33,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             _canUserResize = options?.CanUserResizeColumn;
             _minimumWidth = options?.MinimumWidth ?? new GridLength(30, GridUnitType.Pixel);
+            _maximumWidth = options?.MaximumWidth ?? new GridLength(0, GridUnitType.Star);
             _header = header;
             SetWidth(width ?? GridLength.Auto);
         }
@@ -132,10 +134,17 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private double CoerceActualWidth(double width)
         {
-            return _minimumWidth.GridUnitType switch
+            width = _minimumWidth.GridUnitType switch
             {
                 GridUnitType.Auto => Math.Max(width, _autoWidth),
                 GridUnitType.Pixel => Math.Max(width, _minimumWidth.Value),
+                _ => width,
+            };
+
+            return _maximumWidth.GridUnitType switch
+            {
+                GridUnitType.Auto => Math.Min(width, _autoWidth),
+                GridUnitType.Pixel => Math.Min(width, _minimumWidth.Value),
                 _ => width,
             };
         }
