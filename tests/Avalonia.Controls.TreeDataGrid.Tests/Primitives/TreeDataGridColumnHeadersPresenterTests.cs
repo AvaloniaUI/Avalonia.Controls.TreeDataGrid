@@ -157,7 +157,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             width ??= new GridLength(10);
 
             for (var i = 0; i < columnCount; ++i)
-                columns.Add(new TestColumn("Column " + i, width.Value));
+                columns.Add(new TestColumn("Column " + i, width.Value, new ColumnOptions<string> { MinimumWidth = GridLength.Star }));
 
             var target = new TreeDataGridColumnHeadersPresenter
             {
@@ -193,8 +193,8 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
         private class TestColumn : ColumnBase<string>
         {
-            public TestColumn(string header, GridLength width)
-                : base(header, width, null)
+            public TestColumn(string header, GridLength width, ColumnOptions<string>? options = null)
+                : base(header, width, options)
             {
             }
 
