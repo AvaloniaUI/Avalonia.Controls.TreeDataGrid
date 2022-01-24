@@ -115,12 +115,12 @@ namespace ProControlsDemo.ViewModels
 			// Outgoing			OutgoingColumnView			Outgoing (₿)	Auto		120				150			true
 			// Balance			BalanceColumnView			Balance (₿)		Auto		120				150			true
 
-			IControl IndicatorsColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new IndicatorsColumnView() { Height = 37.5, MinWidth = 80 };
-			IControl DateColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new DateColumnView() { Height = 37.5, MinWidth = 150 };
-			IControl LabelsColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new LabelsColumnView() { Height = 37.5, MinWidth = 75 };
-			IControl IncomingColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new IncomingColumnView() { Height = 37.5, MinWidth = 120, MaxWidth = 150 };
-			IControl OutgoingColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new OutgoingColumnView() { Height = 37.5, MinWidth = 120, MaxWidth = 150 };
-			IControl BalanceColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new BalanceColumnView() { Height = 37.5, MinWidth = 120, MaxWidth = 150 };
+			IControl IndicatorsColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new IndicatorsColumnView() { Height = 37.5 };
+			IControl DateColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new DateColumnView() { Height = 37.5 };
+			IControl LabelsColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new LabelsColumnView() { Height = 37.5 };
+			IControl IncomingColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new IncomingColumnView() { Height = 37.5 };
+			IControl OutgoingColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new OutgoingColumnView() { Height = 37.5 };
+			IControl BalanceColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new BalanceColumnView() { Height = 37.5 };
 
 			Source = new FlatTreeDataGridSource<HistoryItemViewModelBase>(_data)
             {
@@ -133,7 +133,8 @@ namespace ProControlsDemo.ViewModels
                         options: new ColumnOptions<HistoryItemViewModelBase>
                         {
                             CanUserResizeColumn = false,
-                            CanUserSortColumn = false
+                            CanUserSortColumn = false,
+                            MinimumWidth = new GridLength(80, GridUnitType.Pixel)
                         },
                         width: new GridLength(0, GridUnitType.Auto)),
                     // Date
@@ -146,6 +147,7 @@ namespace ProControlsDemo.ViewModels
 		                    CanUserSortColumn = true,
 		                    CompareAscending = HistoryItemViewModelBase.SortAscending(x => x.Date),
 		                    CompareDescending = HistoryItemViewModelBase.SortDescending(x => x.Date),
+                            MinimumWidth = new GridLength(150, GridUnitType.Pixel)
 	                    },
 	                    width: new GridLength(0, GridUnitType.Auto)),
                     // Labels
@@ -155,7 +157,8 @@ namespace ProControlsDemo.ViewModels
 	                    options: new ColumnOptions<HistoryItemViewModelBase>
 	                    {
 		                    CanUserResizeColumn = false,
-		                    CanUserSortColumn = false
+		                    CanUserSortColumn = false,
+                            MinimumWidth = new GridLength(75, GridUnitType.Pixel)
 	                    },
                         // TODO: 
                         // STAR SIZING DOES NOT WORK HERE!
@@ -171,6 +174,8 @@ namespace ProControlsDemo.ViewModels
 		                    CanUserSortColumn = true,
 		                    CompareAscending = HistoryItemViewModelBase.SortAscending(x => x.IncomingAmount),
 		                    CompareDescending = HistoryItemViewModelBase.SortDescending(x => x.IncomingAmount),
+                            MinimumWidth = new GridLength(120, GridUnitType.Pixel),
+                            MaximumWidth = new GridLength(150, GridUnitType.Pixel)
 	                    },
 	                    width: new GridLength(0, GridUnitType.Auto)),
                     // Outgoing
@@ -183,6 +188,8 @@ namespace ProControlsDemo.ViewModels
 		                    CanUserSortColumn = true,
 		                    CompareAscending = HistoryItemViewModelBase.SortAscending(x => x.OutgoingAmount),
 		                    CompareDescending = HistoryItemViewModelBase.SortDescending(x => x.OutgoingAmount),
+                            MinimumWidth = new GridLength(120, GridUnitType.Pixel),
+                            MaximumWidth = new GridLength(150, GridUnitType.Pixel)
 	                    },
 	                    width: new GridLength(0, GridUnitType.Auto)),
                     // Balance
@@ -195,6 +202,8 @@ namespace ProControlsDemo.ViewModels
 		                    CanUserSortColumn = true,
 		                    CompareAscending = HistoryItemViewModelBase.SortAscending(x => x.Balance),
 		                    CompareDescending = HistoryItemViewModelBase.SortDescending(x => x.Balance),
+                            MinimumWidth = new GridLength(120, GridUnitType.Pixel),
+                            MaximumWidth = new GridLength(150, GridUnitType.Pixel)
 	                    },
 	                    width: new GridLength(0, GridUnitType.Auto)),
                 }

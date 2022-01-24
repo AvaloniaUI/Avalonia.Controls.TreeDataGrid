@@ -27,9 +27,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public bool? CanUserSortColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the minium width for a column.
+        /// Gets or sets the minimum width for a column.
         /// </summary>
         public GridLength MinimumWidth { get; set; } = new GridLength(30, GridUnitType.Pixel);
+
+        /// <summary>
+        /// Gets or sets the maximum width for a column.
+        /// </summary>
+        public GridLength MaximumWidth { get; set; } = new GridLength(0, GridUnitType.Star);
 
         /// <summary>
         /// Gets or sets a custom comparison for ascending ordered columns.
