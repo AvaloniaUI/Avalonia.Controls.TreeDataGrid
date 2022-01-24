@@ -161,8 +161,8 @@ namespace Avalonia.Controls.TreeDataGridTests
             var (target, items) = CreateTarget(
                 columns: new IColumn<Model>[]
                 {
-                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(10, GridUnitType.Pixel)),
-                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(14, GridUnitType.Pixel))
+                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(10, GridUnitType.Pixel), new ColumnOptions<Model> { MinimumWidth = GridLength.Star }),
+                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(14, GridUnitType.Pixel), new ColumnOptions<Model> { MinimumWidth = GridLength.Star })
                 }
             );
 
