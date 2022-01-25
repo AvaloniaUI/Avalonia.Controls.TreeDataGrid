@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -361,6 +362,43 @@ namespace Avalonia.Controls.TreeDataGridTests
             firstRow = (TreeDataGridRow)target.RowsPresenter!.RealizedElements[0]!;
             Assert.Equal(0, firstRow.RowIndex);
             Assert.Equal(new Vector(0, 0), target.Scroll!.Offset);
+        }
+
+        [Fact]
+        public void Can_Remove_Selected_Item()
+        {
+            using var app = App();
+
+            var (target, source) = CreateTarget();
+
+            source.Expand(new IndexPath(0, 0));
+            Layout(target);
+            target.RowSelection!.Select(new IndexPath(0, 3));
+
+            Assert.Equal(new IndexPath(0, 3), target.RowSelection.SelectedIndex);
+
+            ((AvaloniaList<Model>)source.Items)[0].Children!.RemoveAt(3);
+
+            Assert.Equal(-1, target.RowSelection.SelectedIndex);
+        }
+
+        [Fact]
+        public void Can_Remove_Selected_Item_Sorted()
+        {
+            using var app = App();
+
+            var (target, source) = CreateTarget();
+            target.Source!.SortBy(target.Columns![0], ListSortDirection.Descending);
+
+            source.Expand(new IndexPath(0, 0));
+            Layout(target);
+            target.RowSelection!.Select(new IndexPath(0, 3));
+
+            Assert.Equal(new IndexPath(0, 3), target.RowSelection.SelectedIndex);
+
+            ((AvaloniaList<Model>)source.Items)[0].Children!.RemoveAt(3);
+
+            Assert.Equal(-1, target.RowSelection.SelectedIndex);
         }
 
         private static (TreeDataGrid, HierarchicalTreeDataGridSource<Model>) CreateTarget()

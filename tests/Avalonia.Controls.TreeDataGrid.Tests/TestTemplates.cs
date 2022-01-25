@@ -83,6 +83,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                                 [!TreeDataGridRowsPresenter.ColumnsProperty] = x[!TreeDataGrid.ColumnsProperty],
                                 [!TreeDataGridRowsPresenter.ElementFactoryProperty] = x[!TreeDataGrid.ElementFactoryProperty],
                                 [!TreeDataGridRowsPresenter.ItemsProperty] = x[!TreeDataGrid.RowsProperty],
+                                [!TreeDataGridRowsPresenter.SelectionProperty] = x[!TreeDataGrid.SelectionInteractionProperty],
                             }.RegisterInNameScope(ns),
                         }.RegisterInNameScope(ns)
                     }

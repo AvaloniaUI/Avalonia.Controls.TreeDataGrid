@@ -18,6 +18,7 @@ namespace Avalonia.Controls.Selection
         private Operation? _operation;
         private TreeSelectedIndexes<T>? _selectedIndexes;
         private TreeSelectedItems<T>? _selectedItems;
+        private int _collectionChanging;
         private EventHandler<TreeSelectionModelSelectionChangedEventArgs>? _untypedSelectionChanged;
 
         protected TreeSelectionModelBase()
@@ -98,6 +99,8 @@ namespace Avalonia.Controls.Selection
         }
 
         internal TreeSelectionNode<T> Root => _root;
+
+        protected bool IsSourceCollectionChanging => _collectionChanging > 0;
 
         protected IEnumerable? Source
         {
@@ -233,6 +236,10 @@ namespace Avalonia.Controls.Selection
             return false;
         }
 
+        protected virtual void OnSourceCollectionChangeFinished()
+        {
+        }
+
         protected void RaisePropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -254,6 +261,11 @@ namespace Avalonia.Controls.Selection
             }
 
             throw new ArgumentOutOfRangeException(nameof(path));
+        }
+
+        internal void OnNodeCollectionChangeStarted()
+        {
+            ++_collectionChanging;
         }
 
         internal void OnNodeCollectionChanged(
@@ -303,6 +315,12 @@ namespace Avalonia.Controls.Selection
                 RaisePropertyChanged(nameof(SelectedItem));
             if (anchorIndexChanged)
                 RaisePropertyChanged(nameof(AnchorIndex));
+        }
+
+        internal void OnNodeCollectionChangeFinished()
+        {
+            if (--_collectionChanging == 0)
+                OnSourceCollectionChangeFinished();
         }
 
         protected internal virtual void OnNodeCollectionReset(IndexPath parentIndex)
