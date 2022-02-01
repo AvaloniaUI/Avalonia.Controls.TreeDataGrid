@@ -12,8 +12,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private double _actualWidth = double.NaN;
         private bool? _canUserResize;
         private GridLength _width;
-        private GridLength _minimumWidth;
-        private GridLength _maximumWidth;
+        private GridLength? _minimumWidth;
+        private GridLength? _maximumWidth;
         private double _autoWidth;
         private object? _header;
         private ListSortDirection? _sortDirection;
@@ -134,18 +134,20 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private double CoerceActualWidth(double width)
         {
-            width = _minimumWidth.GridUnitType switch
+            width = _minimumWidth?.GridUnitType switch
             {
                 GridUnitType.Auto => Math.Max(width, _autoWidth),
-                GridUnitType.Pixel => Math.Max(width, _minimumWidth.Value),
-                _ => width,
+                GridUnitType.Pixel => Math.Max(width, _minimumWidth.Value.Value),
+                GridUnitType.Star => throw new NotImplementedException(),
+                _ => width
             };
 
-            return _maximumWidth.GridUnitType switch
+            return _maximumWidth?.GridUnitType switch
             {
                 GridUnitType.Auto => Math.Min(width, _autoWidth),
-                GridUnitType.Pixel => Math.Min(width, _maximumWidth.Value),
-                _ => width,
+                GridUnitType.Pixel => Math.Min(width, _maximumWidth.Value.Value),
+                GridUnitType.Star => throw new NotImplementedException(),
+                _ => width
             };
         }
 
