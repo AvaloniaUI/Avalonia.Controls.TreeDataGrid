@@ -33,7 +33,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             _canUserResize = options?.CanUserResizeColumn;
             _minimumWidth = options?.MinimumWidth ?? new GridLength(30, GridUnitType.Pixel);
-            _maximumWidth = options?.MaximumWidth ?? new GridLength(0, GridUnitType.Star);
+            _maximumWidth = options?.MaximumWidth;
             _header = header;
             SetWidth(width ?? GridLength.Auto);
         }
