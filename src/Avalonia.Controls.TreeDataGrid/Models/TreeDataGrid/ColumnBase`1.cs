@@ -144,7 +144,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return _maximumWidth.GridUnitType switch
             {
                 GridUnitType.Auto => Math.Min(width, _autoWidth),
-                GridUnitType.Pixel => Math.Min(width, _minimumWidth.Value),
+                GridUnitType.Pixel => Math.Min(width, _maximumWidth.Value),
                 _ => width,
             };
         }
