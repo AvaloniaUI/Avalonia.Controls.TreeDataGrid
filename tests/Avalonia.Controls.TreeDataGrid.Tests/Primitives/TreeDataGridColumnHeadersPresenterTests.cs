@@ -49,7 +49,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             for (var i = 0; i < target.Items!.Count; ++i)
             {
                 var column = target.Items[i];
-                Assert.Equal(i < 10 ? (double?)10 : null, column.ActualWidth);
+                Assert.Equal(i < 10 ? 10 : double.NaN, column.ActualWidth);
             }
         }
 
