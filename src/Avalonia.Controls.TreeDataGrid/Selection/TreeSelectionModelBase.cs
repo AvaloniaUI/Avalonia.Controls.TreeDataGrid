@@ -428,6 +428,8 @@ namespace Avalonia.Controls.Selection
                 indexesChanged |= CommitDeselect(operation.DeselectedRanges) > 0;
             }
 
+            Count += (operation.SelectedRanges?.Count ?? 0) - (operation.DeselectedRanges?.Count ?? 0);
+
             if ((SelectionChanged is not null || _untypedSelectionChanged is not null) &&
                 (operation.DeselectedRanges?.Count > 0 ||
                  operation.SelectedRanges?.Count > 0 ||
@@ -447,7 +449,6 @@ namespace Avalonia.Controls.Selection
                 _untypedSelectionChanged?.Invoke(this, e);
             }
 
-            Count += (operation.SelectedRanges?.Count ?? 0) - (operation?.DeselectedRanges?.Count ?? 0);
             _root.PruneEmptyChildren();
 
             if (oldSelectedIndex != _selectedIndex)
