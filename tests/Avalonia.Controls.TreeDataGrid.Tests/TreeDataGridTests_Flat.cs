@@ -162,8 +162,8 @@ namespace Avalonia.Controls.TreeDataGridTests
             var (target, items) = CreateTarget(
                 columns: new IColumn<Model>[]
                 {
-                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(10, GridUnitType.Pixel), new ColumnOptions<Model> { MinimumWidth = null }),
-                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(14, GridUnitType.Pixel), new ColumnOptions<Model> { MinimumWidth = null })
+                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(10, GridUnitType.Pixel), new ColumnOptions<Model> { MinWidth = null }),
+                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(14, GridUnitType.Pixel), new ColumnOptions<Model> { MinWidth = null })
                 }
             );
 
@@ -178,8 +178,8 @@ namespace Avalonia.Controls.TreeDataGridTests
             var (target, items) = CreateTarget(
                 columns: new IColumn<Model>[]
                 {
-                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(1, GridUnitType.Star), new ColumnOptions<Model> { MinimumWidth = null }),
-                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(3, GridUnitType.Star), new ColumnOptions<Model> { MinimumWidth = null })
+                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(1, GridUnitType.Star), new ColumnOptions<Model> { MinWidth = null }),
+                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(3, GridUnitType.Star), new ColumnOptions<Model> { MinWidth = null })
                 }
             );
 
