@@ -12,8 +12,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private double _actualWidth = double.NaN;
         private bool? _canUserResize;
         private GridLength _width;
-        private GridLength? _minimumWidth;
-        private GridLength? _maximumWidth;
+        private GridLength? _minWidth;
+        private GridLength? _maxWidth;
         private double _autoWidth;
         private object? _header;
         private ListSortDirection? _sortDirection;
@@ -32,8 +32,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             ColumnOptions<TModel>? options)
         {
             _canUserResize = options?.CanUserResizeColumn;
-            _minimumWidth = options?.MinimumWidth ?? new GridLength(30, GridUnitType.Pixel);
-            _maximumWidth = options?.MaximumWidth;
+            _minWidth = options?.MinWidth ?? new GridLength(30, GridUnitType.Pixel);
+            _maxWidth = options?.MaxWidth;
             _header = header;
             SetWidth(width ?? GridLength.Auto);
         }
@@ -134,18 +134,18 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private double CoerceActualWidth(double width)
         {
-            width = _minimumWidth?.GridUnitType switch
+            width = _minWidth?.GridUnitType switch
             {
                 GridUnitType.Auto => Math.Max(width, _autoWidth),
-                GridUnitType.Pixel => Math.Max(width, _minimumWidth.Value.Value),
+                GridUnitType.Pixel => Math.Max(width, _minWidth.Value.Value),
                 GridUnitType.Star => throw new NotImplementedException(),
                 _ => width
             };
 
-            return _maximumWidth?.GridUnitType switch
+            return _maxWidth?.GridUnitType switch
             {
                 GridUnitType.Auto => Math.Min(width, _autoWidth),
-                GridUnitType.Pixel => Math.Min(width, _maximumWidth.Value.Value),
+                GridUnitType.Pixel => Math.Min(width, _maxWidth.Value.Value),
                 GridUnitType.Star => throw new NotImplementedException(),
                 _ => width
             };

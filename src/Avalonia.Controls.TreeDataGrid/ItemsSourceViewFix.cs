@@ -25,7 +25,7 @@ namespace Avalonia.Controls
     /// view of the Items. That way, each component does not need to know if the source is an
     /// IEnumerable, an IList, or something else.
     /// </remarks>
-    public class ItemsSourceViewFix : INotifyCollectionChanged, IDisposable
+    public class ItemsSourceViewFix : INotifyCollectionChanged, ICollectionChangedListener, IDisposable
     {
         /// <summary>
         ///  Gets an empty <see cref="ItemsSourceViewFix"/>
@@ -101,7 +101,7 @@ namespace Avalonia.Controls
                 {
                     if (_inner is INotifyCollectionChanged incc)
                     {
-                        incc.CollectionChanged += OnCollectionChanged;
+                        CollectionChangedEventManager.Instance.AddListener(incc, this);
                     }
                 }
 
@@ -119,7 +119,7 @@ namespace Avalonia.Controls
                 {
                     if (_inner is INotifyCollectionChanged incc)
                     {
-                        incc.CollectionChanged -= OnCollectionChanged;
+                        CollectionChangedEventManager.Instance.RemoveListener(incc, this);
                     }
                 }
             }
@@ -130,7 +130,7 @@ namespace Avalonia.Controls
         {
             if (_inner is INotifyCollectionChanged incc)
             {
-                incc.CollectionChanged -= OnCollectionChanged;
+                CollectionChangedEventManager.Instance.RemoveListener(incc, this);
             }
 
             _inner = null;
@@ -188,6 +188,19 @@ namespace Avalonia.Controls
             throw new NotImplementedException();
         }
 
+        void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        {
+        }
+
+        void ICollectionChangedListener.Changed(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        {
+            OnItemsSourceChanged(e);
+        }
+
+        void ICollectionChangedListener.PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        {
+        }
+
         internal void AddListener(ICollectionChangedListener listener)
         {
             if (Inner is INotifyCollectionChanged incc)
@@ -207,11 +220,6 @@ namespace Avalonia.Controls
         protected void OnItemsSourceChanged(NotifyCollectionChangedEventArgs args)
         {
             _collectionChanged?.Invoke(this, args);
-        }
-
-        private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            OnItemsSourceChanged(e);
         }
 
         private void ThrowDisposed() => throw new ObjectDisposedException(nameof(ItemsSourceViewFix));

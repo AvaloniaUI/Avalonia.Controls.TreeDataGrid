@@ -17,7 +17,6 @@ namespace Avalonia.Controls.Selection
         private IEnumerable? _source;
         private bool _rangesEnabled;
         private List<IndexRange>? _ranges;
-        private int _collectionChanging;
 
         /// <summary>
         /// Gets or sets the source collection.
@@ -41,12 +40,6 @@ namespace Avalonia.Controls.Selection
         /// Gets an <see cref="ItemsSourceView{T}"/> of the <see cref="Source"/>.
         /// </summary>
         protected internal ItemsSourceViewFix<T>? ItemsView { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether the <see cref="Source"/> collection is currently
-        /// changing.
-        /// </summary>
-        protected bool IsSourceCollectionChanging => _collectionChanging > 0;
 
         /// <summary>
         /// Gets or sets a value indicating whether range selection is currently enabled for
@@ -85,7 +78,7 @@ namespace Avalonia.Controls.Selection
 
         void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
         {
-            ++_collectionChanging;
+            OnSourceCollectionChangeStarted();
         }
 
         void ICollectionChangedListener.Changed(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
@@ -95,10 +88,14 @@ namespace Avalonia.Controls.Selection
 
         void ICollectionChangedListener.PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
         {
-            if (--_collectionChanging == 0)
-            {
-                OnSourceCollectionChangeFinished();
-            }
+            OnSourceCollectionChangeFinished();
+        }
+
+        /// <summary>
+        /// Called when the source collection starts changing.
+        /// </summary>
+        protected virtual void OnSourceCollectionChangeStarted()
+        {
         }
 
         /// <summary>
