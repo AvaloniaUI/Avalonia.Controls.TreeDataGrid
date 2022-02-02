@@ -111,6 +111,36 @@ namespace Avalonia.Controls.TreeDataGridTests
             [Theory]
             [InlineData(false)]
             [InlineData(true)]
+            public void Supports_Removing_Root_Row_With_Earlier_Row_Expanded_To_Grandchildren(bool sorted)
+            {
+                var data = CreateData();
+                data[0].Children![0].Children = new AvaloniaList<Node>
+                {
+                    new Node
+                    {
+                        Id = 100,
+                        Caption = "Node 0-0-0",
+                    }
+                };
+
+                var target = CreateTarget(data, sorted);
+
+                target.Expand(new IndexPath(0));
+                target.Expand(new IndexPath(0, 0));
+
+                Assert.Equal(11, target.Rows.Count);
+
+                var raised = 0;
+                target.Rows.CollectionChanged += (s, e) => ++raised;
+
+                data.RemoveAt(1);
+
+                AssertState(target, data, 10, sorted, new IndexPath(0), new IndexPath(0, 0));
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
             public void Removing_Expanded_Root_Row_Unsubscribes_From_CollectionChanged(bool sorted)
             {
                 var data = CreateData();

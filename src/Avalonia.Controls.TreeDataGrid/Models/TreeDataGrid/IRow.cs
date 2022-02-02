@@ -14,5 +14,10 @@
         /// Gets the height of the row.
         /// </summary>
         GridLength Height { get; set; }
+
+        /// <summary>
+        /// Gets the row model.
+        /// </summary>
+        object? Model { get; }
     }
 }

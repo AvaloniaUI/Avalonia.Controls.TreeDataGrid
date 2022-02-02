@@ -195,7 +195,7 @@ namespace Avalonia.Controls.Primitives
 
                 // If the remove started before and ended within our realized elements, then our new
                 // first index will be the index where the remove started.
-                if (startIndex < modelIndex && end < last)
+                if (startIndex <= 0 && end < last)
                     _firstIndex = first = modelIndex;
 
                 // Update the indexes of the elements after the removed range.

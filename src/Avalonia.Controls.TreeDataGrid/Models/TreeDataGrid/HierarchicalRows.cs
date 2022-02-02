@@ -287,7 +287,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 while (count > 0)
                 {
                     var row = _flattenedRows[i];
-                    i += (row.Children?.Count ?? 0) + 1;
+                    if (row.Children?.Count > 0)
+                        i = Advance(i + 1, row.Children.Count);
+                    else
+                        i += + 1;
                     --count;
                 }
 

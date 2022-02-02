@@ -116,6 +116,11 @@ namespace Avalonia.Controls.Selection
             }
         }
 
+        protected override void OnSourceCollectionChangeStarted()
+        {
+            _owner.OnNodeCollectionChangeStarted();
+        }
+
         protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             var shiftIndex = 0;
@@ -179,6 +184,11 @@ namespace Avalonia.Controls.Selection
 
             if (shiftDelta != 0 || removed?.Count> 0)
                 _owner.OnNodeCollectionChanged(Path, shiftIndex, shiftDelta, indexesChanged, removed);
+        }
+
+        protected override void OnSourceCollectionChangeFinished()
+        {
+            _owner.OnNodeCollectionChangeFinished();
         }
 
         protected override void OnSourceReset()

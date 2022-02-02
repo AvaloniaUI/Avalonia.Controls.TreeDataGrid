@@ -135,11 +135,12 @@
   <Style Selector="TreeDataGridRow">
     <Setter Property="Template">
       <ControlTemplate>
-        <TreeDataGridCellsPresenter Name="PART_CellsPresenter"
-                                    Background="{TemplateBinding Background}"
-                                    ElementFactory="{TemplateBinding ElementFactory}"
-                                    Items="{TemplateBinding Columns}"
-                                    Rows="{TemplateBinding Rows}"/>
+        <Border Background="{TemplateBinding Background}">
+          <TreeDataGridCellsPresenter Name="PART_CellsPresenter"
+                                      ElementFactory="{TemplateBinding ElementFactory}"
+                                      Items="{TemplateBinding Columns}"
+                                      Rows="{TemplateBinding Rows}"/>
+        </Border>
       </ControlTemplate>
     </Setter>
   </Style>
@@ -184,7 +185,7 @@
     </Setter>
   </Style>
 
-  <Style Selector="TreeDataGridRow:selected">
+  <Style Selector="TreeDataGridRow:selected /template/ TreeDataGridCellsPresenter#PART_CellsPresenter">
     <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
   </Style>
 
