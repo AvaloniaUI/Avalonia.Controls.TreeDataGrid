@@ -179,7 +179,8 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
         private class TestTextColumn : ColumnBase<Model>
         {
-            public TestTextColumn(string header) : base(header, null, null)
+            public TestTextColumn(string header)
+                : base(header, null, Options())
             {
             }
 
@@ -192,6 +193,14 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             public override Comparison<Model?>? GetComparison(ListSortDirection direction)
             {
                 throw new NotImplementedException();
+            }
+
+            private static ColumnOptions<Model> Options()
+            {
+                return new ColumnOptions<Model>
+                {
+                    MinWidth = new GridLength(0, GridUnitType.Pixel)
+                };
             }
         }
     }

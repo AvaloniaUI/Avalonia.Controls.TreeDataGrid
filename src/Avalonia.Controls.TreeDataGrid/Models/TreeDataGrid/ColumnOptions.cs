@@ -29,7 +29,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets or sets the minimum width for a column.
         /// </summary>
-        public GridLength? MinWidth { get; set; } = new GridLength(30, GridUnitType.Pixel);
+        public GridLength MinWidth { get; set; } = new GridLength(30, GridUnitType.Pixel);
 
         /// <summary>
         /// Gets or sets the maximum width for a column.
