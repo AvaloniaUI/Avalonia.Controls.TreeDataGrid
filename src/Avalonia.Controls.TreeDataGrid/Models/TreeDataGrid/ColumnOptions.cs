@@ -34,7 +34,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets or sets the maximum width for a column.
         /// </summary>
-        public GridLength? MaximumWidth { get; set; } = new GridLength(0, GridUnitType.Star);
+        public GridLength? MaximumWidth { get; set; } = null;
 
         /// <summary>
         /// Gets or sets a custom comparison for ascending ordered columns.
