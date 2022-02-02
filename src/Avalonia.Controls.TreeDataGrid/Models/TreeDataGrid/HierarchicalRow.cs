@@ -114,6 +114,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private void Expand()
         {
+            if (!_expanderColumn.HasChildren(Model))
+                return;
+
             _controller.OnBeginExpandCollapse(this);
 
             var oldExpanded = _isExpanded;
