@@ -134,7 +134,7 @@ namespace ProControlsDemo.ViewModels
                         {
                             CanUserResizeColumn = false,
                             CanUserSortColumn = false,
-                            MinimumWidth = new GridLength(80, GridUnitType.Pixel)
+                            MinWidth = new GridLength(80, GridUnitType.Pixel)
                         },
                         width: new GridLength(0, GridUnitType.Auto)),
                     // Date
@@ -147,7 +147,7 @@ namespace ProControlsDemo.ViewModels
 		                    CanUserSortColumn = true,
 		                    CompareAscending = HistoryItemViewModelBase.SortAscending(x => x.Date),
 		                    CompareDescending = HistoryItemViewModelBase.SortDescending(x => x.Date),
-                            MinimumWidth = new GridLength(150, GridUnitType.Pixel)
+                            MinWidth = new GridLength(150, GridUnitType.Pixel)
 	                    },
 	                    width: new GridLength(0, GridUnitType.Auto)),
                     // Labels
@@ -158,7 +158,7 @@ namespace ProControlsDemo.ViewModels
 	                    {
 		                    CanUserResizeColumn = false,
 		                    CanUserSortColumn = false,
-                            MinimumWidth = new GridLength(75, GridUnitType.Pixel)
+                            MinWidth = new GridLength(75, GridUnitType.Pixel)
 	                    },
                         // TODO: 
                         // STAR SIZING DOES NOT WORK HERE!
@@ -174,8 +174,8 @@ namespace ProControlsDemo.ViewModels
 		                    CanUserSortColumn = true,
 		                    CompareAscending = HistoryItemViewModelBase.SortAscending(x => x.IncomingAmount),
 		                    CompareDescending = HistoryItemViewModelBase.SortDescending(x => x.IncomingAmount),
-                            MinimumWidth = new GridLength(120, GridUnitType.Pixel),
-                            MaximumWidth = new GridLength(150, GridUnitType.Pixel)
+                            MinWidth = new GridLength(120, GridUnitType.Pixel),
+                            MaxWidth = new GridLength(150, GridUnitType.Pixel)
 	                    },
 	                    width: new GridLength(0, GridUnitType.Auto)),
                     // Outgoing
@@ -188,8 +188,8 @@ namespace ProControlsDemo.ViewModels
 		                    CanUserSortColumn = true,
 		                    CompareAscending = HistoryItemViewModelBase.SortAscending(x => x.OutgoingAmount),
 		                    CompareDescending = HistoryItemViewModelBase.SortDescending(x => x.OutgoingAmount),
-                            MinimumWidth = new GridLength(120, GridUnitType.Pixel),
-                            MaximumWidth = new GridLength(150, GridUnitType.Pixel)
+                            MinWidth = new GridLength(120, GridUnitType.Pixel),
+                            MaxWidth = new GridLength(150, GridUnitType.Pixel)
 	                    },
 	                    width: new GridLength(0, GridUnitType.Auto)),
                     // Balance
@@ -202,8 +202,8 @@ namespace ProControlsDemo.ViewModels
 		                    CanUserSortColumn = true,
 		                    CompareAscending = HistoryItemViewModelBase.SortAscending(x => x.Balance),
 		                    CompareDescending = HistoryItemViewModelBase.SortDescending(x => x.Balance),
-                            MinimumWidth = new GridLength(120, GridUnitType.Pixel),
-                            MaximumWidth = new GridLength(150, GridUnitType.Pixel)
+                            MinWidth = new GridLength(120, GridUnitType.Pixel),
+                            MaxWidth = new GridLength(150, GridUnitType.Pixel)
 	                    },
 	                    width: new GridLength(0, GridUnitType.Auto)),
                 }
