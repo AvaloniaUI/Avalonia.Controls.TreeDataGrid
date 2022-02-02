@@ -102,8 +102,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         double IUpdateColumnLayout.CellMeasured(double width, int rowIndex)
         {
-            _autoWidth = Math.Max(_autoWidth, width);
-            return double.IsNaN(ActualWidth) ? width : ActualWidth;
+            _autoWidth = Math.Max(_autoWidth, CoerceActualWidth(width));
+            return Width.GridUnitType == GridUnitType.Auto || double.IsNaN(ActualWidth) ?
+                _autoWidth : ActualWidth;
         }
 
         void IUpdateColumnLayout.CommitActualWidth()
@@ -114,11 +115,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             var width = Width.GridUnitType switch
             {
                 GridUnitType.Auto => _autoWidth,
-                GridUnitType.Pixel => Width.Value,
+                GridUnitType.Pixel => CoerceActualWidth(Width.Value),
                 _ => throw new NotSupportedException(),
             };
 
-            ActualWidth = CoerceActualWidth(width);
+            ActualWidth = width;
         }
 
         void IUpdateColumnLayout.CommitActualWidth(double availableWidth, double totalStars)
