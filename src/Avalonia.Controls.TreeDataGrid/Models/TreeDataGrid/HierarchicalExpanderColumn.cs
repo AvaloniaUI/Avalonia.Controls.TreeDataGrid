@@ -12,12 +12,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public class HierarchicalExpanderColumn<TModel> : NotifyingBase,
         IColumn<TModel>,
         IExpanderColumn<TModel>,
-        ISetColumnLayout
+        IUpdateColumnLayout
     {
         private readonly IColumn<TModel> _inner;
         private readonly Func<TModel, IEnumerable<TModel>?> _childSelector;
         private readonly Func<TModel, bool>? _hasChildrenSelector;
-        private double? _actualWidth;
+        private double _actualWidth = double.NaN;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HierarchicalExpanderColumn{TModel}"/> class.
@@ -41,7 +41,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets or sets the actual width of the column after measurement.
         /// </summary>
-        public double? ActualWidth
+        public double ActualWidth
         {
             get => _actualWidth;
             private set => RaiseAndSetIfChanged(ref _actualWidth, value);
@@ -58,6 +58,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public GridLength Width => _inner.Width;
 
+        double IUpdateColumnLayout.MinActualWidth => ((IUpdateColumnLayout)_inner).MinActualWidth;
+        bool IUpdateColumnLayout.StarWidthWasConstrained => ((IUpdateColumnLayout)_inner).StarWidthWasConstrained;
+
         public ICell CreateCell(IRow<TModel> row)
         {
             if (row is HierarchicalRow<TModel> r)
@@ -72,8 +75,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public IEnumerable<TModel>? GetChildModels(TModel model) => _childSelector(model);
         public Comparison<TModel?>? GetComparison(ListSortDirection direction) => _inner.GetComparison(direction);
 
-        void ISetColumnLayout.SetActualWidth(double width) => ActualWidth = width;
-        void ISetColumnLayout.SetWidth(GridLength width) => SetWidth(width);
+        double IUpdateColumnLayout.CellMeasured(double width, int rowIndex)
+        {
+            return ((IUpdateColumnLayout)_inner).CellMeasured(width, rowIndex);
+        }
+
+        void IUpdateColumnLayout.SetWidth(GridLength width) => SetWidth(width);
 
         private void OnInnerPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
@@ -86,10 +93,23 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private void SetWidth(GridLength width)
         {
-            ((ISetColumnLayout)_inner).SetWidth(width);
+            ((IUpdateColumnLayout)_inner).SetWidth(width);
 
             if (width.IsAbsolute)
                 ActualWidth = width.Value;
+        }
+
+        bool IUpdateColumnLayout.CommitActualWidth()
+        {
+            var result = ((IUpdateColumnLayout)_inner).CommitActualWidth();
+            ActualWidth = _inner.ActualWidth;
+            return result;
+        }
+
+        void IUpdateColumnLayout.CalculateStarWidth(double availableWidth, double totalStars)
+        {
+            ((IUpdateColumnLayout)_inner).CalculateStarWidth(availableWidth, totalStars);
+            ActualWidth = _inner.ActualWidth;
         }
     }
 }

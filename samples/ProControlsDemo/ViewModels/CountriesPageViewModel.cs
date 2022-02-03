@@ -23,7 +23,10 @@ namespace ProControlsDemo.ViewModels
                     new TextColumn<Country, string>("Region", x => x.Region, new GridLength(4, GridUnitType.Star)),
                     new TextColumn<Country, int>("Population", x => x.Population, new GridLength(3, GridUnitType.Star)),
                     new TextColumn<Country, int>("Area", x => x.Area, new GridLength(3, GridUnitType.Star)),
-                    new TextColumn<Country, int>("GDP", x => x.GDP, new GridLength(3, GridUnitType.Star)),
+                    new TextColumn<Country, int>("GDP", x => x.GDP, new GridLength(3, GridUnitType.Star), new()
+                    {
+                        MaxWidth = new GridLength(150)
+                    }),
                 }
             };
             Source.RowSelection!.SingleSelect = false;

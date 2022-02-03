@@ -34,7 +34,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             for (var i = 0; i < target.Items!.Count; ++i)
             {
                 var column = target.Items[i];
-                Assert.Equal(i < 10 ? (double?)10 : null, column.ActualWidth);
+                Assert.Equal(i < 10 ? 10 : double.NaN, column.ActualWidth);
             }
         }
 
@@ -83,6 +83,27 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
+        [Fact]
+        public void DesiredSize_Takes_Min_Star_Column_Width_Into_Account()
+        {
+            using var app = App();
+
+            var minWidth = new ColumnOptions<Model>
+            {
+                MinWidth = new GridLength(100),
+            };
+
+            var columns = new ColumnList<Model>
+            {
+                new TestTextColumn("Col0", GridLength.Star, minWidth),
+                new TestTextColumn("Col1", GridLength.Star, minWidth),
+            };
+
+            var (target, scroll) = CreateTarget(columns);
+
+            Assert.Equal(200, target.DesiredSize.Width);
+        }
+
         private static void AssertColumnIndexes(
             TreeDataGridCellsPresenter? target,
             int firstColumnIndex,
@@ -113,12 +134,16 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(count, recyclableCells.Count);
         }
 
-        private static (TreeDataGridCellsPresenter, ScrollViewer) CreateTarget()
+        private static (TreeDataGridCellsPresenter, ScrollViewer) CreateTarget(
+            ColumnList<Model>? columns = null)
         {
-            var columns = new ColumnList<Model>();
+            if (columns is null)
+            {
+                columns = new ColumnList<Model>();
 
-            for (var i = 0; i < 100; ++i)
-                columns.Add(new TestTextColumn("Column " + i));
+                for (var i = 0; i < 100; ++i)
+                    columns.Add(new TestTextColumn("Column " + i));
+            }
 
             var items = new Model[1];
             var rows = new AnonymousSortableRows<Model>(new ItemsSourceViewFix<Model>(items), null);
@@ -179,7 +204,8 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
         private class TestTextColumn : ColumnBase<Model>
         {
-            public TestTextColumn(string header) : base(header, null, null)
+            public TestTextColumn(string header, GridLength? width = null, ColumnOptions<Model>? options = null)
+                : base(header, width, options ?? DefaultOptions())
             {
             }
 
@@ -192,6 +218,14 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             public override Comparison<Model?>? GetComparison(ListSortDirection direction)
             {
                 throw new NotImplementedException();
+            }
+
+            private static ColumnOptions<Model> DefaultOptions()
+            {
+                return new ColumnOptions<Model>
+                {
+                    MinWidth = new GridLength(0, GridUnitType.Pixel)
+                };
             }
         }
     }

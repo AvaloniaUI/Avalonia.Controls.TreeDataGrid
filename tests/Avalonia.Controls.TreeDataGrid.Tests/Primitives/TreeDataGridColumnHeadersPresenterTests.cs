@@ -49,7 +49,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             for (var i = 0; i < target.Items!.Count; ++i)
             {
                 var column = target.Items[i];
-                Assert.Equal(i < 10 ? (double?)10 : null, column.ActualWidth);
+                Assert.Equal(i < 10 ? 10 : double.NaN, column.ActualWidth);
             }
         }
 
@@ -194,7 +194,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         private class TestColumn : ColumnBase<string>
         {
             public TestColumn(string header, GridLength width)
-                : base(header, width, null)
+                : base(header, width, NoMinWidth())
             {
             }
 
@@ -206,6 +206,14 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             public override Comparison<string?>? GetComparison(ListSortDirection direction)
             {
                 throw new NotImplementedException();
+            }
+
+            private static ColumnOptions<string> NoMinWidth()
+            {
+                return new ColumnOptions<string>
+                {
+                    MinWidth = new GridLength(0, GridUnitType.Pixel)
+                };
             }
         }
     }

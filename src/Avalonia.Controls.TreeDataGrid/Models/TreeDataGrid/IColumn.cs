@@ -10,7 +10,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets the actual width of the column after measurement.
         /// </summary>
-        double? ActualWidth { get; }
+        /// <returns>
+        /// The width of the column in pixels, or NaN if the column has not yet been laid out.
+        /// </returns>
+        double ActualWidth { get; }
 
         /// <summary>
         /// Gets a value indicating whether the user can resize the column.

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -7,11 +8,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// Base class for columns which select cell values from a model.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public abstract class ColumnBase<TModel> : NotifyingBase, IColumn<TModel>, ISetColumnLayout
+    public abstract class ColumnBase<TModel> : NotifyingBase, IColumn<TModel>, IUpdateColumnLayout
     {
-        private double? _actualWidth;
+        private double _actualWidth = double.NaN;
         private bool? _canUserResize;
         private GridLength _width;
+        private GridLength? _minWidth;
+        private GridLength? _maxWidth;
+        private double _autoWidth = double.NaN;
+        private double _starWidth = double.NaN;
+        private bool _starWidthWasConstrained;
         private object? _header;
         private ListSortDirection? _sortDirection;
 
@@ -29,6 +35,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             ColumnOptions<TModel>? options)
         {
             _canUserResize = options?.CanUserResizeColumn;
+            _minWidth = options?.MinWidth ?? new GridLength(30, GridUnitType.Pixel);
+            _maxWidth = options?.MaxWidth;
             _header = header;
             SetWidth(width ?? GridLength.Auto);
         }
@@ -36,7 +44,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets the actual width of the column after measurement.
         /// </summary>
-        public double? ActualWidth
+        public double ActualWidth
         {
             get => _actualWidth;
             private set => RaiseAndSetIfChanged(ref _actualWidth, value);
@@ -86,6 +94,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             set => RaiseAndSetIfChanged(ref _sortDirection, value);
         }
 
+        double IUpdateColumnLayout.MinActualWidth => CoerceActualWidth(0);
+        bool IUpdateColumnLayout.StarWidthWasConstrained => _starWidthWasConstrained;
+
         /// <summary>
         /// Creates a cell for this column on the specified row.
         /// </summary>
@@ -95,8 +106,59 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public abstract Comparison<TModel?>? GetComparison(ListSortDirection direction);
 
-        void ISetColumnLayout.SetActualWidth(double width) => ActualWidth = width;
-        void ISetColumnLayout.SetWidth(GridLength width) => SetWidth(width);
+        double IUpdateColumnLayout.CellMeasured(double width, int rowIndex)
+        {
+            _autoWidth = Math.Max(NonNaN(_autoWidth), CoerceActualWidth(width));
+            return Width.GridUnitType == GridUnitType.Auto || double.IsNaN(ActualWidth) ?
+                _autoWidth : ActualWidth;
+        }
+
+        void IUpdateColumnLayout.CalculateStarWidth(double availableWidth, double totalStars)
+        {
+            if (!Width.IsStar)
+                throw new InvalidOperationException("Attempt to calculate star width on a non-star column.");
+
+            var width = (availableWidth / totalStars) * Width.Value;
+            _starWidth = CoerceActualWidth(width);
+            _starWidthWasConstrained = !MathUtilities.AreClose(_starWidth, width);
+        }
+
+        bool IUpdateColumnLayout.CommitActualWidth()
+        {
+            var width = Width.GridUnitType switch
+            {
+                GridUnitType.Auto => _autoWidth,
+                GridUnitType.Pixel => CoerceActualWidth(Width.Value),
+                GridUnitType.Star => _starWidth,
+                _ => throw new NotSupportedException(),
+            };
+
+            var oldWidth = ActualWidth;
+            ActualWidth = width;
+            _starWidthWasConstrained = false;
+            return !MathUtilities.AreClose(oldWidth, ActualWidth);
+        }
+
+        void IUpdateColumnLayout.SetWidth(GridLength width) => SetWidth(width);
+
+        private double CoerceActualWidth(double width)
+        {
+            width = _minWidth?.GridUnitType switch
+            {
+                GridUnitType.Auto => Math.Max(width, _autoWidth),
+                GridUnitType.Pixel => Math.Max(width, _minWidth.Value.Value),
+                GridUnitType.Star => throw new NotImplementedException(),
+                _ => width
+            };
+
+            return _maxWidth?.GridUnitType switch
+            {
+                GridUnitType.Auto => Math.Min(width, _autoWidth),
+                GridUnitType.Pixel => Math.Min(width, _maxWidth.Value.Value),
+                GridUnitType.Star => throw new NotImplementedException(),
+                _ => width
+            };
+        }
 
         private void SetWidth(GridLength width)
         {
@@ -105,5 +167,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             if (width.IsAbsolute)
                 ActualWidth = width.Value;
         }
+
+        private static double NonNaN(double v) => double.IsNaN(v) ? 0 : v;
     }
 }

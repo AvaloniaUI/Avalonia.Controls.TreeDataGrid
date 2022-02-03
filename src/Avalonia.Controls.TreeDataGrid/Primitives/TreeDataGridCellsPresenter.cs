@@ -67,6 +67,13 @@ namespace Avalonia.Controls.Primitives
             RowIndex = index;
         }
 
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            (Items as IColumns)?.UpdateForArrange();
+            return base.ArrangeOverride(finalSize);
+        }
+
+
         protected override Size MeasureElement(int index, IControl element, Size availableSize)
         {
             element.Measure(availableSize);
@@ -76,11 +83,9 @@ namespace Avalonia.Controls.Primitives
         protected override Rect ArrangeElement(int index, IControl element, Rect rect)
         {
             var column = ((IColumns)Items!)[index];
-
-            if (!column.ActualWidth.HasValue)
+            if (double.IsNaN(column.ActualWidth))
                 throw new AvaloniaInternalException("Attempt to arrange cell before measure.");
-
-            rect = rect.WithWidth(column.ActualWidth.Value);
+            rect = rect.WithWidth(column.ActualWidth);
             element.Arrange(rect);
             return rect;
         }

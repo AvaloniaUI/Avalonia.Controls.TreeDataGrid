@@ -162,8 +162,8 @@ namespace Avalonia.Controls.TreeDataGridTests
             var (target, items) = CreateTarget(
                 columns: new IColumn<Model>[]
                 {
-                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(10, GridUnitType.Pixel)),
-                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(14, GridUnitType.Pixel))
+                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(10, GridUnitType.Pixel), MinWidth(0)),
+                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(14, GridUnitType.Pixel), MinWidth(0))
                 }
             );
 
@@ -178,8 +178,8 @@ namespace Avalonia.Controls.TreeDataGridTests
             var (target, items) = CreateTarget(
                 columns: new IColumn<Model>[]
                 {
-                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(1, GridUnitType.Star)),
-                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(3, GridUnitType.Star))
+                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(1, GridUnitType.Star), MinWidth(0)),
+                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(3, GridUnitType.Star), MinWidth(0))
                 }
             );
 
@@ -199,6 +199,70 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(2, cells.Count);
                 Assert.Equal(25, cells[0].Bounds.Width);
                 Assert.Equal(75, cells[1].Bounds.Width);
+            }
+        }
+
+        [Fact]
+        public void Should_Size_Star_Columns_With_Min_Width()
+        {
+            using var app = App();
+
+            var (target, items) = CreateTarget(
+                columns: new IColumn<Model>[]
+                {
+                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(1, GridUnitType.Star), MinWidth(50)),
+                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(3, GridUnitType.Star))
+                }
+            );
+
+            var rows = target.RowsPresenter
+                .GetLogicalChildren()
+                .Cast<TreeDataGridRow>()
+                .ToList();
+
+            Assert.Equal(10, rows.Count);
+
+            foreach (var row in rows)
+            {
+                var cells = row.CellsPresenter
+                    .GetLogicalChildren()
+                    .Cast<TreeDataGridCell>()
+                    .ToList();
+                Assert.Equal(2, cells.Count);
+                Assert.Equal(50, cells[0].Bounds.Width);
+                Assert.Equal(50, cells[1].Bounds.Width);
+            }
+        }
+
+        [Fact]
+        public void Should_Size_Star_Columns_With_Max_Width()
+        {
+            using var app = App();
+
+            var (target, items) = CreateTarget(
+                columns: new IColumn<Model>[]
+                {
+                    new TextColumn<Model, int>("ID", x => x.Id, new GridLength(1, GridUnitType.Star)),
+                    new TextColumn<Model, string?>("Title", x => x.Title, new GridLength(1, GridUnitType.Star), MaxWidth(25))
+                }
+            );
+
+            var rows = target.RowsPresenter
+                .GetLogicalChildren()
+                .Cast<TreeDataGridRow>()
+                .ToList();
+
+            Assert.Equal(10, rows.Count);
+
+            foreach (var row in rows)
+            {
+                var cells = row.CellsPresenter
+                    .GetLogicalChildren()
+                    .Cast<TreeDataGridCell>()
+                    .ToList();
+                Assert.Equal(2, cells.Count);
+                Assert.Equal(75, cells[0].Bounds.Width);
+                Assert.Equal(25, cells[1].Bounds.Width);
             }
         }
 
@@ -523,6 +587,22 @@ namespace Avalonia.Controls.TreeDataGridTests
             var scope = AvaloniaLocator.EnterScope();
             AvaloniaLocator.CurrentMutable.Bind<IStyler>().ToLazy(() => new Styler());
             return scope;
+        }
+
+        private static ColumnOptions<Model> MinWidth(double min)
+        {
+            return new ColumnOptions<Model>
+            {
+                MinWidth = new GridLength(min, GridUnitType.Pixel),
+            };
+        }
+
+        private static ColumnOptions<Model> MaxWidth(double max)
+        {
+            return new ColumnOptions<Model>
+            {
+                MaxWidth = new GridLength(max, GridUnitType.Pixel),
+            };
         }
 
         private class Model : NotifyingBase

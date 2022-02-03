@@ -88,13 +88,6 @@ namespace Avalonia.Controls.Primitives
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            var result = base.MeasureOverride(availableSize);
-            Columns?.MeasureFinished();
-            return result;
-        }
-
         private void UpdateSelection()
         {
             foreach (var element in LogicalChildren)
@@ -104,6 +97,12 @@ namespace Avalonia.Controls.Primitives
                     row.IsSelected = _selection?.IsRowSelected(row.RowIndex) == true;
                 }
             }
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            Columns?.UpdateForArrange();
+            return base.ArrangeOverride(finalSize);
         }
 
         protected override void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
