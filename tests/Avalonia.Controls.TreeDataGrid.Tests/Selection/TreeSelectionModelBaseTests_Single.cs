@@ -27,6 +27,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                     Assert.Equal("Node 0-2", e.DeselectedItems.Single()!.Caption);
                     Assert.Empty(e.SelectedIndexes);
                     Assert.Empty(e.SelectedItems);
+                    Assert.Equal(0, target.Count);
                     ++raised;
                 };
 
@@ -62,6 +63,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                     Assert.Empty(e.DeselectedItems);
                     Assert.Equal(new IndexPath(0, 2), e.SelectedIndexes.Single());
                     Assert.Equal("Node 0-2", e.SelectedItems.Single()!.Caption);
+                    Assert.Equal(1, target.Count);
                     ++raised;
                 };
 
