@@ -175,23 +175,28 @@ namespace ProControlsDemo.ViewModels
                 d = d.Parent;
             }
 
-            var drive = components.Pop();
-            var driveIndex = Drives.FindIndex(x => string.Equals(x, drive, StringComparison.OrdinalIgnoreCase));
+            var index = IndexPath.Unselected;
 
-            if (driveIndex >= 0)
-                SelectedDrive = Drives[driveIndex];
-
-            FileTreeNodeModel? node = _root;
-            var index = new IndexPath(0);
-
-            while (node is not null && components.Count > 0)
+            if (components.Count > 0)
             {
-                node.IsExpanded = true;
+                var drive = components.Pop();
+                var driveIndex = Drives.FindIndex(x => string.Equals(x, drive, StringComparison.OrdinalIgnoreCase));
 
-                var component = components.Pop();
-                var i = node.Children.FindIndex(x => string.Equals(x.Name, component, StringComparison.OrdinalIgnoreCase));
-                node = i >= 0 ? node.Children[i] : null;
-                index = i >= 0 ? index.Append(i) : default;
+                if (driveIndex >= 0)
+                    SelectedDrive = Drives[driveIndex];
+
+                FileTreeNodeModel? node = _root;
+                index = new IndexPath(0);
+
+                while (node is not null && components.Count > 0)
+                {
+                    node.IsExpanded = true;
+
+                    var component = components.Pop();
+                    var i = node.Children.FindIndex(x => string.Equals(x.Name, component, StringComparison.OrdinalIgnoreCase));
+                    node = i >= 0 ? node.Children[i] : null;
+                    index = i >= 0 ? index.Append(i) : default;
+                }
             }
 
             Source.RowSelection!.SelectedIndex = index;
