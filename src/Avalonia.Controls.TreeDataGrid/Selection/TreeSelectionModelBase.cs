@@ -14,6 +14,7 @@ namespace Avalonia.Controls.Selection
         private int _count;
         private bool _singleSelect = true;
         private IndexPath _anchorIndex;
+        private IndexPath _rangeAnchorIndex;
         private IndexPath _selectedIndex;
         private Operation? _operation;
         private TreeSelectedIndexes<T>? _selectedIndexes;
@@ -71,7 +72,7 @@ namespace Avalonia.Controls.Selection
             {
                 using var update = BatchUpdate();
                 Clear();
-                Select(value);
+                Select(value, updateRangeAnchorIndex: true);
             }
         }
 
@@ -86,7 +87,25 @@ namespace Avalonia.Controls.Selection
         public IndexPath AnchorIndex 
         {
             get => _anchorIndex;
-            set => _anchorIndex = value;
+            set
+            {
+                if (!TryGetItemAt(value, out _))
+                    return;
+                using var update = BatchUpdate();
+                update.Operation.AnchorIndex = value;
+            }
+        }
+
+        public IndexPath RangeAnchorIndex
+        {
+            get => _rangeAnchorIndex;
+            set
+            {
+                if (!TryGetItemAt(value, out _))
+                    return;
+                using var update = BatchUpdate();
+                update.Operation.RangeAnchorIndex = value;
+            }
         }
 
         object? ITreeSelectionModel.SelectedItem => SelectedItem;
@@ -179,29 +198,7 @@ namespace Avalonia.Controls.Selection
             return IndexRange.Contains(node?.Ranges, index[^1]);
         }
 
-        public void Select(IndexPath index)
-        {
-            if (index == default || !TryGetItemAt(index, out _))
-                return;
-
-            using var update = BatchUpdate();
-            var o = update.Operation;
-
-            if (SingleSelect)
-                Clear();
-
-            o.DeselectedRanges?.Remove(index);
-
-            if (!IsSelected(index))
-            {
-                o.SelectedRanges ??= new();
-                o.SelectedRanges.Add(index);
-            }
-
-            if (o.SelectedIndex == default)
-                o.SelectedIndex = index;
-            o.AnchorIndex = index;
-        }
+        public void Select(IndexPath index) => Select(index, updateRangeAnchorIndex: false);
 
         protected internal abstract IEnumerable<T>? GetChildren(T node);
         
@@ -409,14 +406,44 @@ namespace Avalonia.Controls.Selection
             return node;
         }
 
+        private void Select(IndexPath index, bool updateRangeAnchorIndex)
+        {
+            if (index == default || !TryGetItemAt(index, out _))
+                return;
+
+            using var update = BatchUpdate();
+            var o = update.Operation;
+
+            if (SingleSelect)
+                Clear();
+
+            o.DeselectedRanges?.Remove(index);
+
+            if (!IsSelected(index))
+            {
+                o.SelectedRanges ??= new();
+                o.SelectedRanges.Add(index);
+            }
+
+            if (o.SelectedIndex == default)
+                o.SelectedIndex = index;
+
+            o.AnchorIndex = index;
+
+            if (updateRangeAnchorIndex)
+                o.RangeAnchorIndex = index;
+        }
+
         private void CommitOperation(Operation operation)
         {
             var oldAnchorIndex = _anchorIndex;
+            var oldRangeAnchorIndex = _rangeAnchorIndex;
             var oldSelectedIndex = _selectedIndex;
             var indexesChanged = false;
 
             _selectedIndex = operation.SelectedIndex;
             _anchorIndex = operation.AnchorIndex;
+            _rangeAnchorIndex = operation.RangeAnchorIndex;
 
             if (operation.SelectedRanges is not null)
             {
@@ -427,6 +454,8 @@ namespace Avalonia.Controls.Selection
             {
                 indexesChanged |= CommitDeselect(operation.DeselectedRanges) > 0;
             }
+
+            Count += (operation.SelectedRanges?.Count ?? 0) - (operation.DeselectedRanges?.Count ?? 0);
 
             if ((SelectionChanged is not null || _untypedSelectionChanged is not null) &&
                 (operation.DeselectedRanges?.Count > 0 ||
@@ -447,7 +476,6 @@ namespace Avalonia.Controls.Selection
                 _untypedSelectionChanged?.Invoke(this, e);
             }
 
-            Count += (operation.SelectedRanges?.Count ?? 0) - (operation?.DeselectedRanges?.Count ?? 0);
             _root.PruneEmptyChildren();
 
             if (oldSelectedIndex != _selectedIndex)
@@ -459,6 +487,9 @@ namespace Avalonia.Controls.Selection
 
             if (oldAnchorIndex != _anchorIndex)
                 RaisePropertyChanged(nameof(AnchorIndex));
+
+            if (oldRangeAnchorIndex != _rangeAnchorIndex)
+                RaisePropertyChanged(nameof(RangeAnchorIndex));
 
             if (indexesChanged)
             {
@@ -561,12 +592,14 @@ namespace Avalonia.Controls.Selection
             public Operation(TreeSelectionModelBase<T> owner)
             {
                 AnchorIndex = owner.AnchorIndex;
+                RangeAnchorIndex = owner.RangeAnchorIndex;
                 SelectedIndex = owner.SelectedIndex;
             }
 
             public int UpdateCount { get; set; }
             public bool IsSourceUpdate { get; set; }
             public IndexPath AnchorIndex { get; set; }
+            public IndexPath RangeAnchorIndex { get; set; }
             public IndexPath SelectedIndex { get; set; }
             public IndexRanges? SelectedRanges { get; set; }
             public IndexRanges? DeselectedRanges { get; set; }

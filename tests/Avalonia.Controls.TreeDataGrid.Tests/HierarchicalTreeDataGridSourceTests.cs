@@ -590,7 +590,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                     new HierarchicalExpanderColumn<Node>(
                         new TextColumn<Node, int>("ID", x => x.Id),
                         x => x.Children,
-                        x => x.Children?.Count > 0),
+                        x => x.Children is not null),
                     new TextColumn<Node, string?>("Caption", x => x.Caption),
                 }
             };
