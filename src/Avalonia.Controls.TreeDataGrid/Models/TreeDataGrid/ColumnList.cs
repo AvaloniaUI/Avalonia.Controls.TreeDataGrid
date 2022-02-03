@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -43,10 +45,15 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             var measuredCount = 0;
             var unmeasuredCount = 0;
 
-            foreach (var column in this)
+            for (var i = 0; i < Count; ++i)
             {
+                var column = (IUpdateColumnLayout)this[i];
+
                 if (column.Width.IsStar)
+                {
                     hasStar = true;
+                    totalMeasured += column.MinActualWidth;
+                }
                 else if (!double.IsNaN(column.ActualWidth))
                 {
                     totalMeasured += column.ActualWidth;
@@ -72,7 +79,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return totalMeasured;
         }
 
-        public void MeasureEnd() => UpdateColumnSizes();
+        public void UpdateForArrange() => UpdateColumnSizes();
 
         public void SetColumnWidth(int columnIndex, GridLength width)
         {
@@ -103,8 +110,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             var totalStars = 0.0;
             var availableSpace = _viewportWidth;
 
-            foreach (IUpdateColumnLayout column in this)
+            // First commit the actual width for all non-star width columns and get a total of the
+            // number of stars for star width columns.
+            for (var i = 0; i < Count; ++i)
             {
+                var column = (IUpdateColumnLayout)this[i];
+
                 if (!column.Width.IsStar)
                 {
                     column.CommitActualWidth();
@@ -117,20 +128,66 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             if (totalStars == 0)
                 return;
 
-            var invalidated = false;
+            // Size the star columns.
+            var starWidthWasConstrained = false;
+            var used = 0.0;
 
-            foreach (IUpdateColumnLayout column in this)
+            availableSpace = Math.Max(0, availableSpace);
+
+            // Do a first pass to calculate star column widths.
+            for (var i = 0; i < Count; ++i)
             {
+                var column = (IUpdateColumnLayout)this[i];
+
                 if (column.Width.IsStar)
                 {
-                    var oldSize = column.ActualWidth;
-                    column.CommitActualWidth(availableSpace, totalStars);
-                    invalidated |= oldSize != column.ActualWidth;
+                    column.CalculateStarWidth(availableSpace, totalStars);
+                    used += NotNaN(column.ActualWidth);
+                    starWidthWasConstrained |= column.StarWidthWasConstrained;
                 }
+            }
+
+            // If the width of any star columns was constrained by their min/max size, and we
+            // actually had any space to distribute between star columns, then we need to update
+            // the star width for the non-constrained columns.
+            if (starWidthWasConstrained && MathUtilities.GreaterThan(availableSpace, 0))
+            {
+                for (var i = 0; i < Count; ++i)
+                {
+                    var column = (IUpdateColumnLayout)this[i];
+
+                    if (column.StarWidthWasConstrained)
+                    {
+                        availableSpace -= column.ActualWidth;
+                        totalStars -= column.Width.Value;
+                    }
+                }
+
+                for (var i = 0; i < Count; ++i)
+                {
+                    var column = (IUpdateColumnLayout)this[i];
+                    if (column.Width.IsStar && !column.StarWidthWasConstrained)
+                        column.CalculateStarWidth(availableSpace, totalStars);
+                }
+            }
+
+            // Finally commit the star column widths.
+            var invalidated = false;
+
+            for (var i = 0; i < Count; ++i)
+            {
+                var column = (IUpdateColumnLayout)this[i];
+
+                if (column.Width.IsStar)
+                {
+                    invalidated |= column.CommitActualWidth();
+                }    
             }
 
             if (invalidated)
                 LayoutInvalidated?.Invoke(this, EventArgs.Empty);
         }
+
+        private static double NotNaN(double v) => double.IsNaN(v) ? 0 : v;
     }
 }

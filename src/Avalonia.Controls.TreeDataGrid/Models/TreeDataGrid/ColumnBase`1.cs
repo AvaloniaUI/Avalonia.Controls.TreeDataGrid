@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -15,6 +16,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private GridLength? _minWidth;
         private GridLength? _maxWidth;
         private double _autoWidth = double.NaN;
+        private double _starWidth = double.NaN;
+        private bool _starWidthWasConstrained;
         private object? _header;
         private ListSortDirection? _sortDirection;
 
@@ -91,6 +94,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             set => RaiseAndSetIfChanged(ref _sortDirection, value);
         }
 
+        double IUpdateColumnLayout.MinActualWidth => CoerceActualWidth(0);
+        bool IUpdateColumnLayout.StarWidthWasConstrained => _starWidthWasConstrained;
+
         /// <summary>
         /// Creates a cell for this column on the specified row.
         /// </summary>
@@ -107,30 +113,30 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 _autoWidth : ActualWidth;
         }
 
-        void IUpdateColumnLayout.CommitActualWidth()
+        void IUpdateColumnLayout.CalculateStarWidth(double availableWidth, double totalStars)
         {
-            if (Width.IsStar || double.IsNaN(_autoWidth))
-                return;
+            if (!Width.IsStar)
+                throw new InvalidOperationException("Attempt to calculate star width on a non-star column.");
 
+            var width = (availableWidth / totalStars) * Width.Value;
+            _starWidth = CoerceActualWidth(width);
+            _starWidthWasConstrained = !MathUtilities.AreClose(_starWidth, width);
+        }
+
+        bool IUpdateColumnLayout.CommitActualWidth()
+        {
             var width = Width.GridUnitType switch
             {
                 GridUnitType.Auto => _autoWidth,
                 GridUnitType.Pixel => CoerceActualWidth(Width.Value),
+                GridUnitType.Star => _starWidth,
                 _ => throw new NotSupportedException(),
             };
 
+            var oldWidth = ActualWidth;
             ActualWidth = width;
-            _autoWidth = double.NaN;
-        }
-
-        void IUpdateColumnLayout.CommitActualWidth(double availableWidth, double totalStars)
-        {
-            if (!Width.IsStar)
-                return;
-
-            var width = (availableWidth / totalStars) * Width.Value;
-            ActualWidth = CoerceActualWidth(width);
-            _autoWidth = double.NaN;
+            _starWidthWasConstrained = false;
+            return !MathUtilities.AreClose(oldWidth, ActualWidth);
         }
 
         void IUpdateColumnLayout.SetWidth(GridLength width) => SetWidth(width);
