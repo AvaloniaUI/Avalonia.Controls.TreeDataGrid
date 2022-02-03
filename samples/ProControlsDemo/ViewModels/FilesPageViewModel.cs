@@ -24,6 +24,7 @@ namespace ProControlsDemo.ViewModels
         private readonly Bitmap _fileIcon;
         private FileTreeNodeModel? _root;
         private string _selectedDrive;
+        private string? _selectedPath;
 
         public FilesPageViewModel()
         {
@@ -101,6 +102,12 @@ namespace ProControlsDemo.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedDrive, value);
         }
 
+        public string? SelectedPath
+        {
+            get => _selectedPath;
+            set => SetSelectedPath(value);
+        }
+
         public HierarchicalTreeDataGridSource<FileTreeNodeModel> Source { get; }
 
         private IControl FileCheckTemplate(FileTreeNodeModel node, INameScope ns)
@@ -139,8 +146,62 @@ namespace ProControlsDemo.ViewModels
             };
         }
 
+        private void SetSelectedPath(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                Source.RowSelection!.Clear();
+                return;
+            }
+
+            var path = value;
+            var components = new Stack<string>();
+            DirectoryInfo? d = null;
+           
+            if (File.Exists(path))
+            {
+                var f = new FileInfo(path);
+                components.Push(f.Name);
+                d = f.Directory;
+            }
+            else if (Directory.Exists(path))
+            {
+                d = new DirectoryInfo(path);
+            }
+
+            while (d is not null)
+            {
+                components.Push(d.Name);
+                d = d.Parent;
+            }
+
+            var drive = components.Pop();
+            var driveIndex = Drives.FindIndex(x => string.Equals(x, drive, StringComparison.OrdinalIgnoreCase));
+
+            if (driveIndex >= 0)
+                SelectedDrive = Drives[driveIndex];
+
+            FileTreeNodeModel? node = _root;
+            var index = new IndexPath(0);
+
+            while (node is not null && components.Count > 0)
+            {
+                node.IsExpanded = true;
+
+                var component = components.Pop();
+                var i = node.Children.FindIndex(x => string.Equals(x.Name, component, StringComparison.OrdinalIgnoreCase));
+                node = i >= 0 ? node.Children[i] : null;
+                index = i >= 0 ? index.Append(i) : default;
+            }
+
+            Source.RowSelection!.SelectedIndex = index;
+        }
+
         private void SelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs<FileTreeNodeModel> e)
         {
+            var selectedPath = Source.RowSelection?.SelectedItem?.Path;
+            this.RaiseAndSetIfChanged(ref _selectedPath, selectedPath, nameof(SelectedPath));
+            
             foreach (var i in e.DeselectedItems)
                 System.Diagnostics.Trace.WriteLine($"Deselected '{i?.Path}'");
             foreach (var i in e.SelectedItems)
