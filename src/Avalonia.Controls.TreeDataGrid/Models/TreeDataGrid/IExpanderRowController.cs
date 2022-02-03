@@ -9,6 +9,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The model type.</typeparam>
     public interface IExpanderRowController<TModel>
     {
+        bool GetIsExpanded(IExpanderRow<TModel> row);
+
         /// <summary>
         /// Method called by a row before it starts expanding or collapsing.
         /// </summary>

@@ -167,6 +167,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
+        bool IExpanderRowController<TModel>.GetIsExpanded(IExpanderRow<TModel> row)
+        {
+            return _controller.GetIsExpanded(row);
+        }
+
         void IExpanderRowController<TModel>.OnBeginExpandCollapse(IExpanderRow<TModel> row)
         {
             _controller.OnBeginExpandCollapse(row);

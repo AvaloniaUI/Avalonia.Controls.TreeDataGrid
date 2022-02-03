@@ -416,6 +416,20 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
+        public class ExpansionBinding
+        {
+            [Fact]
+            public void Root_Is_Initially_Expanded()
+            {
+                var data = CreateData();
+                data[0].IsExpanded = true;
+
+                var target = CreateTarget(data, false, bindExpanded: true);
+
+                AssertState(target, data, 10, false, new IndexPath(0));
+            }
+        }
+
         public class Selection
         {
             [Fact]
@@ -581,7 +595,10 @@ namespace Avalonia.Controls.TreeDataGridTests
             return result;
         }
 
-        private static HierarchicalTreeDataGridSource<Node> CreateTarget(IEnumerable<Node> roots, bool sorted)
+        private static HierarchicalTreeDataGridSource<Node> CreateTarget(
+            IEnumerable<Node> roots,
+            bool sorted,
+            bool bindExpanded = false)
         {
             var result = new HierarchicalTreeDataGridSource<Node>(roots)
             {
@@ -590,7 +607,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                     new HierarchicalExpanderColumn<Node>(
                         new TextColumn<Node, int>("ID", x => x.Id),
                         x => x.Children,
-                        x => x.Children is not null),
+                        x => x.Children is not null,
+                        bindExpanded ? x => x.IsExpanded : null),
                     new TextColumn<Node, string?>("Caption", x => x.Caption),
                 }
             };
@@ -670,6 +688,7 @@ namespace Avalonia.Controls.TreeDataGridTests
         {
             private int _id;
             private string? _caption;
+            private bool _isExpanded;
 
             public int Id
             {
@@ -684,6 +703,12 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
 
             public AvaloniaList<Node>? Children { get; set; }
+
+            public bool IsExpanded
+            {
+                get => _isExpanded;
+                set => RaiseAndSetIfChanged(ref _isExpanded, value);
+            }
         }
     }
 }

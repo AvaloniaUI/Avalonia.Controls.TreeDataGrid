@@ -17,6 +17,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private readonly IColumn<TModel> _inner;
         private readonly Func<TModel, IEnumerable<TModel>?> _childSelector;
         private readonly Func<TModel, bool>? _hasChildrenSelector;
+        private readonly Func<TModel, bool>? _isExpandedSelector;
         private double _actualWidth = double.NaN;
 
         /// <summary>
@@ -25,16 +26,21 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <param name="inner">The inner column which defines how the column will be displayed.</param>
         /// <param name="childSelector">The model children selector.</param>
         /// <param name="hasChildrenSelector">The has model children selector.</param>
+        /// <param name="isExpandedSelector">
+        /// Selects a read/write boolean property which stores the expanded state for the row.
+        /// </param>
         /// <param name="width">The column width.</param>
         public HierarchicalExpanderColumn(
             IColumn<TModel> inner,
             Func<TModel, IEnumerable<TModel>?> childSelector,
-            Func<TModel, bool>? hasChildrenSelector = null)
+            Func<TModel, bool>? hasChildrenSelector = null,
+            Func<TModel, bool>? isExpandedSelector = null)
         {
             _inner = inner;
             _inner.PropertyChanged += OnInnerPropertyChanged;
             _childSelector = childSelector;
             _hasChildrenSelector = hasChildrenSelector;
+            _isExpandedSelector = isExpandedSelector;
             _actualWidth = inner.ActualWidth;
         }
 
@@ -74,6 +80,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public bool HasChildren(TModel model) => _hasChildrenSelector?.Invoke(model) ?? true;
         public IEnumerable<TModel>? GetChildModels(TModel model) => _childSelector(model);
         public Comparison<TModel?>? GetComparison(ListSortDirection direction) => _inner.GetComparison(direction);
+
+        bool IExpanderColumn<TModel>.IsExpanded(TModel model)
+        {
+            return _isExpandedSelector?.Invoke(model) ?? false;
+        }
 
         double IUpdateColumnLayout.CellMeasured(double width, int rowIndex)
         {

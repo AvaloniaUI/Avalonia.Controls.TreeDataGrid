@@ -38,6 +38,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _comparison = comparison;
             ModelIndexPath = modelIndex;
             Model = model;
+            IsExpanded = controller.GetIsExpanded(this);
         }
 
         /// <summary>

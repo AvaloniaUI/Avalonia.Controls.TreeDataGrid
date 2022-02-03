@@ -20,5 +20,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <param name="model">The parent model.</param>
         /// <returns>The child models if available.</returns>
         IEnumerable<TModel>? GetChildModels(TModel model);
+
+        /// <summary>
+        /// Gets a value indicating whether the model is marked as expanded.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        bool IsExpanded(TModel model);
     }
 }

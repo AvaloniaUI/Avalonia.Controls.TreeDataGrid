@@ -58,7 +58,8 @@ namespace ProControlsDemo.ViewModels
                                 CompareDescending = FileTreeNodeModel.SortDescending(x => x.Name),
                             }),
                         x => x.Children,
-                        x => x.IsDirectory),
+                        x => x.IsDirectory,
+                        x => x.IsExpanded),
                     new TextColumn<FileTreeNodeModel, long?>(
                         "Size",
                         x => x.Size,

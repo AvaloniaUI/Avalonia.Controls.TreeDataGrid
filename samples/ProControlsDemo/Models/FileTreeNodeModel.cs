@@ -15,6 +15,7 @@ namespace ProControlsDemo.Models
         private DateTimeOffset? _modified;
         private FileSystemWatcher? _watcher;
         private ObservableCollection<FileTreeNodeModel>? _children;
+        private bool _isExpanded;
 
         public FileTreeNodeModel(
             string path,
@@ -23,6 +24,7 @@ namespace ProControlsDemo.Models
         {
             _path = path;
             _name = isRoot ? path : System.IO.Path.GetFileName(Path);
+            _isExpanded = isRoot;
             IsDirectory = isDirectory;
 
             if (!isDirectory)
@@ -55,6 +57,12 @@ namespace ProControlsDemo.Models
         {
             get => _modified;
             private set => this.RaiseAndSetIfChanged(ref _modified, value);
+        }
+
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
         }
 
         public bool IsChecked { get; set; }
