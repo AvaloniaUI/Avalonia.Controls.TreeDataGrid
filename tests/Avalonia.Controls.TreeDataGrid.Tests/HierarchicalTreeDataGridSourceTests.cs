@@ -428,6 +428,20 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 AssertState(target, data, 10, false, new IndexPath(0));
             }
+
+            [Fact]
+            public void Handles_Expanded_Row_With_No_Children()
+            {
+                var data = CreateData();
+                data[0].IsExpanded = true;
+
+                // This node has no children.
+                data[0].Children![1].IsExpanded = true;
+
+                var target = CreateTarget(data, false, bindExpanded: true);
+
+                AssertState(target, data, 10, false, new IndexPath(0));
+            }
         }
 
         public class Selection
