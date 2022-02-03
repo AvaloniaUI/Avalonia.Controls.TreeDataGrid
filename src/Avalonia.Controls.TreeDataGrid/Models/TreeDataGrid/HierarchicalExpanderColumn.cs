@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _childSelector = childSelector;
             _hasChildrenSelector = hasChildrenSelector;
             _isExpandedBinding = isExpandedSelector is not null ?
-                TypedBinding<TModel>.OneWay(isExpandedSelector) :
+                TypedBinding<TModel>.TwoWay(isExpandedSelector) :
                 null;
             _actualWidth = inner.ActualWidth;
         }
@@ -87,15 +87,27 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public IEnumerable<TModel>? GetChildModels(TModel model) => _childSelector(model);
         public Comparison<TModel?>? GetComparison(ListSortDirection direction) => _inner.GetComparison(direction);
 
-        bool IExpanderColumn<TModel>.IsExpanded(TModel model)
+        void IExpanderColumn<TModel>.SetModelIsExpanded(IExpanderRow<TModel> row)
         {
-            try { return _isExpandedBinding?.Read?.Invoke(model) ?? false; }
-            catch { return false; }
+            _isExpandedBinding?.Write!.Invoke(row.Model, row.IsExpanded);
         }
 
         double IUpdateColumnLayout.CellMeasured(double width, int rowIndex)
         {
             return ((IUpdateColumnLayout)_inner).CellMeasured(width, rowIndex);
+        }
+
+        bool IUpdateColumnLayout.CommitActualWidth()
+        {
+            var result = ((IUpdateColumnLayout)_inner).CommitActualWidth();
+            ActualWidth = _inner.ActualWidth;
+            return result;
+        }
+
+        void IUpdateColumnLayout.CalculateStarWidth(double availableWidth, double totalStars)
+        {
+            ((IUpdateColumnLayout)_inner).CalculateStarWidth(availableWidth, totalStars);
+            ActualWidth = _inner.ActualWidth;
         }
 
         void IUpdateColumnLayout.SetWidth(GridLength width) => SetWidth(width);
@@ -115,19 +127,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             if (width.IsAbsolute)
                 ActualWidth = width.Value;
-        }
-
-        bool IUpdateColumnLayout.CommitActualWidth()
-        {
-            var result = ((IUpdateColumnLayout)_inner).CommitActualWidth();
-            ActualWidth = _inner.ActualWidth;
-            return result;
-        }
-
-        void IUpdateColumnLayout.CalculateStarWidth(double availableWidth, double totalStars)
-        {
-            ((IUpdateColumnLayout)_inner).CalculateStarWidth(availableWidth, totalStars);
-            ActualWidth = _inner.ActualWidth;
         }
     }
 }

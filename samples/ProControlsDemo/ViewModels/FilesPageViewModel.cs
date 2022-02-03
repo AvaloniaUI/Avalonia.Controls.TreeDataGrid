@@ -20,6 +20,7 @@ namespace ProControlsDemo.ViewModels
     internal class FilesPageViewModel : ReactiveObject
     {
         private readonly Bitmap _folderIcon;
+        private readonly Bitmap _folderOpenIcon;
         private readonly Bitmap _fileIcon;
         private FileTreeNodeModel? _root;
         private string _selectedDrive;
@@ -32,6 +33,8 @@ namespace ProControlsDemo.ViewModels
                 _fileIcon = new Bitmap(s);
             using (var s = assetLoader.Open(new Uri("avares://ProControlsDemo/Assets/folder.png")))
                 _folderIcon = new Bitmap(s);
+            using (var s = assetLoader.Open(new Uri("avares://ProControlsDemo/Assets/folder-open.png")))
+                _folderOpenIcon = new Bitmap(s);
 
             Drives = DriveInfo.GetDrives().Select(x => x.Name).ToList();
             _selectedDrive = "C:\\";
@@ -111,6 +114,10 @@ namespace ProControlsDemo.ViewModels
 
         private IControl FileNameTemplate(FileTreeNodeModel node, INameScope ns)
         {
+            var icon = node.IsDirectory ?
+                node.WhenAnyValue(x => x.IsExpanded).Select(x => x ? _folderOpenIcon : _folderIcon) :
+                Avalonia.Reactive.ObservableEx.SingleValue(_fileIcon);
+
             return new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -119,7 +126,7 @@ namespace ProControlsDemo.ViewModels
                 {
                     new Image
                     {
-                        Source = node.IsDirectory ? _folderIcon : _fileIcon,
+                        [!Image.SourceProperty] = icon.ToBinding(),
                         Margin = new Thickness(0, 0, 4, 0),
                         VerticalAlignment = VerticalAlignment.Center,
                     },

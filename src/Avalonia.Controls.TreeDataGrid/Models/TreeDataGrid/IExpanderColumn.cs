@@ -22,9 +22,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         IEnumerable<TModel>? GetChildModels(TModel model);
 
         /// <summary>
-        /// Gets a value indicating whether the model is marked as expanded.
+        /// Called by an <see cref="IExpanderRow{TModel}"/> to write its 
+        /// <see cref="IExpander.IsExpanded"/> state to the underlying model.
         /// </summary>
-        /// <param name="model">The model.</param>
-        bool IsExpanded(TModel model);
+        /// <param name="row">The row.</param>
+        void SetModelIsExpanded(IExpanderRow<TModel> row);
     }
 }

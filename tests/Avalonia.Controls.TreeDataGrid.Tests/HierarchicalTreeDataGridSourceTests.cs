@@ -491,6 +491,69 @@ namespace Avalonia.Controls.TreeDataGridTests
                 AssertState(target, data, 11, false, new IndexPath(0), new IndexPath(0, 1));
             }
 
+            [Fact]
+            public void Expanding_Collapsing_Root_Row_Writes_To_Model()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, false, bindExpanded: true);
+
+                RealizeCells(target);
+                AssertState(target, data, 5, false);
+
+                ((IExpander)target.Rows[0]).IsExpanded = true;
+
+                AssertState(target, data, 10, false, new IndexPath(0));
+
+                ((IExpander)target.Rows[0]).IsExpanded = false;
+
+                AssertState(target, data, 5, false);
+            }
+
+            [Fact]
+            public void Expanding_Collapsing_Child_Row_Writes_To_Model()
+            {
+                var data = CreateData();
+                data[0].Children![1].Children!.Add(new Node());
+
+                var target = CreateTarget(data, false, bindExpanded: true);
+
+                RealizeCells(target);
+                AssertState(target, data, 5, false);
+
+                ((IExpander)target.Rows[0]).IsExpanded = true;
+                ((IExpander)target.Rows[2]).IsExpanded = true;
+
+                AssertState(target, data, 11, false, new IndexPath(0), new IndexPath(0, 1));
+
+                ((IExpander)target.Rows[2]).IsExpanded = false;
+
+                AssertState(target, data, 10, false, new IndexPath(0));
+            }
+
+            private static void AssertState(
+                HierarchicalTreeDataGridSource<Node> target,
+                IList<Node> data,
+                int expectedRows,
+                bool sorted,
+                params IndexPath[] expanded)
+            {
+                HierarchicalTreeDataGridSourceTests.AssertState(target, data, expectedRows, sorted, expanded);
+                AssertDataState(default, data, expanded);
+            }
+
+            private static void AssertDataState(IndexPath parentIndex, IList<Node> data, IndexPath[] expanded)
+            {
+                for (var i = 0; i < data.Count; ++i)
+                {
+                    var node = data[i];
+                    var nodeIndex = parentIndex.Append(i);
+                    Assert.Equal(expanded.Contains(nodeIndex), node.IsExpanded);
+
+                    if (node.Children is not null)
+                        AssertDataState(nodeIndex, node.Children, expanded);
+                }
+            }
+
             private static void RealizeCells(HierarchicalTreeDataGridSource<Node> target)
             {
                 for (var c = 0; c < target.Columns.Count; c++)

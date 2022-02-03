@@ -142,6 +142,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 RaisePropertyChanged(nameof(IsExpanded));
 
             _controller.OnEndExpandCollapse(this);
+            _expanderColumn.SetModelIsExpanded(this);
         }
 
         private void Collapse()
@@ -151,6 +152,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _controller.OnChildCollectionChanged(this, CollectionExtensions.ResetEvent);
             RaisePropertyChanged(nameof(IsExpanded));
             _controller.OnEndExpandCollapse(this);
+            _expanderColumn.SetModelIsExpanded(this);
         }
 
         private class ChildRows : SortableRowsBase<TModel, HierarchicalRow<TModel>>,
