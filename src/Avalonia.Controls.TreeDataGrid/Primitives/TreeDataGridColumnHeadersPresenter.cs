@@ -8,11 +8,10 @@ namespace Avalonia.Controls.Primitives
     {
         protected override Orientation Orientation => Orientation.Horizontal;
 
-        protected override Size MeasureOverride(Size availableSize)
+        protected override Size ArrangeOverride(Size finalSize)
         {
-            var result = base.MeasureOverride(availableSize);
-            (Items as IColumns)?.MeasureEnd();
-            return result;
+            (Items as IColumns)?.UpdateForArrange();
+            return base.ArrangeOverride(finalSize);
         }
 
         protected override Size MeasureElement(int index, IControl element, Size availableSize)

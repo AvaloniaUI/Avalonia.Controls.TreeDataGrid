@@ -58,6 +58,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public GridLength Width => _inner.Width;
 
+        bool IUpdateColumnLayout.StarWidthWasConstrained => ((IUpdateColumnLayout)_inner).StarWidthWasConstrained;
+
         public ICell CreateCell(IRow<TModel> row)
         {
             if (row is HierarchicalRow<TModel> r)
@@ -96,15 +98,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 ActualWidth = width.Value;
         }
 
-        void IUpdateColumnLayout.CommitActualWidth()
+        bool IUpdateColumnLayout.CommitActualWidth()
         {
-            ((IUpdateColumnLayout)_inner).CommitActualWidth();
+            var result = ((IUpdateColumnLayout)_inner).CommitActualWidth();
             ActualWidth = _inner.ActualWidth;
+            return result;
         }
 
-        void IUpdateColumnLayout.CommitActualWidth(double availableWidth, double totalStars)
+        void IUpdateColumnLayout.CalculateStarWidth(double availableWidth, double totalStars)
         {
-            ((IUpdateColumnLayout)_inner).CommitActualWidth(availableWidth, totalStars);
+            ((IUpdateColumnLayout)_inner).CalculateStarWidth(availableWidth, totalStars);
             ActualWidth = _inner.ActualWidth;
         }
     }
