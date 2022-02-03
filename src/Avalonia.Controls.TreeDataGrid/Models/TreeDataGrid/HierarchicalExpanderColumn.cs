@@ -96,7 +96,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 ActualWidth = width.Value;
         }
 
-        void IUpdateColumnLayout.CommitActualWidth() => ((IUpdateColumnLayout)_inner).CommitActualWidth();
+        void IUpdateColumnLayout.CommitActualWidth()
+        {
+            ((IUpdateColumnLayout)_inner).CommitActualWidth();
+            ActualWidth = _inner.ActualWidth;
+        }
 
         void IUpdateColumnLayout.CommitActualWidth(double availableWidth, double totalStars)
         {

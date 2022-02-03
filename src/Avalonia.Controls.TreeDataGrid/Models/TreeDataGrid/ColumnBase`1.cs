@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private GridLength _width;
         private GridLength? _minWidth;
         private GridLength? _maxWidth;
-        private double _autoWidth;
+        private double _autoWidth = double.NaN;
         private object? _header;
         private ListSortDirection? _sortDirection;
 
@@ -102,23 +102,25 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         double IUpdateColumnLayout.CellMeasured(double width, int rowIndex)
         {
-            _autoWidth = Math.Max(_autoWidth, width);
-            return double.IsNaN(ActualWidth) ? width : ActualWidth;
+            _autoWidth = Math.Max(NonNaN(_autoWidth), CoerceActualWidth(width));
+            return Width.GridUnitType == GridUnitType.Auto || double.IsNaN(ActualWidth) ?
+                _autoWidth : ActualWidth;
         }
 
         void IUpdateColumnLayout.CommitActualWidth()
         {
-            if (Width.IsStar)
+            if (Width.IsStar || double.IsNaN(_autoWidth))
                 return;
 
             var width = Width.GridUnitType switch
             {
                 GridUnitType.Auto => _autoWidth,
-                GridUnitType.Pixel => Width.Value,
+                GridUnitType.Pixel => CoerceActualWidth(Width.Value),
                 _ => throw new NotSupportedException(),
             };
 
-            ActualWidth = CoerceActualWidth(width);
+            ActualWidth = width;
+            _autoWidth = double.NaN;
         }
 
         void IUpdateColumnLayout.CommitActualWidth(double availableWidth, double totalStars)
@@ -128,6 +130,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             var width = (availableWidth / totalStars) * Width.Value;
             ActualWidth = CoerceActualWidth(width);
+            _autoWidth = double.NaN;
         }
 
         void IUpdateColumnLayout.SetWidth(GridLength width) => SetWidth(width);
@@ -158,5 +161,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             if (width.IsAbsolute)
                 ActualWidth = width.Value;
         }
+
+        private static double NonNaN(double v) => double.IsNaN(v) ? 0 : v;
     }
 }
