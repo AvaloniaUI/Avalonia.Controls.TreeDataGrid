@@ -154,11 +154,6 @@ namespace Avalonia.Controls
             return false;
         }
 
-        bool IExpanderRowController<TModel>.GetIsExpanded(IExpanderRow<TModel> row)
-        {
-            return _expanderColumn?.IsExpanded(row.Model) ?? false;
-        }
-
         void IExpanderRowController<TModel>.OnBeginExpandCollapse(IExpanderRow<TModel> row)
         {
             if (row is HierarchicalRow<TModel> r)

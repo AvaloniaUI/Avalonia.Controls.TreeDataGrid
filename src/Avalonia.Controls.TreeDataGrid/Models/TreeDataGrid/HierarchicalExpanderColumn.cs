@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq.Expressions;
+using Avalonia.Experimental.Data;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -13,11 +15,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         IColumn<TModel>,
         IExpanderColumn<TModel>,
         IUpdateColumnLayout
+            where TModel : class
     {
         private readonly IColumn<TModel> _inner;
         private readonly Func<TModel, IEnumerable<TModel>?> _childSelector;
         private readonly Func<TModel, bool>? _hasChildrenSelector;
-        private readonly Func<TModel, bool>? _isExpandedSelector;
+        private readonly TypedBinding<TModel, bool>? _isExpandedBinding;
         private double _actualWidth = double.NaN;
 
         /// <summary>
@@ -34,13 +37,15 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             IColumn<TModel> inner,
             Func<TModel, IEnumerable<TModel>?> childSelector,
             Func<TModel, bool>? hasChildrenSelector = null,
-            Func<TModel, bool>? isExpandedSelector = null)
+            Expression<Func<TModel, bool>>? isExpandedSelector = null)
         {
             _inner = inner;
             _inner.PropertyChanged += OnInnerPropertyChanged;
             _childSelector = childSelector;
             _hasChildrenSelector = hasChildrenSelector;
-            _isExpandedSelector = isExpandedSelector;
+            _isExpandedBinding = isExpandedSelector is not null ?
+                TypedBinding<TModel>.OneWay(isExpandedSelector) :
+                null;
             _actualWidth = inner.ActualWidth;
         }
 
@@ -71,7 +76,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             if (row is HierarchicalRow<TModel> r)
             {
-                return new ExpanderCell<TModel>(_inner.CreateCell(r), r);
+                var isExpanded = _isExpandedBinding?.Instance(r.Model);
+                return new ExpanderCell<TModel>(_inner.CreateCell(r), r, isExpanded);
             }
 
             throw new NotSupportedException();
@@ -83,7 +89,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         bool IExpanderColumn<TModel>.IsExpanded(TModel model)
         {
-            return _isExpandedSelector?.Invoke(model) ?? false;
+            try { return _isExpandedBinding?.Read?.Invoke(model) ?? false; }
+            catch { return false; }
         }
 
         double IUpdateColumnLayout.CellMeasured(double width, int rowIndex)

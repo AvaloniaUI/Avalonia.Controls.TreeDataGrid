@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -38,7 +37,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _comparison = comparison;
             ModelIndexPath = modelIndex;
             Model = model;
-            IsExpanded = controller.GetIsExpanded(this);
         }
 
         /// <summary>

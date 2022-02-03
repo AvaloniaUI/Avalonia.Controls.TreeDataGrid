@@ -425,12 +425,27 @@ namespace Avalonia.Controls.TreeDataGridTests
                 data[0].IsExpanded = true;
 
                 var target = CreateTarget(data, false, bindExpanded: true);
+                RealizeCells(target);
 
                 AssertState(target, data, 10, false, new IndexPath(0));
             }
 
             [Fact]
-            public void Handles_Expanded_Row_With_No_Children()
+            public void Child_Is_Initially_Expanded()
+            {
+                var data = CreateData();
+                data[0].IsExpanded = true;
+                data[0].Children![1].IsExpanded = true;
+                data[0].Children![1].Children!.Add(new Node());
+
+                var target = CreateTarget(data, false, bindExpanded: true);
+                RealizeCells(target);
+
+                AssertState(target, data, 11, false, new IndexPath(0), new IndexPath(0, 1));
+            }
+
+            [Fact]
+            public void Handles_Initial_Expanded_Row_With_No_Children()
             {
                 var data = CreateData();
                 data[0].IsExpanded = true;
@@ -439,8 +454,33 @@ namespace Avalonia.Controls.TreeDataGridTests
                 data[0].Children![1].IsExpanded = true;
 
                 var target = CreateTarget(data, false, bindExpanded: true);
+                RealizeCells(target);
 
                 AssertState(target, data, 10, false, new IndexPath(0));
+            }
+
+            [Fact]
+            public void Root_Can_Be_Expanded_Via_Model()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, false, bindExpanded: true);
+
+                RealizeCells(target);
+                AssertState(target, data, 5, false);
+
+                data[0].IsExpanded = true;
+
+                AssertState(target, data, 10, false, new IndexPath(0));
+            }
+
+            private static void RealizeCells(HierarchicalTreeDataGridSource<Node> target)
+            {
+                for (var c = 0; c < target.Columns.Count; c++)
+                {
+                    var column = target.Columns[c];
+                    for (var r = 0; r < target.Rows.Count; ++r)
+                        target.Rows.RealizeCell(column, c, r);
+                }
             }
         }
 
