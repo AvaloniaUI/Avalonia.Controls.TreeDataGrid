@@ -7,6 +7,14 @@
     public interface IUpdateColumnLayout : IColumn
     {
         /// <summary>
+        /// Gets the minimum actual width of the column.
+        /// </summary>
+        /// <returns>
+        /// The minimum width of the column in pixels.
+        /// </returns>
+        double MinActualWidth { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the column is a star-width column and its width
         /// was constrained by its min/max width in the last call to
         /// <see cref="CalculateStarWidth(double, double))"/>.

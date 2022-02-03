@@ -94,6 +94,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             set => RaiseAndSetIfChanged(ref _sortDirection, value);
         }
 
+        double IUpdateColumnLayout.MinActualWidth => CoerceActualWidth(0);
         bool IUpdateColumnLayout.StarWidthWasConstrained => _starWidthWasConstrained;
 
         /// <summary>

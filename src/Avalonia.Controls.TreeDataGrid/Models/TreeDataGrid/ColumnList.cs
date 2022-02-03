@@ -47,10 +47,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             for (var i = 0; i < Count; ++i)
             {
-                var column = this[i];
+                var column = (IUpdateColumnLayout)this[i];
 
                 if (column.Width.IsStar)
+                {
                     hasStar = true;
+                    totalMeasured += column.MinActualWidth;
+                }
                 else if (!double.IsNaN(column.ActualWidth))
                 {
                     totalMeasured += column.ActualWidth;
