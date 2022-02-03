@@ -158,7 +158,7 @@ namespace ProControlsDemo.ViewModels
 	                    {
 		                    CanUserResizeColumn = false,
 		                    CanUserSortColumn = false,
-                            MinWidth = new GridLength(75, GridUnitType.Pixel)
+                            MinWidth = new GridLength(100, GridUnitType.Pixel)
 	                    },
                         // TODO: 
                         // STAR SIZING DOES NOT WORK HERE!
