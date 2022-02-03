@@ -473,6 +473,24 @@ namespace Avalonia.Controls.TreeDataGridTests
                 AssertState(target, data, 10, false, new IndexPath(0));
             }
 
+            [Fact]
+            public void Child_Can_Be_Expanded_Via_Model()
+            {
+                var data = CreateData();
+                data[0].Children![1].Children!.Add(new Node());
+
+                var target = CreateTarget(data, false, bindExpanded: true);
+
+                RealizeCells(target);
+                AssertState(target, data, 5, false);
+
+                data[0].IsExpanded = true;
+                RealizeRow(target, new IndexPath(0, 1));
+                data[0].Children![1].IsExpanded = true;
+
+                AssertState(target, data, 11, false, new IndexPath(0), new IndexPath(0, 1));
+            }
+
             private static void RealizeCells(HierarchicalTreeDataGridSource<Node> target)
             {
                 for (var c = 0; c < target.Columns.Count; c++)
@@ -480,6 +498,21 @@ namespace Avalonia.Controls.TreeDataGridTests
                     var column = target.Columns[c];
                     for (var r = 0; r < target.Rows.Count; ++r)
                         target.Rows.RealizeCell(column, c, r);
+                }
+            }
+
+            private static void RealizeRow(
+                HierarchicalTreeDataGridSource<Node> target,
+                IndexPath modelIndex)
+            {
+                var rowIndex = target.Rows.ModelIndexToRowIndex(modelIndex);
+
+                Assert.NotEqual(-1, rowIndex);
+
+                for (var c = 0; c < target.Columns.Count; c++)
+                {
+                    var column = target.Columns[c];
+                    target.Rows.RealizeCell(column, c, rowIndex);
                 }
             }
         }
