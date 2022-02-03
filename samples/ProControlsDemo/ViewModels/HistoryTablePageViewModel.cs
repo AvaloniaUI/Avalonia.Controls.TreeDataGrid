@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Templates;
+using DynamicData;
+using DynamicData.Binding;
 using ProControlsDemo.Views.History.Columns;
+using ReactiveUI;
 
 namespace ProControlsDemo.ViewModels
 {
@@ -83,11 +87,14 @@ namespace ProControlsDemo.ViewModels
 
     internal class HistoryTablePageViewModel
     {
-        private readonly ObservableCollection<HistoryItemViewModelBase> _data;
+        private readonly SourceList<HistoryItemViewModelBase> _transactionSourceList;	private readonly ObservableCollectionExtended<HistoryItemViewModelBase> _transactions;
+        private readonly ObservableCollectionExtended<HistoryItemViewModelBase> _unfilteredTransactions;
 
         public HistoryTablePageViewModel()
         {
-            var transactions = new List<HistoryItemViewModelBase>();
+            _transactionSourceList = new SourceList<HistoryItemViewModelBase>();
+            _transactions = new ObservableCollectionExtended<HistoryItemViewModelBase>();
+            _unfilteredTransactions = new ObservableCollectionExtended<HistoryItemViewModelBase>();
 
             var rand = new Random(100);
             
@@ -102,10 +109,16 @@ namespace ProControlsDemo.ViewModels
                     OutgoingAmount = $"{rand.NextDouble()}",
                     Balance = $"{rand.NextDouble()}",
                 };
-                transactions.Add(item);
+                _transactionSourceList.Add(item);
             }
 
-            _data = new ObservableCollection<HistoryItemViewModelBase>(transactions);
+            _transactionSourceList
+                .Connect()
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Sort(SortExpressionComparer<HistoryItemViewModelBase>.Descending(x => x.OrderIndex))
+                .Bind(_unfilteredTransactions)
+                .Bind(_transactions)
+                .Subscribe();
 
 			// [Column]			[View]						[Header]		[Width]		[MinWidth]		[MaxWidth]	[CanUserSort]
 			// Indicators		IndicatorsColumnView		-				Auto		80				-			false
@@ -122,7 +135,7 @@ namespace ProControlsDemo.ViewModels
 			IControl OutgoingColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new OutgoingColumnView() { Height = 37.5 };
 			IControl BalanceColumnTemplate(HistoryItemViewModelBase node, INameScope ns) => new BalanceColumnView() { Height = 37.5 };
 
-			Source = new FlatTreeDataGridSource<HistoryItemViewModelBase>(_data)
+			Source = new FlatTreeDataGridSource<HistoryItemViewModelBase>(_transactions)
             {
                 Columns =
                 {
