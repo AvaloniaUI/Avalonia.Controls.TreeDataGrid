@@ -79,7 +79,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return totalMeasured;
         }
 
-        public void UpdateForArrange() => UpdateColumnSizes();
+        public void CommitActualWidths() => UpdateColumnSizes();
 
         public void SetColumnWidth(int columnIndex, GridLength width)
         {

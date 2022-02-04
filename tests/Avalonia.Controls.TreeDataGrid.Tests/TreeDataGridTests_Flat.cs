@@ -589,17 +589,17 @@ namespace Avalonia.Controls.TreeDataGridTests
             return scope;
         }
 
-        private static ColumnOptions<Model> MinWidth(double min)
+        private static TextColumnOptions<Model> MinWidth(double min)
         {
-            return new ColumnOptions<Model>
+            return new TextColumnOptions<Model>
             {
                 MinWidth = new GridLength(min, GridUnitType.Pixel),
             };
         }
 
-        private static ColumnOptions<Model> MaxWidth(double max)
+        private static TextColumnOptions<Model> MaxWidth(double max)
         {
-            return new ColumnOptions<Model>
+            return new TextColumnOptions<Model>
             {
                 MaxWidth = new GridLength(max, GridUnitType.Pixel),
             };

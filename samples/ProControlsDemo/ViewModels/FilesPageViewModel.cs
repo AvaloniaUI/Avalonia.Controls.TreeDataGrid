@@ -20,9 +20,11 @@ namespace ProControlsDemo.ViewModels
     internal class FilesPageViewModel : ReactiveObject
     {
         private readonly Bitmap _folderIcon;
+        private readonly Bitmap _folderOpenIcon;
         private readonly Bitmap _fileIcon;
         private FileTreeNodeModel? _root;
         private string _selectedDrive;
+        private string? _selectedPath;
 
         public FilesPageViewModel()
         {
@@ -32,6 +34,8 @@ namespace ProControlsDemo.ViewModels
                 _fileIcon = new Bitmap(s);
             using (var s = assetLoader.Open(new Uri("avares://ProControlsDemo/Assets/folder.png")))
                 _folderIcon = new Bitmap(s);
+            using (var s = assetLoader.Open(new Uri("avares://ProControlsDemo/Assets/folder-open.png")))
+                _folderOpenIcon = new Bitmap(s);
 
             Drives = DriveInfo.GetDrives().Select(x => x.Name).ToList();
             _selectedDrive = "C:\\";
@@ -58,11 +62,12 @@ namespace ProControlsDemo.ViewModels
                                 CompareDescending = FileTreeNodeModel.SortDescending(x => x.Name),
                             }),
                         x => x.Children,
-                        x => x.IsDirectory),
+                        x => x.IsDirectory,
+                        x => x.IsExpanded),
                     new TextColumn<FileTreeNodeModel, long?>(
                         "Size",
                         x => x.Size,
-                        options: new ColumnOptions<FileTreeNodeModel>
+                        options: new TextColumnOptions<FileTreeNodeModel>
                         {
                             CompareAscending = FileTreeNodeModel.SortAscending(x => x.Size),
                             CompareDescending = FileTreeNodeModel.SortDescending(x => x.Size),
@@ -70,7 +75,7 @@ namespace ProControlsDemo.ViewModels
                     new TextColumn<FileTreeNodeModel, DateTimeOffset?>(
                         "Modified",
                         x => x.Modified,
-                        options: new ColumnOptions<FileTreeNodeModel>
+                        options: new TextColumnOptions<FileTreeNodeModel>
                         {
                             CompareAscending = FileTreeNodeModel.SortAscending(x => x.Modified),
                             CompareDescending = FileTreeNodeModel.SortDescending(x => x.Modified),
@@ -97,6 +102,12 @@ namespace ProControlsDemo.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedDrive, value);
         }
 
+        public string? SelectedPath
+        {
+            get => _selectedPath;
+            set => SetSelectedPath(value);
+        }
+
         public HierarchicalTreeDataGridSource<FileTreeNodeModel> Source { get; }
 
         private IControl FileCheckTemplate(FileTreeNodeModel node, INameScope ns)
@@ -110,6 +121,10 @@ namespace ProControlsDemo.ViewModels
 
         private IControl FileNameTemplate(FileTreeNodeModel node, INameScope ns)
         {
+            var icon = node.IsDirectory ?
+                node.WhenAnyValue(x => x.IsExpanded).Select(x => x ? _folderOpenIcon : _folderIcon) :
+                Avalonia.Reactive.ObservableEx.SingleValue(_fileIcon);
+
             return new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -118,7 +133,7 @@ namespace ProControlsDemo.ViewModels
                 {
                     new Image
                     {
-                        Source = node.IsDirectory ? _folderIcon : _fileIcon,
+                        [!Image.SourceProperty] = icon.ToBinding(),
                         Margin = new Thickness(0, 0, 4, 0),
                         VerticalAlignment = VerticalAlignment.Center,
                     },
@@ -131,8 +146,67 @@ namespace ProControlsDemo.ViewModels
             };
         }
 
+        private void SetSelectedPath(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                Source.RowSelection!.Clear();
+                return;
+            }
+
+            var path = value;
+            var components = new Stack<string>();
+            DirectoryInfo? d = null;
+           
+            if (File.Exists(path))
+            {
+                var f = new FileInfo(path);
+                components.Push(f.Name);
+                d = f.Directory;
+            }
+            else if (Directory.Exists(path))
+            {
+                d = new DirectoryInfo(path);
+            }
+
+            while (d is not null)
+            {
+                components.Push(d.Name);
+                d = d.Parent;
+            }
+
+            var index = IndexPath.Unselected;
+
+            if (components.Count > 0)
+            {
+                var drive = components.Pop();
+                var driveIndex = Drives.FindIndex(x => string.Equals(x, drive, StringComparison.OrdinalIgnoreCase));
+
+                if (driveIndex >= 0)
+                    SelectedDrive = Drives[driveIndex];
+
+                FileTreeNodeModel? node = _root;
+                index = new IndexPath(0);
+
+                while (node is not null && components.Count > 0)
+                {
+                    node.IsExpanded = true;
+
+                    var component = components.Pop();
+                    var i = node.Children.FindIndex(x => string.Equals(x.Name, component, StringComparison.OrdinalIgnoreCase));
+                    node = i >= 0 ? node.Children[i] : null;
+                    index = i >= 0 ? index.Append(i) : default;
+                }
+            }
+
+            Source.RowSelection!.SelectedIndex = index;
+        }
+
         private void SelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs<FileTreeNodeModel> e)
         {
+            var selectedPath = Source.RowSelection?.SelectedItem?.Path;
+            this.RaiseAndSetIfChanged(ref _selectedPath, selectedPath, nameof(SelectedPath));
+            
             foreach (var i in e.DeselectedItems)
                 System.Diagnostics.Trace.WriteLine($"Deselected '{i?.Path}'");
             foreach (var i in e.SelectedItems)

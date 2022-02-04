@@ -82,7 +82,7 @@ namespace Avalonia.Controls.Primitives
         public void UpdateIndex(int index)
         {
             RowIndex = index;
-            CellsPresenter?.UpdateIndex(index);
+            CellsPresenter?.UpdateRowIndex(index);
         }
 
         public void Unrealize()

@@ -17,7 +17,7 @@
           <DockPanel>
             <ScrollViewer DockPanel.Dock="Top"
                           IsVisible="{TemplateBinding ShowColumnHeaders}"
-                          Offset="{Binding Scroll.Offset, RelativeSource={RelativeSource TemplatedParent}}"
+                          Offset="{Binding Scroll.Offset, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                           HorizontalScrollBarVisibility="Hidden"
                           VerticalScrollBarVisibility="Disabled">
               <Border BorderThickness="0 0 0 1" BorderBrush="{DynamicResource TreeDataGridGridLinesBrush}">
@@ -77,12 +77,18 @@
                   VerticalAlignment="Center"
                   Stretch="Uniform"
                   Height="12" />
-            <ContentPresenter Name="PART_ContentPresenter"
-                              Content="{TemplateBinding Header}"
-                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                              Padding="{TemplateBinding Padding}"
-                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+              <ContentPresenter Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+                  <ContentPresenter.DataTemplates>
+                      <DataTemplate DataType="x:String">
+                          <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis"/>
+                      </DataTemplate>
+                  </ContentPresenter.DataTemplates>
+              </ContentPresenter>
           </DockPanel>
         </Border>
       </ControlTemplate>
@@ -150,6 +156,7 @@
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}" Padding="4 2">
           <TextBlock Text="{TemplateBinding Value}"
+                     TextTrimming="{TemplateBinding TextTrimming}"
                      VerticalAlignment="Center"/>
         </Border>
       </ControlTemplate>

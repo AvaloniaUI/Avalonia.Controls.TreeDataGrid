@@ -72,6 +72,12 @@ namespace Avalonia.Experimental.Data
         /// </remarks>
         public Optional<TIn> Source { get; set; }
 
+        /// <summary>
+        /// Creates a binding to the specified styled property.
+        /// </summary>
+        /// <param name="target">The target object.</param>
+        /// <param name="property">The target property.</param>
+        /// <returns>A disposable that can be used to terminate the binding.</returns>
         public IDisposable Bind(IAvaloniaObject target, StyledPropertyBase<TOut> property)
         {
             var mode = GetMode(target, property);
@@ -91,6 +97,12 @@ namespace Avalonia.Experimental.Data
             }
         }
 
+        /// <summary>
+        /// Creates a binding to the specified direct property.
+        /// </summary>
+        /// <param name="target">The target object.</param>
+        /// <param name="property">The target property.</param>
+        /// <returns>A disposable that can be used to terminate the binding.</returns>
         public IDisposable Bind(IAvaloniaObject target, DirectPropertyBase<TOut> property)
         {
             var mode = GetMode(target, property);
@@ -113,26 +125,21 @@ namespace Avalonia.Experimental.Data
             }
         }
 
+        /// <summary>
+        /// Instances the binding on a data source.
+        /// </summary>
+        /// <param name="source">The data source.</param>
+        /// <param name="mode">The binding mode.</param>
+        public TypedBindingExpression<TIn, TOut> Instance(TIn? source, BindingMode mode = BindingMode.OneWay)
+        {
+            return Instance(ObservableEx.SingleValue(source), mode, FallbackValue);
+        }
+
         private TypedBindingExpression<TIn, TOut> CreateExpression(
             IAvaloniaObject target,
             AvaloniaProperty property,
             BindingMode mode)
         {
-            if (Read is null)
-            {
-                throw new InvalidOperationException("Cannot bind TypedBinding: Read is uninitialized.");
-            }
-
-            if (Links is null)
-            {
-                throw new InvalidOperationException("Cannot bind TypedBinding: Links is uninitialized.");
-            }
-
-            if ((mode == BindingMode.TwoWay || mode == BindingMode.OneWayToSource) && Write is null)
-            {
-                throw new InvalidOperationException($"Cannot bind TypedBinding {Mode}: Write is uninitialized.");
-            }
-
             var targetIsDataContext = property == StyledElement.DataContextProperty;
             var root = GetRoot(target, property);
             var fallback = FallbackValue;
@@ -146,7 +153,18 @@ namespace Avalonia.Experimental.Data
                 fallback = new Optional<TOut>(default);
             }
 
-            return new TypedBindingExpression<TIn, TOut>(root, Read, Write, Links, fallback);
+            return Instance(root, mode, fallback);
+        }
+
+        private TypedBindingExpression<TIn, TOut> Instance(IObservable<TIn?> source, BindingMode mode, Optional<TOut> fallback)
+        {
+            _ = Read ?? throw new InvalidOperationException("Cannot bind TypedBinding: Read is uninitialized.");
+            _ = Links ?? throw new InvalidOperationException("Cannot bind TypedBinding: Links is uninitialized.");
+
+            if ((mode == BindingMode.TwoWay || mode == BindingMode.OneWayToSource) && Write is null)
+                throw new InvalidOperationException($"Cannot bind TypedBinding {Mode}: Write is uninitialized.");
+            
+            return new TypedBindingExpression<TIn, TOut>(source, Read, Write, Links, fallback);
         }
 
         private BindingMode GetMode(IAvaloniaObject target, AvaloniaProperty property)

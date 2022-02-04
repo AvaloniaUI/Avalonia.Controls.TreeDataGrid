@@ -1,19 +1,28 @@
 ﻿using System;
 using System.ComponentModel;
+using Avalonia.Data;
+using Avalonia.Experimental.Data.Core;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    public class ExpanderCell<TModel> : NotifyingBase, IExpanderCell, IDisposable
+    public class ExpanderCell<TModel> : NotifyingBase,
+        IExpanderCell,
+        IObserver<BindingValue<bool>>,
+        IDisposable
+        where TModel : class
     {
         private readonly ICell _inner;
+        private readonly IDisposable? _isExpandedSubscription;
 
         public ExpanderCell(
             ICell inner,
-            IExpanderRow<TModel> row)
+            IExpanderRow<TModel> row,
+            TypedBindingExpression<TModel, bool>? isExpanded)
         {
             _inner = inner;
             Row = row;
             row.PropertyChanged += RowPropertyChanged;
+            _isExpandedSubscription = isExpanded?.Subscribe(this);
         }
 
         public bool CanEdit => _inner.CanEdit;
@@ -34,8 +43,18 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public void Dispose()
         {
             Row.PropertyChanged -= RowPropertyChanged;
+            _isExpandedSubscription?.Dispose();
             (_inner as IDisposable)?.Dispose();
         }
+
+        void IObserver<BindingValue<bool>>.OnNext(BindingValue<bool> value)
+        {
+            if (value.HasValue)
+                IsExpanded = value.Value;
+        }
+
+        void IObserver<BindingValue<bool>>.OnCompleted() { }
+        void IObserver<BindingValue<bool>>.OnError(Exception error) { }
 
         private void RowPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {

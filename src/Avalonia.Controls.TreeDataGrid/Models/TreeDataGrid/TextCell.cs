@@ -4,10 +4,11 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Subjects;
 using Avalonia.Data;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    public class TextCell<T> : NotifyingBase, ICell, IDisposable, IEditableObject
+    public class TextCell<T> : NotifyingBase, ITextCell, IDisposable, IEditableObject
     {
         private readonly ISubject<BindingValue<T>>? _binding;
         private readonly IDisposable? _subscription;
@@ -21,10 +22,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             IsReadOnly = true;
         }
 
-        public TextCell(ISubject<BindingValue<T>> binding, bool isReadOnly)
+        public TextCell(
+            ISubject<BindingValue<T>> binding,
+            bool isReadOnly,
+            TextTrimming textTrimming)
         {
             _binding = binding;
             IsReadOnly = isReadOnly;
+            TextTrimming = textTrimming;
 
             _subscription = binding.Subscribe(x =>
             {
@@ -35,6 +40,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public bool CanEdit => !IsReadOnly;
         public bool IsReadOnly { get; }
+        public TextTrimming TextTrimming { get; }
 
         public T Value
         {

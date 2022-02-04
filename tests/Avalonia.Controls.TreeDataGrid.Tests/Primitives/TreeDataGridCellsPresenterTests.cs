@@ -95,13 +95,58 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
             var columns = new ColumnList<Model>
             {
-                new TestTextColumn("Col0", GridLength.Star, minWidth),
-                new TestTextColumn("Col1", GridLength.Star, minWidth),
+                new LayoutTestColumn<Model>("Col0", GridLength.Star, minWidth),
+                new LayoutTestColumn<Model>("Col1", GridLength.Star, minWidth),
             };
 
             var (target, scroll) = CreateTarget(columns);
 
             Assert.Equal(200, target.DesiredSize.Width);
+        }
+
+        [Fact]
+        public void Star_Cells_Are_Measured_With_Final_Column_Width()
+        {
+            // Issue #70
+            using var app = App();
+
+            var columns = new ColumnList<Model>
+            {
+                new LayoutTestColumn<Model>("Col0", GridLength.Star),
+                new LayoutTestColumn<Model>("Col1", GridLength.Star),
+            };
+
+            var (target, scroll) = CreateTarget(columns);
+
+            for (var i = 0; i < target.RealizedElements.Count; ++i)
+            {
+                var cell = (LayoutTestCellControl)target.RealizedElements[i]!;
+
+                if (i == 0)
+                {
+                    // The first cell will be laid out on the initial layout before the control has
+                    // a viewport, and so will receive two layout passes.
+                    Assert.Equal(
+                        new[]
+                        {
+                            Size.Infinity,
+                            new Size(0, 10),
+                            Size.Infinity,
+                            new Size(50, 10),
+                        },
+                        cell!.MeasureConstraints);
+                }
+                else
+                {
+                    Assert.Equal(
+                        new[]
+                        {
+                            Size.Infinity,
+                            new Size(50, 10),
+                        },
+                        cell!.MeasureConstraints);
+                }
+            }
         }
 
         private static void AssertColumnIndexes(
@@ -142,7 +187,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 columns = new ColumnList<Model>();
 
                 for (var i = 0; i < 100; ++i)
-                    columns.Add(new TestTextColumn("Column " + i));
+                    columns.Add(new LayoutTestColumn<Model>("Column " + i));
             }
 
             var items = new Model[1];
@@ -150,9 +195,16 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
             var target = new TreeDataGridCellsPresenter
             {
-                ElementFactory = new TreeDataGridElementFactory(),
+                ElementFactory = new TestElementFactory(),
                 Items = columns,
                 Rows = rows,
+            };
+
+            // The column list's effective viewport would usually be updated by the rows presenter
+            // but in this case we don't have one, so do it manually.
+            target.EffectiveViewportChanged += (s, e) =>
+            {
+                columns.ViewportChanged(e.EffectiveViewport);
             };
 
             target.Realize(0);
@@ -164,20 +216,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
             };
 
-            var root = new TestRoot
-            {
-                Styles =
-                {
-                    new Style(x => x.Is<TreeDataGridCell>())
-                    {
-                        Setters =
-                        {
-                            new Setter(TreeDataGridCell.WidthProperty, 10.0),
-                        }
-                    }
-                },
-                Child = scrollViewer,
-            };
+            var root = new TestRoot(scrollViewer);
 
             root.LayoutManager.ExecuteInitialLayoutPass();
             return (target, scrollViewer);
@@ -200,33 +239,6 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         {
             public int Id { get; set; }
             public string? Title { get; set; }
-        }
-
-        private class TestTextColumn : ColumnBase<Model>
-        {
-            public TestTextColumn(string header, GridLength? width = null, ColumnOptions<Model>? options = null)
-                : base(header, width, options ?? DefaultOptions())
-            {
-            }
-
-            public override ICell CreateCell(IRow<Model> row)
-            {
-                var indexable = (IModelIndexableRow)row;
-                return new TextCell<string>($"{Header} Row {indexable.ModelIndex}");
-            }
-
-            public override Comparison<Model?>? GetComparison(ListSortDirection direction)
-            {
-                throw new NotImplementedException();
-            }
-
-            private static ColumnOptions<Model> DefaultOptions()
-            {
-                return new ColumnOptions<Model>
-                {
-                    MinWidth = new GridLength(0, GridUnitType.Pixel)
-                };
-            }
         }
     }
 }
