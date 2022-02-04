@@ -41,7 +41,19 @@ namespace Avalonia.Experimental.Data
         public static TypedBinding<TIn, TOut> TwoWay<TOut>(Expression<Func<TIn, TOut>> expression)
         {
             var property = (expression.Body as MemberExpression)?.Member as PropertyInfo ??
-                throw new ArgumentException("Expression does not target a property.", nameof(expression));
+                throw new ArgumentException(
+                    $"Cannot create a two-way binding for '{expression}' because the expression does not target a property.",
+                    nameof(expression));
+
+            if (property.GetGetMethod() is null)
+                throw new ArgumentException(
+                    $"Cannot create a two-way binding for '{expression}' because the property has no getter.",
+                    nameof(expression));
+
+            if (property.GetSetMethod() is null)
+                throw new ArgumentException(
+                    $"Cannot create a two-way binding for '{expression}' because the property has no setter.",
+                    nameof(expression));
 
             // TODO: This is using reflection and mostly untested. Unit test it properly and
             // benchmark it against creating an expression.
