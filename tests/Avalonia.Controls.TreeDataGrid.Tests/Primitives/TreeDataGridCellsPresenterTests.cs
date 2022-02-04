@@ -118,15 +118,34 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
             var (target, scroll) = CreateTarget(columns);
 
-            foreach (LayoutTestCellControl? cell in target.RealizedElements)
+            for (var i = 0; i < target.RealizedElements.Count; ++i)
             {
-                Assert.Equal(
-                    new[]
-                    {
-                        Size.Infinity,
-                        new Size(50, 10),
-                    },
-                    cell!.MeasureConstraints);
+                var cell = (LayoutTestCellControl)target.RealizedElements[i]!;
+
+                if (i == 0)
+                {
+                    // The first cell will be laid out on the initial layout before the control has
+                    // a viewport, and so will receive two layout passes.
+                    Assert.Equal(
+                        new[]
+                        {
+                            Size.Infinity,
+                            new Size(0, 10),
+                            Size.Infinity,
+                            new Size(50, 10),
+                        },
+                        cell!.MeasureConstraints);
+                }
+                else
+                {
+                    Assert.Equal(
+                        new[]
+                        {
+                            Size.Infinity,
+                            new Size(50, 10),
+                        },
+                        cell!.MeasureConstraints);
+                }
             }
         }
 
@@ -179,6 +198,13 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 ElementFactory = new TestElementFactory(),
                 Items = columns,
                 Rows = rows,
+            };
+
+            // The column list's effective viewport would usually be updated by the rows presenter
+            // but in this case we don't have one, so do it manually.
+            target.EffectiveViewportChanged += (s, e) =>
+            {
+                columns.ViewportChanged(e.EffectiveViewport);
             };
 
             target.Realize(0);

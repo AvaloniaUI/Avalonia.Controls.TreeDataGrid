@@ -15,6 +15,15 @@
         double MinActualWidth { get; }
 
         /// <summary>
+        /// Gets the maximum actual width of the column.
+        /// </summary>
+        /// <returns>
+        /// The maximum width of the column in pixels, or <see cref="double.PositiveInfinity"/> if the
+        /// column has no maximum width.
+        /// </returns>
+        double MaxActualWidth { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the column is a star-width column and its width
         /// was constrained by its min/max width in the last call to
         /// <see cref="CalculateStarWidth(double, double))"/>.

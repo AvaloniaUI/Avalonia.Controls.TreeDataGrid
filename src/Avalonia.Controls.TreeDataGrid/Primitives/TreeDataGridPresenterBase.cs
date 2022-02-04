@@ -140,6 +140,65 @@ namespace Avalonia.Controls.Primitives
             return element.DesiredSize;
         }
 
+        /// <summary>
+        /// Gets the initial constraint for the first pass of the two-pass measure.
+        /// </summary>
+        /// <param name="element">The element being measured.</param>
+        /// <param name="index">The index of the element.</param>
+        /// <param name="availableSize">The available size.</param>
+        /// <returns>The measure constraint for the element.</returns>
+        /// <remarks>
+        /// The measure pass is split into two parts:
+        /// 
+        /// - The initial pass is used to determine the "natural" size of the elements. In this
+        ///   pass, infinity can be used as the measure constraint if the element has no other
+        ///   constraints on its size.
+        /// - The final pass is made once the "natural" sizes of the elements are known and any
+        ///   layout logic has been run. This pass is needed because controls should not be 
+        ///   arranged with a size less than that passed as the constraint during the measure
+        ///   pass. This pass is only run if <see cref="InitialMeasurePassComplete"/> returns
+        ///   true.
+        /// </remarks>
+        protected virtual Size GetInitialConstraint(
+            IControl element,
+            int index,
+            Size availableSize)
+        {
+            return availableSize;
+        }
+
+        /// <summary>
+        /// Called when the initial pass of the two-pass measure has been completed, in order to determine
+        /// whether a final measure pass is necessary.
+        /// </summary>
+        /// <param name="firstIndex">The index of the first element in <paramref name="elements"/>.</param>
+        /// <param name="elements">The elements being measured.</param>
+        /// <returns>
+        /// true if a final pass should be run; otherwise false.
+        /// </returns>
+        /// <see cref="GetInitialConstraint(IControl, int, Size)"/>
+        protected virtual bool NeedsFinalMeasurePass(
+            int firstIndex,
+            IReadOnlyList<IControl?> elements) => false;
+
+        /// <summary>
+        /// Gets the final constraint for the second pass of the two-pass measure.
+        /// </summary>
+        /// <param name="element">The element being measured.</param>
+        /// <param name="index">The index of the element.</param>
+        /// <param name="availableSize">The available size.</param>
+        /// <returns>
+        /// The measure constraint for the element. The constraint must not contain infinity values.
+        /// </returns>
+        /// <see cref="GetInitialConstraint(IControl, int, Size)"/>
+        protected virtual Size GetFinalConstraint(
+            IControl element,
+            int index,
+            Size availableSize)
+        {
+            return element.DesiredSize;
+        }
+
         protected virtual IControl GetElementFromFactory(TItem item, int index)
         {
             return GetElementFromFactory(item!, index, this);
@@ -201,6 +260,25 @@ namespace Avalonia.Controls.Primitives
             // Now we know what definitely fits, recycle anything left over.
             RecycleElementsAfter(_measureElements.LastModelIndex);
 
+            // Run the final measure pass if necessary.
+            if (NeedsFinalMeasurePass(_measureElements.FirstModelIndex, _measureElements.Elements))
+            {
+                var count = _measureElements.Count;
+
+                for (var i = 0; i < count; ++i)
+                {
+                    var e = _measureElements.Elements[i]!;
+                    var previous = ((ILayoutable)e).PreviousMeasure!.Value;
+
+                    if (HasInfinity(previous))
+                    {
+                        var index = _measureElements.FirstModelIndex + i;
+                        var constraint = GetFinalConstraint(e, index, availableSize);
+                        e.Measure(constraint);
+                    }
+                }
+            }
+
             // And swap the measureElements and realizedElements collection.
             (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
             _measureElements.ResetForReuse();
@@ -237,7 +315,8 @@ namespace Avalonia.Controls.Primitives
             do
             {
                 var e = GetOrCreateElement(index);
-                var slot = MeasureElement(index, e, availableSize);
+                var constraint = GetInitialConstraint(e, index, availableSize);
+                var slot = MeasureElement(index, e, constraint);
                 var sizeU = horizontal ? slot.Width : slot.Height;
 
                 _measureElements.Add(index, e, u, sizeU);
@@ -519,6 +598,8 @@ namespace Avalonia.Controls.Primitives
             if (HasInvalidations(c))
                 Invalidate(c);
         }
+
+        private static bool HasInfinity(Size s) => double.IsInfinity(s.Width) || double.IsInfinity(s.Height);
 
         private struct MeasureViewport
         {

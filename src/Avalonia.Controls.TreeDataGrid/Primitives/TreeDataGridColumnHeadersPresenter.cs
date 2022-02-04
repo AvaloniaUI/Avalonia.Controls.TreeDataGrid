@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Primitives
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            (Items as IColumns)?.UpdateForArrange();
+            (Items as IColumns)?.CommitActualWidths();
             return base.ArrangeOverride(finalSize);
         }
 

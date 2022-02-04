@@ -59,6 +59,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public GridLength Width => _inner.Width;
 
         double IUpdateColumnLayout.MinActualWidth => ((IUpdateColumnLayout)_inner).MinActualWidth;
+        double IUpdateColumnLayout.MaxActualWidth => ((IUpdateColumnLayout)_inner).MaxActualWidth;
         bool IUpdateColumnLayout.StarWidthWasConstrained => ((IUpdateColumnLayout)_inner).StarWidthWasConstrained;
 
         public ICell CreateCell(IRow<TModel> row)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -67,27 +68,40 @@ namespace Avalonia.Controls.Primitives
             RowIndex = index;
         }
 
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            (Items as IColumns)?.UpdateForArrange();
-            return base.ArrangeOverride(finalSize);
-        }
-
-
         protected override Size MeasureElement(int index, IControl element, Size availableSize)
         {
             element.Measure(availableSize);
             return ((IColumns)Items!).CellMeasured(index, RowIndex, element.DesiredSize);
         }
 
-        protected override Rect ArrangeElement(int index, IControl element, Rect rect)
+        protected override Size GetInitialConstraint(IControl element, int index, Size availableSize)
+        {
+            var column = (IUpdateColumnLayout)((IColumns)Items!)[index];
+            return new Size(Math.Min(availableSize.Width, column.MaxActualWidth), availableSize.Height);
+        }
+
+        protected override bool NeedsFinalMeasurePass(int firstIndex, IReadOnlyList<IControl?> elements)
+        {
+            var columns = (IColumns)Items!;
+
+            columns.CommitActualWidths();
+
+            // We need to do a second measure pass if any of the controls were measured with a width
+            // that is greater than the final column width.
+            for (var i = 0; i < elements.Count; i++)
+            {
+                var e = elements[i];
+                if (e?.PreviousMeasure!.Value.Width > columns[i + firstIndex].ActualWidth)
+                    return true;
+            }
+
+            return false;
+        }
+
+        protected override Size GetFinalConstraint(IControl element, int index, Size availableSize)
         {
             var column = ((IColumns)Items!)[index];
-            if (double.IsNaN(column.ActualWidth))
-                throw new AvaloniaInternalException("Attempt to arrange cell before measure.");
-            rect = rect.WithWidth(column.ActualWidth);
-            element.Arrange(rect);
-            return rect;
+            return new(column.ActualWidth, element.DesiredSize.Height);
         }
 
         protected override IControl GetElementFromFactory(IColumn column, int index)

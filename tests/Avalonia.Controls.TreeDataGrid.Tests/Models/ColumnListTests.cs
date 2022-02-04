@@ -27,7 +27,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Models
                 }
             }
 
-            target.UpdateForArrange();
+            target.CommitActualWidths();
 
             Assert.Equal(100, target[0].ActualWidth);
             Assert.Equal(60, target[1].ActualWidth);
