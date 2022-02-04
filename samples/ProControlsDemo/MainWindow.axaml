@@ -34,10 +34,15 @@
     </TabItem>
     <TabItem Header="Files">
       <DockPanel>
-		<ComboBox Items="{Binding Files.Drives}"
-				  SelectedItem="{Binding Files.SelectedDrive}"
-				  Margin="0 4"
-				  DockPanel.Dock="Top"/>
+        <DockPanel DockPanel.Dock="Top" Margin="0 4">
+          <ComboBox Items="{Binding Files.Drives}"
+                    SelectedItem="{Binding Files.SelectedDrive}"
+                    DockPanel.Dock="Left"/>
+          <TextBox Text="{Binding Files.SelectedPath, Mode=OneWay}"
+                   Margin="4 0 0 0"
+                   VerticalContentAlignment="Center"
+                   KeyDown="SelectedPath_KeyDown"/>
+        </DockPanel>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
         <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}">
           <TreeDataGrid.Styles>

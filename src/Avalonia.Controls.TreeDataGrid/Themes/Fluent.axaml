@@ -17,7 +17,7 @@
           <DockPanel>
             <ScrollViewer DockPanel.Dock="Top"
                           IsVisible="{TemplateBinding ShowColumnHeaders}"
-                          Offset="{Binding Scroll.Offset, RelativeSource={RelativeSource TemplatedParent}}"
+                          Offset="{Binding Scroll.Offset, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                           HorizontalScrollBarVisibility="Hidden"
                           VerticalScrollBarVisibility="Disabled">
               <Border BorderThickness="0 0 0 1" BorderBrush="{DynamicResource TreeDataGridGridLinesBrush}">

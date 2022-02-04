@@ -187,18 +187,25 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 throw new NotSupportedException("Unexpected row type.");
         }
 
-        internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0)
+        internal bool TryGetRowIndex(in IndexPath modelIndex, out int rowIndex, int fromRowIndex = 0)
         {
-            if (index.Count > 0)
+            if (modelIndex.Count == 0)
             {
-                for (var i = fromRowIndex; i < _flattenedRows.Count; ++i)
+                rowIndex = -1;
+                return true;
+            }
+
+            for (var i = fromRowIndex; i < _flattenedRows.Count; ++i)
+            {
+                if (modelIndex == _flattenedRows[i].ModelIndexPath)
                 {
-                    if (index == _flattenedRows[i].ModelIndexPath)
-                        return i;
+                    rowIndex = i;
+                    return true;
                 }
             }
 
-            return -1;
+            rowIndex = -1;
+            return false;
         }
 
         private void InitializeRows()
@@ -315,42 +322,42 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
+                    if (TryGetRowIndex(parentIndex, out var parentRowIndex))
                     {
-                        var parent = GetRowIndex(parentIndex);
-                        var insert = Advance(parent + 1, e.NewStartingIndex);
+                        var insert = Advance(parentRowIndex + 1, e.NewStartingIndex);
                         Add(insert, e.NewItems, true);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
+                    if (TryGetRowIndex(parentIndex, out parentRowIndex))
                     {
-                        var parent = GetRowIndex(parentIndex);
-                        var start = Advance(parent + 1, e.OldStartingIndex);
+                        var start = Advance(parentRowIndex + 1, e.OldStartingIndex);
                         var end = Advance(start, e.OldItems!.Count);
                         Remove(start, end - start, true);
                     }
                     break;
                 case NotifyCollectionChangedAction.Replace:
+                    if (TryGetRowIndex(parentIndex, out parentRowIndex))
                     {
-                        var parent = GetRowIndex(parentIndex);
-                        var start = Advance(parent + 1, e.OldStartingIndex);
+                        var start = Advance(parentRowIndex + 1, e.OldStartingIndex);
                         var end = Advance(start, e.OldItems!.Count);
                         Remove(start, end - start, true);
                         Add(start, e.NewItems, true);
                     }
                     break;
                 case NotifyCollectionChangedAction.Move:
+                    if (TryGetRowIndex(parentIndex, out parentRowIndex))
                     {
-                        var parent = GetRowIndex(parentIndex);
-                        var fromStart = Advance(parent + 1, e.OldStartingIndex);
+                        var fromStart = Advance(parentRowIndex + 1, e.OldStartingIndex);
                         var fromEnd = Advance(fromStart, e.OldItems!.Count);
-                        var to = Advance(parent + 1, e.NewStartingIndex);
+                        var to = Advance(parentRowIndex + 1, e.NewStartingIndex);
                         Remove(fromStart, fromEnd - fromStart, true);
                         Add(to, e.NewItems, true);
                     }
                     break;
                 case NotifyCollectionChangedAction.Reset:
+                    if (TryGetRowIndex(parentIndex, out parentRowIndex))
                     {
-                        var parentRowIndex = GetRowIndex(parentIndex);
                         var children = parentRowIndex >= 0 ? _flattenedRows[parentRowIndex].Children : _roots;
                         var count = GetDescendentRowCount(parentRowIndex);
                         Remove(parentRowIndex + 1, count, true);
