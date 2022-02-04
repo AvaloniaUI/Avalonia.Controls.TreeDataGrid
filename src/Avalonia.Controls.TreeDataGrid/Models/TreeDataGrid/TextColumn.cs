@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -11,6 +12,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public class TextColumn<TModel, TValue> : ColumnBase<TModel, TValue>
         where TModel : class
     {
+        private readonly TextTrimming _textTrimming;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TextColumn{TModel, TValue}"/> class.
         /// </summary>
@@ -26,9 +29,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             object? header,
             Expression<Func<TModel, TValue?>> getter,
             GridLength? width = null,
-            ColumnOptions<TModel>? options = null)
+            TextColumnOptions<TModel>? options = null)
             : base(header, getter, null, width, options)
         {
+            _textTrimming = options?.TextTrimming ?? TextTrimming.CharacterEllipsis;
         }
 
         /// <summary>
@@ -51,14 +55,15 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             Expression<Func<TModel, TValue?>> getter,
             Action<TModel, TValue?> setter,
             GridLength? width = null,
-            ColumnOptions<TModel>? options = null)
+            TextColumnOptions<TModel>? options = null)
             : base(header, getter, setter, width, options)
         {
+            _textTrimming = options?.TextTrimming ?? TextTrimming.CharacterEllipsis;
         }
 
         public override ICell CreateCell(IRow<TModel> row)
         {
-            return new TextCell<TValue?>(CreateBindingExpression(row.Model), Binding.Write is null);
+            return new TextCell<TValue?>(CreateBindingExpression(row.Model), Binding.Write is null, _textTrimming);
         }
     }
 }

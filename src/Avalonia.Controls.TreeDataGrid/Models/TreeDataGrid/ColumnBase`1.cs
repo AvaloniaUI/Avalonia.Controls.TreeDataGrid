@@ -95,6 +95,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         double IUpdateColumnLayout.MinActualWidth => CoerceActualWidth(0);
+        double IUpdateColumnLayout.MaxActualWidth => CoerceActualWidth(double.PositiveInfinity);
         bool IUpdateColumnLayout.StarWidthWasConstrained => _starWidthWasConstrained;
 
         /// <summary>

@@ -48,13 +48,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         double GetEstimatedWidth(double constraint);
 
         /// <summary>
-        /// Updates the column measurements ready for an arrange pass.
+        /// Commits the actual widths of the columns.
         /// </summary>
-        /// <remarks>
-        /// This method is called at the beginning of the arrange pass of a control which relies
-        /// on column layout. It should update the <see cref="IColumn.ActualWidth"/> of the columns.
-        /// </remarks>
-        void UpdateForArrange();
+        void CommitActualWidths();
 
         /// <summary>
         /// Sets the width of a column.

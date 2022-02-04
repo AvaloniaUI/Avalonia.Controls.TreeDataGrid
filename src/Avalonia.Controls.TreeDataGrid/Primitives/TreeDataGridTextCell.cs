@@ -1,11 +1,17 @@
 ﻿using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
     public class TreeDataGridTextCell : TreeDataGridCell
     {
+        public static readonly DirectProperty<TreeDataGridTextCell, TextTrimming> TextTrimmingProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridTextCell, TextTrimming>(
+                nameof(TextTrimming),
+                o => o.TextTrimming);
+
         public static readonly DirectProperty<TreeDataGridTextCell, string?> ValueProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridTextCell, string?>(
                 nameof(Value),
@@ -15,6 +21,13 @@ namespace Avalonia.Controls.Primitives
         private bool _canEdit;
         private string? _value;
         private TextBox? _edit;
+        private TextTrimming _textTrimming = TextTrimming.CharacterEllipsis;
+
+        public TextTrimming TextTrimming
+        {
+            get => _textTrimming;
+            set => SetAndRaise(TextTrimmingProperty, ref _textTrimming, value);
+        }
 
         public string? Value
         {
@@ -28,6 +41,7 @@ namespace Avalonia.Controls.Primitives
         {
             _canEdit = model.CanEdit;
             Value = model.Value?.ToString();
+            TextTrimming = (model as ITextCell)?.TextTrimming ?? TextTrimming.CharacterEllipsis;
             base.Realize(factory, model, columnIndex, rowIndex);
         }
 
