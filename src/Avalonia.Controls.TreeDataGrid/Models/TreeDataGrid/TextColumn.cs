@@ -58,7 +58,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public override ICell CreateCell(IRow<TModel> row)
         {
-            return new TextCell<TValue>(CreateBindingExpression(row.Model), Binding.Write is null);
+            return new TextCell<TValue?>(CreateBindingExpression(row.Model), Binding.Write is null);
         }
     }
 }

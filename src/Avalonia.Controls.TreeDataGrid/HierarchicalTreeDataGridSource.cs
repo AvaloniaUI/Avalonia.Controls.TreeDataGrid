@@ -188,8 +188,12 @@ namespace Avalonia.Controls
             return _expanderColumn.GetChildModels(model);
         }
 
-        internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0) =>
-            _rows?.GetRowIndex(index, fromRowIndex) ?? -1;
+        internal int GetRowIndex(in IndexPath index, int fromRowIndex = 0)
+        {
+            var result = -1;
+            _rows?.TryGetRowIndex(index, out result, fromRowIndex);
+            return result;
+        }
 
         private HierarchicalRows<TModel> GetOrCreateRows()
         {

@@ -416,6 +416,170 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
+        public class ExpansionBinding
+        {
+            [Fact]
+            public void Root_Is_Initially_Expanded()
+            {
+                var data = CreateData();
+                data[0].IsExpanded = true;
+
+                var target = CreateTarget(data, false, bindExpanded: true);
+                RealizeCells(target);
+
+                AssertState(target, data, 10, false, new IndexPath(0));
+            }
+
+            [Fact]
+            public void Child_Is_Initially_Expanded()
+            {
+                var data = CreateData();
+                data[0].IsExpanded = true;
+                data[0].Children![1].IsExpanded = true;
+                data[0].Children![1].Children!.Add(new Node());
+
+                var target = CreateTarget(data, false, bindExpanded: true);
+                RealizeCells(target);
+
+                AssertState(target, data, 11, false, new IndexPath(0), new IndexPath(0, 1));
+            }
+
+            [Fact]
+            public void Handles_Initial_Expanded_Row_With_No_Children()
+            {
+                var data = CreateData();
+                data[0].IsExpanded = true;
+
+                // This node has no children.
+                data[0].Children![1].IsExpanded = true;
+
+                var target = CreateTarget(data, false, bindExpanded: true);
+                RealizeCells(target);
+
+                AssertState(target, data, 10, false, new IndexPath(0));
+            }
+
+            [Fact]
+            public void Root_Can_Be_Expanded_Via_Model()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, false, bindExpanded: true);
+
+                RealizeCells(target);
+                AssertState(target, data, 5, false);
+
+                data[0].IsExpanded = true;
+
+                AssertState(target, data, 10, false, new IndexPath(0));
+            }
+
+            [Fact]
+            public void Child_Can_Be_Expanded_Via_Model()
+            {
+                var data = CreateData();
+                data[0].Children![1].Children!.Add(new Node());
+
+                var target = CreateTarget(data, false, bindExpanded: true);
+
+                RealizeCells(target);
+                AssertState(target, data, 5, false);
+
+                data[0].IsExpanded = true;
+                RealizeRow(target, new IndexPath(0, 1));
+                data[0].Children![1].IsExpanded = true;
+
+                AssertState(target, data, 11, false, new IndexPath(0), new IndexPath(0, 1));
+            }
+
+            [Fact]
+            public void Expanding_Collapsing_Root_Row_Writes_To_Model()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, false, bindExpanded: true);
+
+                RealizeCells(target);
+                AssertState(target, data, 5, false);
+
+                ((IExpander)target.Rows[0]).IsExpanded = true;
+
+                AssertState(target, data, 10, false, new IndexPath(0));
+
+                ((IExpander)target.Rows[0]).IsExpanded = false;
+
+                AssertState(target, data, 5, false);
+            }
+
+            [Fact]
+            public void Expanding_Collapsing_Child_Row_Writes_To_Model()
+            {
+                var data = CreateData();
+                data[0].Children![1].Children!.Add(new Node());
+
+                var target = CreateTarget(data, false, bindExpanded: true);
+
+                RealizeCells(target);
+                AssertState(target, data, 5, false);
+
+                ((IExpander)target.Rows[0]).IsExpanded = true;
+                ((IExpander)target.Rows[2]).IsExpanded = true;
+
+                AssertState(target, data, 11, false, new IndexPath(0), new IndexPath(0, 1));
+
+                ((IExpander)target.Rows[2]).IsExpanded = false;
+
+                AssertState(target, data, 10, false, new IndexPath(0));
+            }
+
+            private static void AssertState(
+                HierarchicalTreeDataGridSource<Node> target,
+                IList<Node> data,
+                int expectedRows,
+                bool sorted,
+                params IndexPath[] expanded)
+            {
+                HierarchicalTreeDataGridSourceTests.AssertState(target, data, expectedRows, sorted, expanded);
+                AssertDataState(default, data, expanded);
+            }
+
+            private static void AssertDataState(IndexPath parentIndex, IList<Node> data, IndexPath[] expanded)
+            {
+                for (var i = 0; i < data.Count; ++i)
+                {
+                    var node = data[i];
+                    var nodeIndex = parentIndex.Append(i);
+                    Assert.Equal(expanded.Contains(nodeIndex), node.IsExpanded);
+
+                    if (node.Children is not null)
+                        AssertDataState(nodeIndex, node.Children, expanded);
+                }
+            }
+
+            private static void RealizeCells(HierarchicalTreeDataGridSource<Node> target)
+            {
+                for (var c = 0; c < target.Columns.Count; c++)
+                {
+                    var column = target.Columns[c];
+                    for (var r = 0; r < target.Rows.Count; ++r)
+                        target.Rows.RealizeCell(column, c, r);
+                }
+            }
+
+            private static void RealizeRow(
+                HierarchicalTreeDataGridSource<Node> target,
+                IndexPath modelIndex)
+            {
+                var rowIndex = target.Rows.ModelIndexToRowIndex(modelIndex);
+
+                Assert.NotEqual(-1, rowIndex);
+
+                for (var c = 0; c < target.Columns.Count; c++)
+                {
+                    var column = target.Columns[c];
+                    target.Rows.RealizeCell(column, c, rowIndex);
+                }
+            }
+        }
+
         public class Selection
         {
             [Fact]
@@ -581,7 +745,10 @@ namespace Avalonia.Controls.TreeDataGridTests
             return result;
         }
 
-        private static HierarchicalTreeDataGridSource<Node> CreateTarget(IEnumerable<Node> roots, bool sorted)
+        private static HierarchicalTreeDataGridSource<Node> CreateTarget(
+            IEnumerable<Node> roots,
+            bool sorted,
+            bool bindExpanded = false)
         {
             var result = new HierarchicalTreeDataGridSource<Node>(roots)
             {
@@ -590,7 +757,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                     new HierarchicalExpanderColumn<Node>(
                         new TextColumn<Node, int>("ID", x => x.Id),
                         x => x.Children,
-                        x => x.Children is not null),
+                        x => x.Children is not null,
+                        bindExpanded ? x => x.IsExpanded : null),
                     new TextColumn<Node, string?>("Caption", x => x.Caption),
                 }
             };
@@ -670,6 +838,7 @@ namespace Avalonia.Controls.TreeDataGridTests
         {
             private int _id;
             private string? _caption;
+            private bool _isExpanded;
 
             public int Id
             {
@@ -684,6 +853,12 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
 
             public AvaloniaList<Node>? Children { get; set; }
+
+            public bool IsExpanded
+            {
+                get => _isExpanded;
+                set => RaiseAndSetIfChanged(ref _isExpanded, value);
+            }
         }
     }
 }

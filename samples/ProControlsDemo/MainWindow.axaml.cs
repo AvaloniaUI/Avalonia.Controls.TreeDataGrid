@@ -2,6 +2,7 @@
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
@@ -34,17 +35,6 @@ namespace ProControlsDemo
             Activated += MainWindow_Activated;
         }
 
-        private void MainWindow_Activated(object? sender, EventArgs e)
-        {
-            Program.Stopwatch!.Stop();
-            System.Diagnostics.Debug.WriteLine("Startup time: " + Program.Stopwatch.Elapsed);
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
         public void AddCountryClick(object sender, RoutedEventArgs e)
         {
             var countryTextBox = this.FindControl<TextBox>("countryTextBox");
@@ -68,6 +58,26 @@ namespace ProControlsDemo
                 null,
                 null);
             ((MainWindowViewModel)DataContext!).Countries.AddCountry(country);
+        }
+
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+
+        private void MainWindow_Activated(object? sender, EventArgs e)
+        {
+            Program.Stopwatch!.Stop();
+            System.Diagnostics.Debug.WriteLine("Startup time: " + Program.Stopwatch.Elapsed);
+        }
+
+        private void SelectedPath_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                var vm = (MainWindowViewModel)DataContext!;
+                vm.Files.SelectedPath = ((TextBox)sender!).Text;
+            }
         }
 
         private void UpdateRealizedCount()

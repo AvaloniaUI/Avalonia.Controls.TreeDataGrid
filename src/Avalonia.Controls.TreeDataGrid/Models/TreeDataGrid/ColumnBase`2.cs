@@ -75,14 +75,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             };
         }
 
-        protected TypedBindingExpression<TModel, TValue> CreateBindingExpression(TModel model)
+        protected TypedBindingExpression<TModel, TValue?> CreateBindingExpression(TModel model)
         {
-            return new TypedBindingExpression<TModel, TValue>(
-                ObservableEx.SingleValue(model),
-                Binding.Read!,
-                Binding.Write,
-                Binding.Links!,
-                default);
+            return Binding.Instance(model);
         }
 
         private int DefaultSortAscending(TModel? x, TModel? y)

@@ -20,5 +20,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <param name="model">The parent model.</param>
         /// <returns>The child models if available.</returns>
         IEnumerable<TModel>? GetChildModels(TModel model);
+
+        /// <summary>
+        /// Called by an <see cref="IExpanderRow{TModel}"/> to write its 
+        /// <see cref="IExpander.IsExpanded"/> state to the underlying model.
+        /// </summary>
+        /// <param name="row">The row.</param>
+        void SetModelIsExpanded(IExpanderRow<TModel> row);
     }
 }
