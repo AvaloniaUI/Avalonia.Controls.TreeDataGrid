@@ -62,7 +62,7 @@ namespace ProControlsDemo.ViewModels
                     new TextColumn<FileTreeNodeModel, long?>(
                         "Size",
                         x => x.Size,
-                        options: new ColumnOptions<FileTreeNodeModel>
+                        options: new TextColumnOptions<FileTreeNodeModel>
                         {
                             CompareAscending = FileTreeNodeModel.SortAscending(x => x.Size),
                             CompareDescending = FileTreeNodeModel.SortDescending(x => x.Size),
@@ -70,7 +70,7 @@ namespace ProControlsDemo.ViewModels
                     new TextColumn<FileTreeNodeModel, DateTimeOffset?>(
                         "Modified",
                         x => x.Modified,
-                        options: new ColumnOptions<FileTreeNodeModel>
+                        options: new TextColumnOptions<FileTreeNodeModel>
                         {
                             CompareAscending = FileTreeNodeModel.SortAscending(x => x.Modified),
                             CompareDescending = FileTreeNodeModel.SortDescending(x => x.Modified),

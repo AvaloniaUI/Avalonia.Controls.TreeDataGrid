@@ -150,6 +150,7 @@
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}" Padding="4 2">
           <TextBlock Text="{TemplateBinding Value}"
+                     TextTrimming="{TemplateBinding TextTrimming}"
                      VerticalAlignment="Center"/>
         </Border>
       </ControlTemplate>
