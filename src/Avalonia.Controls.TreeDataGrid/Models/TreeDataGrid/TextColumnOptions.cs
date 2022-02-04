@@ -9,7 +9,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public class TextColumnOptions<TModel> : ColumnOptions<TModel>
     {
         /// <summary>
-        /// Gets or sets the cell's text trimming mode.
+        /// Gets or sets the text trimming mode for the cells in the column.
         /// </summary>
         public TextTrimming TextTrimming { get; set; } = TextTrimming.CharacterEllipsis;
     }

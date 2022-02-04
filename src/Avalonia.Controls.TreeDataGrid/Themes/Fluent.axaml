@@ -77,12 +77,18 @@
                   VerticalAlignment="Center"
                   Stretch="Uniform"
                   Height="12" />
-            <ContentPresenter Name="PART_ContentPresenter"
-                              Content="{TemplateBinding Header}"
-                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                              Padding="{TemplateBinding Padding}"
-                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+              <ContentPresenter Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+                  <ContentPresenter.DataTemplates>
+                      <DataTemplate DataType="x:String">
+                          <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis"/>
+                      </DataTemplate>
+                  </ContentPresenter.DataTemplates>
+              </ContentPresenter>
           </DockPanel>
         </Border>
       </ControlTemplate>
