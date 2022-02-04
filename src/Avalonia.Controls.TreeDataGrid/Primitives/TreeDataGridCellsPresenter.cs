@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Layout;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TreeDataGridCellsPresenter : TreeDataGridPresenterBase<IColumn>
+    public class TreeDataGridCellsPresenter : TreeDataGridColumnarPresenterBase<IColumn>
     {
         public static readonly StyledProperty<IBrush?> BackgroundProperty =
             TemplatedControl.BackgroundProperty.AddOwner<TreeDataGridCellsPresenter>();
@@ -39,7 +38,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (RowIndex != -1)
                 throw new InvalidOperationException("Row is already realized.");
-            UpdateIndex(index);
+            UpdateRowIndex(index);
             InvalidateMeasure();
         }
 
@@ -61,7 +60,7 @@ namespace Avalonia.Controls.Primitives
             RecycleAllElements();
         }
 
-        public void UpdateIndex(int index)
+        public void UpdateRowIndex(int index)
         {
             if (index < 0 || Rows is null || index >= Rows.Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
@@ -74,47 +73,12 @@ namespace Avalonia.Controls.Primitives
             return ((IColumns)Items!).CellMeasured(index, RowIndex, element.DesiredSize);
         }
 
-        protected override Size GetInitialConstraint(IControl element, int index, Size availableSize)
-        {
-            var column = (IUpdateColumnLayout)((IColumns)Items!)[index];
-            return new Size(Math.Min(availableSize.Width, column.MaxActualWidth), availableSize.Height);
-        }
-
-        protected override bool NeedsFinalMeasurePass(int firstIndex, IReadOnlyList<IControl?> elements)
-        {
-            var columns = (IColumns)Items!;
-
-            columns.CommitActualWidths();
-
-            // We need to do a second measure pass if any of the controls were measured with a width
-            // that is greater than the final column width.
-            for (var i = 0; i < elements.Count; i++)
-            {
-                var e = elements[i];
-                if (e?.PreviousMeasure!.Value.Width > columns[i + firstIndex].ActualWidth)
-                    return true;
-            }
-
-            return false;
-        }
-
-        protected override Size GetFinalConstraint(IControl element, int index, Size availableSize)
-        {
-            var column = ((IColumns)Items!)[index];
-            return new(column.ActualWidth, element.DesiredSize.Height);
-        }
-
         protected override IControl GetElementFromFactory(IColumn column, int index)
         {
             var model = _rows!.RealizeCell(column, index, RowIndex);
             var cell = (TreeDataGridCell)GetElementFromFactory(model, index, this);
             cell.Realize(ElementFactory!, model, index, RowIndex);
             return cell;
-        }
-
-        protected override (int index, double position) GetElementAt(double position)
-        {
-            return ((IColumns)Items!).GetColumnAt(position);
         }
 
         protected override void RealizeElement(IControl element, IColumn column, int index)
@@ -139,23 +103,12 @@ namespace Avalonia.Controls.Primitives
         protected override void UnrealizeElement(IControl element)
         {
             var cell = (TreeDataGridCell)element;
-            var columnIndex = cell.ColumnIndex;
-            var rowIndex = cell.RowIndex;
-
             cell.Unrealize();
-            _rows!.UnrealizeCell(cell.Model!, columnIndex, rowIndex);
+            _rows!.UnrealizeCell(cell.Model!, cell.ColumnIndex, cell.RowIndex);
         }
 
         protected override void UpdateElementIndex(IControl element, int index)
         {
-        }
-
-        protected override double CalculateSizeU(Size availableSize)
-        {
-            if (Items is null)
-                return 0;
-
-            return ((IColumns)Items).GetEstimatedWidth(availableSize.Width);
         }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
