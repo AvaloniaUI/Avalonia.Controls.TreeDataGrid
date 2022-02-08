@@ -27,7 +27,8 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<TreeDataGrid, IElementFactory> ElementFactoryProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, IElementFactory>(
                 nameof(ElementFactory),
-                o => o.ElementFactory);
+                o => o.ElementFactory,
+                (o ,v) => o.ElementFactory = v);
 
         public static readonly DirectProperty<TreeDataGrid, IRows?> RowsProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, IRows?>(
@@ -56,6 +57,7 @@ namespace Avalonia.Controls
                 o => o.Source,
                 (o, v) => o.Source = v);
 
+        private IElementFactory? _elementFactory;
         private ITreeDataGridSource? _source;
         private IColumns? _columns;
         private IRows? _rows;
@@ -67,7 +69,6 @@ namespace Avalonia.Controls
 
         public TreeDataGrid()
         {
-            ElementFactory = CreateElementFactory();
             AddHandler(TreeDataGridColumnHeader.ClickEvent, OnClick);
         }
 
@@ -89,7 +90,15 @@ namespace Avalonia.Controls
             private set => SetAndRaise(ColumnsProperty, ref _columns, value);
         }
 
-        public IElementFactory ElementFactory { get; } = new TreeDataGridElementFactory();
+        public IElementFactory ElementFactory 
+        {
+            get => _elementFactory ??= CreateDefaultElementFactory();
+            set
+            {
+                _ = value ?? throw new ArgumentNullException(nameof(value));
+                SetAndRaise(ElementFactoryProperty, ref _elementFactory!, value);
+            }
+        }
 
         public IRows? Rows
         {
@@ -220,7 +229,7 @@ namespace Avalonia.Controls
             return e.Cancel;
         }
 
-        protected virtual IElementFactory CreateElementFactory() => new TreeDataGridElementFactory();
+        protected virtual IElementFactory CreateDefaultElementFactory() => new TreeDataGridElementFactory();
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
