@@ -486,6 +486,9 @@ namespace Avalonia.Controls.Primitives
             UnrealizeElement(element);
             element.IsVisible = false;
 
+            // Hackfix for https://github.com/AvaloniaUI/Avalonia/issues/7553
+            element.Measure(Size.Empty);
+
             _recycleArgs ??= new ElementFactoryRecycleArgs();
             _recycleArgs.Element = element;
             _recycleArgs.Parent = this;
