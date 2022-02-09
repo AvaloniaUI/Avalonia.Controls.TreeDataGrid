@@ -112,6 +112,17 @@ namespace Avalonia.Controls.Primitives
                     new Rect(0, anchorU, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height);
                 _anchorElement.Arrange(rect);
 
+                // If the item being brought into view was added since the last layout pass then
+                // our bounds won't be updated, so any containing scroll viewers will not have an
+                // updated extent. Do a layout pass to ensure that the containing scroll viewers
+                // will be able to scroll the new item into view.
+                if (!Bounds.Contains(rect) && !Viewport.Contains(rect))
+                {
+                    _isWaitingForViewportUpdate = true;
+                    root.LayoutManager.ExecuteLayoutPass();
+                    _isWaitingForViewportUpdate = false;
+                }
+
                 // Try to bring the item into view and do a layout pass.
                 _anchorElement.BringIntoView();
 
@@ -239,10 +250,14 @@ namespace Avalonia.Controls.Primitives
                 _children.Clear();
                 return default;
             }
+
             // If we're bringing an item into view, ignore any layout passes until we receive a new
             // effective viewport.
             if (_isWaitingForViewportUpdate)
-                return DesiredSize;
+            {
+                var sizeV = Orientation == Orientation.Horizontal ? DesiredSize.Height : DesiredSize.Width;
+                return CalculateDesiredSize(availableSize, sizeV);
+            }
 
             // We handle horizontal and vertical layouts here so X and Y are abstracted to:
             // - Horizontal layouts: U = horizontal, V = vertical
@@ -294,14 +309,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            var sizeU = CalculateSizeU(availableSize);
-
-            if (double.IsInfinity(sizeU) || double.IsNaN(sizeU))
-                throw new InvalidOperationException("Invalid calculated size.");
-
-            return Orientation == Orientation.Horizontal ?
-                new Size(sizeU, viewport.measuredV) :
-                new Size(viewport.measuredV, sizeU);
+            return CalculateDesiredSize(availableSize, viewport.measuredV);
         }
 
         private void GenerateElements(Size availableSize, ref MeasureViewport viewport)
@@ -361,6 +369,18 @@ namespace Avalonia.Controls.Primitives
             Viewport = e.EffectiveViewport;
             _isWaitingForViewportUpdate = false;
             InvalidateMeasure();
+        }
+
+        private Size CalculateDesiredSize(Size availableSize, double sizeV)
+        {
+            var sizeU = CalculateSizeU(availableSize);
+
+            if (double.IsInfinity(sizeU) || double.IsNaN(sizeU))
+                throw new InvalidOperationException("Invalid calculated size.");
+
+            return Orientation == Orientation.Horizontal ?
+                new Size(sizeU, sizeV) :
+                new Size(sizeV, sizeU);
         }
 
         private MeasureViewport CalculateMeasureViewport()
