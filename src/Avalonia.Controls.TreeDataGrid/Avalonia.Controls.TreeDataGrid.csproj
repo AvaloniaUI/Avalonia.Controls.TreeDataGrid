@@ -12,6 +12,9 @@
     <Description>TreeDataGrid is a control which displays hierarchical and tabular data together in a single view. It is a combination of a TreeView and DataGrid control.</Description>
     <Copyright>Copyright © Steven Kirk 2022</Copyright>
   </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>Avalonia.Controls.TreeDataGrid</PackageId>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.10"/>
   </ItemGroup>
