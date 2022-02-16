@@ -408,6 +408,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             var (target, scroll, _) = CreateTarget();
 
             target.BringIntoView(10);
+            Layout(target);
 
             AssertRowIndexes(target, 1, 10);
         }
@@ -431,6 +432,23 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             // the presenter will wait for a viewport update which will never come because the item
             // will be placed in the existing viewport.
             target.BringIntoView(0);
+
+            AssertRowIndexes(target, 0, 10);
+        }
+
+        [Fact]
+        public void Brings_Partially_Visible_New_Item_Into_View()
+        {
+            // Issue #77
+            using var app = App();
+
+            var (target, scroll, items) = CreateTarget(itemCount: 9, rootSize: new Size(100, 95));
+
+            AssertRowIndexes(target, 0, 9);
+
+            items.Add(new Model { Id = 100, Title = "New Item" });
+            target.BringIntoView(9);
+            Layout(target);
 
             AssertRowIndexes(target, 0, 10);
         }
@@ -504,9 +522,12 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         }
 
         private static (TreeDataGridRowsPresenter, ScrollViewer, AvaloniaList<Model>) CreateTarget(
-            IColumns? columns = null, List<IStyle>? additionalStyles = null)
+            IColumns? columns = null, 
+            List<IStyle>? additionalStyles = null,
+            int itemCount = 100,
+            Size? rootSize = null)
         {
-            var items = new AvaloniaList<Model>(Enumerable.Range(0, 100).Select(x =>
+            var items = new AvaloniaList<Model>(Enumerable.Range(0, itemCount).Select(x =>
                 new Model
                 {
                     Id = x,
@@ -543,6 +564,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 },
                 Child = scrollViewer,
             };
+
+            if (rootSize.HasValue)
+                root.ClientSize = rootSize.Value;
 
             if (additionalStyles != null)
             {
