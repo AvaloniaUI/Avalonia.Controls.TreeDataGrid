@@ -2,7 +2,7 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
-namespace ProControlsDemo
+namespace TreeDataGridDemo
 {
     public class App : Application
     {

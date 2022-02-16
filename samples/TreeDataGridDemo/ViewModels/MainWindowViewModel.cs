@@ -1,4 +1,4 @@
-﻿namespace ProControlsDemo.ViewModels
+﻿namespace TreeDataGridDemo.ViewModels
 {
     internal class MainWindowViewModel
     {

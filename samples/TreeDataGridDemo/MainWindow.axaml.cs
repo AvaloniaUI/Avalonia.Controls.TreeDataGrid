@@ -8,10 +8,10 @@ using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using ProControlsDemo.Models;
-using ProControlsDemo.ViewModels;
+using TreeDataGridDemo.Models;
+using TreeDataGridDemo.ViewModels;
 
-namespace ProControlsDemo
+namespace TreeDataGridDemo
 {
     public class MainWindow : Window
     {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace ProControlsDemo.Models
+namespace TreeDataGridDemo.Models
 {
     internal static class Countries
     {
