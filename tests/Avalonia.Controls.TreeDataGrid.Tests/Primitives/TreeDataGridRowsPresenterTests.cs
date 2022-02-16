@@ -251,14 +251,14 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Single(target.GetLogicalChildren());
             Assert.Single(target.GetVisualChildren());
 
-            target.Items = new AnonymousSortableRows<Model>(ItemsSourceViewFix<Model>.Empty, null);
+            target.Items = new AnonymousSortableRows<Model>(TreeDataGridItemsSourceView<Model>.Empty, null);
             Layout(target);
             Assert.Empty(target.Items);
 
             Assert.Empty(target.GetVisualChildren());
             Assert.Empty(target.GetLogicalChildren());
 
-            target.Items = new AnonymousSortableRows<Model>(new ItemsSourceViewFix<Model>(Enumerable.Range(0, 5)
+            target.Items = new AnonymousSortableRows<Model>(new TreeDataGridItemsSourceView<Model>(Enumerable.Range(0, 5)
                 .Select(x => new Model { Id = x, Title = "Item " + x, })), null);
             Layout(target);
             Assert.Equal(5, target.Items.Count);
@@ -534,7 +534,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                     Title = "Item " + x,
                 }));
 
-            var itemsView = new ItemsSourceViewFix<Model>(items);
+            var itemsView = new TreeDataGridItemsSourceView<Model>(items);
             var rows = new AnonymousSortableRows<Model>(itemsView, null);
 
             var target = new TreeDataGridRowsPresenter

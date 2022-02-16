@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public HierarchicalRows(
             IExpanderRowController<TModel> controller,
-            ItemsSourceViewFix<TModel> items,
+            TreeDataGridItemsSourceView<TModel> items,
             IExpanderColumn<TModel> expanderColumn,
             Comparison<TModel>? comparison)
         {
@@ -117,7 +117,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 throw new InvalidOperationException("Invalid column.");
         }
 
-        public void SetItems(ItemsSourceViewFix<TModel> items)
+        public void SetItems(TreeDataGridItemsSourceView<TModel> items)
         {
             _roots.SetItems(items);
         }
@@ -381,7 +381,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             public RootRows(
                 HierarchicalRows<TModel> owner,
-                ItemsSourceViewFix<TModel> items,
+                TreeDataGridItemsSourceView<TModel> items,
                 Comparison<TModel>? comparison)
                 : base(items, comparison)
             {

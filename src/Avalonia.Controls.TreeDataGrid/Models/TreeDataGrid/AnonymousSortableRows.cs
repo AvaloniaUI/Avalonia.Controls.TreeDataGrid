@@ -19,12 +19,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     {
         private readonly AnonymousRow<TModel> _row;
         private readonly Comparison<int> _compareItemsByIndex;
-        private ItemsSourceViewFix<TModel> _items;
+        private TreeDataGridItemsSourceView<TModel> _items;
         private IComparer<TModel>? _comparer;
         private List<int>? _sortedIndexes;
 
         public AnonymousSortableRows(
-            ItemsSourceViewFix<TModel> items,
+            TreeDataGridItemsSourceView<TModel> items,
             IComparer<TModel>? comparer)
         {
             _items = items;
@@ -54,7 +54,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void Dispose()
         {
-            SetItems(ItemsSourceViewFix<TModel>.Empty);
+            SetItems(TreeDataGridItemsSourceView<TModel>.Empty);
             GC.SuppressFinalize(this);
         }
 
@@ -81,12 +81,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 throw new InvalidOperationException("Invalid column.");
         }
 
-        public void SetItems(ItemsSourceViewFix<TModel> items)
+        public void SetItems(TreeDataGridItemsSourceView<TModel> items)
         {
             _items.CollectionChanged -= OnItemsCollectionChanged;
             _items = items;
 
-            if (!ReferenceEquals(items, ItemsSourceViewFix<TModel>.Empty))
+            if (!ReferenceEquals(items, TreeDataGridItemsSourceView<TModel>.Empty))
                 _items.CollectionChanged += OnItemsCollectionChanged;
 
             OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);

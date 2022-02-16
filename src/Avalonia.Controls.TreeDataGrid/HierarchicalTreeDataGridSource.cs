@@ -19,7 +19,7 @@ namespace Avalonia.Controls
         IExpanderRowController<TModel>
     {
         private IEnumerable<TModel> _items;
-        private ItemsSourceViewFix<TModel> _itemsView;
+        private TreeDataGridItemsSourceView<TModel> _itemsView;
         private IExpanderColumn<TModel>? _expanderColumn;
         private HierarchicalRows<TModel>? _rows;
         private Comparison<TModel>? _comparison;
@@ -34,7 +34,7 @@ namespace Avalonia.Controls
         public HierarchicalTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = items;
-            _itemsView = ItemsSourceViewFix<TModel>.GetOrCreate(items);
+            _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(items);
             Columns = new ColumnList<TModel>();
             Columns.CollectionChanged += OnColumnsCollectionChanged;
         }
@@ -47,7 +47,7 @@ namespace Avalonia.Controls
                 if (_items != value)
                 {
                     _items = value;
-                    _itemsView = ItemsSourceViewFix<TModel>.GetOrCreate(value);
+                    _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(value);
                     _rows?.SetItems(_itemsView);
                     if (_selection is object)
                         _selection.Source = value;

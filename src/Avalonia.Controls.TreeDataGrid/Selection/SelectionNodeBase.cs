@@ -30,7 +30,7 @@ namespace Avalonia.Controls.Selection
                 {
                     ItemsView?.RemoveListener(this);
                     _source = value;
-                    ItemsView = value is object ? ItemsSourceViewFix<T>.GetOrCreate(value) : null;
+                    ItemsView = value is object ? TreeDataGridItemsSourceView<T>.GetOrCreate(value) : null;
                     ItemsView?.AddListener(this);
                 }
             }
@@ -39,7 +39,7 @@ namespace Avalonia.Controls.Selection
         /// <summary>
         /// Gets an <see cref="ItemsSourceView{T}"/> of the <see cref="Source"/>.
         /// </summary>
-        protected internal ItemsSourceViewFix<T>? ItemsView { get; set; }
+        protected internal TreeDataGridItemsSourceView<T>? ItemsView { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether range selection is currently enabled for
