@@ -13,7 +13,7 @@ namespace Avalonia.Controls
     public class FlatTreeDataGridSource<TModel> : ITreeDataGridSource<TModel>, IDisposable
     {
         private IEnumerable<TModel> _items;
-        private ItemsSourceViewFix<TModel> _itemsView;
+        private TreeDataGridItemsSourceView<TModel> _itemsView;
         private AnonymousSortableRows<TModel>? _rows;
         private IComparer<TModel>? _comparer;
         private ITreeDataGridSelection? _selection;
@@ -22,7 +22,7 @@ namespace Avalonia.Controls
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = items;
-            _itemsView = ItemsSourceViewFix<TModel>.GetOrCreate(items);
+            _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(items);
             Columns = new ColumnList<TModel>();
         }
 
@@ -39,7 +39,7 @@ namespace Avalonia.Controls
                 if (_items != value)
                 {
                     _items = value;
-                    _itemsView = ItemsSourceViewFix<TModel>.GetOrCreate(value);
+                    _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(value);
                     _rows?.SetItems(_itemsView);
                     if (_selection is object)
                         _selection.Source = value;

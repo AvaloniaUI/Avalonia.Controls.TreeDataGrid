@@ -3,9 +3,9 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
-using ProControlsDemo.Models;
+using TreeDataGridDemo.Models;
 
-namespace ProControlsDemo.ViewModels
+namespace TreeDataGridDemo.ViewModels
 {
     internal class CountriesPageViewModel
     {

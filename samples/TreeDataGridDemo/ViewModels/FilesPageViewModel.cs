@@ -12,10 +12,10 @@ using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using ProControlsDemo.Models;
+using TreeDataGridDemo.Models;
 using ReactiveUI;
 
-namespace ProControlsDemo.ViewModels
+namespace TreeDataGridDemo.ViewModels
 {
     internal class FilesPageViewModel : ReactiveObject
     {
@@ -30,11 +30,11 @@ namespace ProControlsDemo.ViewModels
         {
             var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
 
-            using (var s = assetLoader.Open(new Uri("avares://ProControlsDemo/Assets/file.png")))
+            using (var s = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
                 _fileIcon = new Bitmap(s);
-            using (var s = assetLoader.Open(new Uri("avares://ProControlsDemo/Assets/folder.png")))
+            using (var s = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
                 _folderIcon = new Bitmap(s);
-            using (var s = assetLoader.Open(new Uri("avares://ProControlsDemo/Assets/folder-open.png")))
+            using (var s = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
                 _folderOpenIcon = new Bitmap(s);
 
             Drives = DriveInfo.GetDrives().Select(x => x.Name).ToList();

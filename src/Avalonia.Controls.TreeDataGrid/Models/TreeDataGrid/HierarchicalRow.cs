@@ -127,7 +127,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 _childRows?.Dispose();
                 _childRows = new ChildRows(
                     this,
-                    ItemsSourceViewFix<TModel>.GetOrCreate(childModels),
+                    TreeDataGridItemsSourceView<TModel>.GetOrCreate(childModels),
                     _comparison);
             }
 
@@ -162,7 +162,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             public ChildRows(
                 HierarchicalRow<TModel> owner,
-                ItemsSourceViewFix<TModel> items,
+                TreeDataGridItemsSourceView<TModel> items,
                 Comparison<TModel>? comparison)
                 : base(items, comparison)
             {

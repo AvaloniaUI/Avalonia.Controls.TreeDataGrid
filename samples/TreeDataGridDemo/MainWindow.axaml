@@ -3,8 +3,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="ProControlsDemo.MainWindow"
-        Title="ProControlsDemo">
+        x:Class="TreeDataGridDemo.MainWindow"
+        Title="TreeDataGridDemo">
   <TabControl Name="tabs">
     <TabItem Header="Countries">
       <DockPanel>

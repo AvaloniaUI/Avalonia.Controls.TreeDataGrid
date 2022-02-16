@@ -2,7 +2,7 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
 
-namespace ProControlsDemo
+namespace TreeDataGridDemo
 {
     internal class Program
     {
