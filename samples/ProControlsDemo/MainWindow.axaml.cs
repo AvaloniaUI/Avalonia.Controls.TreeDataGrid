@@ -37,6 +37,7 @@ namespace ProControlsDemo
 
         public void AddCountryClick(object sender, RoutedEventArgs e)
         {
+            var countries = this.FindControl<TreeDataGrid>("countries");
             var countryTextBox = this.FindControl<TextBox>("countryTextBox");
             var regionTextBox = this.FindControl<TextBox>("regionTextBox");
             var populationTextBox = this.FindControl<TextBox>("populationTextBox");
@@ -57,7 +58,12 @@ namespace ProControlsDemo
                 null,
                 null,
                 null);
-            ((MainWindowViewModel)DataContext!).Countries.AddCountry(country);
+            var vm = (MainWindowViewModel)DataContext!;
+            vm.Countries.AddCountry(country);
+
+            var index = vm.Countries.Source.Rows.Count - 1;
+            countries.RowsPresenter!.BringIntoView(index);
+            countries.TryGetRow(index)?.Focus();
         }
 
         private void InitializeComponent()
