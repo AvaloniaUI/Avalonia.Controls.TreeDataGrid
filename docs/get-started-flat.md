@@ -67,7 +67,7 @@ public class MainWindowViewModel
             Columns =
             {
                 new TextColumn<Person, string>("First Name", x => x.FirstName),
-                new TextColumn<Person, string>("Last Name", x => x.FirstName),
+                new TextColumn<Person, string>("Last Name", x => x.LastName),
                 new TextColumn<Person, int>("Age", x => x.Age),
             },
         };
