@@ -5,7 +5,7 @@ using System.IO;
 using Avalonia.Threading;
 using ReactiveUI;
 
-namespace ProControlsDemo.Models
+namespace TreeDataGridDemo.Models
 {
     internal class FileTreeNodeModel : ReactiveObject
     {

@@ -7,7 +7,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Utils;
 
@@ -17,20 +16,14 @@ namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents a standardized view of the supported interactions between a given ItemsSource
-    /// object and an <see cref="ItemsRepeater"/> control.
+    /// object and a <see cref="TreeDataGrid"/> control.
     /// </summary>
-    /// <remarks>
-    /// Components written to work with ItemsRepeater should consume the
-    /// <see cref="ItemsRepeater.Items"/> via ItemsSourceView since this provides a normalized
-    /// view of the Items. That way, each component does not need to know if the source is an
-    /// IEnumerable, an IList, or something else.
-    /// </remarks>
-    public class ItemsSourceViewFix : INotifyCollectionChanged, ICollectionChangedListener, IDisposable
+    public class TreeDataGridItemsSourceView : INotifyCollectionChanged, ICollectionChangedListener, IDisposable
     {
         /// <summary>
-        ///  Gets an empty <see cref="ItemsSourceViewFix"/>
+        ///  Gets an empty <see cref="TreeDataGridItemsSourceView"/>
         /// </summary>
-        public static ItemsSourceViewFix Empty { get; } = new ItemsSourceViewFix(Array.Empty<object>());
+        public static TreeDataGridItemsSourceView Empty { get; } = new TreeDataGridItemsSourceView(Array.Empty<object>());
 
         private IList? _inner;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
@@ -39,12 +32,12 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the ItemsSourceView class for the specified data source.
         /// </summary>
         /// <param name="source">The data source.</param>
-        public ItemsSourceViewFix(IEnumerable source)
+        public TreeDataGridItemsSourceView(IEnumerable source)
         {
             source = source ?? throw new ArgumentNullException(nameof(source));
             _inner = source switch
             {
-                ItemsSourceViewFix => throw new ArgumentException("Cannot wrap an existing ItemsSourceView.", nameof(source)),
+                TreeDataGridItemsSourceView => throw new ArgumentException("Cannot wrap an existing ItemsSourceView.", nameof(source)),
                 IList list => list,
                 INotifyCollectionChanged => throw new ArgumentException(
                     "Collection implements INotifyCollectionChanged by not IList.",
@@ -146,9 +139,9 @@ namespace Avalonia.Controls
 
         public int IndexOf(object? item) => Inner.IndexOf(item);
 
-        public static ItemsSourceViewFix GetOrCreate(IEnumerable? items)
+        public static TreeDataGridItemsSourceView GetOrCreate(IEnumerable? items)
         {
-            if (items is ItemsSourceViewFix isv)
+            if (items is TreeDataGridItemsSourceView isv)
             {
                 return isv;
             }
@@ -158,7 +151,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                return new ItemsSourceViewFix(items);
+                return new TreeDataGridItemsSourceView(items);
             }
         }
 
@@ -222,26 +215,26 @@ namespace Avalonia.Controls
             _collectionChanged?.Invoke(this, args);
         }
 
-        private void ThrowDisposed() => throw new ObjectDisposedException(nameof(ItemsSourceViewFix));
+        private void ThrowDisposed() => throw new ObjectDisposedException(nameof(TreeDataGridItemsSourceView));
     }
 
-    public class ItemsSourceViewFix<T> : ItemsSourceViewFix, IReadOnlyList<T>
+    public class TreeDataGridItemsSourceView<T> : TreeDataGridItemsSourceView, IReadOnlyList<T>
     {
         /// <summary>
-        ///  Gets an empty <see cref="ItemsSourceViewFix"/>
+        ///  Gets an empty <see cref="TreeDataGridItemsSourceView"/>
         /// </summary>
-        public new static ItemsSourceViewFix<T> Empty { get; } = new ItemsSourceViewFix<T>(Array.Empty<T>());
+        public new static TreeDataGridItemsSourceView<T> Empty { get; } = new TreeDataGridItemsSourceView<T>(Array.Empty<T>());
 
         /// <summary>
         /// Initializes a new instance of the ItemsSourceView class for the specified data source.
         /// </summary>
         /// <param name="source">The data source.</param>
-        public ItemsSourceViewFix(IEnumerable<T> source)
+        public TreeDataGridItemsSourceView(IEnumerable<T> source)
             : base(source)
         {
         }
 
-        private ItemsSourceViewFix(IEnumerable source)
+        private TreeDataGridItemsSourceView(IEnumerable source)
             : base(source)
         {
         }
@@ -265,9 +258,9 @@ namespace Avalonia.Controls
         public IEnumerator<T> GetEnumerator() => Inner.Cast<T>().GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => Inner.GetEnumerator();
 
-        public static new ItemsSourceViewFix<T> GetOrCreate(IEnumerable? items)
+        public static new TreeDataGridItemsSourceView<T> GetOrCreate(IEnumerable? items)
         {
-            if (items is ItemsSourceViewFix<T> isv)
+            if (items is TreeDataGridItemsSourceView<T> isv)
             {
                 return isv;
             }
@@ -277,7 +270,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                return new ItemsSourceViewFix<T>(items);
+                return new TreeDataGridItemsSourceView<T>(items);
             }
         }
     }

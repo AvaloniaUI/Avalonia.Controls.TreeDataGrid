@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.TreeDataG
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{A8CF7AE6-C46F-4930-85AF-13126EAC5E6E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProControlsDemo", "samples\ProControlsDemo\ProControlsDemo.csproj", "{9A36E37E-2C03-4B5A-B7EE-A91DC95C3E4A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TreeDataGridDemo", "samples\TreeDataGridDemo\TreeDataGridDemo.csproj", "{9A36E37E-2C03-4B5A-B7EE-A91DC95C3E4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -191,7 +191,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             }
 
             var items = new Model[1];
-            var rows = new AnonymousSortableRows<Model>(new ItemsSourceViewFix<Model>(items), null);
+            var rows = new AnonymousSortableRows<Model>(new TreeDataGridItemsSourceView<Model>(items), null);
 
             var target = new TreeDataGridCellsPresenter
             {

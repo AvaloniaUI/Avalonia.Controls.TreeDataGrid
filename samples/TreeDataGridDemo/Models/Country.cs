@@ -1,4 +1,4 @@
-﻿namespace ProControlsDemo.Models
+﻿namespace TreeDataGridDemo.Models
 {
     internal class Country
     {

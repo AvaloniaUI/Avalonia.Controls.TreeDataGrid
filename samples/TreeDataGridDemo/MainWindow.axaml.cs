@@ -8,10 +8,10 @@ using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using ProControlsDemo.Models;
-using ProControlsDemo.ViewModels;
+using TreeDataGridDemo.Models;
+using TreeDataGridDemo.ViewModels;
 
-namespace ProControlsDemo
+namespace TreeDataGridDemo
 {
     public class MainWindow : Window
     {
@@ -37,6 +37,7 @@ namespace ProControlsDemo
 
         public void AddCountryClick(object sender, RoutedEventArgs e)
         {
+            var countries = this.FindControl<TreeDataGrid>("countries");
             var countryTextBox = this.FindControl<TextBox>("countryTextBox");
             var regionTextBox = this.FindControl<TextBox>("regionTextBox");
             var populationTextBox = this.FindControl<TextBox>("populationTextBox");
@@ -57,7 +58,12 @@ namespace ProControlsDemo
                 null,
                 null,
                 null);
-            ((MainWindowViewModel)DataContext!).Countries.AddCountry(country);
+            var vm = (MainWindowViewModel)DataContext!;
+            vm.Countries.AddCountry(country);
+
+            var index = vm.Countries.Source.Rows.Count - 1;
+            countries.RowsPresenter!.BringIntoView(index);
+            countries.TryGetRow(index)?.Focus();
         }
 
         private void InitializeComponent()

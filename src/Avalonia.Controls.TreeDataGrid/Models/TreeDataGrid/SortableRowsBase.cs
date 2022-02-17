@@ -16,12 +16,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         where TRow : IRow<TModel>, IModelIndexableRow, IDisposable
     {
         private readonly Comparison<int> _compareItemsByIndex;
-        private ItemsSourceViewFix<TModel> _items;
+        private TreeDataGridItemsSourceView<TModel> _items;
         private Comparison<TModel>? _comparison;
         private List<TRow>? _unsortedRows;
         private List<int>? _sortedIndexes;
 
-        public SortableRowsBase(ItemsSourceViewFix<TModel> items, Comparison<TModel>? comparison)
+        public SortableRowsBase(TreeDataGridItemsSourceView<TModel> items, Comparison<TModel>? comparison)
         {
             _items = items;
             _items.CollectionChanged += OnItemsCollectionChanged;
@@ -48,7 +48,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public virtual void Dispose()
         {
-            SetItems(ItemsSourceViewFix<TModel>.Empty);
+            SetItems(TreeDataGridItemsSourceView<TModel>.Empty);
             GC.SuppressFinalize(this);
         }
 
@@ -66,12 +66,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return _sortedIndexes is not null ? GetSortedEnumerator() : UnsortedRows.GetEnumerator();
         }
 
-        public void SetItems(ItemsSourceViewFix<TModel> items)
+        public void SetItems(TreeDataGridItemsSourceView<TModel> items)
         {
             _items.CollectionChanged -= OnItemsCollectionChanged;
             _items = items;
 
-            if (!ReferenceEquals(items, ItemsSourceViewFix<TModel>.Empty))
+            if (!ReferenceEquals(items, TreeDataGridItemsSourceView<TModel>.Empty))
                 _items.CollectionChanged += OnItemsCollectionChanged;
 
             OnItemsCollectionChanged(null, CollectionExtensions.ResetEvent);
