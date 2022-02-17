@@ -17,6 +17,10 @@ An example of `TreeDataGrid` displaying flat data:
 
 ![TreeDataGrid in hierarchical mode](docs/images/countries.png)
 
+## Current Status
+
+The control is currently in *early beta*. As such there will be bugs, missing features and lacking docs, but the control should be generally usable and performant.
+
 ## Getting Started
 
 - [Installation](installation.md)
