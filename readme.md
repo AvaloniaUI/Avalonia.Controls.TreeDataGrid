@@ -2,7 +2,7 @@
 
 ## Introduction
 
-`TreeDataGrid` is a control which displays hierarchical and tabular data together in a single view. It is a combination of a `TreeView` and `DataGrid` control.
+`TreeDataGrid` is a control for the [Avalonia](https://github.com/AvaloniaUI/Avalonia) UI framework which displays hierarchical and tabular data together in a single view. It is a combination of a `TreeView` and `DataGrid` control.
 
 The control has two modes of operation:
 
@@ -11,11 +11,11 @@ The control has two modes of operation:
 
 An example of `TreeDataGrid` displaying hierarchical data:
 
-![TreeDataGrid in hierarchical mode](images/files.png)
+![TreeDataGrid in hierarchical mode](docs/images/files.png)
 
 An example of `TreeDataGrid` displaying flat data:
 
-![TreeDataGrid in hierarchical mode](images/countries.png)
+![TreeDataGrid in hierarchical mode](docs/images/countries.png)
 
 ## Getting Started
 
