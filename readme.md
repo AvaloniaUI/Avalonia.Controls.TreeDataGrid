@@ -23,6 +23,6 @@ The control is currently in *early beta*. As such there will be bugs, missing fe
 
 ## Getting Started
 
-- [Installation](installation.md)
-- [Creating a flat `TreeDataGrid`](get-started-flat.md)
-- [Creating a hierarchical `TreeDataGrid`](get-started-hierarchical.md)
+- [Installation](docs/installation.md)
+- [Creating a flat `TreeDataGrid`](docs/get-started-flat.md)
+- [Creating a hierarchical `TreeDataGrid`](docs/get-started-hierarchical.md)
