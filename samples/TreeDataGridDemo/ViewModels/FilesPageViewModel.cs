@@ -14,28 +14,32 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using TreeDataGridDemo.Models;
 using ReactiveUI;
+using Avalonia.Data.Converters;
+using System.Globalization;
 
 namespace TreeDataGridDemo.ViewModels
 {
     internal class FilesPageViewModel : ReactiveObject
     {
-        private readonly Bitmap _folderIcon;
-        private readonly Bitmap _folderOpenIcon;
-        private readonly Bitmap _fileIcon;
         private FileTreeNodeModel? _root;
         private string _selectedDrive;
         private string? _selectedPath;
+        private FolderIconConverter _folderIconConverter;
 
         public FilesPageViewModel()
         {
             var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
 
-            using (var s = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
-                _fileIcon = new Bitmap(s);
-            using (var s = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
-                _folderIcon = new Bitmap(s);
-            using (var s = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
-                _folderOpenIcon = new Bitmap(s);
+            using (var fileStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
+            using (var folderStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
+            using (var folderOpenStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
+            {
+                var fileIcon = new Bitmap(fileStream);
+                var folderIcon = new Bitmap(folderStream);
+                var folderOpenIcon = new Bitmap(folderOpenStream);
+
+                _folderIconConverter = new FolderIconConverter(fileIcon, folderOpenIcon, folderIcon);
+            }
 
             Drives = DriveInfo.GetDrives().Select(x => x.Name).ToList();
             _selectedDrive = "C:\\";
@@ -54,7 +58,7 @@ namespace TreeDataGridDemo.ViewModels
                     new HierarchicalExpanderColumn<FileTreeNodeModel>(
                         new TemplateColumn<FileTreeNodeModel>(
                             "Name",
-                            new FuncDataTemplate<FileTreeNodeModel>(FileNameTemplate),
+                            new FuncDataTemplate<FileTreeNodeModel>(FileNameTemplate, true),
                             new GridLength(1, GridUnitType.Star),
                             new ColumnOptions<FileTreeNodeModel>
                             {
@@ -121,10 +125,6 @@ namespace TreeDataGridDemo.ViewModels
 
         private IControl FileNameTemplate(FileTreeNodeModel node, INameScope ns)
         {
-            var icon = node.IsDirectory ?
-                node.WhenAnyValue(x => x.IsExpanded).Select(x => x ? _folderOpenIcon : _folderIcon) :
-                Avalonia.Reactive.ObservableEx.SingleValue(_fileIcon);
-
             return new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -133,7 +133,15 @@ namespace TreeDataGridDemo.ViewModels
                 {
                     new Image
                     {
-                        [!Image.SourceProperty] = icon.ToBinding(),
+                        [!Image.SourceProperty] = new MultiBinding
+                        {
+                            Bindings =
+                            {
+                                new Binding(nameof(node.IsDirectory)),
+                                new Binding(nameof(node.IsExpanded)),
+                            },
+                            Converter = _folderIconConverter,
+                        },
                         Margin = new Thickness(0, 0, 4, 0),
                         VerticalAlignment = VerticalAlignment.Center,
                     },
@@ -211,6 +219,35 @@ namespace TreeDataGridDemo.ViewModels
                 System.Diagnostics.Trace.WriteLine($"Deselected '{i?.Path}'");
             foreach (var i in e.SelectedItems)
                 System.Diagnostics.Trace.WriteLine($"Selected '{i?.Path}'");
+        }
+
+        private class FolderIconConverter : IMultiValueConverter
+        {
+            private readonly Bitmap _file;
+            private readonly Bitmap _folderExpanded;
+            private readonly Bitmap _folderCollapsed;
+
+            public FolderIconConverter(Bitmap file, Bitmap folderExpanded, Bitmap folderCollapsed)
+            {
+                _file = file;
+                _folderExpanded = folderExpanded;
+                _folderCollapsed = folderCollapsed;
+            }
+
+            public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+            {
+                if (values.Count == 2 &&
+                    values[0] is bool isDirectory &&
+                    values[1] is bool isExpanded)
+                {
+                    if (!isDirectory)
+                        return _file;
+                    else
+                        return isExpanded ? _folderExpanded : _folderCollapsed;
+                }
+
+                return null;
+            }
         }
     }
 }
