@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Utils;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
@@ -86,6 +88,18 @@ namespace Avalonia.Controls.Primitives
             {
                 _resizer.DragDelta += ResizerDragDelta;
             }
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var result = base.MeasureOverride(availableSize);
+
+            // HACKFIX for #83. Seems that cells are getting truncated at times due to DPI scaling.
+            // New text stack in Avalonia 11.0 should fix this but until then a hack to add a pixel
+            // to cell size seems to fix it.
+            result = result.Inflate(new Thickness(1, 0));
+
+            return result;
         }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
