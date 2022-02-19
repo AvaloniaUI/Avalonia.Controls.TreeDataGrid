@@ -7,7 +7,7 @@ using ReactiveUI;
 
 namespace TreeDataGridDemo.Models
 {
-    internal class FileTreeNodeModel : ReactiveObject
+    public class FileTreeNodeModel : ReactiveObject
     {
         private string _path;
         private string _name;
