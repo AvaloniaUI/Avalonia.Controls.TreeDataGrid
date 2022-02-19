@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
@@ -13,6 +12,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private double _viewportWidth;
 
         public event EventHandler? LayoutInvalidated;
+
+        public void AddRange(IEnumerable<IColumn<TModel>> items)
+        {
+            foreach (var item in items)
+                Add(item);
+        }
 
         public Size CellMeasured(int columnIndex, int rowIndex, Size size)
         {
