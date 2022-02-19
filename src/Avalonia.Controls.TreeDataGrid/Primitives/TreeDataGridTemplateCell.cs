@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Templates;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -42,18 +43,27 @@ namespace Avalonia.Controls.Primitives
             base.Unrealize();
         }
 
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+
+            if (ContentTemplate is null && DataContext is TemplateCell cell)
+                ContentTemplate = cell.GetCellTemplate(this);
+        }
+
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
-            var cell = DataContext as TemplateCell;
 
             // If DataContext is null, we're unrealized. Don't clear the content and content template
             // for unrealized cells because this will mean that when the cell is realized again the
             // template will need to be rebuilt, slowing everything down.
-            if (cell is not null)
+            if (DataContext is TemplateCell cell)
             {
                 Content = cell.Value;
-                ContentTemplate = cell.CellTemplate;
+
+                if (((ILogical)this).IsAttachedToLogicalTree)
+                    ContentTemplate = cell.GetCellTemplate(this);
             }
         }
     }
