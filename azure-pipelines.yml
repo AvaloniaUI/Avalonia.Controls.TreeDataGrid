@@ -1,0 +1,29 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: CmdLine@2
+  displayName: 'Install Nuke'
+  inputs:
+    script: |
+      dotnet tool install --global Nuke.GlobalTool --version 0.24.0
+
+- script: nuke --target RunTests --configuration Release
+  displayName: 'Run Unit Tests'
+
+- script: nuke --target Package --configuration Release
+  displayName: 'Generate Nuget Package'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.SourcesDirectory)/src/Avalonia.Controls.TreeDataGrid/bin/Release/'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
