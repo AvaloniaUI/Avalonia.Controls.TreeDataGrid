@@ -10,17 +10,10 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- task: CmdLine@2
-  displayName: 'Install Nuke'
-  inputs:
-    script: |
-      dotnet tool install --global Nuke.GlobalTool --version 0.24.0
-
-- script: nuke --target RunTests --configuration Release
-  displayName: 'Run Unit Tests'
-
-- script: nuke --target Package --configuration Release
-  displayName: 'Generate Nuget Package'
+- script:  |
+    nuke --target RunTests --configuration Release
+    nuke --target Package --configuration Release
+  displayName: 'Build and Test'
 
 - task: PublishBuildArtifacts@1
   inputs:
