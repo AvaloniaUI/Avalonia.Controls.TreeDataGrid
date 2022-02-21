@@ -10,5 +10,8 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: dotnet pack src/Avalonia.Controls.TreeDataGrid
+- script: dotnet test tests/Avalonia.Controls.TreeDataGrid.Tests
+  displayName: 'Run Unit Tests'
+
+- script: dotnet pack -c Release src/Avalonia.Controls.TreeDataGrid
   displayName: 'Generate Nuget Package'
