@@ -43,7 +43,7 @@ partial class Build : NukeBuild
     protected override void OnBuildInitialized()
     {
         Parameters = new BuildParameters(this);
-        Information("Building version {0} of Avalonia ({1}) using version {2} of Nuke.",
+        Information("Building version {0} of Avalonia.Controls.TreeDataGrid ({1}) using version {2} of Nuke.",
             Parameters.Version,
             Parameters.Configuration,
             typeof(NukeBuild).Assembly.GetName().Version.ToString());
