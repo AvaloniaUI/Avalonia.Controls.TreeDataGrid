@@ -22,11 +22,6 @@ jobs:
 
       - name: Build
         run: nuke --target Package --configuration Release
-        
+
       - name: Test
         run: nuke --target RunTests --configuration Release
-
-      - uses: actions/upload-artifact@v2
-        with:
-      - name: drop
-        path: src/Avalonia.Controls.TreeDataGrid/bin/Release/
