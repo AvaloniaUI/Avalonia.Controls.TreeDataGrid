@@ -11,10 +11,10 @@ pool:
 
 steps:
 - task: CmdLine@2
-    displayName: 'Install Nuke'
-    inputs:
-      script: |
-       dotnet tool install --global Nuke.GlobalTool --version 0.24.0
+  displayName: 'Install Nuke'
+  inputs:
+    script: |
+      dotnet tool install --global Nuke.GlobalTool --version 0.24.0
 
 - script: nuke --target RunTests --configuration Release
   displayName: 'Run Unit Tests'
