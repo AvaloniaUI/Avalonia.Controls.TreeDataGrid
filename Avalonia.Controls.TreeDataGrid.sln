@@ -17,6 +17,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{AE911386
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "_build", "nukebuild\_build.csproj", "{D45C7B46-A12C-4412-8397-B51B75A09999}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{0F5B5686-C914-416E-ABA3-ED41A653626C}"
+	ProjectSection(SolutionItems) = preProject
+		build\SharedVersion.props = build\SharedVersion.props
+		build\SourceLink.props = build\SourceLink.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
