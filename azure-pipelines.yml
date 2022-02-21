@@ -21,3 +21,9 @@ steps:
 
 - script: nuke --target Package --configuration Release
   displayName: 'Generate Nuget Package'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.SourcesDirectory)/src/Avalonia.Controls.TreeDataGrid/bin/Release/'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
