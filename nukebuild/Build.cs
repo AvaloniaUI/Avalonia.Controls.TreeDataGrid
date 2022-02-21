@@ -10,22 +10,11 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.MSBuild;
-using Nuke.Common.Tools.Npm;
-using Nuke.Common.Utilities;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
-using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
-
-/*
- Before editing this file, install support plugin for your IDE,
- running and debugging a particular target (optionally without deps) would be way easier
- ReSharper/Rider - https://plugins.jetbrains.com/plugin/10803-nuke-support
- VSCode - https://marketplace.visualstudio.com/items?itemName=nuke.support
-
- */
 
 partial class Build : NukeBuild
 {
