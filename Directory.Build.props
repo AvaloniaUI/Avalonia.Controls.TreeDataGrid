@@ -1,9 +1,14 @@
 <Project>
+  <Import Project="build\SharedVersion.props" />
+  <Import Project="build\SourceLink.props" Condition="'$(DisableSourceLink)' == ''" />
   <PropertyGroup>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>nullable</WarningsAsErrors>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>9</LangVersion>
+    <!-- https://github.com/dotnet/msbuild/issues/2661 -->
+    <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
+    <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
 </Project>
