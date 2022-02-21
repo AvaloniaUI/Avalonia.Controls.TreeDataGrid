@@ -129,7 +129,7 @@ public partial class Build
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
             ZipNuGetArtifacts = ZipRoot / ("Avalonia-NuGet-" + FileZipSuffix);
-            ZipTargetControlCatalogNetCoreDir = ZipRoot / ("ControlCatalog.NetCore-" + FileZipSuffix);
+            ZipTargetControlCatalogNetCoreDir = ZipRoot / ("TreeDataGridDemo-" + FileZipSuffix);
         }
 
         string GetVersion()
