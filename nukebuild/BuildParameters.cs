@@ -70,11 +70,11 @@ public partial class Build
             SkipPreviewer = b.SkipPreviewer;
 
             // CONFIGURATION
-            MainRepo = "https://github.com/AvaloniaUI/Avalonia";
+            MainRepo = "https://github.com/AvaloniaUI/Avalonia.Controls.TreeDataGrid";
             MasterBranch = "refs/heads/master";
             ReleaseBranchPrefix = "refs/heads/release/";
             ReleaseConfiguration = "Release";
-            MSBuildSolution = RootDirectory / "dirs.proj";
+            MSBuildSolution = RootDirectory / "Avalonia.Controls.TreeDataGrid.sln";
 
             // PARAMETERS
             IsLocalBuild = Host == HostType.Console;
