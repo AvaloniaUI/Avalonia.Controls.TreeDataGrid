@@ -51,6 +51,7 @@ namespace Avalonia.Controls.Primitives
         {
             _treeDataGrid?.RaiseCellClearing(this, ColumnIndex, RowIndex);
             ColumnIndex = RowIndex = -1;
+            Model = null;
         }
 
         protected virtual bool CanEdit => false;
