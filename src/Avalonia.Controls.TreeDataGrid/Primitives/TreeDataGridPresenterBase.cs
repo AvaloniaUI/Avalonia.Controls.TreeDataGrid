@@ -222,7 +222,10 @@ namespace Avalonia.Controls.Primitives
             _getArgs.Index = index;
             _getArgs.Parent = parent;
 
-            return _elementFactory!.GetElement(_getArgs);
+            var result = _elementFactory!.GetElement(_getArgs);
+            _getArgs.Data = null;
+            _getArgs.Parent = null;
+            return result;
         }
 
         protected virtual (int index, double position) GetElementAt(double position) => (-1, -1);
