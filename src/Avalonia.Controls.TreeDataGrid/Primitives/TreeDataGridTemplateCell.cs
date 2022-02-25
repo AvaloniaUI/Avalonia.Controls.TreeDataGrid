@@ -55,6 +55,10 @@ namespace Avalonia.Controls.Primitives
                 Content = cell.Value;
                 ContentTemplate = cell.CellTemplate;
             }
+            else
+            {
+                Content = null;
+            }
         }
     }
 }
