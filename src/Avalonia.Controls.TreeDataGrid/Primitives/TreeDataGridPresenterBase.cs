@@ -516,6 +516,8 @@ namespace Avalonia.Controls.Primitives
             _recycleArgs.Element = element;
             _recycleArgs.Parent = this;
             ElementFactory!.RecycleElement(_recycleArgs);
+            _recycleArgs.Element = null;
+            _recycleArgs.Parent = null;
         }
 
         private void RecycleElementsAfter(int index)
