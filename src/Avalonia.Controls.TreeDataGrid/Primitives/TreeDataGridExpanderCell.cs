@@ -132,6 +132,7 @@ namespace Avalonia.Controls.Primitives
                 _recycleArgs ??= new ElementFactoryRecycleArgs();
                 _recycleArgs.Element = element;
                 factory.RecycleElement(_recycleArgs);
+                _recycleArgs.Element = null;
             }
         }
 
