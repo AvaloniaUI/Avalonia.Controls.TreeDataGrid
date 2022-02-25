@@ -113,6 +113,8 @@ namespace Avalonia.Controls.Primitives
 
                     var element = factory.GetElement(_getArgs);
 
+                    _getArgs.Data = null;
+
                     element.IsVisible = true;
                     _contentContainer.Child = element;
                     _contentType = contentType;
