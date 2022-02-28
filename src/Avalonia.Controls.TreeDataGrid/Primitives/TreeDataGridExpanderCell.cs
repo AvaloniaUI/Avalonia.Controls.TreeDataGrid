@@ -29,7 +29,6 @@ namespace Avalonia.Controls.Primitives
         private int _indent;
         private bool _isExpanded;
         private IExpanderCell? _model;
-        private ElementFactoryRecycleArgs? _recycleArgs;
         private bool _showExpander;
 
         public int Indent
@@ -121,15 +120,9 @@ namespace Avalonia.Controls.Primitives
                 if (_contentContainer.Child is ITreeDataGridCell innerCell)
                     innerCell.Realize(factory, innerModel, ColumnIndex, RowIndex);
             }
-            else if (_contentContainer.Child is IControl element)
+            else if (_contentContainer.Child is ITreeDataGridCell innerCell)
             {
-                if (element is ITreeDataGridCell innerCell)
-                    innerCell.Unrealize();
-                _contentContainer.Child = null;
-                _contentType = null;
-                _recycleArgs ??= new ElementFactoryRecycleArgs();
-                _recycleArgs.Element = element;
-                factory.RecycleElement(_recycleArgs);
+                innerCell.Unrealize();
             }
         }
 
