@@ -103,8 +103,8 @@ namespace Avalonia.Controls.Primitives
         protected override void UnrealizeElement(IControl element)
         {
             var cell = (TreeDataGridCell)element;
-            cell.Unrealize();
             _rows!.UnrealizeCell(cell.Model!, cell.ColumnIndex, cell.RowIndex);
+            cell.Unrealize();
         }
 
         protected override void UpdateElementIndex(IControl element, int index)
