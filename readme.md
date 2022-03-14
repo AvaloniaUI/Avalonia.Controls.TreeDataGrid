@@ -1,3 +1,4 @@
+[![NuGet](https://img.shields.io/nuget/v/Avalonia.Controls.TreeDataGrid.svg)](https://www.nuget.org/packages/Avalonia.Controls.TreeDataGrid/)
 # Avalonia `TreeDataGrid`
 
 ## Introduction
