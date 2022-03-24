@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Controls.Utils;
 using Avalonia.Utilities;
 
@@ -139,6 +140,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public void UnrealizeCell(ICell cell, int rowIndex, int columnIndex)
         {
             (cell as IDisposable)?.Dispose();
+        }
+
+        public int GetParentRowIndex(IndexPath modelIndex)
+        {
+            return ModelIndexToRowIndex(modelIndex[..^1]);
         }
 
         public int ModelIndexToRowIndex(IndexPath modelIndex)
