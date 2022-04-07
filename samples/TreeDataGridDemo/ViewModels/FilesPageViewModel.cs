@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -9,13 +10,12 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Layout;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using TreeDataGridDemo.Models;
 using ReactiveUI;
-using Avalonia.Data.Converters;
-using System.Globalization;
+using TreeDataGridDemo.Models;
 
 namespace TreeDataGridDemo.ViewModels
 {
@@ -64,7 +64,11 @@ namespace TreeDataGridDemo.ViewModels
                             {
                                 CompareAscending = FileTreeNodeModel.SortAscending(x => x.Name),
                                 CompareDescending = FileTreeNodeModel.SortDescending(x => x.Name),
-                            }),
+                            })
+                        {
+                            IsTextSearchEnabled = true,
+                            TextSearchValueSelector = x => x.Name
+                        },
                         x => x.Children,
                         x => x.IsDirectory,
                         x => x.IsExpanded),
@@ -165,7 +169,7 @@ namespace TreeDataGridDemo.ViewModels
             var path = value;
             var components = new Stack<string>();
             DirectoryInfo? d = null;
-           
+
             if (File.Exists(path))
             {
                 var f = new FileInfo(path);
@@ -214,7 +218,7 @@ namespace TreeDataGridDemo.ViewModels
         {
             var selectedPath = Source.RowSelection?.SelectedItem?.Path;
             this.RaiseAndSetIfChanged(ref _selectedPath, selectedPath, nameof(SelectedPath));
-            
+
             foreach (var i in e.DeselectedItems)
                 System.Diagnostics.Trace.WriteLine($"Deselected '{i?.Path}'");
             foreach (var i in e.SelectedItems)

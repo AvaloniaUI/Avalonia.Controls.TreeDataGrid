@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
     /// <typeparam name="TValue">The column data type.</typeparam>
-    public class TemplateColumn<TModel> : ColumnBase<TModel>
+    public class TemplateColumn<TModel> : ColumnBase<TModel>, ITextSearchableColumn<TModel>
     {
         private readonly Comparison<TModel?>? _sortAscending;
         private readonly Comparison<TModel?>? _sortDescending;
@@ -31,6 +31,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets the template to use to display the contents of a cell that is not in editing mode.
         /// </summary>
         public IDataTemplate? CellTemplate { get; }
+        public Func<TModel, string?>? TextSearchValueSelector { get; set; }
+        public bool IsTextSearchEnabled { get; set; }
 
         /// <summary>
         /// Creates a cell for this column on the specified row.
@@ -48,5 +50,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 _ => null,
             };
         }
+
+        string? ITextSearchableColumn<TModel>.SelectValue(TModel model) => TextSearchValueSelector?.Invoke(model);
     }
 }
