@@ -1,9 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
-using Avalonia.Controls.Utils;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
@@ -87,7 +85,13 @@ namespace Avalonia.Controls.Primitives
             if (_resizer is not null)
             {
                 _resizer.DragDelta += ResizerDragDelta;
+                _resizer.DoubleTapped += ResizerDoubleTapped;
             }
+        }
+
+        private void ResizerDoubleTapped(object? sender, Interactivity.RoutedEventArgs e)
+        {
+            _columns?.SetColumnWidth(ColumnIndex, GridLength.Auto);
         }
 
         protected override Size MeasureOverride(Size availableSize)
