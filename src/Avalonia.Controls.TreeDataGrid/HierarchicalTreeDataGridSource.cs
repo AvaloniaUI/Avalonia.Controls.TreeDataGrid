@@ -17,6 +17,7 @@ namespace Avalonia.Controls
     public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource<TModel>,
         IDisposable,
         IExpanderRowController<TModel>
+        where TModel: class
     {
         private IEnumerable<TModel> _items;
         private TreeDataGridItemsSourceView<TModel> _itemsView;

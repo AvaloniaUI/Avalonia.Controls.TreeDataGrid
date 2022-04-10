@@ -9,7 +9,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
     /// <typeparam name="TValue">The column data type.</typeparam>
-    public class TextColumn<TModel, TValue> : ColumnBase<TModel, TValue>
+    public class TextColumn<TModel, TValue> : ColumnBase<TModel, TValue>, ITextSearchableColumn<TModel>
         where TModel : class
     {
         private readonly TextTrimming _textTrimming;
@@ -61,9 +61,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _textTrimming = options?.TextTrimming ?? TextTrimming.CharacterEllipsis;
         }
 
+        public bool IsTextSearchEnabled { get; set; }
+
         public override ICell CreateCell(IRow<TModel> row)
         {
             return new TextCell<TValue?>(CreateBindingExpression(row.Model), Binding.Write is null, _textTrimming);
+        }
+
+        string? ITextSearchableColumn<TModel>.SelectValue(TModel model)
+        {
+            return ValueSelector(model)?.ToString();
         }
     }
 }

@@ -11,6 +11,7 @@ namespace Avalonia.Controls
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
     public class FlatTreeDataGridSource<TModel> : ITreeDataGridSource<TModel>, IDisposable
+        where TModel: class
     {
         private IEnumerable<TModel> _items;
         private TreeDataGridItemsSourceView<TModel> _itemsView;
