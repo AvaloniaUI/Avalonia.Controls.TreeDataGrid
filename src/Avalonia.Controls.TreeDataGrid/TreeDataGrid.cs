@@ -1,13 +1,13 @@
-﻿using Avalonia.Controls.Models.TreeDataGrid;
+﻿using System;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
-using System;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Controls
 {
@@ -28,7 +28,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TreeDataGrid, IElementFactory>(
                 nameof(ElementFactory),
                 o => o.ElementFactory,
-                (o ,v) => o.ElementFactory = v);
+                (o, v) => o.ElementFactory = v);
 
         public static readonly DirectProperty<TreeDataGrid, IRows?> RowsProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, IRows?>(
@@ -70,6 +70,7 @@ namespace Avalonia.Controls
         public TreeDataGrid()
         {
             AddHandler(TreeDataGridColumnHeader.ClickEvent, OnClick);
+            AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
         }
 
         public bool CanUserResizeColumns
@@ -90,7 +91,7 @@ namespace Avalonia.Controls
             private set => SetAndRaise(ColumnsProperty, ref _columns, value);
         }
 
-        public IElementFactory ElementFactory 
+        public IElementFactory ElementFactory
         {
             get => _elementFactory ??= CreateDefaultElementFactory();
             set
@@ -115,8 +116,8 @@ namespace Avalonia.Controls
 
         public TreeDataGridColumnHeadersPresenter? ColumnHeadersPresenter { get; private set; }
         public TreeDataGridRowsPresenter? RowsPresenter { get; private set; }
-        
-        public IScrollable? Scroll 
+
+        public IScrollable? Scroll
         {
             get => _scroll;
             private set => SetAndRaise(ScrollProperty, ref _scroll, value);
@@ -141,12 +142,12 @@ namespace Avalonia.Controls
                     {
                         value.Sorted += Source_Sorted;
                     }
-                    
-                    if (_source!=null)
+
+                    if (_source != null)
                     {
                         _source.Sorted -= Source_Sorted;
                     }
-                    
+
                     void Source_Sorted()
                     {
                         RowsPresenter?.RecycleAllElements();
@@ -237,6 +238,11 @@ namespace Avalonia.Controls
             ColumnHeadersPresenter = e.NameScope.Find<TreeDataGridColumnHeadersPresenter>("PART_ColumnHeadersPresenter");
             RowsPresenter = e.NameScope.Find<TreeDataGridRowsPresenter>("PART_RowsPresenter");
             Scroll = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+        }
+
+        protected void OnPreviewKeyDown(object? o, KeyEventArgs e)
+        {
+            _selection?.OnPreviewKeyDown(this, e);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

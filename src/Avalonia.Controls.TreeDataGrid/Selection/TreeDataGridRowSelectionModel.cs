@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Selection
 {
@@ -106,6 +108,26 @@ namespace Avalonia.Controls.Selection
                         sender.RowsPresenter.BringIntoView(newIndex);
                     }
                 }
+            }
+
+        }
+        void ITreeDataGridSelectionInteraction.OnPreviewKeyDown(TreeDataGrid sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.PageDown)
+            {
+                var children = sender.RowsPresenter.GetLogicalChildren();
+                var max = -1;
+                for (int i = 0; i < children.Count()-1; i++)
+                {
+                    if ((children.ElementAt(i) as TreeDataGridRow)!.RowIndex>max)
+                    {
+                        max = (children.ElementAt(i) as TreeDataGridRow)!.RowIndex;
+                    }
+                }
+
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
+                UpdateSelection(sender, max+1, true);
+#pragma warning restore CS0219 // Variable is assigned but its value is never used
             }
 
         }
