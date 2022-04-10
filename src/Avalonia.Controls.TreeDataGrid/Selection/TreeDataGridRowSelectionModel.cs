@@ -144,12 +144,13 @@ namespace Avalonia.Controls.Selection
                 }
                 foreach (var column in treeDataGrid.Columns)
                 {
-                    if (column is ITextSearchableColumn<TModel> textSearchableColumn && textSearchableColumn.IsTextSearchEnabled == true)
+                    if (column is ITextSearchableColumn<TModel> textSearchableColumn && textSearchableColumn.IsTextSearchEnabled)
                     {
                         Search(treeDataGrid, candidatePattern, selectedRowIndex, textSearchableColumn);
                     }
                     else if (column is HierarchicalExpanderColumn<TModel> hierarchicalColumn &&
-                        hierarchicalColumn.Inner is ITextSearchableColumn<TModel> textSearchableColumn2)
+                        hierarchicalColumn.Inner is ITextSearchableColumn<TModel> textSearchableColumn2 &&
+                        textSearchableColumn2.IsTextSearchEnabled)
                     {
                         Search(treeDataGrid, candidatePattern, selectedRowIndex, textSearchableColumn2);
                     }
