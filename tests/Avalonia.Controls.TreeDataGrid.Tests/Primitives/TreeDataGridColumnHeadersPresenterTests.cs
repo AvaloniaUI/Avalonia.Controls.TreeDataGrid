@@ -140,7 +140,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             int CountEvenRedRows(TreeDataGridColumnHeadersPresenter presenter)
             {
                 return target.GetVisualChildren().Cast<TreeDataGridColumnHeader>().Select(x => x.Background)
-                    .Where((x, i) => (i + 1) % 2 == 0 && x is SolidColorBrush brush && brush.Color == Colors.Red).Count();
+                    .Where(x => x is SolidColorBrush brush && brush.Color == Colors.Red).Count();
             }
 
             Assert.Equal(5, CountEvenRedRows(target));
