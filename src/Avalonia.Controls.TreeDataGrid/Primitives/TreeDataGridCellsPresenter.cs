@@ -1,11 +1,12 @@
 ﻿using System;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TreeDataGridCellsPresenter : TreeDataGridColumnarPresenterBase<IColumn>
+    public class TreeDataGridCellsPresenter : TreeDataGridColumnarPresenterBase<IColumn>, IChildIndexProvider
     {
         public static readonly StyledProperty<IBrush?> BackgroundProperty =
             TemplatedControl.BackgroundProperty.AddOwner<TreeDataGridCellsPresenter>();
@@ -17,6 +18,8 @@ namespace Avalonia.Controls.Primitives
                 (o, v) => o.Rows = v);
 
         private IRows? _rows;
+
+        public event EventHandler<ChildIndexChangedEventArgs>? ChildIndexChanged;
 
         public IBrush? Background
         {
@@ -87,12 +90,13 @@ namespace Avalonia.Controls.Primitives
 
             if (cell.ColumnIndex == index && cell.RowIndex == RowIndex)
             {
-                return;
+                ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
             }
             else if (cell.ColumnIndex == -1 && cell.RowIndex == -1)
             {
                 var model = _rows!.RealizeCell(column, index, RowIndex);
                 ((TreeDataGridCell)element).Realize(ElementFactory!, model, index, RowIndex);
+                ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
             }
             else
             {
@@ -105,10 +109,12 @@ namespace Avalonia.Controls.Primitives
             var cell = (TreeDataGridCell)element;
             _rows!.UnrealizeCell(cell.Model!, cell.ColumnIndex, cell.RowIndex);
             cell.Unrealize();
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
         protected override void UpdateElementIndex(IControl element, int index)
         {
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
@@ -117,6 +123,28 @@ namespace Avalonia.Controls.Primitives
 
             if (change.Property == BackgroundProperty)
                 InvalidateVisual();
+        }
+
+        public int GetChildIndex(ILogical child)
+        {
+            if (child is TreeDataGridCell cell)
+            {
+                return cell.ColumnIndex;
+            }
+
+            return -1;
+        }
+
+        public bool TryGetTotalCount(out int count)
+        {
+            if (Items is null)
+            {
+                count = 0;
+                return false;
+            }
+
+            count = Items.Count;
+            return true;
         }
     }
 }
