@@ -67,6 +67,15 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             set => _inner.SortDirection = value;
         }
 
+        /// <summary>
+        /// Gets or sets a user-defined object attached to the column.
+        /// </summary>
+        public object? Tag
+        {
+            get => _inner.Tag;
+            set => _inner.Tag = value;
+        }
+
         public GridLength Width => _inner.Width;
         public IColumn<TModel> Inner => _inner;
         double IUpdateColumnLayout.MinActualWidth => ((IUpdateColumnLayout)_inner).MinActualWidth;
