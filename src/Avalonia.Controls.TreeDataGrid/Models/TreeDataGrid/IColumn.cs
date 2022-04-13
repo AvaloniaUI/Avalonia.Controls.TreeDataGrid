@@ -42,5 +42,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <see cref="ITreeDataGridSource.SortBy(IColumn, ListSortDirection)"/>.
         /// </remarks>
         ListSortDirection? SortDirection { get; set; }
+
+        /// <summary>
+        /// Gets or sets a user-defined object attached to the column.
+        /// </summary>
+        object? Tag { get; set; }
     }
 }
