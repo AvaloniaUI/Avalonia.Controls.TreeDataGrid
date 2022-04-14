@@ -26,7 +26,13 @@
         <TreeDataGrid Name="countries" Source="{Binding Countries.Source}">
           <TreeDataGrid.Styles>
             <Style Selector="TreeDataGrid TreeDataGridRow:nth-last-child(2n)">
-              <Setter Property="Background"  Value="#fff8f8f8"/>
+              <Setter Property="Background" Value="#fff8f8f8"/>
+            </Style>
+            <Style Selector="TreeDataGrid :is(TreeDataGridCell):nth-last-child(1)">
+              <Setter Property="TextBlock.FontWeight" Value="Bold"/>
+            </Style>
+            <Style Selector="TreeDataGrid TreeDataGridColumnHeader:nth-last-child(1)">
+              <Setter Property="TextBlock.FontWeight" Value="Bold"/>
             </Style>
           </TreeDataGrid.Styles>
         </TreeDataGrid>

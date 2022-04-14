@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 using Xunit;
@@ -149,6 +151,33 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             }
         }
 
+        [Fact]
+        public void Nth_Child_Handles_Deletion_And_Addition_Correctly()
+        {
+            using var app = App();
+            var (target, scroll) = CreateTarget(additionalStyles:
+                new List<IStyle>
+                {
+                    new Style(x => x.OfType<TreeDataGridCellsPresenter>().Descendant().Is<TreeDataGridCell>().NthChild(2,0))
+                    {
+                        Setters =
+                        {
+                            new Setter(TreeDataGridRow.BackgroundProperty,new SolidColorBrush(Colors.Red)),
+                        }
+                    }
+                });
+
+            Layout(target);
+
+            int CountEvenRedRows(TreeDataGridCellsPresenter presenter)
+            {
+                return target.GetVisualChildren().Cast<TreeDataGridCell>().Select(x => x.Background)
+                    .Where(x => x is SolidColorBrush brush && brush.Color == Colors.Red).Count();
+            }
+
+            Assert.Equal(5, CountEvenRedRows(target));
+        }
+
         private static void AssertColumnIndexes(
             TreeDataGridCellsPresenter? target,
             int firstColumnIndex,
@@ -180,7 +209,8 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         }
 
         private static (TreeDataGridCellsPresenter, ScrollViewer) CreateTarget(
-            ColumnList<Model>? columns = null)
+            ColumnList<Model>? columns = null,
+            List<IStyle>? additionalStyles = null)
         {
             if (columns is null)
             {
@@ -217,6 +247,14 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             };
 
             var root = new TestRoot(scrollViewer);
+
+            if (additionalStyles != null)
+            {
+                foreach (var item in additionalStyles)
+                {
+                    root.Styles.Add(item);
+                }
+            }
 
             root.LayoutManager.ExecuteInitialLayoutPass();
             return (target, scrollViewer);
