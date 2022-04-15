@@ -242,6 +242,11 @@ namespace Avalonia.Controls
 
         protected void OnPreviewKeyDown(object? o, KeyEventArgs e)
         {
+            if (e.Key == Key.PageDown || e.Key == Key.PageDown)
+            {
+                e.Handled = true;
+            }
+            
             _selection?.OnPreviewKeyDown(this, e);
         }
 

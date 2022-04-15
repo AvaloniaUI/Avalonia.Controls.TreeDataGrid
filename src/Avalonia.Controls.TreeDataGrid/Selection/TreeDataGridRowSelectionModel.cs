@@ -10,7 +10,7 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Selection
 {
-    public class TreeDataGridRowSelectionModel<T> : TreeSelectionModelBase<T>, 
+    public class TreeDataGridRowSelectionModel<T> : TreeSelectionModelBase<T>,
         ITreeDataGridRowSelectionModel<T>,
         ITreeDataGridSelectionInteraction
     {
@@ -18,6 +18,7 @@ namespace Avalonia.Controls.Selection
         private EventHandler? _viewSelectionChanged;
         private Point _pressedPoint;
         private bool _raiseViewSelectionChanged;
+        private int _lastPageSelectedIndex;
 
         public TreeDataGridRowSelectionModel(ITreeDataGridSource<T> source)
             : base(source.Items)
@@ -76,7 +77,7 @@ namespace Avalonia.Controls.Selection
                 if (direction.HasValue)
                 {
                     var anchorRowIndex = _source.Rows.ModelIndexToRowIndex(AnchorIndex);
-                    
+
                     sender.RowsPresenter.BringIntoView(anchorRowIndex);
 
                     var anchor = sender.TryGetRow(anchorRowIndex);
@@ -116,22 +117,45 @@ namespace Avalonia.Controls.Selection
             if (e.Key == Key.PageDown)
             {
                 var children = sender.RowsPresenter.GetLogicalChildren();
-                var max = -1;
-                for (int i = 0; i < children.Count()-1; i++)
+                var childrenCount = children.Count();
+                if (_lastPageSelectedIndex > 0&&SelectedIndex == _lastPageSelectedIndex)
                 {
-                    if ((children.ElementAt(i) as TreeDataGridRow)!.RowIndex>max)
+                    int newIndex;
+                    if (childrenCount + _lastPageSelectedIndex <= sender.RowsPresenter!.Items!.Count)
                     {
-                        max = (children.ElementAt(i) as TreeDataGridRow)!.RowIndex;
+                        newIndex = childrenCount - 1 + _lastPageSelectedIndex;
                     }
-                }
+                    else
+                    {
+                        newIndex = sender.RowsPresenter!.Items!.Count - 1;
+                    }
+                    UpdateSelection(sender, newIndex, true);
+                    sender.RowsPresenter!.BringIntoView(newIndex);
+                    _lastPageSelectedIndex = newIndex;
 
-#pragma warning disable CS0219 // Variable is assigned but its value is never used
-                UpdateSelection(sender, max+1, true);
-#pragma warning restore CS0219 // Variable is assigned but its value is never used
+                }
+                if (_lastPageSelectedIndex == 0||SelectedIndex!=_lastPageSelectedIndex)
+                {
+                    var max = -1;
+                    for (int i = 0; i <= childrenCount - 1; i++)
+                    {
+                        if ((children.ElementAt(i) as TreeDataGridRow)!.RowIndex > max)
+                        {
+                            var element = (children.ElementAt(i) as TreeDataGridRow);
+                            var tb = element!.TransformedBounds!.Value;
+                            if (tb!.Clip.Contains(tb!.Bounds.TransformToAABB(tb!.Transform)) == true)
+                            {
+                                max = element!.RowIndex;
+                            }
+                        }
+                    }
+                    _lastPageSelectedIndex = max;
+                    UpdateSelection(sender, max, true);
+                    sender.RowsPresenter!.BringIntoView(max);
+                }
             }
 
         }
-
         void ITreeDataGridSelectionInteraction.OnPointerPressed(TreeDataGrid sender, PointerPressedEventArgs e)
         {
             if (!e.Handled && e.Pointer.Type == PointerType.Mouse)
