@@ -187,10 +187,6 @@ namespace Avalonia.Controls.Selection
                 }
             }
         }
-                }
-            }
-
-        }
 
         void ITreeDataGridSelectionInteraction.OnPreviewKeyDown(TreeDataGrid sender, KeyEventArgs e)
         {
