@@ -262,6 +262,12 @@ namespace Avalonia.Controls
             _selection?.OnKeyUp(this, e);
         }
 
+        protected override void OnTextInput(TextInputEventArgs e)
+        {
+            base.OnTextInput(e);
+            _selection?.OnTextInput(this, e);
+        }
+
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);

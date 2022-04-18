@@ -17,6 +17,7 @@ namespace Avalonia.Controls.Selection
         public void OnKeyDown(TreeDataGrid sender, KeyEventArgs e) { }
         public void OnPreviewKeyDown(TreeDataGrid sender, KeyEventArgs e) { }
         public void OnKeyUp(TreeDataGrid sender, KeyEventArgs e) { }
+        public void OnTextInput(TreeDataGrid sender, TextInputEventArgs e) { }
         public void OnPointerPressed(TreeDataGrid sender, PointerPressedEventArgs e) { }
         public void OnPointerMoved(TreeDataGrid sender, PointerEventArgs e) { }
         public void OnPointerReleased(TreeDataGrid sender, PointerReleasedEventArgs e) { }

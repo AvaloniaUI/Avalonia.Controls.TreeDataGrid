@@ -11,17 +11,20 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Selection
 {
-    public class TreeDataGridRowSelectionModel<T> : TreeSelectionModelBase<T>,
-        ITreeDataGridRowSelectionModel<T>,
+    public class TreeDataGridRowSelectionModel<TModel> : TreeSelectionModelBase<TModel>,
+        ITreeDataGridRowSelectionModel<TModel>,
         ITreeDataGridSelectionInteraction
+        where TModel : class
     {
-        private readonly ITreeDataGridSource<T> _source;
+        private readonly ITreeDataGridSource<TModel> _source;
         private EventHandler? _viewSelectionChanged;
         private Point _pressedPoint;
         private bool _raiseViewSelectionChanged;
+        private int _lastCharPressedTime;
+        private string _typedWord = "";
         private int _lastPageSelectedIndex;
 
-        public TreeDataGridRowSelectionModel(ITreeDataGridSource<T> source)
+        public TreeDataGridRowSelectionModel(ITreeDataGridSource<TModel> source)
             : base(source.Items)
         {
             _source = source;
@@ -94,7 +97,7 @@ namespace Avalonia.Controls.Selection
                     }
 
                     if (!e.Handled && direction == NavigationDirection.Left
-                        && anchor?.Rows is HierarchicalRows<T> hierarchicalRows && anchorRowIndex > 0)
+                        && anchor?.Rows is HierarchicalRows<TModel> hierarchicalRows && anchorRowIndex > 0)
                     {
                         var newIndex = hierarchicalRows.GetParentRowIndex(AnchorIndex);
                         UpdateSelection(sender, newIndex, true);
@@ -103,12 +106,87 @@ namespace Avalonia.Controls.Selection
                     }
 
                     if (!e.Handled && direction == NavigationDirection.Right
-                       && anchor?.Rows is HierarchicalRows<T> hierarchicalRows2 && hierarchicalRows2[anchorRowIndex].IsExpanded)
+                       && anchor?.Rows is HierarchicalRows<TModel> hierarchicalRows2 && hierarchicalRows2[anchorRowIndex].IsExpanded)
                     {
                         var newIndex = anchorRowIndex + 1;
                         UpdateSelection(sender, newIndex, true);
                         sender.RowsPresenter.BringIntoView(newIndex);
                     }
+                }
+            }
+
+        }
+
+        protected void HandleTextInput(string? text, TreeDataGrid treeDataGrid, int selectedRowIndex)
+        {
+            if (text != null && treeDataGrid.Columns != null)
+            {
+                var typedChar = text.ToUpper()[0];
+
+                int now = Environment.TickCount;
+                int time = 0;
+                if (_lastCharPressedTime > 0)
+                {
+                    time = now - _lastCharPressedTime;
+                }
+
+                string candidatePattern;
+                if (time < 500)
+                {
+                    if (_typedWord.Length == 1 && typedChar == _typedWord[0])
+                    {
+                        candidatePattern = _typedWord;
+                    }
+                    else
+                    {
+                        candidatePattern = _typedWord + typedChar;
+                    }
+                }
+                else
+                {
+                    candidatePattern = typedChar.ToString();
+                }
+                foreach (var column in treeDataGrid.Columns)
+                {
+                    if (column is ITextSearchableColumn<TModel> textSearchableColumn && textSearchableColumn.IsTextSearchEnabled)
+                    {
+                        Search(treeDataGrid, candidatePattern, selectedRowIndex, textSearchableColumn);
+                    }
+                    else if (column is HierarchicalExpanderColumn<TModel> hierarchicalColumn &&
+                        hierarchicalColumn.Inner is ITextSearchableColumn<TModel> textSearchableColumn2 &&
+                        textSearchableColumn2.IsTextSearchEnabled)
+                    {
+                        Search(treeDataGrid, candidatePattern, selectedRowIndex, textSearchableColumn2);
+                    }
+
+                }
+                _lastCharPressedTime = now;
+            }
+        }
+
+        private void Search(TreeDataGrid treeDataGrid, string candidatePattern, int selectedRowIndex, ITextSearchableColumn<TModel> column)
+        {
+            var found = false;
+            for (int i = candidatePattern.Length == 1 ? selectedRowIndex + 1 : selectedRowIndex; i <= _source.Rows.Count - 1; i++)
+            {
+                found = SearchAndSelectRow(treeDataGrid, candidatePattern, i, (TModel?)_source.Rows[i].Model, column.SelectValue);
+                if (found)
+                {
+                    break;
+                }
+            }
+            if (!found)
+            {
+                for (int i = 0; i <= selectedRowIndex; i++)
+                {
+                    found = SearchAndSelectRow(treeDataGrid, candidatePattern, i, (TModel?)_source.Rows[i].Model, column.SelectValue);
+                    if (found)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
                 }
             }
 
@@ -192,6 +270,22 @@ namespace Avalonia.Controls.Selection
                 }
             }
         }
+        private bool SearchAndSelectRow(TreeDataGrid treeDataGrid,
+            string candidatePattern, int newIndex, TModel? model, Func<TModel, string?>? valueSelector)
+        {
+            if (valueSelector != null && model != null)
+            {
+                var value = valueSelector(model);
+                if (value != null && value.ToUpper().StartsWith(candidatePattern))
+                {
+                    UpdateSelection(treeDataGrid, newIndex, true);
+                    treeDataGrid.RowsPresenter?.BringIntoView(newIndex);
+                    _typedWord = candidatePattern;
+                    return true;
+                }
+            }
+            return false;
+        }
 
         void ITreeDataGridSelectionInteraction.OnPointerPressed(TreeDataGrid sender, PointerPressedEventArgs e)
         {
@@ -199,6 +293,11 @@ namespace Avalonia.Controls.Selection
                 PointerSelect(sender, e);
             else
                 _pressedPoint = e.GetPosition(sender);
+        }
+
+        void ITreeDataGridSelectionInteraction.OnTextInput(TreeDataGrid sender, TextInputEventArgs e)
+        {
+            HandleTextInput(e.Text, sender, _source.Rows.ModelIndexToRowIndex(AnchorIndex));
         }
 
         void ITreeDataGridSelectionInteraction.OnPointerReleased(TreeDataGrid sender, PointerReleasedEventArgs e)
@@ -211,9 +310,9 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        protected internal override IEnumerable<T>? GetChildren(T node)
+        protected internal override IEnumerable<TModel>? GetChildren(TModel node)
         {
-            if (_source is HierarchicalTreeDataGridSource<T> treeSource)
+            if (_source is HierarchicalTreeDataGridSource<TModel> treeSource)
             {
                 return treeSource.GetModelChildren(node);
             }
