@@ -113,6 +113,7 @@ namespace Avalonia.Controls.Selection
             }
 
         }
+
         void ITreeDataGridSelectionInteraction.OnPreviewKeyDown(TreeDataGrid sender, KeyEventArgs e)
         {
             static bool IsElementFullyVisibleToUser(TransformedBounds controlBounds)
@@ -190,10 +191,8 @@ namespace Avalonia.Controls.Selection
                     sender.RowsPresenter?.BringIntoView(_lastPageSelectedIndex);
                 }
             }
-
-
-
         }
+
         void ITreeDataGridSelectionInteraction.OnPointerPressed(TreeDataGrid sender, PointerPressedEventArgs e)
         {
             if (!e.Handled && e.Pointer.Type == PointerType.Mouse)
