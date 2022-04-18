@@ -94,6 +94,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             set => RaiseAndSetIfChanged(ref _sortDirection, value);
         }
 
+        /// <summary>
+        /// Gets or sets a user-defined object attached to the column.
+        /// </summary>
+        public object? Tag { get; set; }
+
         double IUpdateColumnLayout.MinActualWidth => CoerceActualWidth(0);
         double IUpdateColumnLayout.MaxActualWidth => CoerceActualWidth(double.PositiveInfinity);
         bool IUpdateColumnLayout.StarWidthWasConstrained => _starWidthWasConstrained;
