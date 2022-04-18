@@ -119,41 +119,79 @@ namespace Avalonia.Controls.Selection
             {
                 return controlBounds.Clip.Contains(controlBounds.Bounds.TransformToAABB(controlBounds.Transform));
             }
-            if (e.Key == Key.PageDown)
+            if (e.Key == Key.PageDown || e.Key == Key.PageUp)
             {
                 var children = sender.RowsPresenter.GetLogicalChildren();
                 var childrenCount = children.Count();
-                if (_lastPageSelectedIndex > 0 && SelectedIndex == _lastPageSelectedIndex)
+                if (childrenCount > 0)
                 {
-                    if (childrenCount + _lastPageSelectedIndex <= sender.RowsPresenter!.Items!.Count)
+                    if (e.Key == Key.PageDown)
                     {
-                        _lastPageSelectedIndex = childrenCount - 1 + _lastPageSelectedIndex;
-                    }
-                    else
-                    {
-                        _lastPageSelectedIndex = sender.RowsPresenter!.Items!.Count - 1;
-                    }
-
-                }
-                else if (_lastPageSelectedIndex == 0 || SelectedIndex != _lastPageSelectedIndex)
-                {
-                    var max = -1;
-                    for (int i = 0; i <= childrenCount - 1; i++)
-                    {
-                        if (children.ElementAt(i) is TreeDataGridRow row && row.RowIndex > max)
+                        if (_lastPageSelectedIndex > 0 && SelectedIndex == _lastPageSelectedIndex)
                         {
-                            if (IsElementFullyVisibleToUser(row.TransformedBounds!.Value))
+                            if (childrenCount + _lastPageSelectedIndex <= sender.RowsPresenter!.Items!.Count)
                             {
-                                max = row.RowIndex;
+                                _lastPageSelectedIndex = childrenCount - 1 + _lastPageSelectedIndex;
                             }
+                            else
+                            {
+                                _lastPageSelectedIndex = sender.RowsPresenter!.Items!.Count - 1;
+                            }
+
+                        }
+                        else if (_lastPageSelectedIndex == 0 || SelectedIndex != _lastPageSelectedIndex)
+                        {
+                            var max = -1;
+                            for (int i = 0; i <= childrenCount - 1; i++)
+                            {
+                                if (children.ElementAt(i) is TreeDataGridRow row &&
+                                    row.RowIndex > max &&
+                                    row.TransformedBounds != null &&
+                                    IsElementFullyVisibleToUser(row.TransformedBounds.Value))
+                                {
+                                    max = row.RowIndex;
+                                }
+                            }
+                            _lastPageSelectedIndex = max;
+
                         }
                     }
-                    _lastPageSelectedIndex = max;
+                    else if (e.Key == Key.PageUp)
+                    {
+                        if (_lastPageSelectedIndex > 0 && SelectedIndex == _lastPageSelectedIndex)
+                        {
+                            if (_lastPageSelectedIndex - childrenCount >= 0)
+                            {
+                                _lastPageSelectedIndex = _lastPageSelectedIndex - childrenCount + 1;
+                            }
+                            else
+                            {
+                                _lastPageSelectedIndex = 0;
+                            }
 
+                        }
+                        else if (_lastPageSelectedIndex == 0 || SelectedIndex != _lastPageSelectedIndex)
+                        {
+                            var min = -1;
+                            for (int i = 0; i <= childrenCount - 1; i++)
+                            {
+                                if (children.ElementAt(i) is TreeDataGridRow row &&
+                                    ((row.RowIndex < min &&
+                                    row.TransformedBounds != null &&
+                                    IsElementFullyVisibleToUser(row.TransformedBounds.Value)) || min == -1))
+                                {
+                                    min = row.RowIndex;
+                                }
+                            }
+                            _lastPageSelectedIndex = min;
+                        }
+                    }
+                    UpdateSelection(sender, _lastPageSelectedIndex, true);
+                    sender.RowsPresenter?.BringIntoView(_lastPageSelectedIndex);
                 }
-                UpdateSelection(sender, _lastPageSelectedIndex, true);
-                sender.RowsPresenter!.BringIntoView(_lastPageSelectedIndex);
             }
+
+
 
         }
         void ITreeDataGridSelectionInteraction.OnPointerPressed(TreeDataGrid sender, PointerPressedEventArgs e)
