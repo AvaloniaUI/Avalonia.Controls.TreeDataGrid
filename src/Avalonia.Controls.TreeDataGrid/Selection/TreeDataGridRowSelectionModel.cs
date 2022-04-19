@@ -202,15 +202,15 @@ namespace Avalonia.Controls.Selection
                 {
                     if (e.Key == Key.PageDown)
                     {
-                        if (_lastPageSelectedIndex > 0 && SelectedIndex == _lastPageSelectedIndex)
+                        if (_lastPageSelectedIndex > 0 && SelectedIndex == _lastPageSelectedIndex && sender.RowsPresenter?.Items != null)
                         {
-                            if (childrenCount + _lastPageSelectedIndex <= sender.RowsPresenter!.Items!.Count)
+                            if (childrenCount + _lastPageSelectedIndex <= sender.RowsPresenter.Items.Count)
                             {
                                 _lastPageSelectedIndex = childrenCount - 1 + _lastPageSelectedIndex;
                             }
                             else
                             {
-                                _lastPageSelectedIndex = sender.RowsPresenter!.Items!.Count - 1;
+                                _lastPageSelectedIndex = sender.RowsPresenter.Items.Count - 1;
                             }
 
                         }
