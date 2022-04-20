@@ -241,12 +241,7 @@ namespace Avalonia.Controls
         }
 
         protected void OnPreviewKeyDown(object? o, KeyEventArgs e)
-        {
-            if (e.Key == Key.PageDown || e.Key == Key.PageUp)
-            {
-                e.Handled = true;
-            }
-            
+        {         
             _selection?.OnPreviewKeyDown(this, e);
         }
 

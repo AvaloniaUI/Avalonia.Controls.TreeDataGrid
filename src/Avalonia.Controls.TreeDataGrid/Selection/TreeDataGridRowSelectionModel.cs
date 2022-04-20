@@ -199,6 +199,7 @@ namespace Avalonia.Controls.Selection
                 var childrenCount = children!.Count;
                 if (childrenCount > 0)
                 {
+                    e.Handled = true;
                     if (e.Key == Key.PageDown)
                     {
                         if (_lastPageSelectedIndex > 0 && SelectedIndex == _lastPageSelectedIndex && sender.RowsPresenter?.Items != null)
