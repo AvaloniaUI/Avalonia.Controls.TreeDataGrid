@@ -189,7 +189,10 @@ namespace Avalonia.Controls.Selection
         {
             static bool IsElementFullyVisibleToUser(TransformedBounds controlBounds)
             {
-                return controlBounds.Clip.Contains(controlBounds.Bounds.TransformToAABB(controlBounds.Transform));
+                var rect = controlBounds.Bounds.TransformToAABB(controlBounds.Transform);
+                // Round BottomRight.Y because sometimes it isn't precise.
+                return controlBounds.Clip.Contains(rect.TopLeft) &&
+                    controlBounds.Clip.Contains(new Point(rect.BottomRight.X, Math.Round(rect.BottomRight.Y, 5, MidpointRounding.ToZero)));
             }
             bool GetSetRowIndex(IControl? control, out int newIndex)
             {
