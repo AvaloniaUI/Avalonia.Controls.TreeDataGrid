@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -193,10 +192,21 @@ namespace Avalonia.Controls.Selection
             {
                 return controlBounds.Clip.Contains(controlBounds.Bounds.TransformToAABB(controlBounds.Transform));
             }
-            if (e.Key == Key.PageDown || e.Key == Key.PageUp)
+            bool GetSetRowIndex(IControl? control)
             {
-                var children = sender.RowsPresenter!.RealizedElements;
-                var childrenCount = children!.Count;
+                if (control is TreeDataGridRow row &&
+                    row.TransformedBounds != null &&
+                    IsElementFullyVisibleToUser(row.TransformedBounds.Value))
+                {
+                    _lastPageSelectedIndex = row.RowIndex;
+                    return true;
+                }
+                return false;
+            }
+            if ((e.Key == Key.PageDown || e.Key == Key.PageUp) && sender.RowsPresenter != null)
+            {
+                var children = sender.RowsPresenter.RealizedElements;
+                var childrenCount = children.Count;
                 if (childrenCount > 0)
                 {
                     e.Handled = true;
@@ -218,11 +228,8 @@ namespace Avalonia.Controls.Selection
                         {
                             for (int i = childrenCount - 1; i >= 0; i--)
                             {
-                                if (children.ElementAt(i) is TreeDataGridRow row &&
-                                    row.TransformedBounds != null &&
-                                    IsElementFullyVisibleToUser(row.TransformedBounds.Value))
+                                if (GetSetRowIndex(children[i]))
                                 {
-                                    _lastPageSelectedIndex = row.RowIndex;
                                     break;
                                 }
                             }
@@ -247,11 +254,8 @@ namespace Avalonia.Controls.Selection
                         {
                             for (int i = 0; i <= childrenCount - 1; i++)
                             {
-                                if (children.ElementAt(i) is TreeDataGridRow row &&
-                                    row.TransformedBounds != null &&
-                                    IsElementFullyVisibleToUser(row.TransformedBounds.Value))
+                                if (GetSetRowIndex(children[i]))
                                 {
-                                    _lastPageSelectedIndex = row.RowIndex;
                                     break;
                                 }
                             }
