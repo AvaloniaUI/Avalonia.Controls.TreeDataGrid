@@ -266,6 +266,7 @@ namespace Avalonia.Controls.Selection
                 }
             }
         }
+
         private bool SearchAndSelectRow(TreeDataGrid treeDataGrid,
             string candidatePattern, int newIndex, TModel? model, Func<TModel, string?>? valueSelector)
         {
