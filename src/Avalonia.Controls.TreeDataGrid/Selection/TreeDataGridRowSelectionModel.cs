@@ -20,7 +20,6 @@ namespace Avalonia.Controls.Selection
         private bool _raiseViewSelectionChanged;
         private int _lastCharPressedTime;
         private string _typedWord = "";
-        private int _lastPageSelectedIndex;
 
         public TreeDataGridRowSelectionModel(ITreeDataGridSource<TModel> source)
             : base(source.Items)
@@ -192,15 +191,16 @@ namespace Avalonia.Controls.Selection
             {
                 return controlBounds.Clip.Contains(controlBounds.Bounds.TransformToAABB(controlBounds.Transform));
             }
-            bool GetSetRowIndex(IControl? control)
+            bool GetSetRowIndex(IControl? control, out int newIndex)
             {
                 if (control is TreeDataGridRow row &&
                     row.TransformedBounds != null &&
                     IsElementFullyVisibleToUser(row.TransformedBounds.Value))
                 {
-                    _lastPageSelectedIndex = row.RowIndex;
+                    newIndex = row.RowIndex;
                     return true;
                 }
+                newIndex = -1;
                 return false;
             }
             if ((e.Key == Key.PageDown || e.Key == Key.PageUp) && sender.RowsPresenter != null)
@@ -210,59 +210,63 @@ namespace Avalonia.Controls.Selection
                 if (childrenCount > 0)
                 {
                     e.Handled = true;
+                    var newIndex = 0;
                     if (e.Key == Key.PageDown)
                     {
-                        if (_lastPageSelectedIndex > 0 && SelectedIndex == _lastPageSelectedIndex && sender.RowsPresenter?.Items != null)
+                        var isIndexSet = false;
+                        for (int i = childrenCount - 1; i >= 0; i--)
                         {
-                            if (childrenCount + _lastPageSelectedIndex <= sender.RowsPresenter.Items.Count)
+                            if (GetSetRowIndex(children[i], out var index))
                             {
-                                _lastPageSelectedIndex = childrenCount - 1 + _lastPageSelectedIndex;
+                                newIndex = index;
+                                isIndexSet = true;
+                                break;
                             }
-                            else
-                            {
-                                _lastPageSelectedIndex = sender.RowsPresenter.Items.Count - 1;
-                            }
-
                         }
-                        else if (_lastPageSelectedIndex == 0 || SelectedIndex != _lastPageSelectedIndex)
+                        if (isIndexSet && SelectedIndex[0] != newIndex)
                         {
-                            for (int i = childrenCount - 1; i >= 0; i--)
-                            {
-                                if (GetSetRowIndex(children[i]))
-                                {
-                                    break;
-                                }
-                            }
-
+                            UpdateSelection(sender, newIndex, true);
+                            sender.RowsPresenter?.BringIntoView(newIndex);
+                            sender.Focus();
+                        }
+                        else if (childrenCount + newIndex <= sender.RowsPresenter!.Items!.Count)
+                        {
+                            newIndex = childrenCount - 1 + newIndex;
+                        }
+                        else
+                        {
+                            newIndex = sender!.RowsPresenter!.Items!.Count - 1;
                         }
                     }
                     else if (e.Key == Key.PageUp)
                     {
-                        if (_lastPageSelectedIndex > 0 && SelectedIndex == _lastPageSelectedIndex)
+                        var isIndexSet = false;
+                        for (int i = 0; i <= childrenCount - 1; i++)
                         {
-                            if (_lastPageSelectedIndex - childrenCount >= 0)
+                            if (GetSetRowIndex(children[i], out var index))
                             {
-                                _lastPageSelectedIndex = _lastPageSelectedIndex - childrenCount + 1;
+                                newIndex = index;
+                                isIndexSet = true;
+                                break;
                             }
-                            else
-                            {
-                                _lastPageSelectedIndex = 0;
-                            }
-
                         }
-                        else if (_lastPageSelectedIndex == 0 || SelectedIndex != _lastPageSelectedIndex)
+                        if (isIndexSet && SelectedIndex[0] != newIndex)
                         {
-                            for (int i = 0; i <= childrenCount - 1; i++)
-                            {
-                                if (GetSetRowIndex(children[i]))
-                                {
-                                    break;
-                                }
-                            }
+                            UpdateSelection(sender, newIndex, true);
+                            sender.RowsPresenter?.BringIntoView(newIndex);
+                            sender.Focus();
+                        }
+                        else if (isIndexSet && newIndex - childrenCount > 0)
+                        {
+                            newIndex = newIndex - childrenCount - 1;
+                        }
+                        else
+                        {
+                            newIndex = 0;
                         }
                     }
-                    UpdateSelection(sender, _lastPageSelectedIndex, true);
-                    sender.RowsPresenter?.BringIntoView(_lastPageSelectedIndex);
+                    UpdateSelection(sender, newIndex, true);
+                    sender.RowsPresenter?.BringIntoView(newIndex);
                     sender.Focus();
                 }
             }
