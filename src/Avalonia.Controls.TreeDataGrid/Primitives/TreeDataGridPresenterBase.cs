@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Data;
@@ -56,6 +57,21 @@ namespace Avalonia.Controls.Primitives
             set => SetAndRaise(ElementFactoryProperty, ref _elementFactory, value);
         }
 
+        public int FirstVisibleIndex
+        {
+            get => _realizedElements.FirstModelIndex;
+            set
+            {
+                if (this.GetVisualRoot() is ILayoutRoot root &&
+                    this.FindAncestorOfType<ScrollContentPresenter>() is ScrollContentPresenter scroll)
+                {
+                    var rect = CreateAnchorElementForScroll(root, value);
+                    scroll.Offset = scroll.Offset.WithY(rect.Top);
+                    LayoutAnchorElement(root, rect);
+                }
+            }
+        }
+
         public IReadOnlyList<TItem>? Items
         {
             get => _items;
@@ -99,39 +115,9 @@ namespace Avalonia.Controls.Primitives
             }
             else if (this.GetVisualRoot() is ILayoutRoot root)
             {
-                // Create and measure the element to be brought into view. Store it in a field so that
-                // it can be re-used in the layout pass.
-                _anchorElement = GetOrCreateElement(index);
-                _anchorElement.Measure(Size.Infinity);
-                _anchorIndex = index;
-
-                // Get the expected position of the elment and put it in place.
-                var anchorU = GetOrEstimateElementPosition(index);
-                var rect = Orientation == Orientation.Horizontal ?
-                    new Rect(anchorU, 0, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height) :
-                    new Rect(0, anchorU, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height);
-                _anchorElement.Arrange(rect);
-
-                // If the item being brought into view was added since the last layout pass then
-                // our bounds won't be updated, so any containing scroll viewers will not have an
-                // updated extent. Do a layout pass to ensure that the containing scroll viewers
-                // will be able to scroll the new item into view.
-                if (!Bounds.Contains(rect) && !Viewport.Contains(rect))
-                {
-                    _isWaitingForViewportUpdate = true;
-                    root.LayoutManager.ExecuteLayoutPass();
-                    _isWaitingForViewportUpdate = false;
-                }
-
-                // Try to bring the item into view and do a layout pass.
+                var rect = CreateAnchorElementForScroll(root, index);
                 _anchorElement.BringIntoView();
-
-                _isWaitingForViewportUpdate = !Viewport.Contains(rect);
-                root.LayoutManager.ExecuteLayoutPass();
-                _isWaitingForViewportUpdate = false;
-
-                _anchorElement = null;
-                _anchorIndex = -1;
+                LayoutAnchorElement(root, rect);
             }
         }
 
@@ -404,7 +390,7 @@ namespace Avalonia.Controls.Primitives
             if (firstIndex == -1)
             {
                 estimatedElementSize = EstimateElementSizeU();
-                firstIndex = (int)(viewportStart / estimatedElementSize);
+                firstIndex = (int)Math.Round(viewportStart / estimatedElementSize, 3);
                 firstIndexU = firstIndex * estimatedElementSize;
             }
 
@@ -625,6 +611,46 @@ namespace Avalonia.Controls.Primitives
 
             if (HasInvalidations(c))
                 Invalidate(c);
+        }
+
+        [MemberNotNull(nameof(_anchorElement))]
+        private Rect CreateAnchorElementForScroll(ILayoutRoot root, int index)
+        {
+            // Create and measure the element to be brought into view. Store it in a field so that
+            // it can be re-used in the layout pass.
+            _anchorElement = GetOrCreateElement(index);
+            _anchorElement.Measure(Size.Infinity);
+            _anchorIndex = index;
+
+            // Get the expected position of the elment and put it in place.
+            var anchorU = GetOrEstimateElementPosition(index);
+            var rect = Orientation == Orientation.Horizontal ?
+                new Rect(anchorU, 0, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height) :
+                new Rect(0, anchorU, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height);
+            _anchorElement.Arrange(rect);
+
+            // If the item being brought into view was added since the last layout pass then
+            // our bounds won't be updated, so any containing scroll viewers will not have an
+            // updated extent. Do a layout pass to ensure that the containing scroll viewers
+            // will be able to scroll the new item into view.
+            if (!Bounds.Contains(rect) && !Viewport.Contains(rect))
+            {
+                _isWaitingForViewportUpdate = true;
+                root.LayoutManager.ExecuteLayoutPass();
+                _isWaitingForViewportUpdate = false;
+            }
+
+            return rect;
+        }
+
+        private void LayoutAnchorElement(ILayoutRoot root, Rect rect)
+        {
+            _isWaitingForViewportUpdate = !Viewport.Contains(rect);
+            root.LayoutManager.ExecuteLayoutPass();
+            _isWaitingForViewportUpdate = false;
+
+            _anchorElement = null;
+            _anchorIndex = -1;
         }
 
         private static bool HasInfinity(Size s) => double.IsInfinity(s.Width) || double.IsInfinity(s.Height);
