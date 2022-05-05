@@ -234,7 +234,7 @@ namespace Avalonia.Controls.Selection
                         }
                         else if (childrenCount + newIndex <= sender.RowsPresenter!.Items!.Count)
                         {
-                            newIndex = childrenCount - 1 + newIndex;
+                            newIndex = childrenCount - 2 + newIndex;
                         }
                         else
                         {
@@ -261,7 +261,7 @@ namespace Avalonia.Controls.Selection
                         }
                         else if (isIndexSet && newIndex - childrenCount > 0)
                         {
-                            newIndex = newIndex - childrenCount - 1;
+                            newIndex = newIndex - childrenCount - 2;
                         }
                         else
                         {
