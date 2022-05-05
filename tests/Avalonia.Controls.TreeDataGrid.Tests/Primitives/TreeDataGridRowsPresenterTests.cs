@@ -454,6 +454,45 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         }
 
         [Fact]
+        public void FirstIndex_Brings_Next_Item_Into_View()
+        {
+            using var app = App();
+
+            var (target, scroll, _) = CreateTarget();
+
+            target.FirstVisibleIndex = 1;
+            Layout(target);
+
+            AssertRowIndexes(target, 1, 10);
+        }
+
+        [Fact]
+        public void FirstIndex_Brings_Next_Page_Into_View()
+        {
+            using var app = App();
+
+            var (target, scroll, _) = CreateTarget();
+
+            target.FirstVisibleIndex = 10;
+            Layout(target);
+
+            AssertRowIndexes(target, 10, 10);
+        }
+
+        [Fact]
+        public void FirstIndex_Is_Coerced_To_List_Length()
+        {
+            using var app = App();
+
+            var (target, scroll, _) = CreateTarget();
+
+            target.FirstVisibleIndex = 95;
+            Layout(target);
+
+            AssertRowIndexes(target, 90, 10);
+        }
+
+        [Fact]
         public void Assigns_Row_DataContexts()
         {
             using var app = App();
