@@ -261,7 +261,7 @@ namespace Avalonia.Controls.Selection
                         }
                         else if (isIndexSet && newIndex - childrenCount > 0)
                         {
-                            newIndex = newIndex - childrenCount - 2;
+                            newIndex = newIndex - childrenCount + 2;
                         }
                         else
                         {
