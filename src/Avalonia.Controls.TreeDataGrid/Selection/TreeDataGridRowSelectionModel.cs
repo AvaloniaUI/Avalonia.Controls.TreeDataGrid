@@ -187,14 +187,16 @@ namespace Avalonia.Controls.Selection
 
         void ITreeDataGridSelectionInteraction.OnPreviewKeyDown(TreeDataGrid sender, KeyEventArgs e)
         {
+
             static bool IsElementFullyVisibleToUser(TransformedBounds controlBounds)
             {
                 var rect = controlBounds.Bounds.TransformToAABB(controlBounds.Transform);
-                // Round BottomRight.Y because sometimes it isn't precise.
+                // Round BottomRight.Y because sometimes it's value isn't precise.
                 return controlBounds.Clip.Contains(rect.TopLeft) &&
                     controlBounds.Clip.Contains(new Point(rect.BottomRight.X, Math.Round(rect.BottomRight.Y, 5, MidpointRounding.ToZero)));
             }
-            bool GetSetRowIndex(IControl? control, out int newIndex)
+
+            static bool GetSetRowIndex(IControl? control, out int newIndex)
             {
                 if (control is TreeDataGridRow row &&
                     row.TransformedBounds != null &&
@@ -206,7 +208,8 @@ namespace Avalonia.Controls.Selection
                 newIndex = -1;
                 return false;
             }
-            if ((e.Key == Key.PageDown || e.Key == Key.PageUp) && sender.RowsPresenter != null)
+
+            if ((e.Key == Key.PageDown || e.Key == Key.PageUp) && sender.RowsPresenter?.Items != null)
             {
                 var children = sender.RowsPresenter.RealizedElements;
                 var childrenCount = children.Count;
@@ -214,9 +217,9 @@ namespace Avalonia.Controls.Selection
                 {
                     e.Handled = true;
                     var newIndex = 0;
+                    var isIndexSet = false;
                     if (e.Key == Key.PageDown)
                     {
-                        var isIndexSet = false;
                         for (int i = childrenCount - 1; i >= 0; i--)
                         {
                             if (GetSetRowIndex(children[i], out var index))
@@ -229,21 +232,20 @@ namespace Avalonia.Controls.Selection
                         if (isIndexSet && SelectedIndex[0] != newIndex)
                         {
                             UpdateSelection(sender, newIndex, true);
-                            sender.RowsPresenter?.BringIntoView(newIndex);
+                            sender.RowsPresenter.BringIntoView(newIndex);
                             sender.Focus();
                         }
-                        else if (childrenCount + newIndex <= sender.RowsPresenter!.Items!.Count)
+                        else if (childrenCount + newIndex <= sender.RowsPresenter.Items.Count)
                         {
                             newIndex = childrenCount - 2 + newIndex;
                         }
                         else
                         {
-                            newIndex = sender!.RowsPresenter!.Items!.Count - 1;
+                            newIndex = sender.RowsPresenter.Items.Count - 1;
                         }
                     }
                     else if (e.Key == Key.PageUp)
                     {
-                        var isIndexSet = false;
                         for (int i = 0; i <= childrenCount - 1; i++)
                         {
                             if (GetSetRowIndex(children[i], out var index))
@@ -256,7 +258,7 @@ namespace Avalonia.Controls.Selection
                         if (isIndexSet && SelectedIndex[0] != newIndex)
                         {
                             UpdateSelection(sender, newIndex, true);
-                            sender.RowsPresenter?.BringIntoView(newIndex);
+                            sender.RowsPresenter.BringIntoView(newIndex);
                             sender.Focus();
                         }
                         else if (isIndexSet && newIndex - childrenCount > 0)
@@ -269,7 +271,7 @@ namespace Avalonia.Controls.Selection
                         }
                     }
                     UpdateSelection(sender, newIndex, true);
-                    sender.RowsPresenter?.BringIntoView(newIndex);
+                    sender.RowsPresenter.BringIntoView(newIndex);
                     sender.Focus();
                 }
             }
