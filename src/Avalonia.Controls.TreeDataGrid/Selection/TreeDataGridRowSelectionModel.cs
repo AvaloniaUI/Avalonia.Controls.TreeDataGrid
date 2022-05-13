@@ -191,21 +191,21 @@ namespace Avalonia.Controls.Selection
             static bool IsElementFullyVisibleToUser(TransformedBounds controlBounds)
             {
                 var rect = controlBounds.Bounds.TransformToAABB(controlBounds.Transform);
-                // Round BottomRight.Y because sometimes it's value isn't precise.
+                // Round rect.Bottom because sometimes it's value isn't precise.
                 return controlBounds.Clip.Contains(rect.TopLeft) &&
                     controlBounds.Clip.Contains(new Point(rect.BottomRight.X, Math.Round(rect.BottomRight.Y, 5, MidpointRounding.ToZero)));
             }
 
-            static bool GetSetRowIndex(IControl? control, out int newIndex)
+            static bool GetRowIndexIfFullyVisible(IControl? control, out int index)
             {
                 if (control is TreeDataGridRow row &&
                     row.TransformedBounds != null &&
                     IsElementFullyVisibleToUser(row.TransformedBounds.Value))
                 {
-                    newIndex = row.RowIndex;
+                    index = row.RowIndex;
                     return true;
                 }
-                newIndex = -1;
+                index = -1;
                 return false;
             }
 
@@ -229,7 +229,7 @@ namespace Avalonia.Controls.Selection
                     {
                         for (int i = childrenCount - 1; i >= 0; i--)
                         {
-                            if (GetSetRowIndex(children[i], out var index))
+                            if (GetRowIndexIfFullyVisible(children[i], out var index))
                             {
                                 newIndex = index;
                                 isIndexSet = true;
@@ -254,7 +254,7 @@ namespace Avalonia.Controls.Selection
                     {
                         for (int i = 0; i <= childrenCount - 1; i++)
                         {
-                            if (GetSetRowIndex(children[i], out var index))
+                            if (GetRowIndexIfFullyVisible(children[i], out var index))
                             {
                                 newIndex = index;
                                 isIndexSet = true;
