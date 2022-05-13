@@ -209,6 +209,13 @@ namespace Avalonia.Controls.Selection
                 return false;
             }
 
+            void UpdateSelectionAndBringIntoView(int newIndex)
+            {
+                UpdateSelection(sender, newIndex, true);
+                sender.RowsPresenter?.BringIntoView(newIndex);
+                sender.Focus();
+            }
+
             if ((e.Key == Key.PageDown || e.Key == Key.PageUp) && sender.RowsPresenter?.Items != null)
             {
                 var children = sender.RowsPresenter.RealizedElements;
@@ -231,9 +238,7 @@ namespace Avalonia.Controls.Selection
                         }
                         if (isIndexSet && SelectedIndex[0] != newIndex)
                         {
-                            UpdateSelection(sender, newIndex, true);
-                            sender.RowsPresenter.BringIntoView(newIndex);
-                            sender.Focus();
+                            UpdateSelectionAndBringIntoView(newIndex);
                         }
                         else if (childrenCount + newIndex <= sender.RowsPresenter.Items.Count)
                         {
@@ -257,9 +262,7 @@ namespace Avalonia.Controls.Selection
                         }
                         if (isIndexSet && SelectedIndex[0] != newIndex)
                         {
-                            UpdateSelection(sender, newIndex, true);
-                            sender.RowsPresenter.BringIntoView(newIndex);
-                            sender.Focus();
+                            UpdateSelectionAndBringIntoView(newIndex);
                         }
                         else if (isIndexSet && newIndex - childrenCount > 0)
                         {
@@ -270,9 +273,7 @@ namespace Avalonia.Controls.Selection
                             newIndex = 0;
                         }
                     }
-                    UpdateSelection(sender, newIndex, true);
-                    sender.RowsPresenter.BringIntoView(newIndex);
-                    sender.Focus();
+                    UpdateSelectionAndBringIntoView(newIndex);
                 }
             }
         }
