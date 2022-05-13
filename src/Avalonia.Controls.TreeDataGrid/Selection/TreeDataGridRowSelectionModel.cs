@@ -214,6 +214,7 @@ namespace Avalonia.Controls.Selection
                 UpdateSelection(sender, newIndex, true);
                 sender.RowsPresenter?.BringIntoView(newIndex);
                 sender.Focus();
+                e.Handled = true;
             }
 
             if ((e.Key == Key.PageDown || e.Key == Key.PageUp) && sender.RowsPresenter?.Items != null)
@@ -222,7 +223,6 @@ namespace Avalonia.Controls.Selection
                 var childrenCount = children.Count;
                 if (childrenCount > 0)
                 {
-                    e.Handled = true;
                     var newIndex = 0;
                     var isIndexSet = false;
                     if (e.Key == Key.PageDown)
@@ -239,6 +239,7 @@ namespace Avalonia.Controls.Selection
                         if (isIndexSet && SelectedIndex[0] != newIndex)
                         {
                             UpdateSelectionAndBringIntoView(newIndex);
+                            return;
                         }
                         else if (childrenCount + newIndex <= sender.RowsPresenter.Items.Count)
                         {
@@ -263,6 +264,7 @@ namespace Avalonia.Controls.Selection
                         if (isIndexSet && SelectedIndex[0] != newIndex)
                         {
                             UpdateSelectionAndBringIntoView(newIndex);
+                            return;
                         }
                         else if (isIndexSet && newIndex - childrenCount > 0)
                         {
