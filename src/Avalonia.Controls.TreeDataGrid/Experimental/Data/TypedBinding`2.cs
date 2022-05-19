@@ -150,7 +150,9 @@ namespace Avalonia.Experimental.Data
             // TypedBinding.DataContext_Binding_Should_Produce_Correct_Results.
             if (targetIsDataContext && !fallback.HasValue)
             {
+#pragma warning disable CS8604
                 fallback = new Optional<TOut>(default);
+#pragma warning restore CS8604
             }
 
             return Instance(root, mode, fallback);
