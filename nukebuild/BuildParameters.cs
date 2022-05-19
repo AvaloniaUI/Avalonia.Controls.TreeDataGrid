@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.CI.AzurePipelines;
+using Nuke.Common.Execution;
 using Nuke.Common.IO;
 using static Nuke.Common.IO.PathConstruction;
 
@@ -77,11 +78,11 @@ public partial class Build
             MSBuildSolution = RootDirectory / "Avalonia.Controls.TreeDataGrid.sln";
 
             // PARAMETERS
-            IsLocalBuild = Host == HostType.Console;
+            IsLocalBuild = Host == new Terminal();
             IsRunningOnUnix = Environment.OSVersion.Platform == PlatformID.Unix ||
                               Environment.OSVersion.Platform == PlatformID.MacOSX;
             IsRunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            IsRunningOnAzure = Host == HostType.AzurePipelines ||
+            IsRunningOnAzure = Host == AzurePipelines.Instance ||
                                Environment.GetEnvironmentVariable("LOGNAME") == "vsts";
 
             if (IsRunningOnAzure)
