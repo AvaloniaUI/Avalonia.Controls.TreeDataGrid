@@ -10,12 +10,12 @@ public partial class Build
 {
     static void Information(string info)
     {
-        Logger.Info(info);
+        Serilog.Log.Information(info);
     }
 
     static void Information(string info, params object[] args)
     {
-        Logger.Info(info, args);
+        Serilog.Log.Information(info, args);
     }
 
     private void Zip(AbsolutePath target, params string[] paths) => Zip(target, paths.AsEnumerable());
