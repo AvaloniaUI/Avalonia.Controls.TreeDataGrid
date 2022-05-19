@@ -11,4 +11,7 @@
     <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
     <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
+  <PropertyGroup>
+    <AvaloniaVersion>0.10.14</AvaloniaVersion>
+  </PropertyGroup>
 </Project>
