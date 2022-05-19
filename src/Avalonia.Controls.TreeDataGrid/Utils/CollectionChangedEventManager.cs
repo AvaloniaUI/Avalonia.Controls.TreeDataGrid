@@ -78,7 +78,7 @@ namespace Avalonia.Controls.Utils
                 "Collection listener not registered for this collection/listener combination.");
         }
 
-        void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object sender, NotifyCollectionChangedEventArgs e)
+        void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object? sender, NotifyCollectionChangedEventArgs e)
         {
             static void Notify(
                 INotifyCollectionChanged incc,
