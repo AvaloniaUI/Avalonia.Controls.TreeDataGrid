@@ -48,7 +48,7 @@ namespace Avalonia.Controls.Primitives
         protected sealed override Size GetFinalConstraint(IControl element, int index, Size availableSize)
         {
             var column = Columns![index];
-            return new(double.IsNaN(column.ActualWidth) ? 0.0 : column.ActualWidth, element.DesiredSize.Height);
+            return new(column.ActualWidth, element.DesiredSize.Height);
         }
 
         protected sealed override double CalculateSizeU(Size availableSize)
