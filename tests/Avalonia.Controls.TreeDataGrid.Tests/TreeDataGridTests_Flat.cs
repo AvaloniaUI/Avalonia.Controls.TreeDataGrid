@@ -317,6 +317,28 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(2, preparedRaised);
         }
 
+        [Fact]
+        public void Does_Not_Realize_Columns_Outside_Viewport()
+        {
+            using var app = App();
+
+            var (target, items) = CreateTarget(columns: new IColumn<Model>[]
+            {
+                new TextColumn<Model, int>("ID", x => x.Id, width: new GridLength(1, GridUnitType.Star)),
+                new TextColumn<Model, string?>("Title1", x => x.Title, options: MinWidth(50)),
+                new TextColumn<Model, string?>("Title2", x => x.Title, options: MinWidth(50)),
+                new TextColumn<Model, string?>("Title3", x => x.Title, options: MinWidth(50)),
+            });
+
+            AssertColumnIndexes(target, 0, 3);
+
+            var columns = (ColumnList<Model>)target.Columns!;
+            Assert.Equal(30, columns[0].ActualWidth);
+            Assert.Equal(50, columns[1].ActualWidth);
+            Assert.Equal(50, columns[2].ActualWidth);
+            Assert.True(double.IsNaN(columns[3].ActualWidth));
+        }
+
         public class RemoveItems
         {
             [Fact]
@@ -496,6 +518,35 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(
                 Enumerable.Range(firstRowIndex, rowCount),
                 rowIndexes);
+        }
+
+        private static void AssertColumnIndexes(TreeDataGrid target, int firstColumnIndex, int columnCount)
+        {
+            var presenter = target.ColumnHeadersPresenter;
+
+            Assert.NotNull(presenter);
+
+            var columnIndexes = presenter.GetLogicalChildren()
+                .Cast<TreeDataGridColumnHeader>()
+                .Where(x => x.IsVisible)
+                .Select(x => x.ColumnIndex)
+                .OrderBy(x => x)
+                .ToList();
+
+            Assert.Equal(
+                Enumerable.Range(firstColumnIndex, columnCount),
+                columnIndexes);
+
+            columnIndexes = presenter!.RealizedElements
+                .Cast<TreeDataGridColumnHeader>()
+                .Where(x => x.IsVisible)
+                .Select(x => x.ColumnIndex)
+                .OrderBy(x => x)
+                .ToList();
+
+            Assert.Equal(
+                Enumerable.Range(firstColumnIndex, columnCount),
+                columnIndexes);
         }
 
         private static void AssertInteractionSelection(TreeDataGrid target, params int[] selected)
