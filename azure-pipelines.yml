@@ -11,7 +11,7 @@ steps:
   displayName: 'Install Nuke'
   inputs:
     script: |
-      dotnet tool install --global Nuke.GlobalTool --version 0.24.0
+      dotnet tool install --global Nuke.GlobalTool --version 6.0.3
 
 - script: nuke --target RunTests --configuration Release
   displayName: 'Run Unit Tests'
