@@ -20,9 +20,10 @@ namespace Avalonia.Controls.Utils
 
     internal class CollectionChangedEventManager
     {
-        private IDisposable? _collectionChangedSubscription;
-        
         private readonly ConditionalWeakTable<INotifyCollectionChanged, List<WeakReference<ICollectionChangedListener>>> _entries =
+            new();
+
+        private readonly ConditionalWeakTable<INotifyCollectionChanged, IDisposable> _collectionChangedSubscriptions =
             new();
 
         public static CollectionChangedEventManager Instance { get; } = new CollectionChangedEventManager();
@@ -41,7 +42,7 @@ namespace Avalonia.Controls.Utils
             {
                 listeners = new List<WeakReference<ICollectionChangedListener>>();
                 _entries.Add(collection, listeners);
-                _collectionChangedSubscription = collection.WeakSubscribe(OnCollectionChangedEvent);
+                _collectionChangedSubscriptions.Add(collection, collection.WeakSubscribe(OnCollectionChangedEvent));
             }
 
             listeners.Add(new WeakReference<ICollectionChangedListener>(listener));
@@ -63,7 +64,8 @@ namespace Avalonia.Controls.Utils
 
                         if (listeners.Count == 0)
                         {
-                            _collectionChangedSubscription?.Dispose();
+                            _collectionChangedSubscriptions.TryGetValue(collection, out var collectionChangedSubscription);
+                            collectionChangedSubscription?.Dispose();
                             _entries.Remove(collection);
                         }
 
