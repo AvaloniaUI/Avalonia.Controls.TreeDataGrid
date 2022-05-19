@@ -24,23 +24,26 @@ namespace TreeDataGridDemo.ViewModels
         private FileTreeNodeModel? _root;
         private string _selectedDrive;
         private string? _selectedPath;
-        private FolderIconConverter _folderIconConverter;
+        private FolderIconConverter? _folderIconConverter;
 
         public FilesPageViewModel()
         {
             var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
 
-            using (var fileStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
-            using (var folderStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
-            using (var folderOpenStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
+            if (assetLoader is not null)
             {
-                var fileIcon = new Bitmap(fileStream);
-                var folderIcon = new Bitmap(folderStream);
-                var folderOpenIcon = new Bitmap(folderOpenStream);
+                using (var fileStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
+                using (var folderStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
+                using (var folderOpenStream =
+                       assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
+                {
+                    var fileIcon = new Bitmap(fileStream);
+                    var folderIcon = new Bitmap(folderStream);
+                    var folderOpenIcon = new Bitmap(folderOpenStream);
 
-                _folderIconConverter = new FolderIconConverter(fileIcon, folderOpenIcon, folderIcon);
+                    _folderIconConverter = new FolderIconConverter(fileIcon, folderOpenIcon, folderIcon);
+                }
             }
-
             Drives = DriveInfo.GetDrives().Select(x => x.Name).ToList();
             _selectedDrive = "C:\\";
 
