@@ -1,13 +1,11 @@
-﻿
-
-#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
-using Avalonia.Collections;
 using Avalonia.Threading;
+using Avalonia.Utilities;
+
+#nullable enable
 
 namespace Avalonia.Controls.Utils
 {
@@ -18,10 +16,8 @@ namespace Avalonia.Controls.Utils
         void PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e);
     }
 
-    internal class CollectionChangedEventManager
+    internal class CollectionChangedEventManager : IWeakSubscriber<NotifyCollectionChangedEventArgs>
     {
-        private IDisposable? _collectionChangedSubscription;
-        
         private readonly ConditionalWeakTable<INotifyCollectionChanged, List<WeakReference<ICollectionChangedListener>>> _entries =
             new();
 
@@ -41,7 +37,12 @@ namespace Avalonia.Controls.Utils
             {
                 listeners = new List<WeakReference<ICollectionChangedListener>>();
                 _entries.Add(collection, listeners);
-                _collectionChangedSubscription = collection.WeakSubscribe(OnCollectionChangedEvent);
+#pragma warning disable CS0618
+                WeakSubscriptionManager.Subscribe(
+#pragma warning restore CS0618
+                    collection,
+                    nameof(INotifyCollectionChanged.CollectionChanged),
+                    this);
             }
 
             listeners.Add(new WeakReference<ICollectionChangedListener>(listener));
@@ -63,7 +64,10 @@ namespace Avalonia.Controls.Utils
 
                         if (listeners.Count == 0)
                         {
-                            _collectionChangedSubscription?.Dispose();
+                            WeakSubscriptionManager.Unsubscribe(
+                                collection,
+                                nameof(INotifyCollectionChanged.CollectionChanged),
+                                this);
                             _entries.Remove(collection);
                         }
 
@@ -76,7 +80,7 @@ namespace Avalonia.Controls.Utils
                 "Collection listener not registered for this collection/listener combination.");
         }
 
-        private void OnCollectionChangedEvent(object? sender, NotifyCollectionChangedEventArgs e)
+        void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object? sender, NotifyCollectionChangedEventArgs e)
         {
             static void Notify(
                 INotifyCollectionChanged incc,
