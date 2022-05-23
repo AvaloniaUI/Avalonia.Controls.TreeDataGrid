@@ -37,7 +37,9 @@ namespace Avalonia.Controls.Utils
             {
                 listeners = new List<WeakReference<ICollectionChangedListener>>();
                 _entries.Add(collection, listeners);
+#pragma warning disable CS0618
                 WeakSubscriptionManager.Subscribe(
+#pragma warning restore CS0618
                     collection,
                     nameof(INotifyCollectionChanged.CollectionChanged),
                     this);
@@ -78,7 +80,7 @@ namespace Avalonia.Controls.Utils
                 "Collection listener not registered for this collection/listener combination.");
         }
 
-        void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object sender, NotifyCollectionChangedEventArgs e)
+        void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object? sender, NotifyCollectionChangedEventArgs e)
         {
             static void Notify(
                 INotifyCollectionChanged incc,

@@ -5,10 +5,13 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>nullable</WarningsAsErrors>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>9</LangVersion>
     <!-- https://github.com/dotnet/msbuild/issues/2661 -->
     <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
     <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AvaloniaVersion>0.10.14</AvaloniaVersion>
   </PropertyGroup>
 </Project>

@@ -98,7 +98,7 @@ namespace Avalonia.Controls.Selection
                         var newIndex = hierarchicalRows.GetParentRowIndex(AnchorIndex);
                         UpdateSelection(sender, newIndex, true);
                         sender.RowsPresenter.BringIntoView(newIndex);
-                        FocusManager.Instance.Focus(sender);
+                        FocusManager.Instance?.Focus(sender);
                     }
 
                     if (!e.Handled && direction == NavigationDirection.Right
@@ -249,12 +249,14 @@ namespace Avalonia.Controls.Selection
             {
                 var point = e.GetCurrentPoint(sender);
 
+                var commandModifiers = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.CommandModifiers;
+                var toggleModifier = commandModifiers is not null ? e.KeyModifiers.HasFlag(commandModifiers) : false;
                 UpdateSelection(
                     sender,
                     row.RowIndex,
                     select: true,
                     rangeModifier: e.KeyModifiers.HasFlag(KeyModifiers.Shift),
-                    toggleModifier: e.KeyModifiers.HasFlag(AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>().CommandModifiers),
+                    toggleModifier: toggleModifier,
                     rightButton: point.Properties.IsRightButtonPressed);
                 e.Handled = true;
             }
