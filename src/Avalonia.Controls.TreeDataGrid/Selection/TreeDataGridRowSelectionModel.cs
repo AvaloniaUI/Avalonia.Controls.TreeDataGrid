@@ -236,7 +236,11 @@ namespace Avalonia.Controls.Selection
                                 break;
                             }
                         }
-                        if (isIndexSet && SelectedIndex[0] != newIndex && sender.TryGetRow(SelectedIndex[0]) != null)
+                        if (isIndexSet &&
+                            SelectedIndex[0] != newIndex &&
+                            sender.TryGetRow(SelectedIndex[0]) is TreeDataGridRow row &&
+                            row.TransformedBounds != null &&
+                            IsElementFullyVisibleToUser(row.TransformedBounds.Value))
                         {
                             UpdateSelectionAndBringIntoView(newIndex);
                             return;
@@ -261,7 +265,11 @@ namespace Avalonia.Controls.Selection
                                 break;
                             }
                         }
-                        if (isIndexSet && SelectedIndex[0] != newIndex && sender.TryGetRow(SelectedIndex[0]) != null)
+                        if (isIndexSet && 
+                            SelectedIndex[0] != newIndex && 
+                            sender.TryGetRow(SelectedIndex[0]) is TreeDataGridRow row &&
+                            row.TransformedBounds != null &&
+                            IsElementFullyVisibleToUser(row.TransformedBounds.Value))
                         {
                             UpdateSelectionAndBringIntoView(newIndex);
                             return;
