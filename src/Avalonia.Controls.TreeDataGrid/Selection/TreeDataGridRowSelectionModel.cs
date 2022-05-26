@@ -241,7 +241,7 @@ namespace Avalonia.Controls.Selection
                             UpdateSelectionAndBringIntoView(newIndex);
                             return;
                         }
-                        else if (childrenCount + newIndex <= sender.RowsPresenter.Items.Count)
+                        else if (childrenCount + SelectedIndex[0] - 1 <= sender.RowsPresenter.Items.Count)
                         {
                             newIndex = childrenCount + SelectedIndex[0] - 2;
                         }
@@ -266,7 +266,7 @@ namespace Avalonia.Controls.Selection
                             UpdateSelectionAndBringIntoView(newIndex);
                             return;
                         }
-                        else if (isIndexSet && SelectedIndex[0] - childrenCount > 0)
+                        else if (isIndexSet && SelectedIndex[0] - childrenCount + 2 > 0)
                         {
                             newIndex = SelectedIndex[0] - childrenCount + 2;
                         }
