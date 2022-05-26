@@ -236,14 +236,14 @@ namespace Avalonia.Controls.Selection
                                 break;
                             }
                         }
-                        if (isIndexSet && SelectedIndex[0] != newIndex)
+                        if (isIndexSet && SelectedIndex[0] != newIndex && sender.TryGetRow(SelectedIndex[0]) != null)
                         {
                             UpdateSelectionAndBringIntoView(newIndex);
                             return;
                         }
                         else if (childrenCount + newIndex <= sender.RowsPresenter.Items.Count)
                         {
-                            newIndex = childrenCount - 2 + newIndex;
+                            newIndex = childrenCount + SelectedIndex[0] - 2;
                         }
                         else
                         {
@@ -261,14 +261,14 @@ namespace Avalonia.Controls.Selection
                                 break;
                             }
                         }
-                        if (isIndexSet && SelectedIndex[0] != newIndex)
+                        if (isIndexSet && SelectedIndex[0] != newIndex && sender.TryGetRow(SelectedIndex[0]) != null)
                         {
                             UpdateSelectionAndBringIntoView(newIndex);
                             return;
                         }
-                        else if (isIndexSet && newIndex - childrenCount > 0)
+                        else if (isIndexSet && SelectedIndex[0] - childrenCount > 0)
                         {
-                            newIndex = newIndex - childrenCount + 2;
+                            newIndex = SelectedIndex[0] - childrenCount + 2;
                         }
                         else
                         {
