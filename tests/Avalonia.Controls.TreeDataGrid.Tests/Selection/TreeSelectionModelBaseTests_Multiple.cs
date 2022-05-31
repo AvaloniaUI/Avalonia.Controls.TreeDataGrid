@@ -448,13 +448,13 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             {
                 var target = CreateTarget();
 
+                target.Select(new IndexPath(0, 2));
                 target.Select(new IndexPath(0, 3));
                 target.Select(new IndexPath(0, 4));
-                target.Select(new IndexPath(0, 5));
-                target.Deselect(new IndexPath(0, 3));
+                target.Deselect(new IndexPath(0, 2));
 
-                Assert.Equal(3, target.Count);
-                Assert.Equal(new IndexPath(0, 4), target.SelectedIndex);
+                Assert.Equal(2, target.Count);
+                Assert.Equal(new IndexPath(0, 3), target.SelectedIndex);
             }
         }
 
