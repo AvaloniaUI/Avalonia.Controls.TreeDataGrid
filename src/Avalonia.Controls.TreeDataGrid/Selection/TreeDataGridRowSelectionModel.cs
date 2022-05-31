@@ -5,6 +5,7 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Selection
 {
@@ -180,6 +181,109 @@ namespace Avalonia.Controls.Selection
                     {
                         break;
                     }
+                }
+            }
+        }
+
+        void ITreeDataGridSelectionInteraction.OnPreviewKeyDown(TreeDataGrid sender, KeyEventArgs e)
+        {
+
+            static bool IsElementFullyVisibleToUser(TransformedBounds controlBounds)
+            {
+                var rect = controlBounds.Bounds.TransformToAABB(controlBounds.Transform);
+                // Round rect.Bottom because sometimes it's value isn't precise.
+                return controlBounds.Clip.Contains(rect.TopLeft) &&
+                    controlBounds.Clip.Contains(new Point(rect.BottomRight.X, Math.Round(rect.BottomRight.Y, 5, MidpointRounding.ToZero)));
+            }
+
+            static bool GetRowIndexIfFullyVisible(IControl? control, out int index)
+            {
+                if (control is TreeDataGridRow row &&
+                    row.TransformedBounds != null &&
+                    IsElementFullyVisibleToUser(row.TransformedBounds.Value))
+                {
+                    index = row.RowIndex;
+                    return true;
+                }
+                index = -1;
+                return false;
+            }
+
+            void UpdateSelectionAndBringIntoView(int newIndex)
+            {
+                UpdateSelection(sender, newIndex, true);
+                sender.RowsPresenter?.BringIntoView(newIndex);
+                sender.Focus();
+                e.Handled = true;
+            }
+
+            if ((e.Key == Key.PageDown || e.Key == Key.PageUp) && sender.RowsPresenter?.Items != null)
+            {
+                var children = sender.RowsPresenter.RealizedElements;
+                var childrenCount = children.Count;
+                if (childrenCount > 0)
+                {
+                    var newIndex = 0;
+                    var isIndexSet = false;
+                    if (e.Key == Key.PageDown)
+                    {
+                        for (int i = childrenCount - 1; i >= 0; i--)
+                        {
+                            if (GetRowIndexIfFullyVisible(children[i], out var index))
+                            {
+                                newIndex = index;
+                                isIndexSet = true;
+                                break;
+                            }
+                        }
+                        if (isIndexSet &&
+                            SelectedIndex[0] != newIndex &&
+                            sender.TryGetRow(SelectedIndex[0]) is TreeDataGridRow row &&
+                            row.TransformedBounds != null &&
+                            IsElementFullyVisibleToUser(row.TransformedBounds.Value))
+                        {
+                            UpdateSelectionAndBringIntoView(newIndex);
+                            return;
+                        }
+                        else if (childrenCount + SelectedIndex[0] - 1 <= sender.RowsPresenter.Items.Count)
+                        {
+                            newIndex = childrenCount + SelectedIndex[0] - 2;
+                        }
+                        else
+                        {
+                            newIndex = sender.RowsPresenter.Items.Count - 1;
+                        }
+                    }
+                    else if (e.Key == Key.PageUp)
+                    {
+                        for (int i = 0; i <= childrenCount - 1; i++)
+                        {
+                            if (GetRowIndexIfFullyVisible(children[i], out var index))
+                            {
+                                newIndex = index;
+                                isIndexSet = true;
+                                break;
+                            }
+                        }
+                        if (isIndexSet && 
+                            SelectedIndex[0] != newIndex && 
+                            sender.TryGetRow(SelectedIndex[0]) is TreeDataGridRow row &&
+                            row.TransformedBounds != null &&
+                            IsElementFullyVisibleToUser(row.TransformedBounds.Value))
+                        {
+                            UpdateSelectionAndBringIntoView(newIndex);
+                            return;
+                        }
+                        else if (isIndexSet && SelectedIndex[0] - childrenCount + 2 > 0)
+                        {
+                            newIndex = SelectedIndex[0] - childrenCount + 2;
+                        }
+                        else
+                        {
+                            newIndex = 0;
+                        }
+                    }
+                    UpdateSelectionAndBringIntoView(newIndex);
                 }
             }
         }
