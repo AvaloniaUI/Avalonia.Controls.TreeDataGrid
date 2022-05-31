@@ -285,13 +285,14 @@ namespace Avalonia.Controls.Selection
             }
 
             // Shift or clear the selected and anchor indexes according to the shift index/delta.
+            var hadSelection = _selectedIndex != default;
             var selectedIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _selectedIndex);
             var anchorIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _anchorIndex);
             var selectedItemChanged = false;
 
             // Check that the selected index is still selected in the node. It can get
             // unselected as the result of a replace operation.
-            if (_selectedIndex != default && !IsSelected(_selectedIndex))
+            if (hadSelection && !IsSelected(_selectedIndex))
             {
                 _selectedIndex = GetFirstSelectedIndex(_root);
                 selectedIndexChanged = selectedItemChanged = true;
