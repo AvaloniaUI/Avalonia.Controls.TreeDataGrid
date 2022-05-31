@@ -1120,6 +1120,46 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             }
 
             [Fact]
+            public void Removing_Child_Range_Updates_State()
+            {
+                var data = CreateData(depth: 3);
+                var target = CreateTarget(data);
+                var selectionChangedRaised = 0;
+                var indexesChangedraised = 0;
+
+                target.Select(new IndexPath(0, 1));
+                target.Select(new IndexPath(0, 2));
+                target.Select(new IndexPath(0, 3));
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Empty(e.DeselectedIndexes);
+                    Assert.Equal(new[] { "Node 0-1" }, e.DeselectedItems.Select(x => x!.Caption));
+                    Assert.Empty(e.SelectedIndexes);
+                    Assert.Empty(e.SelectedItems);
+                    ++selectionChangedRaised;
+                };
+
+                target.IndexesChanged += (s, e) =>
+                {
+                    Assert.Equal(0, e.StartIndex);
+                    Assert.Equal(-2, e.Delta);
+                    ++indexesChangedraised;
+                };
+
+                data[0].Children!.RemoveRange(0, 2);
+
+                Assert.Equal(2, target.Count);
+                Assert.Equal(new IndexPath(0, 0), target.SelectedIndex);
+                Assert.Equal(new[] { new IndexPath(0, 0), new IndexPath(0, 1) }, target.SelectedIndexes);
+                Assert.Equal("Node 0-2", target.SelectedItem!.Caption);
+                Assert.Equal(new[] { "Node 0-2", "Node 0-3" }, target.SelectedItems.Select(x => x!.Caption));
+                Assert.Equal(new IndexPath(0, 1), target.AnchorIndex);
+                Assert.Equal(1, indexesChangedraised);
+                Assert.Equal(1, selectionChangedRaised);
+            }
+
+            [Fact]
             public void Removing_Root_Item_After_Selected_Root_Item_Doesnt_Raise_Events()
             {
                 var data = CreateData();
