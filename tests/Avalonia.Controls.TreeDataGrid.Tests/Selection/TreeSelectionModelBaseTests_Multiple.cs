@@ -1456,13 +1456,15 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             [Fact]
             public void Clearing_Children_Updates_State()
             {
-                var data = CreateData(depth: 3);
+                var data = CreateData(depth: 4);
                 var target = CreateTarget(data);
                 var selectionChangedRaised = 0;
                 var sourceResetRaised = 0;
                 var indexesChangedraised = 0;
 
                 target.Select(new IndexPath(0, 1));
+                target.Select(new IndexPath(0, 1, 0));
+                target.Select(new IndexPath(0, 1, 0, 1));
                 target.Select(new IndexPath(0, 2));
                 target.Select(new IndexPath(0, 3));
                 target.Select(new IndexPath(1, 3));
