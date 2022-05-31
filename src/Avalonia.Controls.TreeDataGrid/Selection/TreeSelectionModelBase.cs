@@ -304,7 +304,8 @@ namespace Avalonia.Controls.Selection
                 _untypedSelectionChanged?.Invoke(this, e);
             }
 
-            Count += (raiseIndexesChanged ? shiftDelta : 0) - (removed?.Count ?? 0);
+            if (removed?.Count > 0)
+                Count -= removed.Count;
 
             if (selectedIndexChanged)
                 RaisePropertyChanged(nameof(SelectedIndex));
@@ -320,7 +321,7 @@ namespace Avalonia.Controls.Selection
                 OnSourceCollectionChangeFinished();
         }
 
-        protected internal virtual void OnNodeCollectionReset(IndexPath parentIndex)
+        protected internal virtual void OnNodeCollectionReset(IndexPath parentIndex, int removeCount)
         {
             var selectedIndexChanged = false;
             var anchorIndexChanged = false;
@@ -334,6 +335,7 @@ namespace Avalonia.Controls.Selection
                 selectedIndexChanged = selectedItemChanged = true;
             }
 
+            Count -= removeCount;
             SourceReset?.Invoke(this, new TreeSelectionModelSourceResetEventArgs(parentIndex));
 
             if (selectedIndexChanged)

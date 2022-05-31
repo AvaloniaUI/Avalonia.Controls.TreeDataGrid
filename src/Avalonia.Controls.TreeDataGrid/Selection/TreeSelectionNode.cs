@@ -193,8 +193,8 @@ namespace Avalonia.Controls.Selection
 
         protected override void OnSourceReset()
         {
-            CommitDeselect(new IndexRange(0, int.MaxValue));
-            _owner.OnNodeCollectionReset(Path);
+            var removed = CommitDeselect(new IndexRange(0, int.MaxValue));
+            _owner.OnNodeCollectionReset(Path, removed);
         }
 
         private void AncestorIndexChanged(IndexPath parentIndex, int shiftIndex, int shiftDelta)
