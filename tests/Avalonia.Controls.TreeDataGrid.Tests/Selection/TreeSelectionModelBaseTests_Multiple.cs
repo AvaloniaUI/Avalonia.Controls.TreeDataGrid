@@ -31,6 +31,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.SelectedIndex = new IndexPath(0, 2);
 
                 Assert.Equal(1, raised);
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(0, 2), target.SelectedIndex);
                 Assert.Equal(new IndexPath(0, 2), target.SelectedIndexes.Single());
                 Assert.Equal("Node 0-2", target.SelectedItem!.Caption);
@@ -56,6 +57,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.SelectedIndex = new IndexPath(0, 0, 2);
 
                 Assert.Equal(1, raised);
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(0, 0, 2), target.SelectedIndex);
                 Assert.Equal(new IndexPath(0, 0, 2), target.SelectedIndexes.Single());
                 Assert.Equal("Node 0-0-2", target.SelectedItem!.Caption);
@@ -81,6 +83,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.SelectedIndex = new IndexPath(0, 2);
 
                 Assert.Equal(1, raised);
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(0, 2), target.SelectedIndex);
                 Assert.Equal(new IndexPath(0, 2), target.SelectedIndexes.Single());
                 Assert.Equal("Node 0-2", target.SelectedItem!.Caption);
@@ -106,6 +109,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.SelectedIndex = default;
 
                 Assert.Equal(1, raised);
+                Assert.Equal(0, target.Count);
                 Assert.Equal(default, target.SelectedIndex);
                 Assert.Empty(target.SelectedIndexes);
                 Assert.Null(target.SelectedItem);
@@ -131,6 +135,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.SelectedIndex = new IndexPath(5, 10, 250);
 
                 Assert.Equal(1, raised);
+                Assert.Equal(0, target.Count);
                 Assert.Equal(default, target.SelectedIndex);
                 Assert.Empty(target.SelectedIndexes);
                 Assert.Null(target.SelectedItem);
@@ -155,6 +160,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.SelectedIndex = new IndexPath(1, 2);
 
                 Assert.Equal(1, raised);
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(1, 2), target.SelectedIndex);
                 Assert.Equal(new IndexPath(1, 2), target.SelectedIndexes.Single());
                 Assert.Equal("Node 1-2", target.SelectedItem!.Caption);
@@ -251,6 +257,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.Select(new IndexPath(1, 2));
                 target.Select(new IndexPath(2, 3));
 
+                Assert.Equal(4, target.Count);
                 Assert.Equal(4, target.SelectedIndexes.Count);
                 Assert.Equal(new IndexPath(0), target.SelectedIndexes[0]);
                 Assert.Equal(new IndexPath(1), target.SelectedIndexes[1]);
@@ -290,6 +297,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.Select(new IndexPath(1, 2));
                 target.Select(new IndexPath(2, 3));
 
+                Assert.Equal(4, target.Count);
                 Assert.Equal(4, target.SelectedItems.Count);
                 Assert.Equal("Node 0", target.SelectedItems[0]!.Caption);
                 Assert.Equal("Node 1", target.SelectedItems[1]!.Caption);
@@ -337,6 +345,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.Select(new IndexPath(0, 2));
 
                 Assert.Equal(1, raised);
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(0, 2), target.SelectedIndex);
                 Assert.Equal(new IndexPath(0, 2), target.SelectedIndexes.Single());
                 Assert.Equal("Node 0-2", target.SelectedItem!.Caption);
@@ -363,6 +372,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.Select(new IndexPath(0, 2));
 
                 Assert.Equal(1, raised);
+                Assert.Equal(2, target.Count);
                 Assert.Equal(new IndexPath(0), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(0), new IndexPath(0, 2) }, target.SelectedIndexes);
                 Assert.Equal("Node 0", target.SelectedItem!.Caption);
@@ -381,6 +391,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.Select(new IndexPath(5, 10, 250));
 
                 Assert.Equal(0, raised);
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(0, 2), target.SelectedIndex);
                 Assert.Equal(new IndexPath(0, 2), target.SelectedIndexes.Single());
                 Assert.Equal("Node 0-2", target.SelectedItem!.Caption);
@@ -424,6 +435,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 target.Deselect(new IndexPath(0, 1));
 
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(0), target.SelectedIndex);
                 Assert.Equal(new IndexPath(0), target.SelectedIndexes.Single());
                 Assert.Equal("Node 0", target.SelectedItem!.Caption);
@@ -441,6 +453,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.Select(new IndexPath(0, 5));
                 target.Deselect(new IndexPath(0, 3));
 
+                Assert.Equal(3, target.Count);
                 Assert.Equal(new IndexPath(0, 4), target.SelectedIndex);
             }
         }
@@ -674,6 +687,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 target.SingleSelect = true;
 
                 Assert.Equal(1, raised);
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(0, 1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(0, 1) }, target.SelectedIndexes);
                 Assert.Equal("Node 0-1", target.SelectedItem!.Caption);
@@ -734,6 +748,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data.Insert(0, new Node { Caption = "new" });
 
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(2), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(2) }, target.SelectedIndexes);
                 Assert.Equal("Node 1", target.SelectedItem!.Caption);
@@ -775,6 +790,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data[0].Children!.Insert(0, new Node { Caption = "new" });
 
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(0, 2), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(0, 2) }, target.SelectedIndexes);
                 Assert.Equal("Node 0-1", target.SelectedItem!.Caption);
@@ -816,6 +832,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data.Insert(0, new Node { Caption = "new" });
 
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(1, 1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(1, 1) }, target.SelectedIndexes);
                 Assert.Equal("Node 0-1", target.SelectedItem!.Caption);
@@ -857,6 +874,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data.Insert(0, new Node { Caption = "new" });
 
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(1, 0, 1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(1, 0, 1) }, target.SelectedIndexes);
                 Assert.Equal("Node 0-0-1", target.SelectedItem!.Caption);
@@ -882,6 +900,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data.Insert(2, new Node { Caption = "new" });
 
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndexes);
                 Assert.Equal("Node 1", target.SelectedItem!.Caption);
@@ -919,6 +938,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data.RemoveAt(1);
 
+                Assert.Equal(0, target.Count);
                 Assert.Equal(default, target.SelectedIndex);
                 Assert.Empty(target.SelectedIndexes);
                 Assert.Null(target.SelectedItem);
@@ -957,6 +977,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data[0].Children!.RemoveAt(1);
 
+                Assert.Equal(0, target.Count);
                 Assert.Equal(default, target.SelectedIndex);
                 Assert.Empty(target.SelectedIndexes);
                 Assert.Null(target.SelectedItem);
@@ -995,6 +1016,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data.RemoveAt(0);
 
+                Assert.Equal(0, target.Count);
                 Assert.Equal(default, target.SelectedIndex);
                 Assert.Empty(target.SelectedIndexes);
                 Assert.Null(target.SelectedItem);
@@ -1025,6 +1047,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data.RemoveAt(0);
 
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(0), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(0) }, target.SelectedIndexes);
                 Assert.Equal("Node 1", target.SelectedItem!.Caption);
@@ -1055,6 +1078,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data.RemoveAt(0);
 
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(0, 1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(0, 1) }, target.SelectedIndexes);
                 Assert.Equal("Node 1-1", target.SelectedItem!.Caption);
@@ -1085,6 +1109,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data[1].Children!.RemoveAt(0);
 
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(1, 0, 2), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(1, 0, 2) }, target.SelectedIndexes);
                 Assert.Equal("Node 1-1-2", target.SelectedItem!.Caption);
@@ -1109,6 +1134,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data.RemoveAt(2);
 
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(1) }, target.SelectedIndexes);
                 Assert.Equal("Node 1", target.SelectedItem!.Caption);
@@ -1152,6 +1178,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data[1] = new Node { Caption = "new" };
 
+                Assert.Equal(0, target.Count);
                 Assert.Equal(default, target.SelectedIndex);
                 Assert.Empty(target.SelectedIndexes);
                 Assert.Null(target.SelectedItem);
@@ -1196,6 +1223,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data[1].Children![1] = new Node { Caption = "new" };
 
+                Assert.Equal(0, target.Count);
                 Assert.Equal(default, target.SelectedIndex);
                 Assert.Empty(target.SelectedIndexes);
                 Assert.Null(target.SelectedItem);
@@ -1239,6 +1267,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data.Clear();
 
+                Assert.Equal(0, target.Count);
                 Assert.Equal(default, target.SelectedIndex);
                 Assert.Empty(target.SelectedIndexes);
                 Assert.Null(target.SelectedItem);
@@ -1282,6 +1311,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data[1].Children!.Clear();
 
+                Assert.Equal(0, target.Count);
                 Assert.Equal(default, target.SelectedIndex);
                 Assert.Empty(target.SelectedIndexes);
                 Assert.Null(target.SelectedItem);
@@ -1326,6 +1356,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data[1].Children!.Clear();
 
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(2, 1), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(2, 1) }, target.SelectedIndexes);
                 Assert.Equal("Node 2-1", target.SelectedItem!.Caption);
@@ -1358,6 +1389,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 data.Add(new Node { Caption = "foo" });
 
+                Assert.Equal(1, target.Count);
                 Assert.Equal(new IndexPath(0), target.SelectedIndex);
                 Assert.Equal(new[] { new IndexPath(0) }, target.SelectedIndexes);
                 Assert.Equal("foo", target.SelectedItem!.Caption);
