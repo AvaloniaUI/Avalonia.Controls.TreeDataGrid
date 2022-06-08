@@ -199,6 +199,7 @@ namespace Avalonia.Controls.Selection
             {
                 foreach (var child in _children)
                     child?.AncestorReset(ref removed);
+                _children = null;
             }
 
             _owner.OnNodeCollectionReset(Path, removed);
