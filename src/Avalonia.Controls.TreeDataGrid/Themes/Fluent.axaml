@@ -18,9 +18,9 @@
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <DockPanel>
-            <ScrollViewer DockPanel.Dock="Top"
+            <ScrollViewer Name="PART_HeaderScrollViewer"
+                          DockPanel.Dock="Top"
                           IsVisible="{TemplateBinding ShowColumnHeaders}"
-                          Offset="{Binding Scroll.Offset, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                           HorizontalScrollBarVisibility="Hidden"
                           VerticalScrollBarVisibility="Disabled">
               <Border x:Name="ColumnHeadersPresenterBorder">
