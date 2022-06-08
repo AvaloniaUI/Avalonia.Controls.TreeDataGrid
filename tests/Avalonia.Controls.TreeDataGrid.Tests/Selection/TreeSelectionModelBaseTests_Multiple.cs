@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Selection;
+using Avalonia.Controls.TreeDataGridTests.Collections;
 using Avalonia.Controls.Utils;
 using Avalonia.Diagnostics;
 using Xunit;
@@ -1407,6 +1408,61 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             }
 
             [Fact]
+            public void Resetting_Root_Items_To_Non_Empty_Collection_Clears_Selection()
+            {
+                var data = new ResettingCollection<Node>(CreateData());
+                var target = CreateTarget(data);
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
+                var sourceResetRaised = 0;
+
+                target.Select(new IndexPath(0));
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                };
+
+                target.SelectionChanged += (s, e) => ++selectionChangedRaised;
+                target.SourceReset += (s, e) =>
+                {
+                    Assert.Equal(default, e.ParentIndex);
+                    ++sourceResetRaised;
+                };
+
+                data.Reset(new[] { data[0] });
+
+                Assert.Equal(0, target.Count);
+                Assert.Equal(default, target.SelectedIndex);
+                Assert.Empty(target.SelectedIndexes);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+                Assert.Equal(0, selectionChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(1, selectedItemRaised);
+            }
+
+            [Fact]
+            public void Doesnt_Crash_On_Removing_Last_Item_After_Resetting_To_Larger_Collection()
+            {
+                var data = new ResettingCollection<Node>(CreateData(depth: 4));
+                var target = CreateTarget(data);
+
+                target.Select(new IndexPath(0, 1, 2));
+                data.Reset(data.Concat(new[] { new Node() }).ToList());
+                data.RemoveAt(data.Count - 1);
+            }
+
+            [Fact]
             public void Handles_Selection_Made_In_CollectionChanged()
             {
                 // Tests the following scenario:
@@ -1513,7 +1569,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             return CreateNodes(default, depth);
         }
 
-        private static TestTreeSelectionModel CreateTarget(AvaloniaList<Node>? data = null)
+        private static TestTreeSelectionModel CreateTarget(IList<Node>? data = null)
         {
             return new TestTreeSelectionModel(data ?? CreateData()) { SingleSelect = false };
         }
@@ -1528,7 +1584,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
         private class TestTreeSelectionModel : TreeSelectionModelBase<Node>
         {
-            public TestTreeSelectionModel(AvaloniaList<Node> data)
+            public TestTreeSelectionModel(IList<Node> data)
                 : base(data)
             {
             }
