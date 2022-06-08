@@ -236,16 +236,22 @@ namespace Avalonia.Controls
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            if (Scroll is ScrollViewer s && _headerScroll is ScrollViewer h)
+            {
+                s.ScrollChanged -= OnScrollChanged;
+                h.ScrollChanged -= OnHeaderScrollChanged;
+            }
+
             base.OnApplyTemplate(e);
             ColumnHeadersPresenter = e.NameScope.Find<TreeDataGridColumnHeadersPresenter>("PART_ColumnHeadersPresenter");
             RowsPresenter = e.NameScope.Find<TreeDataGridRowsPresenter>("PART_RowsPresenter");
             Scroll = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
             _headerScroll = e.NameScope.Find<ScrollViewer>("PART_HeaderScrollViewer");
 
-            if (Scroll is ScrollViewer s && _headerScroll is ScrollViewer h)
+            if (Scroll is ScrollViewer s1 && _headerScroll is ScrollViewer h1)
             {
-                s.ScrollChanged += OnScrollChanged;
-                h.ScrollChanged += OnHeaderScrollChanged;
+                s1.ScrollChanged += OnScrollChanged;
+                h1.ScrollChanged += OnHeaderScrollChanged;
             }
         }
 
