@@ -7,6 +7,7 @@ using Avalonia.Controls.Selection;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -62,6 +63,7 @@ namespace Avalonia.Controls
         private IColumns? _columns;
         private IRows? _rows;
         private IScrollable? _scroll;
+        private IScrollable? _headerScroll;
         private ITreeDataGridSelectionInteraction? _selection;
         private IControl? _userSortColumn;
         private ListSortDirection _userSortDirection;
@@ -234,10 +236,23 @@ namespace Avalonia.Controls
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            if (Scroll is ScrollViewer s && _headerScroll is ScrollViewer h)
+            {
+                s.ScrollChanged -= OnScrollChanged;
+                h.ScrollChanged -= OnHeaderScrollChanged;
+            }
+
             base.OnApplyTemplate(e);
             ColumnHeadersPresenter = e.NameScope.Find<TreeDataGridColumnHeadersPresenter>("PART_ColumnHeadersPresenter");
             RowsPresenter = e.NameScope.Find<TreeDataGridRowsPresenter>("PART_RowsPresenter");
             Scroll = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+            _headerScroll = e.NameScope.Find<ScrollViewer>("PART_HeaderScrollViewer");
+
+            if (Scroll is ScrollViewer s1 && _headerScroll is ScrollViewer h1)
+            {
+                s1.ScrollChanged += OnScrollChanged;
+                h1.ScrollChanged += OnHeaderScrollChanged;
+            }
         }
 
         protected void OnPreviewKeyDown(object? o, KeyEventArgs e)
@@ -325,6 +340,18 @@ namespace Avalonia.Controls
                 var column = _source.Columns[columnHeader.ColumnIndex];
                 _source.SortBy(column, _userSortDirection);
             }
+        }
+
+        private void OnScrollChanged(object? sender, ScrollChangedEventArgs e)
+        {
+            if (Scroll is not null && _headerScroll is not null && !MathUtilities.IsZero(e.OffsetDelta.X))
+                _headerScroll.Offset = _headerScroll.Offset.WithX(Scroll.Offset.X);
+        }
+
+        private void OnHeaderScrollChanged(object? sender, ScrollChangedEventArgs e)
+        {
+            if (Scroll is not null && _headerScroll is not null && !MathUtilities.IsZero(e.OffsetDelta.X))
+                Scroll.Offset = Scroll.Offset.WithX(_headerScroll.Offset.X);
         }
     }
 }
