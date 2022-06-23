@@ -73,7 +73,7 @@ namespace TreeDataGridDemo.ViewModels
                             TextSearchValueSelector = x => x.Name
                         },
                         x => x.Children,
-                        x => x.IsDirectory,
+                        x => x.HasChildren,
                         x => x.IsExpanded),
                     new TextColumn<FileTreeNodeModel, long?>(
                         "Size",

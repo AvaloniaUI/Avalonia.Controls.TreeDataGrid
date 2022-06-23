@@ -163,6 +163,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                 var target = CreateTarget(data, sorted);
                 var toRemove = data[1].Children![1];
 
+                toRemove.Children = new AvaloniaList<Node> { new Node() };
+
                 target.Expand(new IndexPath(1, 1));
                 Assert.Equal(1, toRemove.Children!.CollectionChangedSubscriberCount());
 
@@ -387,33 +389,6 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 Assert.False(expander.ShowExpander);
             }
-
-            [Fact]
-            public void Attempting_To_Expand_Node_That_Has_No_Children_Hides_Expander()
-            {
-                var data = new Node { Id = 0, Caption = "Node 0" };
-
-                // Here we return true from hasChildren selector, but there are actually no children.
-                // This may happen if calculating the children is expensive.
-                var target = new HierarchicalTreeDataGridSource<Node>(data)
-                {
-                    Columns =
-                    {
-                        new HierarchicalExpanderColumn<Node>(
-                            new TextColumn<Node, int>("ID", x => x.Id),
-                            x => x.Children,
-                            x => true),
-                        new TextColumn<Node, string?>("Caption", x => x.Caption),
-                    }
-                };
-
-                var expander = (IExpanderCell)target.Rows.RealizeCell(target.Columns[0], 0, 0);
-
-                target.Expand(new IndexPath(0));
-
-                Assert.False(expander.ShowExpander);
-                Assert.False(expander.IsExpanded);
-            }
         }
 
         public class ExpansionBinding
@@ -442,21 +417,6 @@ namespace Avalonia.Controls.TreeDataGridTests
                 RealizeCells(target);
 
                 AssertState(target, data, 11, false, new IndexPath(0), new IndexPath(0, 1));
-            }
-
-            [Fact]
-            public void Handles_Initial_Expanded_Row_With_No_Children()
-            {
-                var data = CreateData();
-                data[0].IsExpanded = true;
-
-                // This node has no children.
-                data[0].Children![1].IsExpanded = true;
-
-                var target = CreateTarget(data, false, bindExpanded: true);
-                RealizeCells(target);
-
-                AssertState(target, data, 10, false, new IndexPath(0));
             }
 
             [Fact]
@@ -580,6 +540,69 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
+        public class ShowExpander
+        {
+            [Fact]
+            public void Initially_Hides_Expander_With_No_Children()
+            {
+                var data = CreateData(count: 1, childCount: 0);
+                var target = CreateTarget(data, false);
+                var expander = (ExpanderCell<Node>)target.Rows.RealizeCell(target.Columns[0], 0, 0);
+
+                Assert.False(expander.ShowExpander);
+            }
+
+            [Fact]
+            public void Initially_Shows_Expander_With_Children()
+            {
+                var data = CreateData(count: 1, childCount: 1);
+                var target = CreateTarget(data, false);
+                var expander = (ExpanderCell<Node>)target.Rows.RealizeCell(target.Columns[0], 0, 0);
+
+                Assert.True(expander.ShowExpander);
+            }
+
+            [Fact]
+            public void Shows_Expander_When_First_Child_Added()
+            {
+                var data = CreateData(count: 1, childCount: 0);
+                var target = CreateTarget(data, false);
+                var expander = (ExpanderCell<Node>)target.Rows.RealizeCell(target.Columns[0], 0, 0);
+                var raised = 0;
+
+                expander.PropertyChanged += (s, e) =>
+                {
+                    Assert.Equal("ShowExpander", e.PropertyName);
+                    ++raised;
+                };
+
+                data[0].Children!.Add(new Node());
+
+                Assert.True(expander.ShowExpander);
+                Assert.Equal(1, raised);
+            }
+
+            [Fact]
+            public void Hides_Expander_When_Last_Child_Removed()
+            {
+                var data = CreateData(count: 1, childCount: 1);
+                var target = CreateTarget(data, false);
+                var expander = (ExpanderCell<Node>)target.Rows.RealizeCell(target.Columns[0], 0, 0);
+                var raised = 0;
+
+                expander.PropertyChanged += (s, e) =>
+                {
+                    Assert.Equal("ShowExpander", e.PropertyName);
+                    ++raised;
+                };
+
+                data[0].Children!.RemoveAt(0);
+
+                Assert.False(expander.ShowExpander);
+                Assert.Equal(1, raised);
+            }
+        }
+
         public class Selection
         {
             [Fact]
@@ -681,6 +704,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                 var target = CreateTarget(data, sorted);
                 var toRemove = data[1].Children![1];
 
+                toRemove.Children = new AvaloniaList<Node> { new Node() };
+
                 target.Expand(new IndexPath(1, 1));
                 Assert.Equal(1, toRemove.Children!.CollectionChangedSubscriberCount());
 
@@ -715,7 +740,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
-        private static AvaloniaList<Node> CreateData(int count = 5)
+        private static AvaloniaList<Node> CreateData(int count = 5, int childCount = 5)
         {
             var id = 0;
             var result = new AvaloniaList<Node>();
@@ -731,7 +756,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 result.Add(node);
 
-                for (var j = 0; j < 5; ++j)
+                for (var j = 0; j < childCount; ++j)
                 {
                     node.Children.Add(new Node
                     {
@@ -741,7 +766,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                     });
                 }
             }
-            ;
+
             return result;
         }
 
@@ -757,7 +782,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                     new HierarchicalExpanderColumn<Node>(
                         new TextColumn<Node, int>("ID", x => x.Id),
                         x => x.Children,
-                        x => x.Children is not null,
+                        null,
                         bindExpanded ? x => x.IsExpanded : null),
                     new TextColumn<Node, string?>("Caption", x => x.Caption),
                 }
@@ -838,6 +863,7 @@ namespace Avalonia.Controls.TreeDataGridTests
         {
             private int _id;
             private string? _caption;
+            private AvaloniaList<Node>? _children;
             private bool _isExpanded;
 
             public int Id
@@ -852,7 +878,11 @@ namespace Avalonia.Controls.TreeDataGridTests
                 set => RaiseAndSetIfChanged(ref _caption, value);
             }
 
-            public AvaloniaList<Node>? Children { get; set; }
+            public AvaloniaList<Node>? Children 
+            {
+                get => _children;
+                set => RaiseAndSetIfChanged(ref _children, value);
+            }
 
             public bool IsExpanded
             {

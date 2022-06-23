@@ -6,7 +6,22 @@ namespace Avalonia.Controls.TreeDataGridTests
 {
     internal class NotifyingBase : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
+        private PropertyChangedEventHandler? _propertyChanged;
+        private int _propertyChangedCount;
+
+        public event PropertyChangedEventHandler? PropertyChanged
+        {
+            add
+            {
+                _propertyChanged += value;
+                ++_propertyChangedCount;
+            }
+            remove
+            {
+                _propertyChanged -= value;
+                --_propertyChangedCount;
+            }
+        }
 
         protected bool RaiseAndSetIfChanged<T>(
             ref T field,
@@ -23,19 +38,16 @@ namespace Avalonia.Controls.TreeDataGridTests
             return false;
         }
 
-        public int PropertyChangedSubscriberCount()
-        {
-            return PropertyChanged?.GetInvocationList().Length ?? 0;
-        }
+        public int PropertyChangedSubscriberCount() => _propertyChangedCount;
 
         protected void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         protected void RaisePropertyChanged(PropertyChangedEventArgs e)
         {
-            PropertyChanged?.Invoke(this, e);
+            _propertyChanged?.Invoke(this, e);
         }
     }
 }

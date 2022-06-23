@@ -234,24 +234,6 @@ namespace Avalonia.Controls.TreeDataGridTests
         }
 
         [Fact]
-        public void Should_Hide_Expander_When_Node_With_No_Children_Expanded()
-        {
-            using var app = App();
-
-            var (target, source) = CreateTarget();
-            var cell = target.TryGetCell(0, 1);
-            var expander = Assert.IsType<TreeDataGridExpanderCell>(cell);
-
-            Assert.False(expander.IsExpanded);
-            Assert.True(expander.ShowExpander);
-
-            expander.IsExpanded = true;
-
-            Assert.False(expander.IsExpanded);
-            Assert.False(expander.ShowExpander);
-        }
-
-        [Fact]
         public void Can_Reassign_Items_When_Displaying_Child_Items_Followed_By_Root_Items()
         {
             using var app = App();
