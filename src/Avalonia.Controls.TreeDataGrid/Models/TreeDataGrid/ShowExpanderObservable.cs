@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         protected override void Unsubscribed()
         {
-            _subscription!.Dispose();
+            _subscription?.Dispose();
             _subscription = null;
             _model = null;
         }
