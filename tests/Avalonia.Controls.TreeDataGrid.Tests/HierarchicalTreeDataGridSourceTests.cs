@@ -395,8 +395,8 @@ namespace Avalonia.Controls.TreeDataGridTests
             {
                 var data = new Node { Id = 0, Caption = "Node 0" };
 
-                // Here we return true from hasChildren selector, but there are actually no children.	
-                // This may happen if calculating the children is expensive.	
+                // Here we return true from hasChildren selector, but there are actually no children.
+                // This may happen if calculating the children is expensive.
                 var target = new HierarchicalTreeDataGridSource<Node>(data)
                 {
                     Columns =
@@ -452,7 +452,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 var data = CreateData();
                 data[0].IsExpanded = true;
 
-                // This node has no children.	
+                // This node has no children.
                 data[0].Children![1].IsExpanded = true;
 
                 var target = CreateTarget(data, false, bindExpanded: true);
