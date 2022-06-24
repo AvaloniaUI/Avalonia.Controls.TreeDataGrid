@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
-using Avalonia.Data;
 using Avalonia.Experimental.Data;
-using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Avalonia.Data;
+﻿using System.Collections.Generic;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {

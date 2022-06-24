@@ -40,7 +40,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public ICell Content => _inner;
         public IExpanderRow<TModel> Row { get; }
         public bool ShowExpander => Row.ShowExpander;
-
         public object? Value => _inner.Value;
 
         public bool IsExpanded
