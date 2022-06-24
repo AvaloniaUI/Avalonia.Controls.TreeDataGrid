@@ -389,6 +389,33 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 Assert.False(expander.ShowExpander);
             }
+
+            [Fact]
+            public void Attempting_To_Expand_Node_That_Has_No_Children_Hides_Expander()
+            {
+                var data = new Node { Id = 0, Caption = "Node 0" };
+
+                // Here we return true from hasChildren selector, but there are actually no children.	
+                // This may happen if calculating the children is expensive.	
+                var target = new HierarchicalTreeDataGridSource<Node>(data)
+                {
+                    Columns =
+                    {
+                        new HierarchicalExpanderColumn<Node>(
+                            new TextColumn<Node, int>("ID", x => x.Id),
+                            x => x.Children,
+                            x => true),
+                        new TextColumn<Node, string?>("Caption", x => x.Caption),
+                    }
+                };
+
+                var expander = (IExpanderCell)target.Rows.RealizeCell(target.Columns[0], 0, 0);
+
+                target.Expand(new IndexPath(0));
+
+                Assert.False(expander.ShowExpander);
+                Assert.False(expander.IsExpanded);
+            }
         }
 
         public class ExpansionBinding
@@ -417,6 +444,21 @@ namespace Avalonia.Controls.TreeDataGridTests
                 RealizeCells(target);
 
                 AssertState(target, data, 11, false, new IndexPath(0), new IndexPath(0, 1));
+            }
+
+            [Fact]
+            public void Handles_Initial_Expanded_Row_With_No_Children()
+            {
+                var data = CreateData();
+                data[0].IsExpanded = true;
+
+                // This node has no children.	
+                data[0].Children![1].IsExpanded = true;
+
+                var target = CreateTarget(data, false, bindExpanded: true);
+                RealizeCells(target);
+
+                AssertState(target, data, 10, false, new IndexPath(0));
             }
 
             [Fact]
