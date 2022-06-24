@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Reactive.Disposables;
 using Avalonia.Data;
 using Avalonia.Experimental.Data.Core;
 
@@ -7,22 +8,32 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 {
     public class ExpanderCell<TModel> : NotifyingBase,
         IExpanderCell,
-        IObserver<BindingValue<bool>>,
         IDisposable
         where TModel : class
     {
         private readonly ICell _inner;
-        private readonly IDisposable? _isExpandedSubscription;
+        private readonly CompositeDisposable _subscription = new();
 
         public ExpanderCell(
             ICell inner,
             IExpanderRow<TModel> row,
+            IObservable<bool> showExpander,
             TypedBindingExpression<TModel, bool>? isExpanded)
         {
             _inner = inner;
             Row = row;
             row.PropertyChanged += RowPropertyChanged;
-            _isExpandedSubscription = isExpanded?.Subscribe(this);
+
+            _subscription.Add(showExpander.Subscribe(x => Row.UpdateShowExpander(this, x)));
+
+            if (isExpanded is not null)
+            {
+                _subscription.Add(isExpanded.Subscribe(x =>
+                {
+                    if (x.HasValue)
+                        IsExpanded = x.Value;
+                }));
+            }
         }
 
         public bool CanEdit => _inner.CanEdit;
@@ -43,18 +54,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public void Dispose()
         {
             Row.PropertyChanged -= RowPropertyChanged;
-            _isExpandedSubscription?.Dispose();
+            _subscription?.Dispose();
             (_inner as IDisposable)?.Dispose();
         }
-
-        void IObserver<BindingValue<bool>>.OnNext(BindingValue<bool> value)
-        {
-            if (value.HasValue)
-                IsExpanded = value.Value;
-        }
-
-        void IObserver<BindingValue<bool>>.OnCompleted() { }
-        void IObserver<BindingValue<bool>>.OnError(Exception error) { }
 
         private void RowPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {

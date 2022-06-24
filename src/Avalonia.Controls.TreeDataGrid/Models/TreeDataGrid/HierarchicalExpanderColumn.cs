@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Linq.Expressions;
 using Avalonia.Experimental.Data;
 
@@ -19,7 +20,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     {
         private readonly IColumn<TModel> _inner;
         private readonly Func<TModel, IEnumerable<TModel>?> _childSelector;
-        private readonly Func<TModel, bool>? _hasChildrenSelector;
+        private readonly TypedBinding<TModel, bool>? _hasChildrenSelector;
         private readonly TypedBinding<TModel, bool>? _isExpandedBinding;
         private double _actualWidth = double.NaN;
 
@@ -28,7 +29,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         /// <param name="inner">The inner column which defines how the column will be displayed.</param>
         /// <param name="childSelector">The model children selector.</param>
-        /// <param name="hasChildrenSelector">The has model children selector.</param>
+        /// <param name="hasChildrenSelector">
+        /// A selector which is used to determine whether the model has children without invoking
+        /// <paramref name="childSelector"/>. This is only needed if the initialization of a node's
+        /// children is an expensive operation; where that is not true, pass null.
+        /// </param>
         /// <param name="isExpandedSelector">
         /// Selects a read/write boolean property which stores the expanded state for the row.
         /// </param>
@@ -36,13 +41,15 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public HierarchicalExpanderColumn(
             IColumn<TModel> inner,
             Func<TModel, IEnumerable<TModel>?> childSelector,
-            Func<TModel, bool>? hasChildrenSelector = null,
+            Expression<Func<TModel, bool>>? hasChildrenSelector = null,
             Expression<Func<TModel, bool>>? isExpandedSelector = null)
         {
             _inner = inner;
             _inner.PropertyChanged += OnInnerPropertyChanged;
             _childSelector = childSelector;
-            _hasChildrenSelector = hasChildrenSelector;
+            _hasChildrenSelector = hasChildrenSelector is not null ?
+                TypedBinding<TModel>.OneWay(hasChildrenSelector) :
+                null;
             _isExpandedBinding = isExpandedSelector is not null ?
                 TypedBinding<TModel>.TwoWay(isExpandedSelector) :
                 null;
@@ -86,16 +93,31 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             if (row is HierarchicalRow<TModel> r)
             {
+                var showExpander = new ShowExpanderObservable<TModel>(
+                    _childSelector,
+                    _hasChildrenSelector,
+                    r.Model);
                 var isExpanded = _isExpandedBinding?.Instance(r.Model);
-                return new ExpanderCell<TModel>(_inner.CreateCell(r), r, isExpanded);
+                return new ExpanderCell<TModel>(_inner.CreateCell(r), r, showExpander, isExpanded);
             }
 
             throw new NotSupportedException();
         }
 
-        public bool HasChildren(TModel model) => _hasChildrenSelector?.Invoke(model) ?? true;
-        public IEnumerable<TModel>? GetChildModels(TModel model) => _childSelector(model);
-        public Comparison<TModel?>? GetComparison(ListSortDirection direction) => _inner.GetComparison(direction);
+        public bool HasChildren(TModel model)
+        {
+            return _hasChildrenSelector?.Read!(model) ?? _childSelector(model)?.Any() ?? false;
+        }
+
+        public IEnumerable<TModel>? GetChildModels(TModel model)
+        {
+            return _childSelector(model);
+        }
+
+        public Comparison<TModel?>? GetComparison(ListSortDirection direction)
+        {
+            return _inner.GetComparison(direction);
+        }
 
         void IExpanderColumn<TModel>.SetModelIsExpanded(IExpanderRow<TModel> row)
         {
