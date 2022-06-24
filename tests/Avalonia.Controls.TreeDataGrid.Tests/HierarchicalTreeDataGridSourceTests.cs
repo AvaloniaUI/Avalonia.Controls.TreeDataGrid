@@ -601,6 +601,23 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.False(expander.ShowExpander);
                 Assert.Equal(1, raised);
             }
+
+            [Fact]
+            public void Cell_Synchronizes_Row_ShowExpander()
+            {
+                var data = CreateData(count: 1, childCount: 1);
+                var target = CreateTarget(data, false);
+                var row = (HierarchicalRow<Node>)target.Rows[0];
+                var expander = (ExpanderCell<Node>)target.Rows.RealizeCell(target.Columns[0], 0, 0);
+
+                Assert.True(expander.ShowExpander);
+                Assert.True(row.ShowExpander);
+
+                data[0].Children!.RemoveAt(0);
+
+                Assert.False(expander.ShowExpander);
+                Assert.False(row.ShowExpander);
+            }
         }
 
         public class Selection

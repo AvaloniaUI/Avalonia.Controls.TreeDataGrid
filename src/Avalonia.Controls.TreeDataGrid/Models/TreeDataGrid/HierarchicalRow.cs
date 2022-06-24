@@ -96,6 +96,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             ModelIndexPath = ModelIndexPath[..^1].Append(ModelIndexPath[^1] + delta);
         }
 
+        void IExpanderRow<TModel>.UpdateShowExpander(IExpanderCell cell, bool value)
+        {
+            ShowExpander = value;
+        }
+
         internal void SortChildren(Comparison<TModel>? comparison)
         {
             _comparison = comparison;

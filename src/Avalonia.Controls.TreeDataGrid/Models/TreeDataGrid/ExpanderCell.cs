@@ -12,8 +12,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         where TModel : class
     {
         private readonly ICell _inner;
-        private readonly CompositeDisposable? _subscription;
-        private bool _showExpander;
+        private readonly CompositeDisposable _subscription = new();
 
         public ExpanderCell(
             ICell inner,
@@ -24,7 +23,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _inner = inner;
             Row = row;
             row.PropertyChanged += RowPropertyChanged;
-            _subscription = new CompositeDisposable(showExpander.Subscribe(x => ShowExpander = x));
+
+            _subscription.Add(showExpander.Subscribe(x => Row.UpdateShowExpander(this, x)));
 
             if (isExpanded is not null)
             {
@@ -39,12 +39,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public bool CanEdit => _inner.CanEdit;
         public ICell Content => _inner;
         public IExpanderRow<TModel> Row { get; }
-
-        public bool ShowExpander
-        {
-            get => _showExpander;
-            private set => RaiseAndSetIfChanged(ref _showExpander, value);
-        }
+        public bool ShowExpander => Row.ShowExpander;
 
         public object? Value => _inner.Value;
 
