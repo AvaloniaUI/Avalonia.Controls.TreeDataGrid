@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -45,7 +46,15 @@ namespace TreeDataGridDemo.ViewModels
                 }
             }
             Drives = DriveInfo.GetDrives().Select(x => x.Name).ToList();
-            _selectedDrive = "C:\\";
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                _selectedDrive = "C:\\";
+            }
+            else
+            {
+                _selectedDrive = Drives.FirstOrDefault() ?? "/";
+            }
 
             Source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(Array.Empty<FileTreeNodeModel>())
             {
