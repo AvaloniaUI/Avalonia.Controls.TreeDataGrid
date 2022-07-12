@@ -106,16 +106,16 @@ namespace Avalonia.Controls.Primitives
             return result;
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == CanUserResizeProperty)
             {
-                PseudoClasses.Set(":resizable", change.NewValue.GetValueOrDefault<bool>());
+                PseudoClasses.Set(":resizable", change.GetNewValue<bool>());
             }
             else if (change.Property == DataContextProperty)
             {
-                var oldModel = change.OldValue.GetValueOrDefault<object?>() as IColumn;
-                var newModel = change.NewValue.GetValueOrDefault<object?>() as IColumn;
+                var oldModel = change.GetOldValue<object?>() as IColumn;
+                var newModel = change.GetNewValue<object?>() as IColumn;
 
                 if (oldModel is INotifyPropertyChanged oldInpc)
                     oldInpc.PropertyChanged -= OnModelPropertyChanged;
@@ -128,7 +128,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_owner is not null)
                     _owner.PropertyChanged -= OnOwnerPropertyChanged;
-                _owner = change.NewValue.GetValueOrDefault<IControl>()?.TemplatedParent as TreeDataGrid;
+                _owner = change.GetNewValue<IStyledElement>()?.TemplatedParent as TreeDataGrid;
                 if (_owner is not null)
                     _owner.PropertyChanged += OnOwnerPropertyChanged;
                 UpdatePropertiesFromModel();

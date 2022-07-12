@@ -488,16 +488,21 @@ namespace Avalonia.Controls.Primitives
             var c = this.GetVisualParent();
             var viewport = new Rect();
 
-            while (c is object)
+            if (c is null)
             {
-                if (!c.Bounds.IsEmpty && c?.TransformToVisual(this) is Matrix transform)
+                return viewport;
+            }
+
+            while (c is not null)
+            {
+                if (!c.Bounds.IsEmpty && c.TransformToVisual(this) is Matrix transform)
                 {
                     viewport = new Rect(0, 0, c.Bounds.Width, c.Bounds.Height)
                         .TransformToAABB(transform);
                     break;
                 }
 
-                c = c.GetVisualParent();
+                c = c?.GetVisualParent();
             }
 
 

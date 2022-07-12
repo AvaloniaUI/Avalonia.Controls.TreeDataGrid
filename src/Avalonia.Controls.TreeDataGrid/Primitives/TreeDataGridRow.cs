@@ -101,7 +101,7 @@ namespace Avalonia.Controls.Primitives
                 CellsPresenter?.Realize(RowIndex);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == IsSelectedProperty)
             {

@@ -185,7 +185,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         {
             Assert.NotNull(target);
 
-            var rowIndexes = target.GetLogicalChildren()
+            var rowIndexes = target!.GetLogicalChildren()
                 .Cast<TreeDataGridCell>()
                 .Where(x => x.IsVisible)
                 .Select(x => x.ColumnIndex)
@@ -201,7 +201,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         {
             Assert.NotNull(target);
 
-            var recyclableCells = target.GetLogicalChildren()
+            var recyclableCells = target!.GetLogicalChildren()
                 .Cast<TreeDataGridCell>()
                 .Where(x => !x.IsVisible)
                 .ToList();
@@ -262,8 +262,8 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
         private static void Layout(TreeDataGridCellsPresenter target)
         {
-            var root = (ILayoutRoot)target.GetVisualRoot();
-            root.LayoutManager.ExecuteLayoutPass();
+            var root = (ILayoutRoot?)target.GetVisualRoot();
+            root?.LayoutManager.ExecuteLayoutPass();
         }
 
         private static IDisposable App()

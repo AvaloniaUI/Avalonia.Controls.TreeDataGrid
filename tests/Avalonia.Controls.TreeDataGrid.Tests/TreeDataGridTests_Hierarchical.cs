@@ -26,7 +26,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             Assert.NotNull(target.RowsPresenter);
 
-            var rows = target.RowsPresenter
+            var rows = target.RowsPresenter!
                 .GetLogicalChildren()
                 .Cast<TreeDataGridRow>()
                 .ToList();
@@ -35,7 +35,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             foreach (var row in rows)
             {
-                var cells = row.CellsPresenter
+                var cells = row.CellsPresenter!
                     .GetLogicalChildren()
                     .Cast<TreeDataGridCell>()
                     .ToList();
@@ -524,14 +524,14 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         private static void Layout(TreeDataGrid target)
         {
-            var root = (ILayoutRoot)target.GetVisualRoot();
-            root.LayoutManager.ExecuteLayoutPass();
+            var root = (ILayoutRoot?)target.GetVisualRoot();
+            root?.LayoutManager.ExecuteLayoutPass();
         }
 
         private static void InitialLayout(TreeDataGrid target)
         {
-            var root = (ILayoutRoot)target.GetVisualRoot();
-            root.LayoutManager.ExecuteInitialLayoutPass();
+            var root = (ILayoutRoot?)target.GetVisualRoot();
+            root?.LayoutManager.ExecuteInitialLayoutPass();
         }
 
         private static IDisposable App()
