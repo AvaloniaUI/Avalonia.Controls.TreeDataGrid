@@ -12,6 +12,6 @@
     <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
   <PropertyGroup>
-    <AvaloniaVersion>0.10.999-cibuild0022234-beta</AvaloniaVersion>
+    <AvaloniaVersion>0.10.999-cibuild0022373-beta</AvaloniaVersion>
   </PropertyGroup>
 </Project>
