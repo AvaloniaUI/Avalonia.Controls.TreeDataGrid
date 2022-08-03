@@ -58,8 +58,6 @@ namespace Avalonia.Controls
             }
             set
             {
-                if (value is null)
-                    throw new ArgumentNullException(nameof(value));
                 if (_selection is object)
                     throw new InvalidOperationException("Selection is already initialized.");
                 _selection = value;
