@@ -16,7 +16,7 @@ namespace Avalonia.Controls.Utils
         void PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e);
     }
 
-    internal class CollectionChangedEventManager : IWeakSubscriber<NotifyCollectionChangedEventArgs>
+    internal class CollectionChangedEventManager
     {
         private readonly ConditionalWeakTable<INotifyCollectionChanged, List<WeakReference<ICollectionChangedListener>>> _entries =
             new();
@@ -38,11 +38,11 @@ namespace Avalonia.Controls.Utils
                 listeners = new List<WeakReference<ICollectionChangedListener>>();
                 _entries.Add(collection, listeners);
 #pragma warning disable CS0618
-                WeakSubscriptionManager.Subscribe(
+                WeakEventHandlerManager.Subscribe<INotifyCollectionChanged, NotifyCollectionChangedEventArgs, CollectionChangedEventManager>(
 #pragma warning restore CS0618
                     collection,
                     nameof(INotifyCollectionChanged.CollectionChanged),
-                    this);
+                    OnNotifyCollectionChanged);
             }
 
             listeners.Add(new WeakReference<ICollectionChangedListener>(listener));
@@ -64,10 +64,10 @@ namespace Avalonia.Controls.Utils
 
                         if (listeners.Count == 0)
                         {
-                            WeakSubscriptionManager.Unsubscribe(
+                            WeakEventHandlerManager.Unsubscribe<NotifyCollectionChangedEventArgs, CollectionChangedEventManager>(
                                 collection,
                                 nameof(INotifyCollectionChanged.CollectionChanged),
-                                this);
+                                OnNotifyCollectionChanged);
                             _entries.Remove(collection);
                         }
 
@@ -80,7 +80,7 @@ namespace Avalonia.Controls.Utils
                 "Collection listener not registered for this collection/listener combination.");
         }
 
-        void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object? sender, NotifyCollectionChangedEventArgs e)
+        private void OnNotifyCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             static void Notify(
                 INotifyCollectionChanged incc,
