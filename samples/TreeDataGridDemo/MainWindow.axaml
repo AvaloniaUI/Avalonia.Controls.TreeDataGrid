@@ -23,7 +23,9 @@
           <Button Click="AddCountryClick">Add</Button>
           <Button Command="{Binding Countries.RemoveSelected}">Remove</Button>
         </StackPanel>
-        <TreeDataGrid Name="countries" Source="{Binding Countries.Source}">
+        <TreeDataGrid Name="countries"
+                      Source="{Binding Countries.Source}"
+                      AutoDragDropRows="True">
           <TreeDataGrid.Styles>
             <Style Selector="TreeDataGrid TreeDataGridRow:nth-last-child(2n)">
               <Setter Property="Background" Value="#fff8f8f8"/>

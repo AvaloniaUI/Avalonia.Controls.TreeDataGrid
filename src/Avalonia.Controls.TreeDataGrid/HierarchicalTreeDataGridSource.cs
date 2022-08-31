@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
+using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
@@ -77,6 +78,7 @@ namespace Avalonia.Controls
         }
 
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
+        public bool IsSorted => _comparison is not null;
 
         IColumns ITreeDataGridSource.Columns => Columns;
 
@@ -151,6 +153,16 @@ namespace Avalonia.Controls
             }
 
             return false;
+        }
+
+        void ITreeDataGridSource.DragDropRows(
+            ITreeDataGridSource source,
+            IEnumerable<IndexPath> indexes,
+            IndexPath targetIndex,
+            TreeDataGridRowDropPosition position,
+            DragDropEffects effects)
+        {
+            throw new NotImplementedException();
         }
 
         void IExpanderRowController<TModel>.OnBeginExpandCollapse(IExpanderRow<TModel> row)
