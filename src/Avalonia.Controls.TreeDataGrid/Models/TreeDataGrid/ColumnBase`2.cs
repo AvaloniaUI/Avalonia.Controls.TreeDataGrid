@@ -52,6 +52,36 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _sortDescending = options?.CompareDescending ?? DefaultSortDescending;
         }
 
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ColumnBase{TModel, TValue}"/> class.
+        /// </summary>
+        /// <param name="header">The column header.</param>
+        /// <param name="valueSelector">
+        /// the function which selects the column value from the model..
+        /// </param>
+        /// <param name="binding">
+        /// a binding which selects the column value from the model.
+        /// </param>
+        /// <param name="width">
+        /// The column width. If null defaults to <see cref="GridLength.Auto"/>.
+        /// </param>
+        /// <param name="options">Additional column options.</param>
+        public ColumnBase(
+            object? header,
+            Func<TModel, TValue?> valueSelector,
+            TypedBinding<TModel, TValue?> binding,
+            GridLength? width,
+            ColumnOptions<TModel>? options)
+            : base(header, width, options)
+        {
+            ValueSelector = valueSelector;
+            Binding = binding;
+            _canUserSort = options?.CanUserSortColumn ?? true;
+            _sortAscending = options?.CompareAscending ?? DefaultSortAscending;
+            _sortDescending = options?.CompareDescending ?? DefaultSortDescending;
+        }
+
         /// <summary>
         /// Gets the function which selects the column value from the model.
         /// </summary>
