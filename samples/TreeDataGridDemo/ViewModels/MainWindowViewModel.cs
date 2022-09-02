@@ -4,6 +4,7 @@
     {
         private CountriesPageViewModel? _countries;
         private FilesPageViewModel? _files;
+        private DragDropPageViewModel? _dragDrop;
 
         public CountriesPageViewModel Countries
         {
@@ -13,6 +14,11 @@
         public FilesPageViewModel Files
         {
             get => _files ??= new FilesPageViewModel();
+        }
+
+        public DragDropPageViewModel DragDrop
+        {
+            get => _dragDrop ??= new DragDropPageViewModel();
         }
     }
 }

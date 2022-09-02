@@ -61,5 +61,13 @@
         </TreeDataGrid>
       </DockPanel>
     </TabItem>
+    <TabItem Header="Drag/Drop">
+      <DockPanel>
+        <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
+        <TreeDataGrid Name="dragDrop"
+                      Source="{Binding DragDrop.Source}"
+                      AutoDragDropRows="True"/>
+      </DockPanel>
+    </TabItem>
   </TabControl>
 </Window>
