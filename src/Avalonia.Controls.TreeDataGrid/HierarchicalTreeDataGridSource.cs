@@ -187,28 +187,31 @@ namespace Avalonia.Controls
                 throw new NotSupportedException("Drag/drop is not supported on sorted data.");
 
             IList<TModel> targetItems;
-            int i;
+            int ti;
 
             if (position == TreeDataGridRowDropPosition.Inside)
             {
                 targetItems = GetItems(targetIndex);
-                i = targetItems.Count;
+                ti = targetItems.Count;
             }
             else
             {
                 targetItems = GetItems(targetIndex[..^1]);
-                i = targetIndex[^1];
+                ti = targetIndex[^1];
             }
 
-            if (position == TreeDataGridRowDropPosition.After && i < targetItems.Count - 1)
-                ++i;
+            if (position == TreeDataGridRowDropPosition.After)
+                ++ti;
 
             foreach (var src in indexes)
             {
                 var srcItems = GetItems(src[..^1]);
-                var item = srcItems[src[^1]];
-                srcItems.RemoveAt(src[^1]);
-                targetItems.Insert(i++, item);
+                var si = src[^1];
+                var item = srcItems[si];
+                srcItems.RemoveAt(si);
+                if (srcItems == targetItems && si < ti)
+                    --ti;
+                targetItems.Insert(ti++, item);
             }
         }
 

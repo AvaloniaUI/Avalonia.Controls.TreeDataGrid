@@ -98,18 +98,21 @@ namespace Avalonia.Controls
             if (position == TreeDataGridRowDropPosition.None)
                 return;
 
-            var i = targetIndex[0];
+            var ti = targetIndex[0];
 
-            if (position == TreeDataGridRowDropPosition.After && i < items.Count - 1)
-                ++i;
+            if (position == TreeDataGridRowDropPosition.After)
+                ++ti;
 
             foreach (var src in indexes)
             {
                 if (src.Count != 1)
                     throw new ArgumentException($"Invalid source index '{src}'.", nameof(indexes));
-                var item = items[src[0]];
-                items.RemoveAt(src[0]);
-                items.Insert(i++, item);
+                var si = src[0];
+                var item = items[si];
+                items.RemoveAt(si);
+                if (si < ti)
+                    --ti;
+                items.Insert(ti++, item);
             }
         }
 
