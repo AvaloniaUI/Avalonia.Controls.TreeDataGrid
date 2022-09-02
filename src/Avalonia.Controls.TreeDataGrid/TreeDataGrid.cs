@@ -556,9 +556,31 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var adorner = CanAutoDragDrop(e, out _) ?
-                GetDropPosition(_source, e, row) :
-                TreeDataGridRowDropPosition.None;
+            var adorner = TreeDataGridRowDropPosition.None;
+
+            if (CanAutoDragDrop(e, out var data))
+            {
+                var targetIndex = _source.Rows.RowIndexToModelIndex(row.RowIndex);
+                var targetAdorner = GetDropPosition(_source, e, row);
+                var validTarget = true;
+
+                // We can't drop rows into themselves or their direct descendents.
+                foreach (var sourceIndex in data.Indexes)
+                {
+                    if (sourceIndex.IsAncestorOf(targetIndex) ||
+                        (sourceIndex == targetIndex && targetAdorner == TreeDataGridRowDropPosition.Inside))
+                    {
+                        validTarget = false;
+                        break;
+                    }
+                }
+
+                if (validTarget)
+                    adorner = targetAdorner;
+                else
+                    e.DragEffects = DragDropEffects.None;
+            }
+
             var route = BuildEventRoute(RowDragOverEvent);
 
             if (route.HasHandlers)
