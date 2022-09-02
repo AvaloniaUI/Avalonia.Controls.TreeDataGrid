@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Input;
@@ -67,7 +66,7 @@ namespace Avalonia.Controls
         }
 
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
-
+        public bool IsHierarchical => false;
         public bool IsSorted => _comparer is not null;
 
         public event Action? Sorted;
@@ -101,10 +100,10 @@ namespace Avalonia.Controls
 
             var i = targetIndex[0];
 
-            if (position == TreeDataGridRowDropPosition.After)
+            if (position == TreeDataGridRowDropPosition.After && i < items.Count - 1)
                 ++i;
 
-            foreach (var src in indexes.ToList())
+            foreach (var src in indexes)
             {
                 if (src.Count != 1)
                     throw new ArgumentException($"Invalid source index '{src}'.", nameof(indexes));

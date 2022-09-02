@@ -78,6 +78,7 @@ namespace Avalonia.Controls
         }
 
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
+        public bool IsHierarchical => true;
         public bool IsSorted => _comparison is not null;
 
         IColumns ITreeDataGridSource.Columns => Columns;
@@ -162,7 +163,53 @@ namespace Avalonia.Controls
             TreeDataGridRowDropPosition position,
             DragDropEffects effects)
         {
-            throw new NotImplementedException();
+            IList<TModel> GetItems(IndexPath path)
+            {
+                IEnumerable<TModel>? children;
+
+                if (path.Count == 0)
+                    children = _items;
+                else if (TryGetModelAt(path, out var parent))
+                    children = GetModelChildren(parent);
+                else
+                    throw new IndexOutOfRangeException();
+
+                if (children is null)
+                    throw new InvalidOperationException("The requested drop target has no children.");
+
+                return children as IList<TModel> ??
+                    throw new InvalidOperationException("Items does not implement IList<T>.");
+            }
+
+            if (!effects.HasAnyFlag(DragDropEffects.Move))
+                throw new NotSupportedException("Only move is currently supported for drag/drop.");
+            if (IsSorted)
+                throw new NotSupportedException("Drag/drop is not supported on sorted data.");
+
+            IList<TModel> targetItems;
+            int i;
+
+            if (position == TreeDataGridRowDropPosition.Inside)
+            {
+                targetItems = GetItems(targetIndex);
+                i = targetItems.Count;
+            }
+            else
+            {
+                targetItems = GetItems(targetIndex[..^1]);
+                i = targetIndex[^1];
+            }
+
+            if (position == TreeDataGridRowDropPosition.After && i < targetItems.Count - 1)
+                ++i;
+
+            foreach (var src in indexes)
+            {
+                var srcItems = GetItems(src[..^1]);
+                var item = srcItems[src[^1]];
+                srcItems.RemoveAt(src[^1]);
+                targetItems.Insert(i++, item);
+            }
         }
 
         void IExpanderRowController<TModel>.OnBeginExpandCollapse(IExpanderRow<TModel> row)

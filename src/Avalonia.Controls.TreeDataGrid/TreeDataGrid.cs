@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -413,7 +414,7 @@ namespace Avalonia.Controls
             if (allowedEffects != DragDropEffects.None)
             {
                 var data = new DataObject();
-                var info = new DragInfo(_source, RowSelection.SelectedIndexes);
+                var info = new DragInfo(_source, RowSelection.SelectedIndexes.ToList());
                 data.Set(DragInfo.DataFormat, info);
                 DragDrop.DoDragDrop(trigger, data, allowedEffects);
             }
@@ -547,16 +548,6 @@ namespace Avalonia.Controls
             return false;
         }
 
-        private TreeDataGridRowDropPosition GetDropPosition(DragEventArgs e, TreeDataGridRow row)
-        {
-            var rowY = e.GetPosition(row).Y / row.Bounds.Height;
-
-            if (rowY < 0.5)
-                return TreeDataGridRowDropPosition.Before;
-            else
-                return TreeDataGridRowDropPosition.After;
-        }
-
         private void OnDragOver(DragEventArgs e)
         {
             if (!TryGetRow(e.Source as Control, out var row))
@@ -566,7 +557,7 @@ namespace Avalonia.Controls
             }
 
             var adorner = CanAutoDragDrop(e, out _) ?
-                GetDropPosition(e, row) :
+                GetDropPosition(_source, e, row) :
                 TreeDataGridRowDropPosition.None;
             var route = BuildEventRoute(RowDragOverEvent);
 
@@ -604,7 +595,7 @@ namespace Avalonia.Controls
 
             var autoDrop = CanAutoDragDrop(e, out var data);
             var position = autoDrop ?
-                GetDropPosition(e, row) :
+                GetDropPosition(_source!, e, row) :
                 TreeDataGridRowDropPosition.None;
             var route = BuildEventRoute(RowDropEvent);
 
@@ -649,6 +640,31 @@ namespace Avalonia.Controls
                     scroll.LineUp();
                 else
                     scroll.LineDown();
+            }
+        }
+
+        private static TreeDataGridRowDropPosition GetDropPosition(
+            ITreeDataGridSource source,
+            DragEventArgs e,
+            TreeDataGridRow row)
+        {
+            var rowY = e.GetPosition(row).Y / row.Bounds.Height;
+
+            if (source.IsHierarchical)
+            {
+                if (rowY < 0.33)
+                    return TreeDataGridRowDropPosition.Before;
+                else if (rowY > 0.66)
+                    return TreeDataGridRowDropPosition.After;
+                else
+                    return TreeDataGridRowDropPosition.Inside;
+            }
+            else
+            {
+                if (rowY < 0.5)
+                    return TreeDataGridRowDropPosition.Before;
+                else
+                    return TreeDataGridRowDropPosition.After;
             }
         }
     }

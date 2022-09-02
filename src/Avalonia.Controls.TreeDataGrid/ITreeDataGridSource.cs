@@ -28,6 +28,11 @@ namespace Avalonia.Controls
         ITreeDataGridSelection? Selection { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the data source is hierarchical.
+        /// </summary>
+        bool IsHierarchical { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the data source is currently sorted.
         /// </summary>
         bool IsSorted { get; }
