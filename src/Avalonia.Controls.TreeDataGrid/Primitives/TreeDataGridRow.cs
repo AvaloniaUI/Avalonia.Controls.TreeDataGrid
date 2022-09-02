@@ -56,6 +56,8 @@ namespace Avalonia.Controls.Primitives
             set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
         }
 
+        public object? Model => DataContext;
+
         public IRows? Rows
         {
             get => _rows;

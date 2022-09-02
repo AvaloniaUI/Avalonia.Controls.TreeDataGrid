@@ -66,7 +66,9 @@
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
         <TreeDataGrid Name="dragDrop"
                       Source="{Binding DragDrop.Source}"
-                      AutoDragDropRows="True"/>
+                      AutoDragDropRows="True"
+                      RowDragStarted="DragDrop_RowDragStarted"
+                      RowDragOver="DragDrop_RowDragOver"/>
       </DockPanel>
     </TabItem>
   </TabControl>
