@@ -13,7 +13,7 @@ namespace TreeDataGridDemo.ViewModels
         public DragDropPageViewModel()
         {
             _data = DragDropItem.CreateRandomItems();
-            Source = new HierarchicalTreeDataGridSource<DragDropItem>(_data)
+            var source = new HierarchicalTreeDataGridSource<DragDropItem>(_data)
             {
                 Columns =
                 {
@@ -33,6 +33,9 @@ namespace TreeDataGridDemo.ViewModels
                         (o, x) => o.AllowDrop = x),
                 }
             };
+
+            source.RowSelection!.SingleSelect = false;
+            Source = source;
         }
 
         public ITreeDataGridSource<DragDropItem> Source { get; }

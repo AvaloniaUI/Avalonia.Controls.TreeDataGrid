@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Input;
@@ -90,6 +91,8 @@ namespace Avalonia.Controls
                 throw new NotSupportedException("Drag/drop is not supported on sorted data.");
             if (position == TreeDataGridRowDropPosition.Inside)
                 throw new ArgumentException("Invalid drop position.", nameof(position));
+            if (indexes.Any(x => x.Count != 1))
+                throw new ArgumentException("Invalid source index.", nameof(indexes));
             if (targetIndex.Count != 1)
                 throw new ArgumentException("Invalid target index.", nameof(targetIndex));
             if (_items is not IList<TModel> items)
@@ -98,21 +101,23 @@ namespace Avalonia.Controls
             if (position == TreeDataGridRowDropPosition.None)
                 return;
 
+            var sourceItems = new List<TModel>();
+
+            foreach (var src in indexes.OrderByDescending(x => x))
+            {
+                var i = src[0];
+                sourceItems.Add(items[i]);
+                items.RemoveAt(i);
+            }
+
             var ti = targetIndex[0];
 
             if (position == TreeDataGridRowDropPosition.After)
                 ++ti;
 
-            foreach (var src in indexes)
+            for (var si = sourceItems.Count - 1; si >= 0; --si)
             {
-                if (src.Count != 1)
-                    throw new ArgumentException($"Invalid source index '{src}'.", nameof(indexes));
-                var si = src[0];
-                var item = items[si];
-                items.RemoveAt(si);
-                if (si < ti)
-                    --ti;
-                items.Insert(ti++, item);
+                items.Insert(ti++, sourceItems[si]);
             }
         }
 
