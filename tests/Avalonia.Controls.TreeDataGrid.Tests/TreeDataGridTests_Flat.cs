@@ -26,7 +26,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             Assert.NotNull(target.RowsPresenter);
 
-            var rows = target.RowsPresenter
+            var rows = target.RowsPresenter!
                 .GetLogicalChildren()
                 .Cast<TreeDataGridRow>()
                 .ToList();
@@ -35,7 +35,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             foreach (var row in rows)
             {
-                var cells = row.CellsPresenter
+                var cells = row.CellsPresenter!
                     .GetLogicalChildren()
                     .Cast<TreeDataGridCell>()
                     .ToList();
@@ -183,7 +183,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 }
             );
 
-            var rows = target.RowsPresenter
+            var rows = target.RowsPresenter!
                 .GetLogicalChildren()
                 .Cast<TreeDataGridRow>()
                 .ToList();
@@ -192,7 +192,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             foreach (var row in rows)
             {
-                var cells = row.CellsPresenter
+                var cells = row.CellsPresenter!
                     .GetLogicalChildren()
                     .Cast<TreeDataGridCell>()
                     .ToList();
@@ -215,7 +215,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 }
             );
 
-            var rows = target.RowsPresenter
+            var rows = target.RowsPresenter!
                 .GetLogicalChildren()
                 .Cast<TreeDataGridRow>()
                 .ToList();
@@ -224,7 +224,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             foreach (var row in rows)
             {
-                var cells = row.CellsPresenter
+                var cells = row.CellsPresenter!
                     .GetLogicalChildren()
                     .Cast<TreeDataGridCell>()
                     .ToList();
@@ -247,7 +247,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 }
             );
 
-            var rows = target.RowsPresenter
+            var rows = target.RowsPresenter!
                 .GetLogicalChildren()
                 .Cast<TreeDataGridRow>()
                 .ToList();
@@ -256,11 +256,11 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             foreach (var row in rows)
             {
-                var cells = row.CellsPresenter
+                var cells = row?.CellsPresenter!
                     .GetLogicalChildren()
                     .Cast<TreeDataGridCell>()
                     .ToList();
-                Assert.Equal(2, cells.Count);
+                Assert.Equal(2, cells!.Count);
                 Assert.Equal(75, cells[0].Bounds.Width);
                 Assert.Equal(25, cells[1].Bounds.Width);
             }
@@ -281,8 +281,8 @@ namespace Avalonia.Controls.TreeDataGridTests
                 ++raised;
             };
 
-            var root = (ILayoutRoot)target.GetVisualRoot();
-            root.LayoutManager.ExecuteInitialLayoutPass();
+            var root = (ILayoutRoot?)target.GetVisualRoot();
+            root?.LayoutManager.ExecuteInitialLayoutPass();
 
             Assert.Equal(20, raised);
         }
@@ -497,7 +497,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             Assert.NotNull(presenter);
 
-            var rowIndexes = presenter.GetLogicalChildren()
+            var rowIndexes = presenter?.GetLogicalChildren()
                 .Cast<TreeDataGridRow>()
                 .Where(x => x.IsVisible)
                 .Select(x => x.RowIndex)
@@ -526,7 +526,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             Assert.NotNull(presenter);
 
-            var columnIndexes = presenter.GetLogicalChildren()
+            var columnIndexes = presenter?.GetLogicalChildren()
                 .Cast<TreeDataGridColumnHeader>()
                 .Where(x => x.IsVisible)
                 .Select(x => x.ColumnIndex)
@@ -629,8 +629,8 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         private static void Layout(TreeDataGrid target)
         {
-            var root = (ILayoutRoot)target.GetVisualRoot();
-            root.LayoutManager.ExecuteLayoutPass();
+            var root = (ILayoutRoot?)target.GetVisualRoot();
+            root?.LayoutManager.ExecuteLayoutPass();
         }
 
         private static IDisposable App()
