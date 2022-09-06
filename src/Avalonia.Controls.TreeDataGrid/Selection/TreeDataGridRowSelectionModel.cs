@@ -307,7 +307,10 @@ namespace Avalonia.Controls.Selection
 
         void ITreeDataGridSelectionInteraction.OnPointerPressed(TreeDataGrid sender, PointerPressedEventArgs e)
         {
-            _pressedPoint = e.GetPosition(sender);
+            if (!e.Handled && e.Pointer.Type == PointerType.Mouse)
+                PointerSelect(sender, e);
+            else
+                _pressedPoint = e.GetPosition(sender);
         }
 
         void ITreeDataGridSelectionInteraction.OnTextInput(TreeDataGrid sender, TextInputEventArgs e)
@@ -317,7 +320,7 @@ namespace Avalonia.Controls.Selection
 
         void ITreeDataGridSelectionInteraction.OnPointerReleased(TreeDataGrid sender, PointerReleasedEventArgs e)
         {
-            if (!e.Handled)
+            if (!e.Handled && e.Pointer.Type == PointerType.Touch)
             {
                 var p = e.GetPosition(sender);
                 if (Math.Abs(p.X - _pressedPoint.X) <= 3 || Math.Abs(p.Y - _pressedPoint.Y) <= 3)
