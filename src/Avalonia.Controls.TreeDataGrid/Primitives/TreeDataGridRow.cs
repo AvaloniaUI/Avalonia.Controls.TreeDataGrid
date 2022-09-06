@@ -9,6 +9,7 @@ namespace Avalonia.Controls.Primitives
     public class TreeDataGridRow : TemplatedControl, ISelectable
     {
         private const double DragDistance = 3;
+        private static readonly Point s_InvalidPoint = new(double.NegativeInfinity, double.NegativeInfinity);
 
         public static readonly DirectProperty<TreeDataGridRow, IColumns?> ColumnsProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridRow, IColumns?>(
@@ -36,7 +37,7 @@ namespace Avalonia.Controls.Primitives
         private IElementFactory? _elementFactory;
         private bool _isSelected;
         private IRows? _rows;
-        private Point _mouseDownPosition = new Point(-1, -1);
+        private Point _mouseDownPosition = s_InvalidPoint;
 
         public IColumns? Columns
         {
@@ -110,7 +111,7 @@ namespace Avalonia.Controls.Primitives
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-            _mouseDownPosition = !e.Handled ? e.GetPosition(this) : new Point(-1, -1);
+            _mouseDownPosition = !e.Handled ? e.GetPosition(this) : s_InvalidPoint;
         }
 
         protected override void OnPointerMoved(PointerEventArgs e)
@@ -122,8 +123,10 @@ namespace Avalonia.Controls.Primitives
             if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || 
                 e.Handled ||
                 delta.X < DragDistance && delta.Y < DragDistance ||
-                _mouseDownPosition == new Point(-1, -1))
+                _mouseDownPosition == s_InvalidPoint)
                 return;
+
+            _mouseDownPosition = s_InvalidPoint;
 
             var presenter = Parent as TreeDataGridRowsPresenter;
             var owner = presenter?.TemplatedParent as TreeDataGrid;
