@@ -30,11 +30,12 @@ namespace Avalonia.Controls.Primitives
         {
             return data switch
             {
-                TemplateCell _ => new TreeDataGridTemplateCell(),
-                IExpanderCell _ => new TreeDataGridExpanderCell(),
-                ICell _ => new TreeDataGridTextCell(),
-                IColumn _ => new TreeDataGridColumnHeader(),
-                IRow _ => new TreeDataGridRow(),
+                CheckBoxCell => new TreeDataGridCheckBoxCell(),
+                TemplateCell => new TreeDataGridTemplateCell(),
+                IExpanderCell => new TreeDataGridExpanderCell(),
+                ICell => new TreeDataGridTextCell(),
+                IColumn => new TreeDataGridColumnHeader(),
+                IRow => new TreeDataGridRow(),
                 _ => throw new NotSupportedException(),
             };
         }
@@ -43,11 +44,12 @@ namespace Avalonia.Controls.Primitives
         {
             return data switch
             {
-                TemplateCell _ => typeof(TreeDataGridTemplateCell).FullName!,
-                IExpanderCell _ => typeof(TreeDataGridExpanderCell).FullName!,
-                ICell _ => typeof(TreeDataGridTextCell).FullName!,
-                IColumn _ => typeof(TreeDataGridColumnHeader).FullName!,
-                IRow _ => typeof(TreeDataGridRow).FullName!,
+                CheckBoxCell => typeof(TreeDataGridCheckBoxCell).FullName!,
+                TemplateCell => typeof(TreeDataGridTemplateCell).FullName!,
+                IExpanderCell => typeof(TreeDataGridExpanderCell).FullName!,
+                ICell => typeof(TreeDataGridTextCell).FullName!,
+                IColumn => typeof(TreeDataGridColumnHeader).FullName!,
+                IRow => typeof(TreeDataGridRow).FullName!,
                 _ => throw new NotSupportedException(),
             };
         }

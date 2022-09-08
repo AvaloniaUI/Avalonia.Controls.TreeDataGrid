@@ -60,9 +60,10 @@ namespace TreeDataGridDemo.ViewModels
             {
                 Columns =
                 {
-                    new TemplateColumn<FileTreeNodeModel>(
+                    new CheckBoxColumn<FileTreeNodeModel>(
                         null,
-                        new FuncDataTemplate<FileTreeNodeModel>(FileCheckTemplate, true),
+                        x => x.IsChecked,
+                        (o, v) => o.IsChecked = v,
                         options: new ColumnOptions<FileTreeNodeModel>
                         {
                             CanUserResizeColumn = false,
@@ -129,15 +130,6 @@ namespace TreeDataGridDemo.ViewModels
         }
 
         public HierarchicalTreeDataGridSource<FileTreeNodeModel> Source { get; }
-
-        private IControl FileCheckTemplate(FileTreeNodeModel node, INameScope ns)
-        {
-            return new CheckBox
-            {
-                MinWidth = 0,
-                [!CheckBox.IsCheckedProperty] = new Binding(nameof(FileTreeNodeModel.IsChecked)),
-            };
-        }
 
         private IControl FileNameTemplate(FileTreeNodeModel node, INameScope ns)
         {
