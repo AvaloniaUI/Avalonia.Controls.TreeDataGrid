@@ -76,6 +76,8 @@ namespace Avalonia.Controls
             }
         }
 
+        IEnumerable<object> ITreeDataGridSource.Items => Items;
+
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
 
         IColumns ITreeDataGridSource.Columns => Columns;
@@ -135,6 +137,11 @@ namespace Avalonia.Controls
         {
             _comparison = comparison;
             _rows?.Sort(_comparison);
+        }
+
+        IEnumerable<object>? ITreeDataGridSource.GetModelChildren(object model)
+        {
+            return GetModelChildren((TModel)model);
         }
 
         public bool SortBy(IColumn? column, ListSortDirection direction)

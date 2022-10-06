@@ -3,6 +3,7 @@ using Avalonia.Controls.Selection;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Avalonia.Controls
 {
@@ -65,6 +66,8 @@ namespace Avalonia.Controls
             }
         }
 
+        IEnumerable<object> ITreeDataGridSource.Items => Items;
+
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
 
         public void Dispose()
@@ -94,6 +97,11 @@ namespace Avalonia.Controls
             }
 
             return false;
+        }
+
+        public IEnumerable<object> GetModelChildren(object model)
+        {
+            return Enumerable.Empty<object>();
         }
 
         private AnonymousSortableRows<TModel> CreateRows()

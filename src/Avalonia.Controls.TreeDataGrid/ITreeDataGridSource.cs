@@ -31,6 +31,10 @@ namespace Avalonia.Controls
         /// </summary>
         ITreeDataGridSelection? Selection { get; }
 
+        IEnumerable<object> Items { get; }
+
+        IEnumerable<object>? GetModelChildren(object model);
+
         /// <summary>
         /// Requests to sort the source by the specified column.
         /// </summary>
@@ -48,6 +52,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the items in the data source.
         /// </summary>
-        IEnumerable<TModel> Items { get; }
+        new IEnumerable<TModel> Items { get; }
     }
 }
