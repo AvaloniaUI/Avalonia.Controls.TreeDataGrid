@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -41,17 +42,17 @@ namespace Avalonia.Controls.Primitives
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == ItemsProperty)
             {
-                var oldValue = change.OldValue.GetValueOrDefault<IColumns>();
-                var newValue = change.NewValue.GetValueOrDefault<IColumns>();
+                var oldValue = change.GetOldValue<IReadOnlyList<IColumn>?>();
+                var newValue = change.GetNewValue<IReadOnlyList<IColumn>?>();
 
-                if (oldValue is object)
-                    oldValue.LayoutInvalidated -= OnColumnLayoutInvalidated;
-                if (newValue is object)
-                    newValue.LayoutInvalidated += OnColumnLayoutInvalidated;
+                if (oldValue is IColumns oldColumns)
+                    oldColumns.LayoutInvalidated -= OnColumnLayoutInvalidated;
+                if (newValue is IColumns newColumns)
+                    newColumns.LayoutInvalidated += OnColumnLayoutInvalidated;
             }
 
             base.OnPropertyChanged(change);

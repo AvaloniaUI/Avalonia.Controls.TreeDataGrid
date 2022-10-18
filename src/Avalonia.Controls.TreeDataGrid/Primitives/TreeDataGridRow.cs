@@ -133,7 +133,7 @@ namespace Avalonia.Controls.Primitives
             owner?.RaiseRowDragStarted(e);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == IsSelectedProperty)
             {
