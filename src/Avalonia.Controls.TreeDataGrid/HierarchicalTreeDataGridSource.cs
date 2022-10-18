@@ -186,19 +186,6 @@ namespace Avalonia.Controls
             if (IsSorted)
                 throw new NotSupportedException("Drag/drop is not supported on sorted data.");
 
-            var sourceItems = new List<TModel>();
-
-            foreach (var g in indexes.GroupBy(x => x[..^1]))
-            {
-                var items = GetItems(g.Key);
-
-                foreach (var i in g.Select(x => x[^1]).OrderByDescending(x => x))
-                {
-                    sourceItems.Add(items[i]);
-                    items.RemoveAt(i);
-                }
-            }
-
             IList<TModel> targetItems;
             int ti;
 
@@ -215,6 +202,23 @@ namespace Avalonia.Controls
 
             if (position == TreeDataGridRowDropPosition.After)
                 ++ti;
+
+            var sourceItems = new List<TModel>();
+
+            foreach (var g in indexes.GroupBy(x => x[..^1]))
+            {
+                var items = GetItems(g.Key);
+
+                foreach (var i in g.Select(x => x[^1]).OrderByDescending(x => x))
+                {
+                    sourceItems.Add(items[i]);
+
+                    if (items == targetItems && i < ti)
+                        --ti;
+                    
+                    items.RemoveAt(i);
+                }
+            }
 
             for (var si = sourceItems.Count - 1; si >= 0; --si)
             {

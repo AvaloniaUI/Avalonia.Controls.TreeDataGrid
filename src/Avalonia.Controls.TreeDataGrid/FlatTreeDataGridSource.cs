@@ -101,6 +101,11 @@ namespace Avalonia.Controls
             if (position == TreeDataGridRowDropPosition.None)
                 return;
 
+            var ti = targetIndex[0];
+
+            if (position == TreeDataGridRowDropPosition.After)
+                ++ti;
+
             var sourceItems = new List<TModel>();
 
             foreach (var src in indexes.OrderByDescending(x => x))
@@ -108,12 +113,10 @@ namespace Avalonia.Controls
                 var i = src[0];
                 sourceItems.Add(items[i]);
                 items.RemoveAt(i);
+
+                if (i < ti)
+                    --ti;
             }
-
-            var ti = targetIndex[0];
-
-            if (position == TreeDataGridRowDropPosition.After)
-                ++ti;
 
             for (var si = sourceItems.Count - 1; si >= 0; --si)
             {
