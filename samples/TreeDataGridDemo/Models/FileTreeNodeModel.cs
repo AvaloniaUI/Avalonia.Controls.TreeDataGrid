@@ -7,7 +7,7 @@ using ReactiveUI;
 
 namespace TreeDataGridDemo.Models
 {
-    internal class FileTreeNodeModel : ReactiveObject
+    public class FileTreeNodeModel : ReactiveObject
     {
         private string _path;
         private string _name;
@@ -27,6 +27,7 @@ namespace TreeDataGridDemo.Models
             _name = isRoot ? path : System.IO.Path.GetFileName(Path);
             _isExpanded = isRoot;
             IsDirectory = isDirectory;
+            HasChildren = isDirectory;
 
             if (!isDirectory)
             {

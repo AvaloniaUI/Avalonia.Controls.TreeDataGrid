@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Templates;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -42,6 +43,14 @@ namespace Avalonia.Controls.Primitives
             base.Unrealize();
         }
 
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+
+            if (ContentTemplate is null && DataContext is TemplateCell cell)
+                ContentTemplate = cell.GetCellTemplate(this);
+        }
+
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
@@ -53,7 +62,9 @@ namespace Avalonia.Controls.Primitives
             if (cell is not null)
             {
                 Content = cell.Value;
-                ContentTemplate = cell.CellTemplate;
+
+                if (((ILogical)this).IsAttachedToLogicalTree)
+                    ContentTemplate = cell.GetCellTemplate(this);
             }
             else
             {

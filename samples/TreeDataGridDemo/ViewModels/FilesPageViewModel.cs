@@ -9,10 +9,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
-using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Data.Converters;
-using Avalonia.Layout;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ReactiveUI;
@@ -20,31 +17,15 @@ using TreeDataGridDemo.Models;
 
 namespace TreeDataGridDemo.ViewModels
 {
-    internal class FilesPageViewModel : ReactiveObject
+    public class FilesPageViewModel : ReactiveObject
     {
+        private static IconConverter? s_iconConverter;
         private FileTreeNodeModel? _root;
         private string _selectedDrive;
         private string? _selectedPath;
-        private FolderIconConverter? _folderIconConverter;
 
         public FilesPageViewModel()
         {
-            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
-
-            if (assetLoader is not null)
-            {
-                using (var fileStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
-                using (var folderStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
-                using (var folderOpenStream =
-                       assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
-                {
-                    var fileIcon = new Bitmap(fileStream);
-                    var folderIcon = new Bitmap(folderStream);
-                    var folderOpenIcon = new Bitmap(folderOpenStream);
-
-                    _folderIconConverter = new FolderIconConverter(fileIcon, folderOpenIcon, folderIcon);
-                }
-            }
             Drives = DriveInfo.GetDrives().Select(x => x.Name).ToList();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -71,7 +52,7 @@ namespace TreeDataGridDemo.ViewModels
                     new HierarchicalExpanderColumn<FileTreeNodeModel>(
                         new TemplateColumn<FileTreeNodeModel>(
                             "Name",
-                            new FuncDataTemplate<FileTreeNodeModel>(FileNameTemplate, true),
+                            "FileNameCell",
                             new GridLength(1, GridUnitType.Star),
                             new ColumnOptions<FileTreeNodeModel>
                             {
@@ -131,35 +112,28 @@ namespace TreeDataGridDemo.ViewModels
 
         public HierarchicalTreeDataGridSource<FileTreeNodeModel> Source { get; }
 
-        private IControl FileNameTemplate(FileTreeNodeModel node, INameScope ns)
+        public static IMultiValueConverter FileIconConverter
         {
-            return new StackPanel
+            get
             {
-                Orientation = Orientation.Horizontal,
-                VerticalAlignment = VerticalAlignment.Center,
-                Children =
+                if (s_iconConverter is null)
                 {
-                    new Image
+                    var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+                    using (var fileStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
+                    using (var folderStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
+                    using (var folderOpenStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
                     {
-                        [!Image.SourceProperty] = new MultiBinding
-                        {
-                            Bindings =
-                            {
-                                new Binding(nameof(node.IsDirectory)),
-                                new Binding(nameof(node.IsExpanded)),
-                            },
-                            Converter = _folderIconConverter,
-                        },
-                        Margin = new Thickness(0, 0, 4, 0),
-                        VerticalAlignment = VerticalAlignment.Center,
-                    },
-                    new TextBlock
-                    {
-                        [!TextBlock.TextProperty] = new Binding(nameof(FileTreeNodeModel.Name)),
-                        VerticalAlignment = VerticalAlignment.Center,
+                        var fileIcon = new Bitmap(fileStream);
+                        var folderIcon = new Bitmap(folderStream);
+                        var folderOpenIcon = new Bitmap(folderOpenStream);
+
+                        s_iconConverter = new IconConverter(fileIcon, folderOpenIcon, folderIcon);
                     }
                 }
-            };
+
+                return s_iconConverter;
+            }
         }
 
         private void SetSelectedPath(string? value)
@@ -229,13 +203,13 @@ namespace TreeDataGridDemo.ViewModels
                 System.Diagnostics.Trace.WriteLine($"Selected '{i?.Path}'");
         }
 
-        private class FolderIconConverter : IMultiValueConverter
+        private class IconConverter : IMultiValueConverter
         {
             private readonly Bitmap _file;
             private readonly Bitmap _folderExpanded;
             private readonly Bitmap _folderCollapsed;
 
-            public FolderIconConverter(Bitmap file, Bitmap folderExpanded, Bitmap folderCollapsed)
+            public IconConverter(Bitmap file, Bitmap folderExpanded, Bitmap folderCollapsed)
             {
                 _file = file;
                 _folderExpanded = folderExpanded;
