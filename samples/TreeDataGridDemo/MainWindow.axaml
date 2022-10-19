@@ -2,6 +2,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:m="using:TreeDataGridDemo.Models"
+        xmlns:vm="using:TreeDataGridDemo.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="TreeDataGridDemo.MainWindow"
         Title="TreeDataGridDemo">
@@ -23,7 +25,9 @@
           <Button Click="AddCountryClick">Add</Button>
           <Button Command="{Binding Countries.RemoveSelected}">Remove</Button>
         </StackPanel>
-        <TreeDataGrid Name="countries" Source="{Binding Countries.Source}">
+        <TreeDataGrid Name="countries"
+                      Source="{Binding Countries.Source}"
+                      AutoDragDropRows="True">
           <TreeDataGrid.Styles>
             <Style Selector="TreeDataGrid TreeDataGridRow:nth-last-child(2n)">
               <Setter Property="Background" Value="#fff8f8f8"/>
@@ -51,12 +55,41 @@
         </DockPanel>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
         <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}">
+          <TreeDataGrid.Resources>
+            
+              <!-- Template for Name column cells -->
+            <DataTemplate x:Key="FileNameCell" DataType="m:FileTreeNodeModel">
+              <StackPanel Orientation="Horizontal">
+                <Image Margin="0 0 4 0"
+                       VerticalAlignment="Center">
+                  <Image.Source>
+                    <MultiBinding Converter="{x:Static vm:FilesPageViewModel.FileIconConverter}">
+                      <Binding Path="IsDirectory"/>
+                      <Binding Path="IsExpanded"/>
+                    </MultiBinding>
+                  </Image.Source>
+                </Image>
+                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+              </StackPanel>
+            </DataTemplate>
+              
+          </TreeDataGrid.Resources>
           <TreeDataGrid.Styles>
             <Style Selector="TreeDataGrid TreeDataGridRow:nth-child(2n)">
               <Setter Property="Background"  Value="#fff8f8f8"/>
             </Style>
           </TreeDataGrid.Styles>
         </TreeDataGrid>
+      </DockPanel>
+    </TabItem>
+    <TabItem Header="Drag/Drop">
+      <DockPanel>
+        <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
+        <TreeDataGrid Name="dragDrop"
+                      Source="{Binding DragDrop.Source}"
+                      AutoDragDropRows="True"
+                      RowDragStarted="DragDrop_RowDragStarted"
+                      RowDragOver="DragDrop_RowDragOver"/>
       </DockPanel>
     </TabItem>
   </TabControl>

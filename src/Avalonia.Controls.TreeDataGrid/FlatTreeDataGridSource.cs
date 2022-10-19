@@ -1,9 +1,10 @@
-﻿using Avalonia.Controls.Models.TreeDataGrid;
-using Avalonia.Controls.Selection;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
+using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
@@ -28,7 +29,6 @@ namespace Avalonia.Controls
             Columns = new ColumnList<TModel>();
         }
 
-        public event Action? Sorted;
         public ColumnList<TModel> Columns { get; }
         public IRows Rows => _rows ??= CreateRows();
         IColumns ITreeDataGridSource.Columns => Columns;
@@ -69,11 +69,61 @@ namespace Avalonia.Controls
         IEnumerable<object> ITreeDataGridSource.Items => Items;
 
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
+        public bool IsHierarchical => false;
+        public bool IsSorted => _comparer is not null;
+
+        public event Action? Sorted;
 
         public void Dispose()
         {
             _rows?.Dispose();
             GC.SuppressFinalize(this);
+        }
+
+        void ITreeDataGridSource.DragDropRows(
+            ITreeDataGridSource source,
+            IEnumerable<IndexPath> indexes,
+            IndexPath targetIndex,
+            TreeDataGridRowDropPosition position,
+            DragDropEffects effects)
+        {
+            if (!effects.HasAnyFlag(DragDropEffects.Move))
+                throw new NotSupportedException("Only move is currently supported for drag/drop.");
+            if (IsSorted)
+                throw new NotSupportedException("Drag/drop is not supported on sorted data.");
+            if (position == TreeDataGridRowDropPosition.Inside)
+                throw new ArgumentException("Invalid drop position.", nameof(position));
+            if (indexes.Any(x => x.Count != 1))
+                throw new ArgumentException("Invalid source index.", nameof(indexes));
+            if (targetIndex.Count != 1)
+                throw new ArgumentException("Invalid target index.", nameof(targetIndex));
+            if (_items is not IList<TModel> items)
+                throw new InvalidOperationException("Items does not implement IList<T>.");
+
+            if (position == TreeDataGridRowDropPosition.None)
+                return;
+
+            var ti = targetIndex[0];
+
+            if (position == TreeDataGridRowDropPosition.After)
+                ++ti;
+
+            var sourceItems = new List<TModel>();
+
+            foreach (var src in indexes.OrderByDescending(x => x))
+            {
+                var i = src[0];
+                sourceItems.Add(items[i]);
+                items.RemoveAt(i);
+
+                if (i < ti)
+                    --ti;
+            }
+
+            for (var si = sourceItems.Count - 1; si >= 0; --si)
+            {
+                items.Insert(ti++, sourceItems[si]);
+            }
         }
 
         bool ITreeDataGridSource.SortBy(IColumn? column, ListSortDirection direction)

@@ -1,18 +1,19 @@
 ﻿
+using System;
 using Avalonia.Controls.Templates;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
     public class TemplateCell : ICell
     {
-        public TemplateCell(object? value, IDataTemplate? cellTemplate)
+        public TemplateCell(object? value, Func<IControl, IDataTemplate> getCellTemplate)
         {
-            CellTemplate = cellTemplate;
+            GetCellTemplate = getCellTemplate;
             Value = value;
         }
 
         public bool CanEdit => false;
-        public IDataTemplate? CellTemplate { get; }
+        public Func<IControl, IDataTemplate> GetCellTemplate { get; }
         public object? Value { get; }
     }
 }

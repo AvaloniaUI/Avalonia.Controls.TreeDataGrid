@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
+using Avalonia.Input;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,11 +12,6 @@ namespace Avalonia.Controls
     /// </summary>
     public interface ITreeDataGridSource
     {
-        /// <summary>
-        /// Event which would be triggered after SortBy method execution.
-        /// </summary>
-        event Action Sorted;
-
         /// <summary>
         /// Gets the columns to be displayed.
         /// </summary>
@@ -30,6 +26,36 @@ namespace Avalonia.Controls
         /// Gets the selection model.
         /// </summary>
         ITreeDataGridSelection? Selection { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the data source is hierarchical.
+        /// </summary>
+        bool IsHierarchical { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the data source is currently sorted.
+        /// </summary>
+        bool IsSorted { get; }
+
+        /// <summary>
+        /// Event which would be triggered after SortBy method execution.
+        /// </summary>
+        event Action Sorted;
+
+        /// <summary>
+        /// Executes a row drag/drop operation.
+        /// </summary>
+        /// <param name="source">The source of the dragged rows.</param>
+        /// <param name="indexes">The model indexes of the rows being dragged.</param>
+        /// <param name="targetIndex">The model index of the drop target.</param>
+        /// <param name="position">The position relative to the drop target.</param>
+        /// <param name="effects">The requested drop effects.</param>
+        void DragDropRows(
+            ITreeDataGridSource source,
+            IEnumerable<IndexPath> indexes,
+            IndexPath targetIndex,
+            TreeDataGridRowDropPosition position,
+            DragDropEffects effects);
 
         /// <summary>
         /// Gets the items in the data source.
