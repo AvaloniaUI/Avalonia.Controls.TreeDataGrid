@@ -40,12 +40,41 @@ The sample above is taken from [this article](https://github.com/AvaloniaUI/Aval
 ## TemplateColumn
 TemplateColumn is the most customizable option to create a column. You can put basically everything that you can put into `IDataTemplate` into this column cells.
 
-That's how you instantiate `TemplateColumn` class:
+There are two ways to instantiate a `TemplateColumn`:
+
+1. Using a `FuncDataTemplate` to create a template in code:
+
 ```csharp
 new TemplateColumn<Person>(
-                        "Selected",
-                        new FuncDataTemplate<FileTreeNodeModel>((a,e) => new CheckBox()))
+    "Selected",
+    new FuncDataTemplate<Person>((x, _) => new CheckBox
+    {
+        [!CheckBox.IsCheckedProperty] = new Binding("IsSelected"),
+    }))
 ```
+
+2. Using a template defined as a XAML resource:
+
+```xml
+<TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}">
+    <TreeDataGrid.Resources>
+           
+        <!-- Defines a named template for the column -->
+        <DataTemplate x:Key="CheckBoxCell">
+            <CheckBox IsChecked="{Binding IsSelected}"/>
+        </DataTemplate>
+        
+    </DataTemplate>
+              
+    </TreeDataGrid.Resources>
+</TreeDataGrid>
+```
+
+```csharp
+// CheckBoxCell is the key of the template defined in XAML.
+new TemplateColumn<Person>("Selected", "CheckBoxCell");
+```
+
 `TemplateColumn` has only one generic parameter, it is your model type, same as in `TextColumn`, Person in this case. Code above will create a column with header *"Selected"* and `CheckBox` in each cell.
 
 ![image](https://user-images.githubusercontent.com/53405089/157664231-8653bce9-f8d6-4fbc-8e78-e3ff93f1ace2.png)
