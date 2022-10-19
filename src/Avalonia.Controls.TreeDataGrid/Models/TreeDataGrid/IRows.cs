@@ -36,7 +36,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Given a row index, returns a model index.
         /// </summary>
         /// <param name="rowIndex">The row index.</param>
-        /// <returns>The row index, or -1 if the row index is not valid.</returns>
+        /// <returns>The row index, or an empty path if the row index is not valid.</returns>
         IndexPath RowIndexToModelIndex(int rowIndex);
 
         /// <summary>

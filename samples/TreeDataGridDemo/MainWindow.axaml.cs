@@ -21,7 +21,6 @@ namespace TreeDataGridDemo
         {
             InitializeComponent();
             this.AttachDevTools();
-            Renderer.DrawFps = true;
             DataContext = new MainWindowViewModel();
 
             _tabs = this.FindControl<TabControl>("tabs");
@@ -94,6 +93,23 @@ namespace TreeDataGridDemo
                 var vm = (MainWindowViewModel)DataContext!;
                 vm.Files.SelectedPath = ((TextBox)sender!).Text;
             }
+        }
+
+        private void DragDrop_RowDragStarted(object? sender, TreeDataGridRowDragStartedEventArgs e)
+        {
+            foreach (DragDropItem i in e.Models)
+            {
+                if (!i.AllowDrag)
+                    e.AllowedEffects = DragDropEffects.None;
+            }
+        }
+
+        private void DragDrop_RowDragOver(object? sender, TreeDataGridRowDragEventArgs e)
+        {
+            if (e.Position == TreeDataGridRowDropPosition.Inside &&
+                e.TargetRow.Model is DragDropItem i &&
+                !i.AllowDrop)
+                e.Inner.DragEffects = DragDropEffects.None;
         }
 
         private void UpdateRealizedCount()

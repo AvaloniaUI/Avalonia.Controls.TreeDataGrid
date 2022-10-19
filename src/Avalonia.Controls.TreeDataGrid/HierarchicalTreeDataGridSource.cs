@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
+using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
@@ -77,6 +78,8 @@ namespace Avalonia.Controls
         }
 
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
+        public bool IsHierarchical => true;
+        public bool IsSorted => _comparison is not null;
 
         IColumns ITreeDataGridSource.Columns => Columns;
 
@@ -151,6 +154,76 @@ namespace Avalonia.Controls
             }
 
             return false;
+        }
+
+        void ITreeDataGridSource.DragDropRows(
+            ITreeDataGridSource source,
+            IEnumerable<IndexPath> indexes,
+            IndexPath targetIndex,
+            TreeDataGridRowDropPosition position,
+            DragDropEffects effects)
+        {
+            IList<TModel> GetItems(IndexPath path)
+            {
+                IEnumerable<TModel>? children;
+
+                if (path.Count == 0)
+                    children = _items;
+                else if (TryGetModelAt(path, out var parent))
+                    children = GetModelChildren(parent);
+                else
+                    throw new IndexOutOfRangeException();
+
+                if (children is null)
+                    throw new InvalidOperationException("The requested drop target has no children.");
+
+                return children as IList<TModel> ??
+                    throw new InvalidOperationException("Items does not implement IList<T>.");
+            }
+
+            if (!effects.HasAnyFlag(DragDropEffects.Move))
+                throw new NotSupportedException("Only move is currently supported for drag/drop.");
+            if (IsSorted)
+                throw new NotSupportedException("Drag/drop is not supported on sorted data.");
+
+            IList<TModel> targetItems;
+            int ti;
+
+            if (position == TreeDataGridRowDropPosition.Inside)
+            {
+                targetItems = GetItems(targetIndex);
+                ti = targetItems.Count;
+            }
+            else
+            {
+                targetItems = GetItems(targetIndex[..^1]);
+                ti = targetIndex[^1];
+            }
+
+            if (position == TreeDataGridRowDropPosition.After)
+                ++ti;
+
+            var sourceItems = new List<TModel>();
+
+            foreach (var g in indexes.GroupBy(x => x[..^1]))
+            {
+                var items = GetItems(g.Key);
+
+                foreach (var i in g.Select(x => x[^1]).OrderByDescending(x => x))
+                {
+                    sourceItems.Add(items[i]);
+
+                    if (items == targetItems && i < ti)
+                        --ti;
+                    
+                    items.RemoveAt(i);
+                }
+            }
+
+            for (var si = sourceItems.Count - 1; si >= 0; --si)
+            {
+                targetItems.Insert(ti++, sourceItems[si]);
+            }
         }
 
         void IExpanderRowController<TModel>.OnBeginExpandCollapse(IExpanderRow<TModel> row)

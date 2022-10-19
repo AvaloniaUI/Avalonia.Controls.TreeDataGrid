@@ -14,9 +14,10 @@ namespace Avalonia.Controls.Selection
         ITreeDataGridSelectionInteraction
         where TModel : class
     {
+        private static readonly Point s_InvalidPoint = new(double.NegativeInfinity, double.NegativeInfinity);
         private readonly ITreeDataGridSource<TModel> _source;
         private EventHandler? _viewSelectionChanged;
-        private Point _pressedPoint;
+        private Point _pressedPoint = s_InvalidPoint;
         private bool _raiseViewSelectionChanged;
         private int _lastCharPressedTime;
         private string _typedWord = "";
@@ -307,25 +308,45 @@ namespace Avalonia.Controls.Selection
 
         void ITreeDataGridSelectionInteraction.OnPointerPressed(TreeDataGrid sender, PointerPressedEventArgs e)
         {
-            if (!e.Handled && e.Pointer.Type == PointerType.Mouse)
-                PointerSelect(sender, e);
+            // Select a row on pointer pressed if:
+            //
+            // - It's a mouse click, not touch: we don't want to select on touch scroll gesture start
+            // - The row isn't already selected: we don't want to deselect an existing multiple selection
+            //   if the user is trying to drag multiple rows
+            //
+            // Otherwise select on pointer release.
+            if (!e.Handled &&
+                e.Pointer.Type == PointerType.Mouse &&
+                e.Source is IControl source &&
+                sender.TryGetRow(source, out var row) &&
+                _source.Rows.RowIndexToModelIndex(row.RowIndex) is { } modelIndex &&
+                !IsSelected(modelIndex))
+            {
+                PointerSelect(sender, row, e);
+                _pressedPoint = s_InvalidPoint;
+            }
             else
+            {
                 _pressedPoint = e.GetPosition(sender);
+            }
+        }
+
+        void ITreeDataGridSelectionInteraction.OnPointerReleased(TreeDataGrid sender, PointerReleasedEventArgs e)
+        {
+            if (!e.Handled && 
+                _pressedPoint != s_InvalidPoint &&
+                e.Source is IControl source &&
+                sender.TryGetRow(source, out var row))
+            {
+                var p = e.GetPosition(sender);
+                if (Math.Abs(p.X - _pressedPoint.X) <= 3 || Math.Abs(p.Y - _pressedPoint.Y) <= 3)
+                    PointerSelect(sender, row, e);
+            }
         }
 
         void ITreeDataGridSelectionInteraction.OnTextInput(TreeDataGrid sender, TextInputEventArgs e)
         {
             HandleTextInput(e.Text, sender, _source.Rows.ModelIndexToRowIndex(AnchorIndex));
-        }
-
-        void ITreeDataGridSelectionInteraction.OnPointerReleased(TreeDataGrid sender, PointerReleasedEventArgs e)
-        {
-            if (!e.Handled && e.Pointer.Type == PointerType.Touch)
-            {
-                var p = e.GetPosition(sender);
-                if (Math.Abs(p.X - _pressedPoint.X) <= 3 || Math.Abs(p.Y - _pressedPoint.Y) <= 3)
-                    PointerSelect(sender, e);
-            }
         }
 
         protected internal override IEnumerable<TModel>? GetChildren(TModel node)
@@ -347,23 +368,20 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        private void PointerSelect(TreeDataGrid sender, PointerEventArgs e)
+        private void PointerSelect(TreeDataGrid sender, TreeDataGridRow row, PointerEventArgs e)
         {
-            if (e.Source is IControl source && sender.TryGetRow(source, out var row))
-            {
-                var point = e.GetCurrentPoint(sender);
+            var point = e.GetCurrentPoint(sender);
 
-                var commandModifiers = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.CommandModifiers;
-                var toggleModifier = commandModifiers is not null ? e.KeyModifiers.HasFlag(commandModifiers) : false;
-                UpdateSelection(
-                    sender,
-                    row.RowIndex,
-                    select: true,
-                    rangeModifier: e.KeyModifiers.HasFlag(KeyModifiers.Shift),
-                    toggleModifier: toggleModifier,
-                    rightButton: point.Properties.IsRightButtonPressed);
-                e.Handled = true;
-            }
+            var commandModifiers = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.CommandModifiers;
+            var toggleModifier = commandModifiers is not null ? e.KeyModifiers.HasFlag(commandModifiers) : false;
+            UpdateSelection(
+                sender,
+                row.RowIndex,
+                select: true,
+                rangeModifier: e.KeyModifiers.HasFlag(KeyModifiers.Shift),
+                toggleModifier: toggleModifier,
+                rightButton: point.Properties.IsRightButtonPressed);
+            e.Handled = true;
         }
 
         private void UpdateSelection(
