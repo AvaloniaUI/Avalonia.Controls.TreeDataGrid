@@ -99,7 +99,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        public IEnumerable<object> GetModelChildren(object model)
+        IEnumerable<object> ITreeDataGridSource.GetModelChildren(object model)
         {
             return Enumerable.Empty<object>();
         }
