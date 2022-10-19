@@ -47,7 +47,7 @@ There are two ways to instantiate a `TemplateColumn`:
 ```csharp
 new TemplateColumn<Person>(
     "Selected",
-    new FuncDataTemplate<Person>((x, _) => new CheckBox
+    new FuncDataTemplate<Person>((_, _) => new CheckBox
     {
         [!CheckBox.IsCheckedProperty] = new Binding("IsSelected"),
     }))
