@@ -32,7 +32,7 @@ namespace Avalonia.Controls
         ITreeDataGridSelection? Selection { get; }
 
         /// <summary>
-        /// Returns all the items in the source.
+        /// Gets the items in the data source.
         /// </summary>
         IEnumerable<object> Items { get; }
 
