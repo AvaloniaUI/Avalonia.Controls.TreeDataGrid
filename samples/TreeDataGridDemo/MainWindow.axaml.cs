@@ -15,13 +15,12 @@ namespace TreeDataGridDemo
 {
     public class MainWindow : Window
     {
-        private readonly TabControl _tabs;
+        private readonly TabControl? _tabs;
 
         public MainWindow()
         {
             InitializeComponent();
             this.AttachDevTools();
-            Renderer.DrawFps = true;
             DataContext = new MainWindowViewModel();
 
             _tabs = this.FindControl<TabControl>("tabs");
@@ -43,6 +42,16 @@ namespace TreeDataGridDemo
             var populationTextBox = this.FindControl<TextBox>("populationTextBox");
             var areaTextBox = this.FindControl<TextBox>("areaTextBox");
             var gdpTextBox = this.FindControl<TextBox>("gdpTextBox");
+
+            if (countries is null
+                || countryTextBox?.Text is null
+                || regionTextBox?.Text is null
+                || populationTextBox?.Text is null
+                || areaTextBox?.Text is null
+                || gdpTextBox?.Text is null)
+            {
+                return;
+            }
 
             var country = new Country(
                 countryTextBox.Text,
@@ -86,14 +95,35 @@ namespace TreeDataGridDemo
             }
         }
 
+        private void DragDrop_RowDragStarted(object? sender, TreeDataGridRowDragStartedEventArgs e)
+        {
+            foreach (DragDropItem i in e.Models)
+            {
+                if (!i.AllowDrag)
+                    e.AllowedEffects = DragDropEffects.None;
+            }
+        }
+
+        private void DragDrop_RowDragOver(object? sender, TreeDataGridRowDragEventArgs e)
+        {
+            if (e.Position == TreeDataGridRowDropPosition.Inside &&
+                e.TargetRow.Model is DragDropItem i &&
+                !i.AllowDrop)
+                e.Inner.DragEffects = DragDropEffects.None;
+        }
+
         private void UpdateRealizedCount()
         {
-            var tabItem = (TabItem)_tabs.SelectedItem!;
-            var treeDataGrid = (TreeDataGrid)((Control)tabItem.Content).GetLogicalDescendants()
+            var tabItem = (TabItem?)_tabs?.SelectedItem;
+            if (tabItem is null)
+            {
+                return;
+            }
+            var treeDataGrid = (TreeDataGrid?)((Control)tabItem.Content!).GetLogicalDescendants()
                 .First(x => x is TreeDataGrid tl);
-            var textBlock = (TextBlock)((Control)tabItem.Content).GetLogicalDescendants()
+            var textBlock = (TextBlock)((Control)tabItem.Content!).GetLogicalDescendants()
                 .First(x => x is TextBlock tb && tb.Classes.Contains("realized-count"));
-            var rows = treeDataGrid.RowsPresenter!;
+            var rows = treeDataGrid!.RowsPresenter!;
             var realizedRowCount = rows.RealizedElements.Count;
             var unrealizedRowCount = ((ILogical)rows).LogicalChildren.Count - realizedRowCount;
             textBlock.Text = $"{realizedRowCount} rows realized ({unrealizedRowCount} unrealized)";

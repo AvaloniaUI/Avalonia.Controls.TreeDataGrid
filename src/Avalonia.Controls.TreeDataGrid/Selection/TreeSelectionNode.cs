@@ -193,8 +193,16 @@ namespace Avalonia.Controls.Selection
 
         protected override void OnSourceReset()
         {
-            CommitDeselect(new IndexRange(0, int.MaxValue));
-            _owner.OnNodeCollectionReset(Path);
+            var removed = CommitDeselect(new IndexRange(0, int.MaxValue));
+
+            if (_children is not null)
+            {
+                foreach (var child in _children)
+                    child?.AncestorReset(ref removed);
+                _children = null;
+            }
+
+            _owner.OnNodeCollectionReset(Path, removed);
         }
 
         private void AncestorIndexChanged(IndexPath parentIndex, int shiftIndex, int shiftDelta)
@@ -230,6 +238,22 @@ namespace Avalonia.Controls.Selection
             {
                 foreach (var child in _children)
                     child?.AncestorRemoved(ref removed);
+            }
+
+            Source = null;
+        }
+
+        private void AncestorReset(ref int removedCount)
+        {
+            if (Ranges.Count > 0)
+            {
+                removedCount += CommitDeselect(0, int.MaxValue);
+            }
+
+            if (_children is not null)
+            {
+                foreach (var child in _children)
+                    child?.AncestorReset(ref removedCount);
             }
 
             Source = null;

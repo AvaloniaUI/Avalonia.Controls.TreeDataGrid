@@ -12,11 +12,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     {
         private readonly ISubject<BindingValue<T>>? _binding;
         private readonly IDisposable? _subscription;
-        [AllowNull] private T _value;
-        [AllowNull] private T _cancelValue;
+        [AllowNull] private T? _value;
+        [AllowNull] private T? _cancelValue;
         private bool _isEditing;
 
-        public TextCell(T value)
+#pragma warning disable CS8618
+        public TextCell(T? value)
+#pragma warning restore CS8618
         {
             _value = value;
             IsReadOnly = true;
@@ -42,13 +44,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public bool IsReadOnly { get; }
         public TextTrimming TextTrimming { get; }
 
-        public T Value
+        public T? Value
         {
             get => _value;
             set
             {
                 if (RaiseAndSetIfChanged(ref _value, value) && !IsReadOnly && !_isEditing)
-                    _binding!.OnNext(value);
+                    _binding!.OnNext(value!);
             }
         }
 
@@ -79,7 +81,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 _isEditing = false;
                 _cancelValue = default;
-                _binding!.OnNext(_value);
+                _binding!.OnNext(_value!);
             }
         }
 

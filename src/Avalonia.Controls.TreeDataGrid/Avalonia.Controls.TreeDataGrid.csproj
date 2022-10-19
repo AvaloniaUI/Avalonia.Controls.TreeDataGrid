@@ -1,21 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>True</IsPackable>
     <RootNamespace>Avalonia.Controls</RootNamespace>
-  </PropertyGroup>
-  <PropertyGroup>
-    <VersionPrefix>0.10.10</VersionPrefix>
-    <VersionSuffix></VersionSuffix>
-    <Authors>Steven Kirk</Authors>
-    <Company>AvaloniaUI</Company>
-    <Description>TreeDataGrid is a control which displays hierarchical and tabular data together in a single view. It is a combination of a TreeView and DataGrid control.</Description>
-    <Copyright>Copyright © AvaloniaUI 2022</Copyright>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Avalonia.Controls.TreeDataGrid</PackageId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.10"/>
+    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"/>
   </ItemGroup>
 </Project>

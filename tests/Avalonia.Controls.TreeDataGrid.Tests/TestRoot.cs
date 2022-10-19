@@ -27,7 +27,9 @@ namespace Avalonia.Controls.TreeDataGridTests
         public double LayoutScaling { get; set; } = 1;
         public ILayoutManager LayoutManager { get; set; }
         public double RenderScaling => 1;
+#pragma warning disable CS8766
         public IRenderer? Renderer { get; set; }
+#pragma warning restore CS8766
         public IAccessKeyHandler AccessKeyHandler => throw new NotImplementedException();
         public IKeyboardNavigationHandler KeyboardNavigationHandler => throw new NotImplementedException();
         public IInputElement? PointerOverElement { get; set; }

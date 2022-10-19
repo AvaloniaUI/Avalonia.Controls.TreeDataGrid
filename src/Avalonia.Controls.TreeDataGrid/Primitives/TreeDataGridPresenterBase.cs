@@ -222,7 +222,10 @@ namespace Avalonia.Controls.Primitives
             _getArgs.Index = index;
             _getArgs.Parent = parent;
 
-            return _elementFactory!.GetElement(_getArgs);
+            var result = _elementFactory!.GetElement(_getArgs);
+            _getArgs.Data = null;
+            _getArgs.Parent = null;
+            return result;
         }
 
         protected virtual (int index, double position) GetElementAt(double position) => (-1, -1);
@@ -485,16 +488,21 @@ namespace Avalonia.Controls.Primitives
             var c = this.GetVisualParent();
             var viewport = new Rect();
 
-            while (c is object)
+            if (c is null)
             {
-                if (!c.Bounds.IsEmpty && c?.TransformToVisual(this) is Matrix transform)
+                return viewport;
+            }
+
+            while (c is not null)
+            {
+                if (!c.Bounds.IsEmpty && c.TransformToVisual(this) is Matrix transform)
                 {
                     viewport = new Rect(0, 0, c.Bounds.Width, c.Bounds.Height)
                         .TransformToAABB(transform);
                     break;
                 }
 
-                c = c.GetVisualParent();
+                c = c?.GetVisualParent();
             }
 
 
@@ -513,6 +521,8 @@ namespace Avalonia.Controls.Primitives
             _recycleArgs.Element = element;
             _recycleArgs.Parent = this;
             ElementFactory!.RecycleElement(_recycleArgs);
+            _recycleArgs.Element = null;
+            _recycleArgs.Parent = null;
         }
 
         private void RecycleElementsAfter(int index)

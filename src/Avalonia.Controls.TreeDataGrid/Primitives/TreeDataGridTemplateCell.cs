@@ -54,16 +54,21 @@ namespace Avalonia.Controls.Primitives
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
+            var cell = DataContext as TemplateCell;
 
-            // If DataContext is null, we're unrealized. Don't clear the content and content template
-            // for unrealized cells because this will mean that when the cell is realized again the
-            // template will need to be rebuilt, slowing everything down.
-            if (DataContext is TemplateCell cell)
+            // If DataContext is null, we're unrealized. Don't clear the content template for unrealized
+            // cells because this will mean that when the cell is realized again the template will need
+            // to be rebuilt, slowing everything down.
+            if (cell is not null)
             {
                 Content = cell.Value;
 
                 if (((ILogical)this).IsAttachedToLogicalTree)
                     ContentTemplate = cell.GetCellTemplate(this);
+            }
+            else
+            {
+                Content = null;
             }
         }
     }

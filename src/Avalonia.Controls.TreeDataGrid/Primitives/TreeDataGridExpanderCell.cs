@@ -81,7 +81,7 @@ namespace Avalonia.Controls.Primitives
         public override void Unrealize()
         {
             if (_model is INotifyPropertyChanged inpc)
-                inpc.PropertyChanged += ModelPropertyChanged;
+                inpc.PropertyChanged -= ModelPropertyChanged;
             _model = null;
             base.Unrealize();
             if (_factory is object)
@@ -111,6 +111,8 @@ namespace Avalonia.Controls.Primitives
                     _getArgs.Index = ColumnIndex;
 
                     var element = factory.GetElement(_getArgs);
+
+                    _getArgs.Data = null;
 
                     element.IsVisible = true;
                     _contentContainer.Child = element;

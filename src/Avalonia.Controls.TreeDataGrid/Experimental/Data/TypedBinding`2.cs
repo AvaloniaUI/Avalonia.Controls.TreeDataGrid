@@ -150,7 +150,7 @@ namespace Avalonia.Experimental.Data
             // TypedBinding.DataContext_Binding_Should_Produce_Correct_Results.
             if (targetIsDataContext && !fallback.HasValue)
             {
-                fallback = new Optional<TOut>(default);
+                fallback = new Optional<TOut>(default!);
             }
 
             return Instance(root, mode, fallback);

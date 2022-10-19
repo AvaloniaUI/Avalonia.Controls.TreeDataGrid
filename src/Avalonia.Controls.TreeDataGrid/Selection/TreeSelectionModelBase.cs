@@ -285,13 +285,14 @@ namespace Avalonia.Controls.Selection
             }
 
             // Shift or clear the selected and anchor indexes according to the shift index/delta.
+            var hadSelection = _selectedIndex != default;
             var selectedIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _selectedIndex);
             var anchorIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _anchorIndex);
             var selectedItemChanged = false;
 
             // Check that the selected index is still selected in the node. It can get
             // unselected as the result of a replace operation.
-            if (_selectedIndex != default && !IsSelected(_selectedIndex))
+            if (hadSelection && !IsSelected(_selectedIndex))
             {
                 _selectedIndex = GetFirstSelectedIndex(_root);
                 selectedIndexChanged = selectedItemChanged = true;
@@ -304,7 +305,8 @@ namespace Avalonia.Controls.Selection
                 _untypedSelectionChanged?.Invoke(this, e);
             }
 
-            Count += (raiseIndexesChanged ? shiftDelta : 0) - (removed?.Count ?? 0);
+            if (removed?.Count > 0)
+                Count -= removed.Count;
 
             if (selectedIndexChanged)
                 RaisePropertyChanged(nameof(SelectedIndex));
@@ -320,7 +322,7 @@ namespace Avalonia.Controls.Selection
                 OnSourceCollectionChangeFinished();
         }
 
-        protected internal virtual void OnNodeCollectionReset(IndexPath parentIndex)
+        protected internal virtual void OnNodeCollectionReset(IndexPath parentIndex, int removeCount)
         {
             var selectedIndexChanged = false;
             var anchorIndexChanged = false;
@@ -334,6 +336,7 @@ namespace Avalonia.Controls.Selection
                 selectedIndexChanged = selectedItemChanged = true;
             }
 
+            Count -= removeCount;
             SourceReset?.Invoke(this, new TreeSelectionModelSourceResetEventArgs(parentIndex));
 
             if (selectedIndexChanged)

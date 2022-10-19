@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -26,15 +27,24 @@ namespace TreeDataGridDemo.ViewModels
         public FilesPageViewModel()
         {
             Drives = DriveInfo.GetDrives().Select(x => x.Name).ToList();
-            _selectedDrive = "C:\\";
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                _selectedDrive = "C:\\";
+            }
+            else
+            {
+                _selectedDrive = Drives.FirstOrDefault() ?? "/";
+            }
 
             Source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(Array.Empty<FileTreeNodeModel>())
             {
                 Columns =
                 {
-                    new TemplateColumn<FileTreeNodeModel>(
+                    new CheckBoxColumn<FileTreeNodeModel>(
                         null,
-                        "CheckBoxCell",
+                        x => x.IsChecked,
+                        (o, v) => o.IsChecked = v,
                         options: new ColumnOptions<FileTreeNodeModel>
                         {
                             CanUserResizeColumn = false,
@@ -48,9 +58,13 @@ namespace TreeDataGridDemo.ViewModels
                             {
                                 CompareAscending = FileTreeNodeModel.SortAscending(x => x.Name),
                                 CompareDescending = FileTreeNodeModel.SortDescending(x => x.Name),
-                            }),
+                            })
+                        {
+                            IsTextSearchEnabled = true,
+                            TextSearchValueSelector = x => x.Name
+                        },
                         x => x.Children,
-                        x => x.IsDirectory,
+                        x => x.HasChildren,
                         x => x.IsExpanded),
                     new TextColumn<FileTreeNodeModel, long?>(
                         "Size",
@@ -104,7 +118,7 @@ namespace TreeDataGridDemo.ViewModels
             {
                 if (s_iconConverter is null)
                 {
-                    var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                    var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
                     using (var fileStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
                     using (var folderStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
@@ -133,7 +147,7 @@ namespace TreeDataGridDemo.ViewModels
             var path = value;
             var components = new Stack<string>();
             DirectoryInfo? d = null;
-           
+
             if (File.Exists(path))
             {
                 var f = new FileInfo(path);
@@ -182,7 +196,7 @@ namespace TreeDataGridDemo.ViewModels
         {
             var selectedPath = Source.RowSelection?.SelectedItem?.Path;
             this.RaiseAndSetIfChanged(ref _selectedPath, selectedPath, nameof(SelectedPath));
-            
+
             foreach (var i in e.DeselectedItems)
                 System.Diagnostics.Trace.WriteLine($"Deselected '{i?.Path}'");
             foreach (var i in e.SelectedItems)

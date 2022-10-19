@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TreeDataGridColumnHeadersPresenter : TreeDataGridColumnarPresenterBase<IColumn>
+    public class TreeDataGridColumnHeadersPresenter : TreeDataGridColumnarPresenterBase<IColumn>, IChildIndexProvider
     {
+        public event EventHandler<ChildIndexChangedEventArgs>? ChildIndexChanged;
+
         protected override Orientation Orientation => Orientation.Horizontal;
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -24,28 +28,31 @@ namespace Avalonia.Controls.Primitives
         protected override void RealizeElement(IControl element, IColumn column, int index)
         {
             ((TreeDataGridColumnHeader)element).Realize((IColumns)Items!, index);
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
         protected override void UpdateElementIndex(IControl element, int index)
         {
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
         protected override void UnrealizeElement(IControl element)
         {
             ((TreeDataGridColumnHeader)element).Unrealize();
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == ItemsProperty)
             {
-                var oldValue = change.OldValue.GetValueOrDefault<IColumns>();
-                var newValue = change.NewValue.GetValueOrDefault<IColumns>();
+                var oldValue = change.GetOldValue<IReadOnlyList<IColumn>?>();
+                var newValue = change.GetNewValue<IReadOnlyList<IColumn>?>();
 
-                if (oldValue is object)
-                    oldValue.LayoutInvalidated -= OnColumnLayoutInvalidated;
-                if (newValue is object)
-                    newValue.LayoutInvalidated += OnColumnLayoutInvalidated;
+                if (oldValue is IColumns oldColumns)
+                    oldColumns.LayoutInvalidated -= OnColumnLayoutInvalidated;
+                if (newValue is IColumns newColumns)
+                    newColumns.LayoutInvalidated += OnColumnLayoutInvalidated;
             }
 
             base.OnPropertyChanged(change);
@@ -54,6 +61,27 @@ namespace Avalonia.Controls.Primitives
         private void OnColumnLayoutInvalidated(object? sender, EventArgs e)
         {
             InvalidateMeasure();
+        }
+
+        public int GetChildIndex(ILogical child)
+        {
+            if (child is TreeDataGridColumnHeader header)
+            {
+                return header.ColumnIndex;
+            }
+            return -1;
+        }
+
+        public bool TryGetTotalCount(out int count)
+        {
+            if (Items is null)
+            {
+                count = 0;
+                return false;
+            }
+
+            count = Items.Count;
+            return true;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                     {
                         Setters =
                         {
-                            new Setter(TreeDataGridRow.BackgroundProperty,new SolidColorBrush(Color.Parse("Red"))),
+                            new Setter(TreeDataGridRow.BackgroundProperty,new SolidColorBrush(Colors.Red)),
                         }
                     }
                 });
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             int CountEvenRedRows(TreeDataGridRowsPresenter presenter)
             {
                 return target.GetVisualChildren().Cast<TreeDataGridRow>().Select(x => x.Background)
-                                             .Where((x, i) => (i + 1) % 2 == 0 && x is SolidColorBrush brush && brush.Color == Color.Parse("Red")).Count();
+                    .Where(x => x is SolidColorBrush brush && brush.Color == Colors.Red).Count();
             }
 
             Assert.True(CountEvenRedRows(target) == 5);
@@ -477,7 +477,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         {
             Assert.NotNull(target);
 
-            var rowIndexes = target.GetLogicalChildren()
+            var rowIndexes = target!.GetLogicalChildren()
                 .Cast<TreeDataGridRow>()
                 .Where(x => x.IsVisible)
                 .Select(x => x.RowIndex)
@@ -504,7 +504,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         {
             Assert.NotNull(target);
 
-            var recyclableRows = target.GetLogicalChildren()
+            var recyclableRows = target!.GetLogicalChildren()
                 .Cast<TreeDataGridRow>()
                 .Where(x => !x.IsVisible)
                 .ToList();
@@ -582,8 +582,8 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
         private static void Layout(TreeDataGridRowsPresenter target)
         {
-            var root = (ILayoutRoot)target.GetVisualRoot();
-            root.LayoutManager.ExecuteLayoutPass();
+            var root = (ILayoutRoot?)target.GetVisualRoot();
+            root?.LayoutManager.ExecuteLayoutPass();
         }
 
         private static IDisposable App()

@@ -125,7 +125,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 if (!column.Width.IsStar)
                 {
                     invalidated |= column.CommitActualWidth();
-                    availableSpace -= column.ActualWidth;
+                    availableSpace -= NotNaN(column.ActualWidth);
                 }
                 else
                     totalStars += column.Width.Value;

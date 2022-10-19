@@ -15,6 +15,7 @@ namespace TreeDataGridDemo.Models
         private DateTimeOffset? _modified;
         private FileSystemWatcher? _watcher;
         private ObservableCollection<FileTreeNodeModel>? _children;
+        private bool _hasChildren = true;
         private bool _isExpanded;
 
         public FileTreeNodeModel(
@@ -26,6 +27,7 @@ namespace TreeDataGridDemo.Models
             _name = isRoot ? path : System.IO.Path.GetFileName(Path);
             _isExpanded = isRoot;
             IsDirectory = isDirectory;
+            HasChildren = isDirectory;
 
             if (!isDirectory)
             {
@@ -57,6 +59,12 @@ namespace TreeDataGridDemo.Models
         {
             get => _modified;
             private set => this.RaiseAndSetIfChanged(ref _modified, value);
+        }
+
+        public bool HasChildren
+        {
+            get => _hasChildren;
+            private set => this.RaiseAndSetIfChanged(ref _hasChildren, value);
         }
 
         public bool IsExpanded
@@ -100,6 +108,9 @@ namespace TreeDataGridDemo.Models
             _watcher.Deleted += OnDeleted;
             _watcher.Renamed += OnRenamed;
             _watcher.EnableRaisingEvents = true;
+
+            if (result.Count == 0)
+                HasChildren = false;
 
             return result;
         }

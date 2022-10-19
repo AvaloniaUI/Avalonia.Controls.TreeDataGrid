@@ -141,6 +141,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             (cell as IDisposable)?.Dispose();
         }
 
+        public int GetParentRowIndex(IndexPath modelIndex)
+        {
+            return ModelIndexToRowIndex(modelIndex[..^1]);
+        }
+
         public int ModelIndexToRowIndex(IndexPath modelIndex)
         {
             if (modelIndex == default)
