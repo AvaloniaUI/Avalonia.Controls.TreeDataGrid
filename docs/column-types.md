@@ -77,9 +77,7 @@ new TemplateColumn<Person>("Selected", "CheckBoxCell");
 
 `TemplateColumn` has only one generic parameter, it is your model type, same as in `TextColumn`, Person in this case. Code above will create a column with header *"Selected"* and `CheckBox` in each cell.
 
-![image](https://user-images.githubusercontent.com/53405089/157664231-8653bce9-f8d6-4fbc-8e78-e3ff93f1ace2.png)
-
-`TemplateColumn` has only two required parameters. The first one is the column header as everywhere. The second is either:
+`TemplateColumn` has two required parameters. The first one is the column header as everywhere. The second is either:
 
 1. An `IDataTemplate`; a template that contains stuff that you want to be displayed in the cells of this column.
 2. The key of a template defined in a XAML resource.
