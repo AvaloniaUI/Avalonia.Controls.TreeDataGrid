@@ -57,11 +57,6 @@
         <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}">
           <TreeDataGrid.Resources>
             
-              <!-- Template for checkbox column cells -->
-            <DataTemplate x:Key="CheckBoxCell" DataType="m:FileTreeNodeModel">
-              <CheckBox IsChecked="{Binding IsChecked}" MinWidth="0"/>
-            </DataTemplate>
-            
               <!-- Template for Name column cells -->
             <DataTemplate x:Key="FileNameCell" DataType="m:FileTreeNodeModel">
               <StackPanel Orientation="Horizontal">
