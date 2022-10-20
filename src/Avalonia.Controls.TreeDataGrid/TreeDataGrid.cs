@@ -92,6 +92,7 @@ namespace Avalonia.Controls
         private IControl? _userSortColumn;
         private ListSortDirection _userSortDirection;
         private TreeDataGridCellEventArgs? _cellArgs;
+        private TreeDataGridRowEventArgs? _rowArgs;
         private Border? _dragAdorner;
         private DispatcherTimer? _autoScrollTimer;
         private bool _autoScrollDirection;
@@ -211,7 +212,9 @@ namespace Avalonia.Controls
 
         public event EventHandler<TreeDataGridCellEventArgs>? CellClearing;
         public event EventHandler<TreeDataGridCellEventArgs>? CellPrepared;
-        
+        public event EventHandler<TreeDataGridRowEventArgs>? RowClearing;
+        public event EventHandler<TreeDataGridRowEventArgs>? RowPrepared;
+
         public event EventHandler<TreeDataGridRowDragStartedEventArgs>? RowDragStarted
         {
             add => AddHandler(RowDragStartedEvent, value!);
@@ -390,6 +393,28 @@ namespace Avalonia.Controls
                 _cellArgs.Update(cell, columnIndex, rowIndex);
                 CellPrepared(this, _cellArgs);
                 _cellArgs.Update(null, -1, -1);
+            }
+        }
+
+        internal void RaiseRowClearing(TreeDataGridRow row, int rowIndex)
+        {
+            if (RowClearing is not null)
+            {
+                _rowArgs ??= new TreeDataGridRowEventArgs();
+                _rowArgs.Update(row, rowIndex);
+                RowClearing(this, _rowArgs);
+                _rowArgs.Update(null, -1);
+            }
+        }
+
+        internal void RaiseRowPrepared(TreeDataGridRow row, int rowIndex)
+        {
+            if (RowPrepared is not null)
+            {
+                _rowArgs ??= new TreeDataGridRowEventArgs();
+                _rowArgs.Update(row, rowIndex);
+                RowPrepared(this, _rowArgs);
+                _rowArgs.Update(null, -1);
             }
         }
 
