@@ -132,9 +132,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                         new[]
                         {
                             Size.Infinity,
-                            new Size(0, 10),
+                            new Size(0, double.PositiveInfinity),
                             Size.Infinity,
-                            new Size(50, 10),
+                            new Size(50, double.PositiveInfinity),
                         },
                         cell!.MeasureConstraints);
                 }
@@ -144,7 +144,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                         new[]
                         {
                             Size.Infinity,
-                            new Size(50, 10),
+                            new Size(50, double.PositiveInfinity),
                         },
                         cell!.MeasureConstraints);
                 }

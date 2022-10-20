@@ -199,7 +199,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="index">The index of the element.</param>
         /// <param name="availableSize">The available size.</param>
         /// <returns>
-        /// The measure constraint for the element. The constraint must not contain infinity values.
+        /// The measure constraint for the element.
         /// </returns>
         /// <see cref="GetInitialConstraint(IControl, int, Size)"/>
         protected virtual Size GetFinalConstraint(
@@ -293,6 +293,10 @@ namespace Avalonia.Controls.Primitives
                         var index = _measureElements.FirstModelIndex + i;
                         var constraint = GetFinalConstraint(e, index, availableSize);
                         e.Measure(constraint);
+                        viewport.measuredV = Math.Max(
+                            viewport.measuredV, 
+                            Orientation == Orientation.Horizontal ? 
+                                e.DesiredSize.Height : e.DesiredSize.Width);
                     }
                 }
             }
