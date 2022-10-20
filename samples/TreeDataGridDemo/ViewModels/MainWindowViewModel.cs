@@ -4,6 +4,7 @@
     {
         private CountriesPageViewModel? _countries;
         private FilesPageViewModel? _files;
+        private WikipediaPageViewModel? _wikipedia;
         private DragDropPageViewModel? _dragDrop;
 
         public CountriesPageViewModel Countries
@@ -14,6 +15,11 @@
         public FilesPageViewModel Files
         {
             get => _files ??= new FilesPageViewModel();
+        }
+
+        public WikipediaPageViewModel Wikipedia
+        {
+            get => _wikipedia ??= new WikipediaPageViewModel();
         }
 
         public DragDropPageViewModel DragDrop

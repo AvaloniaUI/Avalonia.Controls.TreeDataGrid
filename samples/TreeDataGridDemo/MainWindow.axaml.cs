@@ -7,7 +7,6 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using TreeDataGridDemo.Models;
 using TreeDataGridDemo.ViewModels;
 
