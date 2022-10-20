@@ -27,11 +27,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public TextCell(
             ISubject<BindingValue<T>> binding,
             bool isReadOnly,
-            TextTrimming textTrimming)
+            TextTrimming textTrimming,
+            TextWrapping textWrapping)
         {
             _binding = binding;
             IsReadOnly = isReadOnly;
             TextTrimming = textTrimming;
+            TextWrapping = textWrapping;
 
             _subscription = binding.Subscribe(x =>
             {
@@ -43,6 +45,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public bool CanEdit => !IsReadOnly;
         public bool IsReadOnly { get; }
         public TextTrimming TextTrimming { get; }
+        public TextWrapping TextWrapping { get; }
 
         public T? Value
         {
