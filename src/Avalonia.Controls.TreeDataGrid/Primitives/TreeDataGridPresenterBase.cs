@@ -2,12 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
-using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using CollectionExtensions = Avalonia.Controls.Models.TreeDataGrid.CollectionExtensions;
 
@@ -269,7 +269,7 @@ namespace Avalonia.Controls.Primitives
 
             // Recycle elements outside of the expected range.
             RecycleElementsBefore(viewport.firstIndex);
-            RecycleElementsAfter(viewport.estimatedLastIndex);
+            RecycleElementsAfter(viewport.lastIndex);
 
             // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
             // write to _realizedElements yet, only _measureElements.
@@ -323,6 +323,11 @@ namespace Avalonia.Controls.Primitives
             var index = viewport.firstIndex;
             var u = viewport.startU;
 
+            // The layout is likely invalid. Don't create any elements and instead rely on our previous
+            // element size estimates to calculate a new desired size and trigger a new layout pass.
+            if (index >= Items.Count)
+                return;
+
             do
             {
                 var e = GetOrCreateElement(index);
@@ -350,6 +355,8 @@ namespace Avalonia.Controls.Primitives
                 if (e is object)
                 {
                     var sizeU = _realizedElements.SizeU[i];
+                    Debug.Assert(!double.IsNaN(sizeU));
+                    
                     var rect = orientation == Orientation.Horizontal ?
                         new Rect(u, 0, sizeU, finalSize.Height) :
                         new Rect(0, u, finalSize.Width, sizeU);
@@ -396,10 +403,9 @@ namespace Avalonia.Controls.Primitives
             var viewportStart = Orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
             var viewportEnd = Orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
 
-            var (firstIndex, firstIndexU) = GetElementAt(viewportStart);
-            var (lastIndex, _) = GetElementAt(viewportEnd);
+            var (firstIndex, firstIndexU) = GetOrCalculateElementAt(viewportStart);
+            var (lastIndex, _) = GetOrCalculateElementAt(viewportEnd);
             var estimatedElementSize = -1.0;
-            var itemCount = Items?.Count ?? 0;
 
             if (firstIndex == -1)
             {
@@ -417,12 +423,18 @@ namespace Avalonia.Controls.Primitives
 
             return new MeasureViewport
             {
-                firstIndex = MathUtilities.Clamp(firstIndex, 0, itemCount - 1),
-                estimatedLastIndex = MathUtilities.Clamp(lastIndex, 0, itemCount - 1),
+                firstIndex = firstIndex,
+                lastIndex = lastIndex,
                 viewportUStart = viewportStart,
                 viewportUEnd = viewportEnd,
                 startU = firstIndexU,
             };
+        }
+
+        private (int index, double position) GetOrCalculateElementAt(double position)
+        {
+            var (i, p) = GetElementAt(position);
+            return i >= 0 ? (i, p) : _realizedElements.GetModelIndexAt(position);
         }
 
         private IControl GetOrCreateElement(int index)
@@ -463,24 +475,10 @@ namespace Avalonia.Controls.Primitives
 
         private double EstimateElementSizeU()
         {
-            var count = _realizedElements.Count;
-            var divisor = 0.0;
-            var total = 0.0;
-
-            for (var i = 0; i < count; ++i)
-            {
-                if (_realizedElements.Elements[i] is object)
-                {
-                    total += _realizedElements.SizeU[i];
-                    ++divisor;
-                }
-            }
-
-            if (divisor == 0 || total == 0)
-                return _lastEstimatedElementSizeU;
-
-            _lastEstimatedElementSizeU = total / divisor;
-            return _lastEstimatedElementSizeU;
+            var result = _realizedElements.EstimateElementSizeU();
+            if (result >= 0)
+                _lastEstimatedElementSizeU = result;
+            return _lastEstimatedElementSizeU;    
         }
 
         private Rect EstimateViewport()
@@ -637,7 +635,7 @@ namespace Avalonia.Controls.Primitives
         private struct MeasureViewport
         {
             public int firstIndex;
-            public int estimatedLastIndex;
+            public int lastIndex;
             public double viewportUStart;
             public double viewportUEnd;
             public double measuredV;

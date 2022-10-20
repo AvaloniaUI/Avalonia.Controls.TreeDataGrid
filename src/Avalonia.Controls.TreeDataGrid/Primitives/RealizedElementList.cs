@@ -13,6 +13,7 @@ namespace Avalonia.Controls.Primitives
         private List<IControl?>? _elements;
         private List<double>? _sizes;
         private double _startU;
+        private bool _startUUnstable;
 
         /// <summary>
         /// Gets the number of realized elements.
@@ -98,6 +99,38 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets the model index and start U position of the element at the specified U position.
+        /// </summary>
+        /// <param name="u">The U position.</param>
+        /// <returns>
+        /// A tuple containing:
+        /// - The index of the item at the specified U position, or -1 if the item could not be
+        ///   determined
+        /// - The U position of the start of the item, if determined
+        /// </returns>
+        public (int index, double position) GetModelIndexAt(double u)
+        {
+            if (_elements is null || _sizes is null || _startU > u || _startUUnstable)
+                return (-1, 0);
+
+            var index = 0;
+            var position = _startU;
+
+            while (index < _elements.Count)
+            {
+                var size = _sizes[index];
+                if (double.IsNaN(size))
+                    break;
+                if (u >= position && u < position + size)
+                    return (index + FirstModelIndex, position);
+                position += size;
+                ++index;
+            }
+
+            return (-1, 0);
+        }
+
+        /// <summary>
         /// Updates the elements in response to items being inserted into the source collection.
         /// </summary>
         /// <param name="modelIndex">The index in the source collection of the insert.</param>
@@ -137,7 +170,7 @@ namespace Avalonia.Controls.Primitives
                     // The insertion point was within the realized elements, insert an empty space
                     // in _elements and _sizes.
                     _elements!.InsertMany(index, null, count);
-                    _sizes!.InsertMany(index, 0.0, count);
+                    _sizes!.InsertMany(index, double.NaN, count);
                 }
             }
         }
@@ -194,9 +227,13 @@ namespace Avalonia.Controls.Primitives
                 _sizes!.RemoveRange(start, end - start);
 
                 // If the remove started before and ended within our realized elements, then our new
-                // first index will be the index where the remove started.
+                // first index will be the index where the remove started. Mark StartU as unstable
+                // because we can't rely on it now to estimate element heights.
                 if (startIndex <= 0 && end < last)
+                {
                     _firstIndex = first = modelIndex;
+                    _startUUnstable = true;
+                }
 
                 // Update the indexes of the elements after the removed range.
                 end = _elements.Count;
@@ -294,8 +331,48 @@ namespace Avalonia.Controls.Primitives
         public void ResetForReuse()
         {
             _startU = _firstIndex = 0;
+            _startUUnstable = false;
             _elements?.Clear();
             _sizes?.Clear();
+        }
+
+        /// <summary>
+        /// Estimates the average U size of all elements in the source collection based on the
+        /// realized elements.
+        /// </summary>
+        /// <returns>
+        /// The estimated U size of an element, or -1 if not enough information is present to make
+        /// an estimate.
+        /// </returns>
+        public double EstimateElementSizeU()
+        {
+            var total = 0.0;
+            var divisor = 0.0;
+
+            // Start by averaging the size of the elements before the first realized element.
+            if (FirstModelIndex >= 0 && !_startUUnstable)
+            {
+                total += _startU;
+                divisor += FirstModelIndex;
+            }
+
+            // Average the size of the realized elements.
+            if (_sizes is not null)
+            {
+                foreach (var size in _sizes)
+                {
+                    if (double.IsNaN(size))
+                        continue;
+                    total += size;
+                    ++divisor;
+                }
+            }
+            
+            // We don't have any elements on which to base our estimate.
+            if (divisor == 0 || total == 0)
+                return -1;
+
+            return total / divisor;
         }
     }
 }
