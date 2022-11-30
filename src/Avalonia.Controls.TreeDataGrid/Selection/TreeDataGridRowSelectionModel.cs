@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -189,19 +190,29 @@ namespace Avalonia.Controls.Selection
         void ITreeDataGridSelectionInteraction.OnPreviewKeyDown(TreeDataGrid sender, KeyEventArgs e)
         {
 
-            static bool IsElementFullyVisibleToUser(TransformedBounds controlBounds)
+            static bool IsRowFullyVisibleToUser(TreeDataGridRow row)
             {
-                var rect = controlBounds.Bounds.TransformToAABB(controlBounds.Transform);
-                // Round rect.Bottom because sometimes it's value isn't precise.
-                return controlBounds.Clip.Contains(rect.TopLeft) &&
-                    controlBounds.Clip.Contains(new Point(rect.BottomRight.X, Math.Round(rect.BottomRight.Y, 5, MidpointRounding.ToZero)));
+                var scrollContentPresenter = row.FindAncestorOfType<ScrollContentPresenter>();
+                if (scrollContentPresenter != null)
+                {
+                    var transform = row.TransformToVisual(scrollContentPresenter);
+                    if (transform != null)
+                    {
+                        var transformedBounds = new Rect(row.Bounds.Size).TransformToAABB((Matrix)transform);
+                        if (scrollContentPresenter.Bounds.Contains(transformedBounds.TopLeft) && scrollContentPresenter.Bounds.Contains(transformedBounds.BottomRight))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+
             }
 
             static bool GetRowIndexIfFullyVisible(IControl? control, out int index)
             {
                 if (control is TreeDataGridRow row &&
-                    row.TransformedBounds != null &&
-                    IsElementFullyVisibleToUser(row.TransformedBounds.Value))
+                    IsRowFullyVisibleToUser(row))
                 {
                     index = row.RowIndex;
                     return true;
@@ -240,8 +251,7 @@ namespace Avalonia.Controls.Selection
                         if (isIndexSet &&
                             SelectedIndex[0] != newIndex &&
                             sender.TryGetRow(SelectedIndex[0]) is TreeDataGridRow row &&
-                            row.TransformedBounds != null &&
-                            IsElementFullyVisibleToUser(row.TransformedBounds.Value))
+                            IsRowFullyVisibleToUser(row))
                         {
                             UpdateSelectionAndBringIntoView(newIndex);
                             return;
@@ -266,11 +276,10 @@ namespace Avalonia.Controls.Selection
                                 break;
                             }
                         }
-                        if (isIndexSet && 
-                            SelectedIndex[0] != newIndex && 
+                        if (isIndexSet &&
+                            SelectedIndex[0] != newIndex &&
                             sender.TryGetRow(SelectedIndex[0]) is TreeDataGridRow row &&
-                            row.TransformedBounds != null &&
-                            IsElementFullyVisibleToUser(row.TransformedBounds.Value))
+                            IsRowFullyVisibleToUser(row))
                         {
                             UpdateSelectionAndBringIntoView(newIndex);
                             return;
@@ -333,7 +342,7 @@ namespace Avalonia.Controls.Selection
 
         void ITreeDataGridSelectionInteraction.OnPointerReleased(TreeDataGrid sender, PointerReleasedEventArgs e)
         {
-            if (!e.Handled && 
+            if (!e.Handled &&
                 _pressedPoint != s_InvalidPoint &&
                 e.Source is IControl source &&
                 sender.TryGetRow(source, out var row))
