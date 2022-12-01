@@ -237,6 +237,15 @@ namespace Avalonia.Controls.Selection
                 {
                     var newIndex = 0;
                     var isIndexSet = false;
+                    int selectedIndex;
+                    if (sender.Rows is HierarchicalRows<TModel> rows)
+                    {
+                        selectedIndex = rows.ModelIndexToRowIndex(SelectedIndex);
+                    }
+                    else
+                    {
+                        selectedIndex = SelectedIndex[0];
+                    }
                     if (e.Key == Key.PageDown)
                     {
                         for (int i = childrenCount - 1; i >= 0; i--)
@@ -249,16 +258,16 @@ namespace Avalonia.Controls.Selection
                             }
                         }
                         if (isIndexSet &&
-                            SelectedIndex[0] != newIndex &&
-                            sender.TryGetRow(SelectedIndex[0]) is TreeDataGridRow row &&
+                            selectedIndex != newIndex &&
+                            sender.TryGetRow(selectedIndex) is TreeDataGridRow row &&
                             IsRowFullyVisibleToUser(row))
                         {
                             UpdateSelectionAndBringIntoView(newIndex);
                             return;
                         }
-                        else if (childrenCount + SelectedIndex[0] - 1 <= sender.RowsPresenter.Items.Count)
+                        else if (childrenCount + selectedIndex - 1 <= sender.RowsPresenter.Items.Count)
                         {
-                            newIndex = childrenCount + SelectedIndex[0] - 2;
+                            newIndex = childrenCount + selectedIndex - 2;
                         }
                         else
                         {
@@ -277,16 +286,16 @@ namespace Avalonia.Controls.Selection
                             }
                         }
                         if (isIndexSet &&
-                            SelectedIndex[0] != newIndex &&
-                            sender.TryGetRow(SelectedIndex[0]) is TreeDataGridRow row &&
+                            selectedIndex != newIndex &&
+                            sender.TryGetRow(selectedIndex) is TreeDataGridRow row &&
                             IsRowFullyVisibleToUser(row))
                         {
                             UpdateSelectionAndBringIntoView(newIndex);
                             return;
                         }
-                        else if (isIndexSet && SelectedIndex[0] - childrenCount + 2 > 0)
+                        else if (isIndexSet && selectedIndex - childrenCount + 2 > 0)
                         {
-                            newIndex = SelectedIndex[0] - childrenCount + 2;
+                            newIndex = selectedIndex - childrenCount + 2;
                         }
                         else
                         {
