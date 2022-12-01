@@ -177,7 +177,7 @@
             <Border DockPanel.Dock="Left"
                     Margin="4 0"
                     Width="12" Height="12">
-              <ToggleButton Theme="{StaticResource FluentTreeViewExpandCollapseChevron}"
+              <ToggleButton Classes="ExpandCollapseChevron"
                             Focusable="False"
                             IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
                             IsVisible="{TemplateBinding ShowExpander}"/>

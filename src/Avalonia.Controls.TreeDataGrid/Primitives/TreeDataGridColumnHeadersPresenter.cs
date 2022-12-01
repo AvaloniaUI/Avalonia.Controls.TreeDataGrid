@@ -42,17 +42,17 @@ namespace Avalonia.Controls.Primitives
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             if (change.Property == ItemsProperty)
             {
-                var oldValue = change.GetOldValue<IReadOnlyList<IColumn>?>();
-                var newValue = change.GetNewValue<IReadOnlyList<IColumn>?>();
+                var oldValue = change.OldValue.GetValueOrDefault<IColumns>();
+                var newValue = change.NewValue.GetValueOrDefault<IColumns>();
 
-                if (oldValue is IColumns oldColumns)
-                    oldColumns.LayoutInvalidated -= OnColumnLayoutInvalidated;
-                if (newValue is IColumns newColumns)
-                    newColumns.LayoutInvalidated += OnColumnLayoutInvalidated;
+                if (oldValue is object)
+                    oldValue.LayoutInvalidated -= OnColumnLayoutInvalidated;
+                if (newValue is object)
+                    newValue.LayoutInvalidated += OnColumnLayoutInvalidated;
             }
 
             base.OnPropertyChanged(change);

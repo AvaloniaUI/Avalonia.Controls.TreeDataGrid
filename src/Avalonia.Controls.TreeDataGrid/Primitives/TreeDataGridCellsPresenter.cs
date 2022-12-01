@@ -117,7 +117,7 @@ namespace Avalonia.Controls.Primitives
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             base.OnPropertyChanged(change);
 

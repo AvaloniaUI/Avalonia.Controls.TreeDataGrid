@@ -128,11 +128,11 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             if (change.Property == IsSelectedProperty)
             {
-                PseudoClasses.Set(":selected", change.GetNewValue<bool>());
+                PseudoClasses.Set(":selected", change.NewValue.GetValueOrDefault<bool>());
             }
         }
 

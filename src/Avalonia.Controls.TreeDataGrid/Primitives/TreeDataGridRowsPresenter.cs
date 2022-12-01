@@ -111,12 +111,12 @@ namespace Avalonia.Controls.Primitives
             Columns?.ViewportChanged(Viewport);
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             if (change.Property == ColumnsProperty)
             {
-                var oldValue = change.GetOldValue<IColumns>();
-                var newValue = change.GetNewValue<IColumns>();
+                var oldValue = change.OldValue.GetValueOrDefault<IColumns>();
+                var newValue = change.NewValue.GetValueOrDefault<IColumns>();
 
                 if (oldValue is object)
                     oldValue.LayoutInvalidated -= OnColumnLayoutInvalidated;

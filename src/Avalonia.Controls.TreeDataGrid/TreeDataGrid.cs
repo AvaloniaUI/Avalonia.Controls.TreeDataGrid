@@ -325,13 +325,13 @@ namespace Avalonia.Controls
             _selection?.OnPreviewKeyDown(this, e);
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == AutoDragDropRowsProperty)
             {
-                DragDrop.SetAllowDrop(this, change.GetNewValue<bool>());
+                DragDrop.SetAllowDrop(this, change.NewValue.GetValueOrDefault<bool>());
             }
         }
 
