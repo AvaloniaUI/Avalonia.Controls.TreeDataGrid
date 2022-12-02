@@ -237,15 +237,7 @@ namespace Avalonia.Controls.Selection
                 {
                     var newIndex = 0;
                     var isIndexSet = false;
-                    int selectedIndex;
-                    if (sender.Rows is HierarchicalRows<TModel> rows)
-                    {
-                        selectedIndex = rows.ModelIndexToRowIndex(SelectedIndex);
-                    }
-                    else
-                    {
-                        selectedIndex = SelectedIndex[0];
-                    }
+                    int selectedIndex = sender.Rows!.ModelIndexToRowIndex(SelectedIndex);
                     if (e.Key == Key.PageDown)
                     {
                         for (int i = childrenCount - 1; i >= 0; i--)
