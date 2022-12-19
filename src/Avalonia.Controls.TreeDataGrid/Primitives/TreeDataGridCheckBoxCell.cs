@@ -8,9 +8,9 @@ namespace Avalonia.Controls.Primitives
     {
         public static readonly DirectProperty<TreeDataGridCheckBoxCell, bool> IsReadOnlyProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridCheckBoxCell, bool>(
-                nameof(IsThreeState),
-                o => o.IsThreeState,
-                (o, v) => o.IsThreeState = v);
+                nameof(IsReadOnly),
+                o => o.IsReadOnly,
+                (o, v) => o.IsReadOnly = v);
 
         public static readonly DirectProperty<TreeDataGridCheckBoxCell, bool> IsThreeStateProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridCheckBoxCell, bool>(
