@@ -47,5 +47,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets or sets a user-defined object attached to the column.
         /// </summary>
         object? Tag { get; set; }
+
+        /// <summary>
+        /// Determines whether or not this column is visible.
+        /// </summary>
+        bool IsVisible { get; set; }
     }
 }

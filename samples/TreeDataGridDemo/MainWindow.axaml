@@ -25,6 +25,18 @@
           <Button Click="AddCountryClick">Add</Button>
           <Button Command="{Binding Countries.RemoveSelected}">Remove</Button>
         </StackPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+            <TextBlock Text="Columns Visibility:"
+                        VerticalAlignment="Center"/>
+            <ComboBox Items="{Binding #countries.Columns}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox IsChecked="{Binding IsVisible}"
+                                Content="{Binding Header,FallbackValue=none}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
         <TreeDataGrid Name="countries"
                       Source="{Binding Countries.Source}"
                       AutoDragDropRows="True">

@@ -65,5 +65,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         /// <param name="viewport">The current viewport.</param>
         void ViewportChanged(Rect viewport);
+
+        /// <summary>
+        /// Signal that the columns layout has changed.
+        /// </summary>
+        void InvalidateLayout();
     }
 }

@@ -20,9 +20,12 @@ namespace Avalonia.Controls.Primitives
 
         protected override Size MeasureElement(int index, IControl element, Size availableSize)
         {
-            var columns = (IColumns)Items!;
-            element.Measure(availableSize);
-            return columns.CellMeasured(index, -1, element.DesiredSize);
+            if (Items is IColumns columns)
+            {
+                element.Measure(availableSize);
+                return columns.CellMeasured(index, -1, element.DesiredSize);
+            }
+            return Size.Empty;
         }
 
         protected override void RealizeElement(IControl element, IColumn column, int index)

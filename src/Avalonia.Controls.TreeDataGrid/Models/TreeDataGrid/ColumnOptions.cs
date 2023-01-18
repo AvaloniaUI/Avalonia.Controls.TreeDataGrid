@@ -45,5 +45,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets or sets a custom comparison for descending ordered columns.
         /// </summary>
         public Comparison<TModel?>? CompareDescending { get; set; }
+
+        /// <summary>
+        /// Determines whether or not this column is visible.
+        /// </summary>
+        public bool IsVisible { get; set; }
     }
 }
