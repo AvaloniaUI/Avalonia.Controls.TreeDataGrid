@@ -49,6 +49,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Determines whether or not this column is visible.
         /// </summary>
-        public bool IsVisible { get; set; }
+        public bool IsVisible { get; set; } = true;
     }
 }
