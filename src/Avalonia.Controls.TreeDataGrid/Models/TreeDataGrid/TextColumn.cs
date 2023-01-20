@@ -13,6 +13,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         where TModel : class
     {
         private readonly TextTrimming _textTrimming;
+        private readonly TextAlignment _textAlignment;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TextColumn{TModel, TValue}"/> class.
@@ -33,6 +34,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             : base(header, getter, null, width, options)
         {
             _textTrimming = options?.TextTrimming ?? TextTrimming.CharacterEllipsis;
+            _textAlignment = options?.TextAlignment ?? TextAlignment.Left;
         }
 
         /// <summary>
@@ -65,7 +67,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public override ICell CreateCell(IRow<TModel> row)
         {
-            return new TextCell<TValue?>(CreateBindingExpression(row.Model), Binding.Write is null, _textTrimming);
+            return new TextCell<TValue?>(CreateBindingExpression(row.Model), Binding.Write is null, _textTrimming, _textAlignment);
         }
 
         string? ITextSearchableColumn<TModel>.SelectValue(TModel model)
