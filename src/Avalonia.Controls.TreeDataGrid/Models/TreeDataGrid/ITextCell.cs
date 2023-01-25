@@ -15,6 +15,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets the cell's text alignment mode.
         /// </summary>
-        public TextAlignment TextAlignment { get; }
+        TextAlignment TextAlignment { get; }
     }
 }
