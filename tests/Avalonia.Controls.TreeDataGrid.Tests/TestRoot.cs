@@ -16,7 +16,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             IsVisible = true;
         }
 
-        public TestRoot(IControl child)
+        public TestRoot(Control child)
             : this()
         {
             Child = child;

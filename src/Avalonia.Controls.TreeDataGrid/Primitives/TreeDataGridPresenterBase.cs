@@ -13,13 +13,14 @@ using CollectionExtensions = Avalonia.Controls.Models.TreeDataGrid.CollectionExt
 
 namespace Avalonia.Controls.Primitives
 {
-    public abstract class TreeDataGridPresenterBase<TItem> : Control, IPanel, IPresenter
+    public abstract class TreeDataGridPresenterBase<TItem> : Panel, IPresenter
     {
-        public static readonly DirectProperty<TreeDataGridPresenterBase<TItem>, IElementFactory?> ElementFactoryProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGridPresenterBase<TItem>, IElementFactory?>(
-                nameof(ElementFactory),
-                o => o.ElementFactory,
-                (o, v) => o.ElementFactory = v);
+        public static readonly DirectProperty<TreeDataGridPresenterBase<TItem>, IElementFactory?>
+            ElementFactoryProperty =
+                AvaloniaProperty.RegisterDirect<TreeDataGridPresenterBase<TItem>, IElementFactory?>(
+                    nameof(ElementFactory),
+                    o => o.ElementFactory,
+                    (o, v) => o.ElementFactory = v);
 
         public static readonly DirectProperty<TreeDataGridPresenterBase<TItem>, IReadOnlyList<TItem>?> ItemsProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridPresenterBase<TItem>, IReadOnlyList<TItem>?>(
@@ -28,10 +29,10 @@ namespace Avalonia.Controls.Primitives
                 (o, v) => o.Items = v);
 
         private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
-        private readonly Action<IControl> _recycleElement;
-        private readonly Action<IControl, int> _updateElementIndex;
+        private readonly Action<Control> _recycleElement;
+        private readonly Action<Control, int> _updateElementIndex;
         private int _anchorIndex = -1;
-        private IControl? _anchorElement;
+        private Control? _anchorElement;
         private readonly Controls _children = new();
         private IElementFactory? _elementFactory;
         private ElementFactoryGetArgs? _getArgs;
@@ -81,9 +82,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        public IReadOnlyList<IControl?> RealizedElements => _realizedElements.Elements;
+        public IReadOnlyList<Control?> RealizedElements => _realizedElements.Elements;
 
-        Controls IPanel.Children => _children;
+        new Controls Children => _children;
 
         protected abstract Orientation Orientation { get; }
         protected Rect Viewport { get; private set; } = s_invalidViewport;
@@ -93,7 +94,7 @@ namespace Avalonia.Controls.Primitives
             if (_items is null || index < 0 || index >= _items.Count)
                 return;
 
-            if (GetRealizedElement(index) is IControl element)
+            if (GetRealizedElement(index) is Control element)
             {
                 element.BringIntoView();
             }
@@ -135,17 +136,17 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        public IControl? TryGetElement(int index) => GetRealizedElement(index);
+        public Control? TryGetElement(int index) => GetRealizedElement(index);
 
         internal void RecycleAllElements() => _realizedElements.RecycleAllElements(_recycleElement);
 
-        protected virtual Rect ArrangeElement(int index, IControl element, Rect rect)
+        protected virtual Rect ArrangeElement(int index, Control element, Rect rect)
         {
             element.Arrange(rect);
             return rect;
         }
 
-        protected virtual Size MeasureElement(int index, IControl element, Size availableSize)
+        protected virtual Size MeasureElement(int index, Control element, Size availableSize)
         {
             element.Measure(availableSize);
             return element.DesiredSize;
@@ -171,7 +172,7 @@ namespace Avalonia.Controls.Primitives
         ///   true.
         /// </remarks>
         protected virtual Size GetInitialConstraint(
-            IControl element,
+            Control element,
             int index,
             Size availableSize)
         {
@@ -187,10 +188,10 @@ namespace Avalonia.Controls.Primitives
         /// <returns>
         /// true if a final pass should be run; otherwise false.
         /// </returns>
-        /// <see cref="GetInitialConstraint(IControl, int, Size)"/>
+        /// <see cref="GetInitialConstraint(Control, int, Size)"/>
         protected virtual bool NeedsFinalMeasurePass(
             int firstIndex,
-            IReadOnlyList<IControl?> elements) => false;
+            IReadOnlyList<Control?> elements) => false;
 
         /// <summary>
         /// Gets the final constraint for the second pass of the two-pass measure.
@@ -201,21 +202,21 @@ namespace Avalonia.Controls.Primitives
         /// <returns>
         /// The measure constraint for the element. The constraint must not contain infinity values.
         /// </returns>
-        /// <see cref="GetInitialConstraint(IControl, int, Size)"/>
+        /// <see cref="GetInitialConstraint(Control, int, Size)"/>
         protected virtual Size GetFinalConstraint(
-            IControl element,
+            Control element,
             int index,
             Size availableSize)
         {
             return element.DesiredSize;
         }
 
-        protected virtual IControl GetElementFromFactory(TItem item, int index)
+        protected virtual Control GetElementFromFactory(TItem item, int index)
         {
             return GetElementFromFactory(item!, index, this);
         }
 
-        protected IControl GetElementFromFactory(object data, int index, IControl parent)
+        protected Control GetElementFromFactory(object data, int index, Control parent)
         {
             _getArgs ??= new ElementFactoryGetArgs();
             _getArgs.Data = data;
@@ -230,9 +231,9 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual (int index, double position) GetElementAt(double position) => (-1, -1);
         protected virtual double GetElementPosition(int index) => -1;
-        protected abstract void RealizeElement(IControl element, TItem item, int index);
-        protected abstract void UpdateElementIndex(IControl element, int index);
-        protected abstract void UnrealizeElement(IControl element);
+        protected abstract void RealizeElement(Control element, TItem item, int index);
+        protected abstract void UpdateElementIndex(Control element, int index);
+        protected abstract void UnrealizeElement(Control element);
 
         protected virtual double CalculateSizeU(Size availableSize)
         {
@@ -286,7 +287,7 @@ namespace Avalonia.Controls.Primitives
                 for (var i = 0; i < count; ++i)
                 {
                     var e = _measureElements.Elements[i]!;
-                    var previous = ((ILayoutable)e).PreviousMeasure!.Value;
+                    var previous = ((Layoutable)e).PreviousMeasure!.Value;
 
                     if (HasInfinity(previous))
                     {
@@ -301,7 +302,8 @@ namespace Avalonia.Controls.Primitives
             (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
             _measureElements.ResetForReuse();
 
-            if (_children.Count > _realizedElements.Elements.Count && _realizedElements.Elements.Count > 0 && _realizedElements.Count == Items.Count)
+            if (_children.Count > _realizedElements.Elements.Count && _realizedElements.Elements.Count > 0 &&
+                _realizedElements.Count == Items.Count)
             {
                 for (var i = _children.Count - 1; i >= _realizedElements.Elements.Count; i--)
                 {
@@ -425,7 +427,7 @@ namespace Avalonia.Controls.Primitives
             };
         }
 
-        private IControl GetOrCreateElement(int index)
+        private Control GetOrCreateElement(int index)
         {
             var e = GetRealizedElement(index) ?? GetRecycledOrCreateElement(index);
             InvalidateHack(e);
@@ -443,14 +445,14 @@ namespace Avalonia.Controls.Primitives
             return index * estimatedElementSize;
         }
 
-        private IControl? GetRealizedElement(int index)
+        private Control? GetRealizedElement(int index)
         {
             if (_anchorIndex == index)
                 return _anchorElement;
             return _realizedElements.GetElement(index);
         }
 
-        private IControl GetRecycledOrCreateElement(int index)
+        private Control GetRecycledOrCreateElement(int index)
         {
             var item = Items![index];
             var e = GetElementFromFactory(item, index);
@@ -495,7 +497,7 @@ namespace Avalonia.Controls.Primitives
 
             while (c is not null)
             {
-                if (!c.Bounds.IsEmpty && c.TransformToVisual(this) is Matrix transform)
+                if (!c.Bounds.IsDefault && c.TransformToVisual(this) is Matrix transform)
                 {
                     viewport = new Rect(0, 0, c.Bounds.Width, c.Bounds.Height)
                         .TransformToAABB(transform);
@@ -509,13 +511,13 @@ namespace Avalonia.Controls.Primitives
             return viewport;
         }
 
-        private void RecycleElement(IControl element)
+        private void RecycleElement(Control element)
         {
             UnrealizeElement(element);
             element.IsVisible = false;
 
             // Hackfix for https://github.com/AvaloniaUI/Avalonia/issues/7553
-            element.Measure(Size.Empty);
+            element.Measure(default);
 
             _recycleArgs ??= new ElementFactoryRecycleArgs();
             _recycleArgs.Element = element;
@@ -541,7 +543,7 @@ namespace Avalonia.Controls.Primitives
             {
                 foreach (var i in items)
                 {
-                    if (i is IControl c)
+                    if (i is Control c)
                     {
                         LogicalChildren.Add(c);
                         VisualChildren.Add(c);
@@ -553,7 +555,7 @@ namespace Avalonia.Controls.Primitives
             {
                 foreach (var i in items)
                 {
-                    if (i is IControl c)
+                    if (i is Control c)
                     {
                         LogicalChildren.Remove(c);
                         VisualChildren.Remove(c);
@@ -589,7 +591,8 @@ namespace Avalonia.Controls.Primitives
                     _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElement);
+                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex,
+                        _recycleElement);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     RecycleAllElements();
@@ -599,31 +602,31 @@ namespace Avalonia.Controls.Primitives
             InvalidateMeasure();
         }
 
-        private static void InvalidateHack(IControl c)
+        private static void InvalidateHack(Control c)
         {
-            bool HasInvalidations(IControl c)
+            bool HasInvalidations(Control c)
             {
                 if (!c.IsMeasureValid)
                     return true;
 
-                for (var i = 0; i < c.VisualChildren.Count; ++i)
+                // TODO: not sure if this is correct.
+                foreach (var visualChild in c.GetVisualChildren())
                 {
-                    if (c.VisualChildren[i] is IControl child)
-                    {
-                        if (!child.IsMeasureValid || HasInvalidations(child))
-                            return true;
-                    }
+                    if (visualChild is Control child && (!child.IsMeasureValid || HasInvalidations(child)))
+                        return true;
                 }
 
                 return false;
             }
 
-            void Invalidate(IControl c)
+            void Invalidate(Control c)
             {
                 c.InvalidateMeasure();
-                for (var i = 0; i < c.VisualChildren.Count; ++i)
+
+                // TODO: double check again.
+                foreach (var visualChild in c.GetVisualChildren())
                 {
-                    if (c.VisualChildren[i] is IControl child)
+                    if (visualChild is Control child)
                         Invalidate(child);
                 }
             }

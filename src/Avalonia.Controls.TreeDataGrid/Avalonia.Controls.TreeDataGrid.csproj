@@ -8,6 +8,7 @@
     <PackageId>Avalonia.Controls.TreeDataGrid</PackageId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"/>
+    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 </Project>

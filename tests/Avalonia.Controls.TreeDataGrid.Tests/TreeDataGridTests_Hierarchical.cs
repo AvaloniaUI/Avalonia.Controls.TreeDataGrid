@@ -171,7 +171,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             var instantiations = 0;
 
-            IControl Template(Model model, INameScope ns)
+            Control Template(Model model, INameScope ns)
             {
                 ++instantiations;
                 return new Border();

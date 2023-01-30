@@ -16,13 +16,13 @@ namespace Avalonia.Controls.Primitives
     {
         protected IColumns? Columns => Items as IColumns;
 
-        protected sealed override Size GetInitialConstraint(IControl element, int index, Size availableSize)
+        protected sealed override Size GetInitialConstraint(Control element, int index, Size availableSize)
         {
             var column = (IUpdateColumnLayout)Columns![index];
             return new Size(Math.Min(availableSize.Width, column.MaxActualWidth), availableSize.Height);
         }
 
-        protected sealed override bool NeedsFinalMeasurePass(int firstIndex, IReadOnlyList<IControl?> elements)
+        protected sealed override bool NeedsFinalMeasurePass(int firstIndex, IReadOnlyList<Control?> elements)
         {
             var columns = Columns!;
 
@@ -45,7 +45,7 @@ namespace Avalonia.Controls.Primitives
             return ((IColumns)Items!).GetColumnAt(position);
         }
 
-        protected sealed override Size GetFinalConstraint(IControl element, int index, Size availableSize)
+        protected sealed override Size GetFinalConstraint(Control element, int index, Size availableSize)
         {
             var column = Columns![index];
             return new(column.ActualWidth, element.DesiredSize.Height);

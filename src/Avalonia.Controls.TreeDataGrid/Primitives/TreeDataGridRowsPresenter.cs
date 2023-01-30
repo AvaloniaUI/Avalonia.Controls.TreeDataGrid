@@ -68,7 +68,7 @@ namespace Avalonia.Controls.Primitives
             return ((IRows)Items!).GetRowAt(position);
         }
 
-        protected override void RealizeElement(IControl element, IRow rowModel, int index)
+        protected override void RealizeElement(Control element, IRow rowModel, int index)
         {
             var row = (TreeDataGridRow)element;
             row.Realize(ElementFactory, Columns, (IRows?)Items, index);
@@ -76,13 +76,13 @@ namespace Avalonia.Controls.Primitives
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
-        protected override void UpdateElementIndex(IControl element, int index)
+        protected override void UpdateElementIndex(Control element, int index)
         {
             ((TreeDataGridRow)element).UpdateIndex(index);
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
-        protected override void UnrealizeElement(IControl element)
+        protected override void UnrealizeElement(Control element)
         {
             ((TreeDataGridRow)element).Unrealize();
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
@@ -153,7 +153,7 @@ namespace Avalonia.Controls.Primitives
 
         }
 
-        public bool TryGetTotalCount(out int count)
+        public new bool TryGetTotalCount(out int count)
         {
             if (Items != null)
             {

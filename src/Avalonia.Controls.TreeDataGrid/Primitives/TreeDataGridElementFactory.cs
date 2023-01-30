@@ -7,14 +7,14 @@ namespace Avalonia.Controls.Primitives
     {
         private readonly RecyclePool _recyclePool = new();
 
-        public IControl Build(object? data)
+        public Control Build(object? data)
         {
             var result = GetElement(data, null);
             result.DataContext = data;
             return result;
         }
 
-        public IControl GetElement(ElementFactoryGetArgs args) => GetElement(args.Data, args.Parent);
+        public Control GetElement(ElementFactoryGetArgs args) => GetElement(args.Data, args.Parent);
 
         public bool Match(object? data) => data is ICell;
 
@@ -26,7 +26,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected virtual IControl CreateElement(object? data)
+        protected virtual Control CreateElement(object? data)
         {
             return data switch
             {
@@ -54,16 +54,16 @@ namespace Avalonia.Controls.Primitives
             };
         }
 
-        protected virtual string GetElementRecycleKey(IControl element)
+        protected virtual string GetElementRecycleKey(Control element)
         {
             return element.GetType().FullName!;
         }
 
-        private IControl GetElement(object? data, IControl? parent)
+        private Control GetElement(object? data, Control? parent)
         {
             var recycleKey = GetDataRecycleKey(data);
 
-            if (_recyclePool.TryGetElement(recycleKey, parent) is IControl element)
+            if (_recyclePool.TryGetElement(recycleKey, parent) is Control element)
             {
                 return element;
             }

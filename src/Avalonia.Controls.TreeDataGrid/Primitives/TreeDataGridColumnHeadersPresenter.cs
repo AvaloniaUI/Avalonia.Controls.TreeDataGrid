@@ -18,25 +18,25 @@ namespace Avalonia.Controls.Primitives
             return base.ArrangeOverride(finalSize);
         }
 
-        protected override Size MeasureElement(int index, IControl element, Size availableSize)
+        protected override Size MeasureElement(int index, Control element, Size availableSize)
         {
             var columns = (IColumns)Items!;
             element.Measure(availableSize);
             return columns.CellMeasured(index, -1, element.DesiredSize);
         }
 
-        protected override void RealizeElement(IControl element, IColumn column, int index)
+        protected override void RealizeElement(Control element, IColumn column, int index)
         {
             ((TreeDataGridColumnHeader)element).Realize((IColumns)Items!, index);
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
-        protected override void UpdateElementIndex(IControl element, int index)
+        protected override void UpdateElementIndex(Control element, int index)
         {
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
-        protected override void UnrealizeElement(IControl element)
+        protected override void UnrealizeElement(Control element)
         {
             ((TreeDataGridColumnHeader)element).Unrealize();
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
@@ -72,7 +72,7 @@ namespace Avalonia.Controls.Primitives
             return -1;
         }
 
-        public bool TryGetTotalCount(out int count)
+        public new bool TryGetTotalCount(out int count)
         {
             if (Items is null)
             {

@@ -4,7 +4,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 {
     internal class TestElementFactory : TreeDataGridElementFactory
     {
-        protected override IControl CreateElement(object? data)
+        protected override Control CreateElement(object? data)
         {
             return data switch
             {

@@ -192,9 +192,9 @@ namespace Avalonia.Experimental.Data.Core
 
             var result = false;
 
-            if (o is IAvaloniaObject ao)
+            if (o is AvaloniaObject ao)
             {
-                WeakEventHandlerManager.Subscribe<IAvaloniaObject, AvaloniaPropertyChangedEventArgs, TypedBindingExpression<TIn, TOut>>(
+                WeakEventHandlerManager.Subscribe<AvaloniaObject, AvaloniaPropertyChangedEventArgs, TypedBindingExpression<TIn, TOut>>(
                     ao,
                     nameof(ao.PropertyChanged),
                     ChainPropertyChanged);
@@ -228,7 +228,7 @@ namespace Avalonia.Experimental.Data.Core
                 return;
             }
 
-            if (o is IAvaloniaObject ao)
+            if (o is AvaloniaObject ao)
             {
                 WeakEventHandlerManager.Unsubscribe<AvaloniaPropertyChangedEventArgs, TypedBindingExpression<TIn, TOut>>(
                     ao,

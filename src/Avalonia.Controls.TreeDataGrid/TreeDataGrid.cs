@@ -89,7 +89,7 @@ namespace Avalonia.Controls
         private IScrollable? _scroll;
         private IScrollable? _headerScroll;
         private ITreeDataGridSelectionInteraction? _selection;
-        private IControl? _userSortColumn;
+        private Control? _userSortColumn;
         private ListSortDirection _userSortDirection;
         private TreeDataGridCellEventArgs? _cellArgs;
         private Border? _dragAdorner;
@@ -232,10 +232,10 @@ namespace Avalonia.Controls
 
         public event CancelEventHandler? SelectionChanging;
 
-        public IControl? TryGetCell(int columnIndex, int rowIndex)
+        public Control? TryGetCell(int columnIndex, int rowIndex)
         {
             if (TryGetRow(rowIndex) is TreeDataGridRow row &&
-                row.TryGetCell(columnIndex) is IControl cell)
+                row.TryGetCell(columnIndex) is Control cell)
             {
                 return cell;
             }
@@ -248,7 +248,7 @@ namespace Avalonia.Controls
             return RowsPresenter?.TryGetElement(rowIndex) as TreeDataGridRow;
         }
 
-        public bool TryGetRow(IControl? element, [MaybeNullWhen(false)] out TreeDataGridRow result)
+        public bool TryGetRow(Control? element, [MaybeNullWhen(false)] out TreeDataGridRow result)
         {
             if (element is TreeDataGridRow row && row.RowIndex >= 0)
             {
@@ -267,7 +267,7 @@ namespace Avalonia.Controls
             return result is not null;
         }
 
-        public bool TryGetRowModel<TModel>(IControl element, [MaybeNullWhen(false)] out TModel result)
+        public bool TryGetRowModel<TModel>(Control element, [MaybeNullWhen(false)] out TModel result)
         {
             if (Source is object &&
                 TryGetRow(element, out var row) &&
