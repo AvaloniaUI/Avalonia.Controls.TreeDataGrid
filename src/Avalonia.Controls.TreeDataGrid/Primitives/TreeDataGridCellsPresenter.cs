@@ -8,9 +8,6 @@ namespace Avalonia.Controls.Primitives
 {
     public class TreeDataGridCellsPresenter : TreeDataGridColumnarPresenterBase<IColumn>, IChildIndexProvider
     {
-        public new static readonly StyledProperty<IBrush?> BackgroundProperty =
-            TemplatedControl.BackgroundProperty.AddOwner<TreeDataGridCellsPresenter>();
-
         public static readonly DirectProperty<TreeDataGridCellsPresenter, IRows?> RowsProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridCellsPresenter, IRows?>(
                 nameof(Rows),
@@ -20,12 +17,6 @@ namespace Avalonia.Controls.Primitives
         private IRows? _rows;
 
         public event EventHandler<ChildIndexChangedEventArgs>? ChildIndexChanged;
-
-        public new IBrush? Background
-        {
-            get => GetValue(BackgroundProperty);
-            set => SetValue(BackgroundProperty, value);
-        }
 
         public IRows? Rows
         {
@@ -43,16 +34,6 @@ namespace Avalonia.Controls.Primitives
                 throw new InvalidOperationException("Row is already realized.");
             UpdateRowIndex(index);
             InvalidateMeasure();
-        }
-
-        public override void Render(DrawingContext context)
-        {
-            var background = Background;
-
-            if (background is object)
-            {
-                context.FillRectangle(background, new Rect(Bounds.Size));
-            }
         }
 
         public void Unrealize()
