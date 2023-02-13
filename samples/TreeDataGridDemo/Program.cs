@@ -22,9 +22,6 @@ namespace TreeDataGridDemo
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .UseReactiveUI()
-                .With(new Win32PlatformOptions { UseCompositor = true })
-                .With(new X11PlatformOptions { UseCompositor = true })
-                .With(new AvaloniaNativePlatformOptions { UseCompositor = true })
                 .LogToTrace();
     }
 }
