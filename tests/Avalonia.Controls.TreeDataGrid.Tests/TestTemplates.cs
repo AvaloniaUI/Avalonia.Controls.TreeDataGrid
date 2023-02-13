@@ -8,7 +8,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 {
     internal static class TestTemplates
     {
-        public static ControlTemplate ScrollViewerTemplate()
+        public static IControlTemplate ScrollViewerTemplate()
         {
             return new FuncControlTemplate<ScrollViewer>((x, ns) =>
                 new Grid
@@ -64,7 +64,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             Setters = { new Setter(TemplatedControl.TemplateProperty, ScrollViewerTemplate()) }
         };
 
-        public static ControlTemplate TreeDataGridTemplate()
+        public static IControlTemplate TreeDataGridTemplate()
         {
             return new FuncControlTemplate<TreeDataGrid>((x, ns) =>
                 new DockPanel
@@ -101,7 +101,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             Setters = { new Setter(TemplatedControl.TemplateProperty, TreeDataGridTemplate()) }
         };
 
-        public static ControlTemplate TreeDataGridRowTemplate()
+        public static IControlTemplate TreeDataGridRowTemplate()
         {
             return new FuncControlTemplate<TreeDataGridRow>((x, ns) =>
                 new DockPanel
@@ -124,7 +124,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             Setters = { new Setter(TemplatedControl.TemplateProperty, TreeDataGridRowTemplate()) }
         };
 
-        public static ControlTemplate TreeDataGridExpanderCellTemplate()
+        public static IControlTemplate TreeDataGridExpanderCellTemplate()
         {
             return new FuncControlTemplate<TreeDataGridExpanderCell>((x, ns) =>
                 new DockPanel
@@ -154,7 +154,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             Setters = { new Setter(TemplatedControl.TemplateProperty, TreeDataGridExpanderCellTemplate()) }
         };
 
-        public static ControlTemplate TreeDataGridTemplateCellTemplate()
+        public static IControlTemplate TreeDataGridTemplateCellTemplate()
         {
             return new FuncControlTemplate<TreeDataGridTemplateCell>((x, ns) =>
                 new ContentPresenter
