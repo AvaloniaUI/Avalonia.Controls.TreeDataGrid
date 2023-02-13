@@ -636,7 +636,6 @@ namespace Avalonia.Controls.TreeDataGridTests
         private static IDisposable App()
         {
             var scope = AvaloniaLocator.EnterScope();
-            AvaloniaLocator.CurrentMutable.Bind<IStyler>().ToLazy(() => new Styler());
             return scope;
         }
 
