@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Reactive.Subjects;
 using Avalonia.Data;
-using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 #nullable enable
