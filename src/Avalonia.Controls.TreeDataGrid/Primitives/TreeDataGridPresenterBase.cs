@@ -286,14 +286,16 @@ namespace Avalonia.Controls.Primitives
 
                 for (var i = 0; i < count; ++i)
                 {
-                    var e = _measureElements.Elements[i]!;
-                    var previous = ((Layoutable)e).PreviousMeasure!.Value;
-
-                    if (HasInfinity(previous))
+                    var e = _measureElements.Elements[i];
+                    if (e is not null)
                     {
-                        var index = _measureElements.FirstModelIndex + i;
-                        var constraint = GetFinalConstraint(e, index, availableSize);
-                        e.Measure(constraint);
+                        var previous = LayoutInformation.GetPreviousMeasureConstraint(e)!.Value;
+                        if (HasInfinity(previous))
+                        {
+                            var index = _measureElements.FirstModelIndex + i;
+                            var constraint = GetFinalConstraint(e, index, availableSize);
+                            e.Measure(constraint);
+                        }
                     }
                 }
             }

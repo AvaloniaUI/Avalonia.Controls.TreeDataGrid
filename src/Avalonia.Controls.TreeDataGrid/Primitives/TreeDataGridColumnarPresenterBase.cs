@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -33,8 +34,12 @@ namespace Avalonia.Controls.Primitives
             for (var i = 0; i < elements.Count; i++)
             {
                 var e = elements[i];
-                if (e?.PreviousMeasure!.Value.Width > columns[i + firstIndex].ActualWidth)
-                    return true;
+                if (e is not null)
+                {
+                    var previous = LayoutInformation.GetPreviousMeasureConstraint(e)!.Value;
+                    if (previous.Width > columns[i + firstIndex].ActualWidth)
+                        return true;
+                }
             }
 
             return false;
