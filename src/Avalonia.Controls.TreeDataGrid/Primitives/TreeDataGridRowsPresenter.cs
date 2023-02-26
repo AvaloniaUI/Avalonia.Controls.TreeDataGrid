@@ -53,10 +53,10 @@ namespace Avalonia.Controls.Primitives
                         _selection.SelectionChanged += OnSelectionChanged;
                     }
 
-                    RaisePropertyChanged<ITreeDataGridSelectionInteraction>(
+                    RaisePropertyChanged(
                         SelectionProperty,
-                        new Optional<ITreeDataGridSelectionInteraction?>(oldValue),
-                        new BindingValue<ITreeDataGridSelectionInteraction?>(_selection));
+                        oldValue,
+                        _selection);
                 }
             }
         }
