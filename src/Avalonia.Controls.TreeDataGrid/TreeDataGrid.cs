@@ -201,7 +201,7 @@ namespace Avalonia.Controls
                     Columns = _source?.Columns;
                     Rows = _source?.Rows;
                     SelectionInteraction = value?.Selection as ITreeDataGridSelectionInteraction;
-                    RaisePropertyChanged(
+                    RaisePropertyChanged<ITreeDataGridSource>(
                         SourceProperty,
                         new Optional<ITreeDataGridSource?>(oldSource),
                         new BindingValue<ITreeDataGridSource?>(oldSource));

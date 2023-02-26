@@ -28,18 +28,18 @@ namespace Avalonia.Controls.Primitives
         protected override void RealizeElement(Control element, IColumn column, int index)
         {
             ((TreeDataGridColumnHeader)element).Realize((IColumns)Items!, index);
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
         }
 
         protected override void UpdateElementIndex(Control element, int index)
         {
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
         }
 
         protected override void UnrealizeElement(Control element)
         {
             ((TreeDataGridColumnHeader)element).Unrealize();
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, ((TreeDataGridColumnHeader)element).ColumnIndex));
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

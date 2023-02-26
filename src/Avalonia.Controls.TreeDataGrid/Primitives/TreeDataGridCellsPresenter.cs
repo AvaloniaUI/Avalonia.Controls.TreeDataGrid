@@ -71,13 +71,13 @@ namespace Avalonia.Controls.Primitives
 
             if (cell.ColumnIndex == index && cell.RowIndex == RowIndex)
             {
-                ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+                ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
             }
             else if (cell.ColumnIndex == -1 && cell.RowIndex == -1)
             {
                 var model = _rows!.RealizeCell(column, index, RowIndex);
                 ((TreeDataGridCell)element).Realize(ElementFactory!, model, index, RowIndex);
-                ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+                ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
             }
             else
             {
@@ -90,12 +90,12 @@ namespace Avalonia.Controls.Primitives
             var cell = (TreeDataGridCell)element;
             _rows!.UnrealizeCell(cell.Model!, cell.ColumnIndex, cell.RowIndex);
             cell.Unrealize();
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, cell.RowIndex));
         }
 
         protected override void UpdateElementIndex(Control element, int index)
         {
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

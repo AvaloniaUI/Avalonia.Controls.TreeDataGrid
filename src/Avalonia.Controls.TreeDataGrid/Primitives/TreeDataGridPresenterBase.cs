@@ -73,7 +73,7 @@ namespace Avalonia.Controls.Primitives
                     if (_items is INotifyCollectionChanged newIncc)
                         newIncc.CollectionChanged += OnItemsCollectionChanged;
 
-                    RaisePropertyChanged(
+                    RaisePropertyChanged<IReadOnlyList<TItem>>(
                         ItemsProperty,
                         new Optional<IReadOnlyList<TItem>?>(oldValue),
                         new BindingValue<IReadOnlyList<TItem>?>(_items));
