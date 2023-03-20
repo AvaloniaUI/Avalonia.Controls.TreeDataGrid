@@ -84,8 +84,6 @@ namespace Avalonia.Controls.Primitives
 
         public IReadOnlyList<Control?> RealizedElements => _realizedElements.Elements;
 
-        new Controls Children => _children;
-
         protected abstract Orientation Orientation { get; }
         protected Rect Viewport { get; private set; } = s_invalidViewport;
 
@@ -499,7 +497,7 @@ namespace Avalonia.Controls.Primitives
 
             while (c is not null)
             {
-                if (!c.Bounds.IsDefault && c.TransformToVisual(this) is Matrix transform)
+                if (!c.Bounds.Equals(default) && c.TransformToVisual(this) is Matrix transform)
                 {
                     viewport = new Rect(0, 0, c.Bounds.Width, c.Bounds.Height)
                         .TransformToAABB(transform);

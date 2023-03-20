@@ -13,7 +13,7 @@ using TreeDataGridDemo.ViewModels;
 
 namespace TreeDataGridDemo
 {
-    public class MainWindow : Window
+    public partial class MainWindow : Window
     {
         private readonly TabControl? _tabs;
 
