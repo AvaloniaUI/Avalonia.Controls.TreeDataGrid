@@ -13,13 +13,22 @@ steps:
     script: |
       dotnet tool install --global Nuke.GlobalTool --version 6.0.3
 
-- script: nuke --target RunTests --configuration Release
+- script: nuke --target RunTests --configuration Release --publishtestresults
   displayName: 'Run Unit Tests'
+
+- task: PublishTestResults@2
+  displayName: 'Publish Tests Result'
+  inputs:
+    testResultsFormat: 'VSTest'
+    testResultsFiles: '$(Build.SourcesDirectory)/artifacts/test-results/*.trx'
+  condition: always()
 
 - script: nuke --target Package --configuration Release
   displayName: 'Generate Nuget Package'
 
+
 - task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifacts'
   inputs:
     PathtoPublish: '$(Build.SourcesDirectory)/src/Avalonia.Controls.TreeDataGrid/bin/Release/'
     ArtifactName: 'drop'

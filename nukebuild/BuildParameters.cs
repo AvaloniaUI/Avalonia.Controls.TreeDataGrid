@@ -24,6 +24,9 @@ public partial class Build
     [Parameter("skip-previewer")]
     public bool SkipPreviewer { get; set; }
 
+    [Parameter("publishtestresults")]
+    public bool PublishTestResults { get; set; }
+
     public class BuildParameters
     {
         public string Configuration { get; }
@@ -131,6 +134,11 @@ public partial class Build
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
             ZipNuGetArtifacts = ZipRoot / ("Avalonia-NuGet-" + FileZipSuffix);
             ZipTargetControlCatalogNetCoreDir = ZipRoot / ("TreeDataGridDemo-" + FileZipSuffix);
+
+            if (b.PublishTestResults)
+            {
+                PublishTestResults = true;
+            }
         }
 
         string GetVersion()
