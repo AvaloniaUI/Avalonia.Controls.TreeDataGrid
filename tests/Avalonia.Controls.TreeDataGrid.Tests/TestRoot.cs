@@ -13,6 +13,7 @@ namespace Avalonia.Controls.TreeDataGridTests
         public TestRoot()
         {
             LayoutManager = new LayoutManager(this);
+            Renderer = new NullRenderer();
             IsVisible = true;
         }
 
