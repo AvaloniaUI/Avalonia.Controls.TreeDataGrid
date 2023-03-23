@@ -32,8 +32,8 @@ namespace Avalonia.Controls
                 nameof(Columns),
                 o => o.Columns);
 
-        public static readonly DirectProperty<TreeDataGrid, IElementFactory> ElementFactoryProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGrid, IElementFactory>(
+        public static readonly DirectProperty<TreeDataGrid, TreeDataGridElementFactory> ElementFactoryProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGrid, TreeDataGridElementFactory>(
                 nameof(ElementFactory),
                 o => o.ElementFactory,
                 (o, v) => o.ElementFactory = v);
@@ -82,7 +82,7 @@ namespace Avalonia.Controls
 
         private const double AutoScrollMargin = 60;
         private const int AutoScrollSpeed = 50;
-        private IElementFactory? _elementFactory;
+        private TreeDataGridElementFactory? _elementFactory;
         private ITreeDataGridSource? _source;
         private IColumns? _columns;
         private IRows? _rows;
@@ -133,7 +133,7 @@ namespace Avalonia.Controls
             private set => SetAndRaise(ColumnsProperty, ref _columns, value);
         }
 
-        public IElementFactory ElementFactory
+        public TreeDataGridElementFactory ElementFactory
         {
             get => _elementFactory ??= CreateDefaultElementFactory();
             set
@@ -291,7 +291,7 @@ namespace Avalonia.Controls
             return e.Cancel;
         }
 
-        protected virtual IElementFactory CreateDefaultElementFactory() => new TreeDataGridElementFactory();
+        protected virtual TreeDataGridElementFactory CreateDefaultElementFactory() => new TreeDataGridElementFactory();
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {

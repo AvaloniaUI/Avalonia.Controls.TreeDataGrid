@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls.Presenters;
-using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Utilities;
@@ -15,9 +13,9 @@ namespace Avalonia.Controls.Primitives
 {
     public abstract class TreeDataGridPresenterBase<TItem> : Panel, IPresenter
     {
-        public static readonly DirectProperty<TreeDataGridPresenterBase<TItem>, IElementFactory?>
+        public static readonly DirectProperty<TreeDataGridPresenterBase<TItem>, TreeDataGridElementFactory?>
             ElementFactoryProperty =
-                AvaloniaProperty.RegisterDirect<TreeDataGridPresenterBase<TItem>, IElementFactory?>(
+                AvaloniaProperty.RegisterDirect<TreeDataGridPresenterBase<TItem>, TreeDataGridElementFactory?>(
                     nameof(ElementFactory),
                     o => o.ElementFactory,
                     (o, v) => o.ElementFactory = v);
@@ -33,25 +31,21 @@ namespace Avalonia.Controls.Primitives
         private readonly Action<Control, int> _updateElementIndex;
         private int _anchorIndex = -1;
         private Control? _anchorElement;
-        private readonly Controls _children = new();
-        private IElementFactory? _elementFactory;
-        private ElementFactoryGetArgs? _getArgs;
+        private TreeDataGridElementFactory? _elementFactory;
         private bool _isWaitingForViewportUpdate;
         private IReadOnlyList<TItem>? _items;
         private RealizedElementList _measureElements = new();
         private RealizedElementList _realizedElements = new();
-        private ElementFactoryRecycleArgs? _recycleArgs;
         private double _lastEstimatedElementSizeU = 25;
 
         public TreeDataGridPresenterBase()
         {
-            _children.CollectionChanged += OnChildrenChanged;
             _recycleElement = RecycleElement;
             _updateElementIndex = UpdateElementIndex;
             EffectiveViewportChanged += OnEffectiveViewportChanged;
         }
 
-        public IElementFactory? ElementFactory
+        public TreeDataGridElementFactory? ElementFactory
         {
             get => _elementFactory;
             set => SetAndRaise(ElementFactoryProperty, ref _elementFactory, value);
@@ -216,15 +210,7 @@ namespace Avalonia.Controls.Primitives
 
         protected Control GetElementFromFactory(object data, int index, Control parent)
         {
-            _getArgs ??= new ElementFactoryGetArgs();
-            _getArgs.Data = data;
-            _getArgs.Index = index;
-            _getArgs.Parent = parent;
-
-            var result = _elementFactory!.GetElement(_getArgs);
-            _getArgs.Data = null;
-            _getArgs.Parent = null;
-            return result;
+            return _elementFactory!.GetOrCreateElement(data, parent);
         }
 
         protected virtual (int index, double position) GetElementAt(double position) => (-1, -1);
@@ -249,7 +235,7 @@ namespace Avalonia.Controls.Primitives
 
             if (Items is null || Items.Count == 0)
             {
-                _children.Clear();
+                Children.Clear();
                 return default;
             }
 
@@ -302,14 +288,14 @@ namespace Avalonia.Controls.Primitives
             (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
             _measureElements.ResetForReuse();
 
-            if (_children.Count > _realizedElements.Elements.Count && _realizedElements.Elements.Count > 0 &&
+            if (Children.Count > _realizedElements.Elements.Count && _realizedElements.Elements.Count > 0 &&
                 _realizedElements.Count == Items.Count)
             {
-                for (var i = _children.Count - 1; i >= _realizedElements.Elements.Count; i--)
+                for (var i = Children.Count - 1; i >= _realizedElements.Elements.Count; i--)
                 {
-                    if (!_realizedElements.Elements.Contains(_children.ElementAt(i)))
+                    if (!_realizedElements.Elements.Contains(Children.ElementAt(i)))
                     {
-                        _children.RemoveAt(i);
+                        Children.RemoveAt(i);
                     }
                 }
             }
@@ -459,7 +445,7 @@ namespace Avalonia.Controls.Primitives
             e.IsVisible = true;
             RealizeElement(e, item, index);
             if (e.Parent is null)
-                _children.Add(e);
+                Children.Add(e);
             return e;
         }
 
@@ -516,15 +502,10 @@ namespace Avalonia.Controls.Primitives
             UnrealizeElement(element);
             element.IsVisible = false;
 
-            // Hackfix for https://github.com/AvaloniaUI/Avalonia/issues/7553
+            // Hackfix for https://github.com/AvaloniaUI/Avalonia/issues/7552
             element.Measure(default);
 
-            _recycleArgs ??= new ElementFactoryRecycleArgs();
-            _recycleArgs.Element = element;
-            _recycleArgs.Parent = this;
-            ElementFactory!.RecycleElement(_recycleArgs);
-            _recycleArgs.Element = null;
-            _recycleArgs.Parent = null;
+            ElementFactory!.RecycleElement(element);
         }
 
         private void RecycleElementsAfter(int index)
@@ -535,52 +516,6 @@ namespace Avalonia.Controls.Primitives
         private void RecycleElementsBefore(int index)
         {
             _realizedElements.RecycleElementsBefore(index, _recycleElement);
-        }
-
-        private void OnChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            void Add(IList items)
-            {
-                foreach (var i in items)
-                {
-                    if (i is Control c)
-                    {
-                        LogicalChildren.Add(c);
-                        VisualChildren.Add(c);
-                    }
-                }
-            }
-
-            void Remove(IList items)
-            {
-                foreach (var i in items)
-                {
-                    if (i is Control c)
-                    {
-                        LogicalChildren.Remove(c);
-                        VisualChildren.Remove(c);
-                    }
-                }
-            }
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    Add(e.NewItems!);
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    Remove(e.OldItems!);
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    Remove(e.OldItems!);
-                    Add(e.NewItems!);
-                    break;
-
-                case NotifyCollectionChangedAction.Reset:
-                    throw new NotSupportedException();
-            }
         }
 
         private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
