@@ -90,7 +90,7 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateSelection()
         {
-            foreach (var element in LogicalChildren)
+            foreach (var element in VisualChildren)
             {
                 if (element is TreeDataGridRow { RowIndex: >= 0 } row)
                 {
