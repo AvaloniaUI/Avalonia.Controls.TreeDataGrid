@@ -11,7 +11,7 @@ using CollectionExtensions = Avalonia.Controls.Models.TreeDataGrid.CollectionExt
 
 namespace Avalonia.Controls.Primitives
 {
-    public abstract class TreeDataGridPresenterBase<TItem> : Panel, IPresenter
+    public abstract class TreeDataGridPresenterBase<TItem> : Border, IPresenter
     {
         public static readonly DirectProperty<TreeDataGridPresenterBase<TItem>, TreeDataGridElementFactory?>
             ElementFactoryProperty =
@@ -235,7 +235,7 @@ namespace Avalonia.Controls.Primitives
 
             if (Items is null || Items.Count == 0)
             {
-                Children.Clear();
+                TrimUnrealizedChildren();
                 return default;
             }
 
@@ -288,17 +288,7 @@ namespace Avalonia.Controls.Primitives
             (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
             _measureElements.ResetForReuse();
 
-            if (Children.Count > _realizedElements.Elements.Count && _realizedElements.Elements.Count > 0 &&
-                _realizedElements.Count == Items.Count)
-            {
-                for (var i = Children.Count - 1; i >= _realizedElements.Elements.Count; i--)
-                {
-                    if (!_realizedElements.Elements.Contains(Children.ElementAt(i)))
-                    {
-                        Children.RemoveAt(i);
-                    }
-                }
-            }
+            TrimUnrealizedChildren();
 
             return CalculateDesiredSize(availableSize, viewport.measuredV);
         }
@@ -444,8 +434,11 @@ namespace Avalonia.Controls.Primitives
             var e = GetElementFromFactory(item, index);
             e.IsVisible = true;
             RealizeElement(e, item, index);
-            if (e.Parent is null)
-                Children.Add(e);
+            if (e.GetVisualParent() is null)
+            {
+                ((ISetLogicalParent)e).SetParent(this);
+                VisualChildren.Add(e);
+            }
             return e;
         }
 
@@ -516,6 +509,23 @@ namespace Avalonia.Controls.Primitives
         private void RecycleElementsBefore(int index)
         {
             _realizedElements.RecycleElementsBefore(index, _recycleElement);
+        }
+
+        private void TrimUnrealizedChildren()
+        {
+            var count = Items?.Count ?? 0;
+            var children = VisualChildren;
+
+            if (children.Count > _realizedElements.Elements.Count && _realizedElements.Count == count)
+            {
+                for (var i = children.Count - 1; i >= _realizedElements.Elements.Count; i--)
+                {
+                    if (!_realizedElements.Elements.Contains(children.ElementAt(i)))
+                    {
+                        children.RemoveAt(i);
+                    }
+                }
+            }
         }
 
         private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

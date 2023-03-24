@@ -153,7 +153,7 @@ namespace Avalonia.Controls.Primitives
 
         }
 
-        public new bool TryGetTotalCount(out int count)
+        public bool TryGetTotalCount(out int count)
         {
             if (Items != null)
             {

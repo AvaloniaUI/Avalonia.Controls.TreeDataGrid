@@ -72,7 +72,7 @@ namespace Avalonia.Controls.Primitives
             return -1;
         }
 
-        public new bool TryGetTotalCount(out int count)
+        public bool TryGetTotalCount(out int count)
         {
             if (Items is null)
             {

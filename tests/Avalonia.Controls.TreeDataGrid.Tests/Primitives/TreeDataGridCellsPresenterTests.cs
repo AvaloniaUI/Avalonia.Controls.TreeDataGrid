@@ -185,7 +185,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         {
             Assert.NotNull(target);
 
-            var rowIndexes = target!.GetLogicalChildren()
+            var rowIndexes = target!.GetVisualChildren()
                 .Cast<TreeDataGridCell>()
                 .Where(x => x.IsVisible)
                 .Select(x => x.ColumnIndex)
@@ -201,7 +201,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         {
             Assert.NotNull(target);
 
-            var recyclableCells = target!.GetLogicalChildren()
+            var recyclableCells = target!.GetVisualChildren()
                 .Cast<TreeDataGridCell>()
                 .Where(x => !x.IsVisible)
                 .ToList();
