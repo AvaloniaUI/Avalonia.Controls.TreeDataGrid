@@ -1,8 +1,8 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Product>Avalonia.Controls.TreeDataGrid</Product>
-    <Version>0.10.18.1</Version>
-    <Copyright>Copyright © AvaloniaUI 2022</Copyright>
+    <Version>0.10.19</Version>
+    <Copyright>Copyright © AvaloniaUI 2023</Copyright>
     <Authors>Steven Kirk</Authors>
     <Company>AvaloniaUI</Company>
     <Description>TreeDataGrid is a control which displays hierarchical and tabular data together in a single view. It is a combination of a TreeView and DataGrid control.</Description>
