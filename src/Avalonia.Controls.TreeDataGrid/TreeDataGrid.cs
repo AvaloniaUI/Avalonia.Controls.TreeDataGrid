@@ -583,7 +583,7 @@ namespace Avalonia.Controls
 
             if (route.HasHandlers)
             {
-                var ev = new TreeDataGridRowDragEventArgs(row, e);
+                var ev = new TreeDataGridRowDragEventArgs(RowDragOverEvent, row, e);
                 ev.Position = adorner;
                 RaiseEvent(ev);
                 adorner = ev.Position;
@@ -618,7 +618,7 @@ namespace Avalonia.Controls
 
             if (route.HasHandlers)
             {
-                var ev = new TreeDataGridRowDragEventArgs(row, e);
+                var ev = new TreeDataGridRowDragEventArgs(RowDropEvent, row, e);
                 ev.Position = position;
                 RaiseEvent(ev);
 
