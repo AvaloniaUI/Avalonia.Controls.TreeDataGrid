@@ -21,10 +21,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="TreeDataGridRowDragEventArgs"/> class.
         /// </summary>
+        /// <param name="routedEvent">The event being raised.</param>
         /// <param name="row">The row that is being dragged over.</param>
         /// <param name="inner">The inner drag event args.</param>
-        public TreeDataGridRowDragEventArgs(TreeDataGridRow row, DragEventArgs inner)
-            : base(TreeDataGrid.RowDragOverEvent)
+        public TreeDataGridRowDragEventArgs(RoutedEvent routedEvent, TreeDataGridRow row, DragEventArgs inner)
+            : base(routedEvent)
         {
             TargetRow = row;
             Inner = inner;
