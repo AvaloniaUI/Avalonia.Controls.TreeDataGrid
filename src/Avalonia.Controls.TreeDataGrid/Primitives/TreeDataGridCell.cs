@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Primitives
             set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
         }
 
-        public virtual void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        public virtual void Realize(TreeDataGridElementFactory factory, ICell model, int columnIndex, int rowIndex)
         {
             if (columnIndex < 0)
                 throw new IndexOutOfRangeException("Invalid column index.");

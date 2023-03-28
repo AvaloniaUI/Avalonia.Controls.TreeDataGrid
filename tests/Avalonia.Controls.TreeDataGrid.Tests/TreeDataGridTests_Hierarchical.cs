@@ -27,7 +27,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.NotNull(target.RowsPresenter);
 
             var rows = target.RowsPresenter!
-                .GetLogicalChildren()
+                .GetVisualChildren()
                 .Cast<TreeDataGridRow>()
                 .ToList();
             
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             foreach (var row in rows)
             {
                 var cells = row.CellsPresenter!
-                    .GetLogicalChildren()
+                    .GetVisualChildren()
                     .Cast<TreeDataGridCell>()
                     .ToList();
                 Assert.Equal(2, cells.Count);
@@ -52,18 +52,18 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             Assert.NotNull(target.RowsPresenter);
             Assert.Equal(2, target.RowsPresenter!.RealizedElements.Count);
-            Assert.Equal(2, target.RowsPresenter!.GetLogicalChildren().Count());
+            Assert.Equal(2, target.RowsPresenter!.GetVisualChildren().Count());
 
             source.Expand(new IndexPath(0));
 
             Assert.Equal(102, source.Rows.Count);
             Assert.Equal(102, target.RowsPresenter!.RealizedElements.Count);
-            Assert.Equal(2, target.RowsPresenter!.GetLogicalChildren().Count());
+            Assert.Equal(2, target.RowsPresenter!.GetVisualChildren().Count());
 
             Layout(target);
 
             Assert.Equal(10, target.RowsPresenter!.RealizedElements.Count);
-            Assert.Equal(10, target.RowsPresenter!.GetLogicalChildren().Count());
+            Assert.Equal(10, target.RowsPresenter!.GetVisualChildren().Count());
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             Layout(target);
 
             Assert.Equal(3, target.RowsPresenter!.RealizedElements.Count);
-            Assert.Equal(3, target.RowsPresenter!.GetLogicalChildren().Count());
+            Assert.Equal(3, target.RowsPresenter!.GetVisualChildren().Count());
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             Layout(target);
 
             Assert.Equal(4, target.RowsPresenter!.RealizedElements.Count);
-            Assert.Equal(4, target.RowsPresenter!.GetLogicalChildren().Count());
+            Assert.Equal(4, target.RowsPresenter!.GetVisualChildren().Count());
         }
 
         [Fact]
@@ -171,7 +171,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             var instantiations = 0;
 
-            IControl Template(Model model, INameScope ns)
+            Control Template(Model model, INameScope ns)
             {
                 ++instantiations;
                 return new Border();
@@ -537,7 +537,6 @@ namespace Avalonia.Controls.TreeDataGridTests
         private static IDisposable App()
         {
             var scope = AvaloniaLocator.EnterScope();
-            AvaloniaLocator.CurrentMutable.Bind<IStyler>().ToLazy(() => new Styler());
             return scope;
         }
 

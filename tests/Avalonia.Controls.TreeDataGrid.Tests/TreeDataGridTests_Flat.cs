@@ -27,7 +27,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.NotNull(target.RowsPresenter);
 
             var rows = target.RowsPresenter!
-                .GetLogicalChildren()
+                .GetVisualChildren()
                 .Cast<TreeDataGridRow>()
                 .ToList();
 
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             foreach (var row in rows)
             {
                 var cells = row.CellsPresenter!
-                    .GetLogicalChildren()
+                    .GetVisualChildren()
                     .Cast<TreeDataGridCell>()
                     .ToList();
                 Assert.Equal(2, cells.Count);
@@ -184,7 +184,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             );
 
             var rows = target.RowsPresenter!
-                .GetLogicalChildren()
+                .GetVisualChildren()
                 .Cast<TreeDataGridRow>()
                 .ToList();
 
@@ -193,7 +193,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             foreach (var row in rows)
             {
                 var cells = row.CellsPresenter!
-                    .GetLogicalChildren()
+                    .GetVisualChildren()
                     .Cast<TreeDataGridCell>()
                     .ToList();
                 Assert.Equal(2, cells.Count);
@@ -216,7 +216,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             );
 
             var rows = target.RowsPresenter!
-                .GetLogicalChildren()
+                .GetVisualChildren()
                 .Cast<TreeDataGridRow>()
                 .ToList();
 
@@ -225,7 +225,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             foreach (var row in rows)
             {
                 var cells = row.CellsPresenter!
-                    .GetLogicalChildren()
+                    .GetVisualChildren()
                     .Cast<TreeDataGridCell>()
                     .ToList();
                 Assert.Equal(2, cells.Count);
@@ -248,7 +248,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             );
 
             var rows = target.RowsPresenter!
-                .GetLogicalChildren()
+                .GetVisualChildren()
                 .Cast<TreeDataGridRow>()
                 .ToList();
 
@@ -257,7 +257,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             foreach (var row in rows)
             {
                 var cells = row?.CellsPresenter!
-                    .GetLogicalChildren()
+                    .GetVisualChildren()
                     .Cast<TreeDataGridCell>()
                     .ToList();
                 Assert.Equal(2, cells!.Count);
@@ -497,7 +497,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             Assert.NotNull(presenter);
 
-            var rowIndexes = presenter?.GetLogicalChildren()
+            var rowIndexes = presenter?.GetVisualChildren()
                 .Cast<TreeDataGridRow>()
                 .Where(x => x.IsVisible)
                 .Select(x => x.RowIndex)
@@ -526,7 +526,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             Assert.NotNull(presenter);
 
-            var columnIndexes = presenter?.GetLogicalChildren()
+            var columnIndexes = presenter?.GetVisualChildren()
                 .Cast<TreeDataGridColumnHeader>()
                 .Where(x => x.IsVisible)
                 .Select(x => x.ColumnIndex)
@@ -636,7 +636,6 @@ namespace Avalonia.Controls.TreeDataGridTests
         private static IDisposable App()
         {
             var scope = AvaloniaLocator.EnterScope();
-            AvaloniaLocator.CurrentMutable.Bind<IStyler>().ToLazy(() => new Styler());
             return scope;
         }
 

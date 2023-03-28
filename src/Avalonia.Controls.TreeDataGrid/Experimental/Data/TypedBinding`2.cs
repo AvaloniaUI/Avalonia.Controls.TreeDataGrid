@@ -26,8 +26,8 @@ namespace Avalonia.Experimental.Data
     ///   and `x => x.Foo.Bar.Baz`. These links are used to subscribe to change notifications.
     ///   
     /// This class represents a binding which has not been instantiated on an object. When the
-    /// <see cref="Bind(IAvaloniaObject, DirectPropertyBase{TOut})"/> or
-    /// <see cref="Bind(IAvaloniaObject, StyledPropertyBase{TOut})"/> methods are called, then
+    /// <see cref="Bind(AvaloniaObject, DirectPropertyBase{TOut})"/> or
+    /// <see cref="Bind(AvaloniaObject, StyledProperty{TOut})"/> methods are called, then
     /// an instance of <see cref="TypedBindingExpression{TIn, TOut}"/> is created which represents
     /// the binding instantiated on that object.
     /// </remarks>
@@ -78,7 +78,7 @@ namespace Avalonia.Experimental.Data
         /// <param name="target">The target object.</param>
         /// <param name="property">The target property.</param>
         /// <returns>A disposable that can be used to terminate the binding.</returns>
-        public IDisposable Bind(IAvaloniaObject target, StyledPropertyBase<TOut> property)
+        public IDisposable Bind(AvaloniaObject target, StyledProperty<TOut> property)
         {
             var mode = GetMode(target, property);
             var expression = CreateExpression(target, property, mode);
@@ -103,7 +103,7 @@ namespace Avalonia.Experimental.Data
         /// <param name="target">The target object.</param>
         /// <param name="property">The target property.</param>
         /// <returns>A disposable that can be used to terminate the binding.</returns>
-        public IDisposable Bind(IAvaloniaObject target, DirectPropertyBase<TOut> property)
+        public IDisposable Bind(AvaloniaObject target, DirectPropertyBase<TOut> property)
         {
             var mode = GetMode(target, property);
             var expression = CreateExpression(target, property, mode);
@@ -136,7 +136,7 @@ namespace Avalonia.Experimental.Data
         }
 
         private TypedBindingExpression<TIn, TOut> CreateExpression(
-            IAvaloniaObject target,
+            AvaloniaObject target,
             AvaloniaProperty property,
             BindingMode mode)
         {
@@ -167,12 +167,12 @@ namespace Avalonia.Experimental.Data
             return new TypedBindingExpression<TIn, TOut>(source, Read, Write, Links, fallback);
         }
 
-        private BindingMode GetMode(IAvaloniaObject target, AvaloniaProperty property)
+        private BindingMode GetMode(AvaloniaObject target, AvaloniaProperty property)
         {
             return Mode == BindingMode.Default ? property.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
         }
 
-        private IObservable<TIn?> GetRoot(IAvaloniaObject target, AvaloniaProperty property)
+        private IObservable<TIn?> GetRoot(AvaloniaObject target, AvaloniaProperty property)
         {
             if (Source.HasValue)
             {
@@ -180,11 +180,11 @@ namespace Avalonia.Experimental.Data
             }
             else if (property == StyledElement.DataContextProperty)
             {
-                return new ParentDataContextRoot<TIn>((IVisual)target);
+                return new ParentDataContextRoot<TIn>((Visual)target);
             }
             else
             {
-                return new DataContextRoot<TIn>((IStyledElement)target);
+                return new DataContextRoot<TIn>((StyledElement)target);
             }
         }
     }

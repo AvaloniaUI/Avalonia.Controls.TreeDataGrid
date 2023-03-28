@@ -1,32 +1,66 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TreeDataGridElementFactory : IElementFactory
+    public class TreeDataGridElementFactory
     {
-        private readonly RecyclePool _recyclePool = new();
+        private readonly Dictionary<object, List<Control>>  _recyclePool = new();
 
-        public IControl Build(object? data)
+        public Control GetOrCreateElement(object? data, Control parent)
         {
-            var result = GetElement(data, null);
-            result.DataContext = data;
-            return result;
-        }
+            var recycleKey = GetDataRecycleKey(data);
 
-        public IControl GetElement(ElementFactoryGetArgs args) => GetElement(args.Data, args.Parent);
-
-        public bool Match(object? data) => data is ICell;
-
-        public void RecycleElement(ElementFactoryRecycleArgs args)
-        {
-            if (args.Element is not null)
+            if (_recyclePool.TryGetValue(recycleKey, out var elements) && elements.Count > 0)
             {
-                _recyclePool.PutElement(args.Element, GetElementRecycleKey(args.Element), args.Parent);
+                // First look for an element with the same parent.
+                for (var i = 0; i < elements.Count; i++)
+                { 
+                    var e = elements[i];
+
+                    if (e.Parent == parent)
+                    {
+                        elements.RemoveAt(i);
+                        return e;
+                    }
+                }
+
+                // Next look for an element with no parent or an element that we can reparent.
+                for (var i = 0; i < elements.Count; i++)
+                {
+                    var e = elements[i];
+                    var parentPanel = e.Parent as Panel;
+
+                    if (e.Parent is null || parentPanel is not null)
+                    {
+                        parentPanel?.Children.Remove(e);
+                        Debug.Assert(e.Parent is null);
+                        elements.RemoveAt(i);
+                        return e;
+                    }
+                }
             }
+
+            // Otherwise create a new element.
+            return CreateElement(data);
         }
 
-        protected virtual IControl CreateElement(object? data)
+        public void RecycleElement(Control element)
+        {
+            var recycleKey = GetElementRecycleKey(element);
+
+            if (!_recyclePool.TryGetValue(recycleKey, out var elements))
+            {
+                elements = new();
+                _recyclePool.Add(recycleKey, elements);
+            }
+
+            elements.Add(element);
+        }
+
+        protected virtual Control CreateElement(object? data)
         {
             return data switch
             {
@@ -54,21 +88,9 @@ namespace Avalonia.Controls.Primitives
             };
         }
 
-        protected virtual string GetElementRecycleKey(IControl element)
+        protected virtual string GetElementRecycleKey(Control element)
         {
             return element.GetType().FullName!;
-        }
-
-        private IControl GetElement(object? data, IControl? parent)
-        {
-            var recycleKey = GetDataRecycleKey(data);
-
-            if (_recyclePool.TryGetElement(recycleKey, parent) is IControl element)
-            {
-                return element;
-            }
-
-            return CreateElement(data);
         }
     }
 }
