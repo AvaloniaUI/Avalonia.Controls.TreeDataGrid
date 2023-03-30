@@ -55,8 +55,8 @@ namespace Avalonia.Controls.Primitives
 
                     RaisePropertyChanged(
                         SelectionProperty,
-                        new Optional<ITreeDataGridSelectionInteraction?>(oldValue),
-                        new BindingValue<ITreeDataGridSelectionInteraction?>(_selection));
+                        oldValue,
+                        _selection);
                 }
             }
         }
@@ -68,29 +68,29 @@ namespace Avalonia.Controls.Primitives
             return ((IRows)Items!).GetRowAt(position);
         }
 
-        protected override void RealizeElement(IControl element, IRow rowModel, int index)
+        protected override void RealizeElement(Control element, IRow rowModel, int index)
         {
             var row = (TreeDataGridRow)element;
             row.Realize(ElementFactory, Columns, (IRows?)Items, index);
             row.IsSelected = _selection?.IsRowSelected(rowModel) == true;
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
         }
 
-        protected override void UpdateElementIndex(IControl element, int index)
+        protected override void UpdateElementIndex(Control element, int index)
         {
             ((TreeDataGridRow)element).UpdateIndex(index);
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
         }
 
-        protected override void UnrealizeElement(IControl element)
+        protected override void UnrealizeElement(Control element)
         {
             ((TreeDataGridRow)element).Unrealize();
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, ((TreeDataGridRow)element).RowIndex));
         }
 
         private void UpdateSelection()
         {
-            foreach (var element in LogicalChildren)
+            foreach (var element in VisualChildren)
             {
                 if (element is TreeDataGridRow { RowIndex: >= 0 } row)
                 {

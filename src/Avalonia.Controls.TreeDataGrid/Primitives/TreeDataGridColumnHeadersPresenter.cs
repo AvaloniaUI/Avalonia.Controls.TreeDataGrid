@@ -18,31 +18,31 @@ namespace Avalonia.Controls.Primitives
             return base.ArrangeOverride(finalSize);
         }
 
-        protected override Size MeasureElement(int index, IControl element, Size availableSize)
+        protected override Size MeasureElement(int index, Control element, Size availableSize)
         {
             if (Items is IColumns columns)
             {
                 element.Measure(availableSize);
                 return columns.CellMeasured(index, -1, element.DesiredSize);
             }
-            return Size.Empty;
+            return default;
         }
 
-        protected override void RealizeElement(IControl element, IColumn column, int index)
+        protected override void RealizeElement(Control element, IColumn column, int index)
         {
             ((TreeDataGridColumnHeader)element).Realize((IColumns)Items!, index);
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
         }
 
-        protected override void UpdateElementIndex(IControl element, int index)
+        protected override void UpdateElementIndex(Control element, int index)
         {
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
         }
 
-        protected override void UnrealizeElement(IControl element)
+        protected override void UnrealizeElement(Control element)
         {
             ((TreeDataGridColumnHeader)element).Unrealize();
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, ((TreeDataGridColumnHeader)element).ColumnIndex));
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

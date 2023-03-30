@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     {
         private readonly Comparison<TModel?>? _sortAscending;
         private readonly Comparison<TModel?>? _sortDescending;
-        private readonly Func<IControl, IDataTemplate> _getCellTemplate;
+        private readonly Func<Control, IDataTemplate> _getCellTemplate;
         private IDataTemplate? _cellTemplate;
         private object? _cellTemplateResourceKey;
 
@@ -53,7 +53,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets the template to use to display the contents of a cell that is not in editing mode.
         /// </summary>
-        public IDataTemplate GetCellTemplate(IControl anchor)
+        public IDataTemplate GetCellTemplate(Control anchor)
         {
             if (_cellTemplate is not null)
                 return _cellTemplate;
