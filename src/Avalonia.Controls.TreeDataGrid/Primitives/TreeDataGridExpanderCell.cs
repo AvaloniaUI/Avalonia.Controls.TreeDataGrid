@@ -24,8 +24,7 @@ namespace Avalonia.Controls.Primitives
 
         private Decorator? _contentContainer;
         private Type? _contentType;
-        private IElementFactory? _factory;
-        private ElementFactoryGetArgs? _getArgs;
+        private TreeDataGridElementFactory? _factory;
         private int _indent;
         private bool _isExpanded;
         private IExpanderCell? _model;
@@ -49,7 +48,7 @@ namespace Avalonia.Controls.Primitives
             private set => SetAndRaise(ShowExpanderProperty, ref _showExpander, value);
         }
 
-        public override void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        public override void Realize(TreeDataGridElementFactory factory, ICell model, int columnIndex, int rowIndex)
         {
             if (_model is object)
                 throw new InvalidOperationException("Cell is already realized.");
@@ -95,7 +94,7 @@ namespace Avalonia.Controls.Primitives
                 UpdateContent(_factory);
         }
 
-        private void UpdateContent(IElementFactory factory)
+        private void UpdateContent(TreeDataGridElementFactory factory)
         {
             if (_contentContainer is null)
                 return;
@@ -106,14 +105,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (contentType != _contentType)
                 {
-                    _getArgs ??= new ElementFactoryGetArgs();
-                    _getArgs.Data = innerModel;
-                    _getArgs.Index = ColumnIndex;
-
-                    var element = factory.GetElement(_getArgs);
-
-                    _getArgs.Data = null;
-
+                    var element = factory.GetOrCreateElement(innerModel, this);
                     element.IsVisible = true;
                     _contentContainer.Child = element;
                     _contentType = contentType;

@@ -209,7 +209,7 @@ namespace Avalonia.Controls.Selection
 
             }
 
-            static bool GetRowIndexIfFullyVisible(IControl? control, out int index)
+            static bool GetRowIndexIfFullyVisible(Control? control, out int index)
             {
                 if (control is TreeDataGridRow row &&
                     IsRowFullyVisibleToUser(row))
@@ -327,7 +327,7 @@ namespace Avalonia.Controls.Selection
             // Otherwise select on pointer release.
             if (!e.Handled &&
                 e.Pointer.Type == PointerType.Mouse &&
-                e.Source is IControl source &&
+                e.Source is Control source &&
                 sender.TryGetRow(source, out var row) &&
                 _source.Rows.RowIndexToModelIndex(row.RowIndex) is { } modelIndex &&
                 !IsSelected(modelIndex))
@@ -345,7 +345,7 @@ namespace Avalonia.Controls.Selection
         {
             if (!e.Handled &&
                 _pressedPoint != s_InvalidPoint &&
-                e.Source is IControl source &&
+                e.Source is Control source &&
                 sender.TryGetRow(source, out var row))
             {
                 var p = e.GetPosition(sender);
