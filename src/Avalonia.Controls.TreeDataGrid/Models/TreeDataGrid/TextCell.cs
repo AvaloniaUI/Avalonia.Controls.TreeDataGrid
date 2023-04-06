@@ -16,12 +16,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         [AllowNull] private T? _cancelValue;
         private bool _isEditing;
 
-#pragma warning disable CS8618
         public TextCell(T? value)
-#pragma warning restore CS8618
         {
             _value = value;
             IsReadOnly = true;
+            TextTrimming = TextTrimming.None;
         }
 
         public TextCell(
@@ -43,6 +42,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public bool CanEdit => !IsReadOnly;
         public bool IsReadOnly { get; }
         public TextTrimming TextTrimming { get; }
+
+        public string? Text
+        {
+            get => _value?.ToString();
+            set => Value = (T?)Convert.ChangeType(value, typeof(T));
+        }
 
         public T? Value
         {

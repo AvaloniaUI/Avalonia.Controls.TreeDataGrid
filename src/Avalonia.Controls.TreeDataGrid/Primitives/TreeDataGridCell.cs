@@ -62,21 +62,33 @@ namespace Avalonia.Controls.Primitives
             if (!_isEditing)
             {
                 _isEditing = true;
-                (DataContext as IEditableObject)?.BeginEdit();
+                (Model as IEditableObject)?.BeginEdit();
                 PseudoClasses.Add(":editing");
             }
         }
 
         protected void CancelEdit()
         {
-            if (EndEditCore())
-                (DataContext as IEditableObject)?.CancelEdit();
+            if (EndEditCore() && Model is IEditableObject editable)
+                editable.CancelEdit();
         }
 
         protected void EndEdit()
         {
-            if (EndEditCore())
-                (DataContext as IEditableObject)?.EndEdit();
+            if (EndEditCore() && Model is IEditableObject editable)
+                editable.EndEdit();
+        }
+
+        protected void SubscribeToModelChanges()
+        {
+            if (Model is INotifyPropertyChanged inpc)
+                inpc.PropertyChanged += OnModelPropertyChanged;
+        }
+
+        protected void UnsubscribeFromModelChanges()
+        {
+            if (Model is INotifyPropertyChanged inpc)
+                inpc.PropertyChanged -= OnModelPropertyChanged;
         }
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -125,6 +137,10 @@ namespace Avalonia.Controls.Primitives
                 BeginEdit();
                 e.Handled = true;
             }
+        }
+
+        protected virtual void OnModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
