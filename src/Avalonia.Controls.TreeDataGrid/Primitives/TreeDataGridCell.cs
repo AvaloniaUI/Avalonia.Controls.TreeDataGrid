@@ -23,6 +23,7 @@ namespace Avalonia.Controls.Primitives
         static TreeDataGridCell()
         {
             FocusableProperty.OverrideDefaultValue<TreeDataGridCell>(true);
+            DoubleTappedEvent.AddClassHandler<TreeDataGridCell>((x, e) => x.OnDoubleTapped(e));
         }
 
         public int ColumnIndex { get; private set; } = -1;
@@ -104,6 +105,15 @@ namespace Avalonia.Controls.Primitives
             result = result.Inflate(new Thickness(1, 0));
 
             return result;
+        }
+
+        protected virtual void OnDoubleTapped(TappedEventArgs e)
+        {
+            if (!_isEditing && CanEdit && !e.Handled)
+            {
+                BeginEdit();
+                e.Handled = true;
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
