@@ -54,22 +54,20 @@ namespace TreeDataGridDemo.ViewModels
                             "Name",
                             "FileNameCell",
                             new GridLength(1, GridUnitType.Star),
-                            new ColumnOptions<FileTreeNodeModel>
+                            new()
                             {
                                 CompareAscending = FileTreeNodeModel.SortAscending(x => x.Name),
                                 CompareDescending = FileTreeNodeModel.SortDescending(x => x.Name),
-                            })
-                        {
-                            IsTextSearchEnabled = true,
-                            TextSearchValueSelector = x => x.Name
-                        },
+                                IsTextSearchEnabled = true,
+                                TextSearchValueSelector = x => x.Name
+                            }),
                         x => x.Children,
                         x => x.HasChildren,
                         x => x.IsExpanded),
                     new TextColumn<FileTreeNodeModel, long?>(
                         "Size",
                         x => x.Size,
-                        options: new TextColumnOptions<FileTreeNodeModel>
+                        options: new()
                         {
                             CompareAscending = FileTreeNodeModel.SortAscending(x => x.Size),
                             CompareDescending = FileTreeNodeModel.SortDescending(x => x.Size),
@@ -77,7 +75,7 @@ namespace TreeDataGridDemo.ViewModels
                     new TextColumn<FileTreeNodeModel, DateTimeOffset?>(
                         "Modified",
                         x => x.Modified,
-                        options: new TextColumnOptions<FileTreeNodeModel>
+                        options: new()
                         {
                             CompareAscending = FileTreeNodeModel.SortAscending(x => x.Modified),
                             CompareDescending = FileTreeNodeModel.SortDescending(x => x.Modified),
