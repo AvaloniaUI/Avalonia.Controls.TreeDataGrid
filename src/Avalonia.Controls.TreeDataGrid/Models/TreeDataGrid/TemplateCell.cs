@@ -13,6 +13,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         public bool CanEdit => false;
+        public bool SingleTapEdit => false;
         public Func<Control, IDataTemplate> GetCellTemplate { get; }
         public object? Value { get; }
     }

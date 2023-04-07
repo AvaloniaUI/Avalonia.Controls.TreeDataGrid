@@ -12,6 +12,7 @@ namespace Avalonia.Controls.Primitives
     {
         private bool _isEditing;
         private TreeDataGrid? _treeDataGrid;
+        private Point _pressedPoint;
 
         static TreeDataGridCell()
         {
@@ -106,9 +107,18 @@ namespace Avalonia.Controls.Primitives
             return result;
         }
 
+        protected virtual void OnTapped(TappedEventArgs e)
+        {
+            if (!_isEditing && CanEdit && Model?.SingleTapEdit == true && !e.Handled)
+            {
+                BeginEdit();
+                e.Handled = true;
+            }
+        }
+
         protected virtual void OnDoubleTapped(TappedEventArgs e)
         {
-            if (!_isEditing && CanEdit && !e.Handled)
+            if (!_isEditing && CanEdit && Model?.SingleTapEdit != true && !e.Handled)
             {
                 BeginEdit();
                 e.Handled = true;
@@ -128,6 +138,33 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual void OnModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+        }
+
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+
+            if (!_isEditing && CanEdit && Model?.SingleTapEdit == true && !e.Handled)
+            {
+                _pressedPoint = e.GetCurrentPoint(this).Position;
+                e.Handled = true;
+            }
+        }
+
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+
+            if (!_isEditing && CanEdit && Model?.SingleTapEdit == true && !e.Handled)
+            {
+                var point = e.GetCurrentPoint(this).Position;
+
+                if (new Rect(Bounds.Size).ContainsExclusive(point))
+                {
+                    BeginEdit();
+                    e.Handled = true;
+                }
+            }
         }
 
         private bool EndEditCore()
