@@ -7,17 +7,10 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    [PseudoClasses(":selected", ":editing")]
+    [PseudoClasses(":editing")]
     public abstract class TreeDataGridCell : TemplatedControl, ITreeDataGridCell
     {
-        public static readonly DirectProperty<TreeDataGridCell, bool> IsSelectedProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGridCell, bool>(
-                nameof(IsSelected),
-                o => o.IsSelected,
-                (o, v) => o.IsSelected = v);
-
         private bool _isEditing;
-        private bool _isSelected;
         private TreeDataGrid? _treeDataGrid;
 
         static TreeDataGridCell()
@@ -29,12 +22,6 @@ namespace Avalonia.Controls.Primitives
         public int ColumnIndex { get; private set; } = -1;
         public int RowIndex { get; private set; } = -1;
         public ICell? Model { get; private set; }
-
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
-        }
 
         public virtual void Realize(TreeDataGridElementFactory factory, ICell model, int columnIndex, int rowIndex)
         {
@@ -141,25 +128,6 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual void OnModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-        }
-
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
-        {
-            base.OnPointerPressed(e);
-
-            if (!_isEditing && CanEdit && !e.Handled && IsSelected)
-            {
-                BeginEdit();
-                e.Handled = true;
-            }
-        }
-
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            if (change.Property == IsSelectedProperty)
-            {
-                PseudoClasses.Set(":selected", change.GetNewValue<bool>());
-            }
         }
 
         private bool EndEditCore()
