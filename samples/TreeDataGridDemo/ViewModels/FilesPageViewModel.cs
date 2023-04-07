@@ -45,7 +45,7 @@ namespace TreeDataGridDemo.ViewModels
                         null,
                         x => x.IsChecked,
                         (o, v) => o.IsChecked = v,
-                        options: new ColumnOptions<FileTreeNodeModel>
+                        options: new()
                         {
                             CanUserResizeColumn = false,
                         }),
