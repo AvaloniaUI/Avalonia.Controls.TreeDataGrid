@@ -59,7 +59,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             Action<TModel, bool?>? setter = null,
             GridLength? width = null,
             ColumnOptions<TModel>? options = null)
-            : base(header, getter, setter, width, options)
+            : base(header, getter, setter, width, options ?? new())
         {
             IsThreeState = true;
         }

@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             IDataTemplate cellTemplate,
             GridLength? width = null,
             ColumnOptions<TModel>? options = null)
-            : base(header, width, options)
+            : base(header, width, options ?? new())
         {
             _sortAscending = options?.CompareAscending;
             _sortDescending = options?.CompareDescending;
@@ -37,7 +37,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             object cellTemplateResourceKey,
             GridLength? width = null,
             ColumnOptions<TModel>? options = null)
-            : base(header, width, options)
+            : base(header, width, options ?? new())
         {
             _sortAscending = options?.CompareAscending;
             _sortDescending = options?.CompareDescending;
