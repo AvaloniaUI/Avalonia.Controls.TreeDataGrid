@@ -9,6 +9,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public class TextColumnOptions<TModel> : ColumnOptions<TModel>, ITextCellOptions
     {
         /// <summary>
+        /// Gets or sets a value indicating whether the column takes part in text searches.
+        /// </summary>
+        public bool IsTextSearchEnabled { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether a single tap will begin edit mode
         /// on a cell.
         /// </summary>
