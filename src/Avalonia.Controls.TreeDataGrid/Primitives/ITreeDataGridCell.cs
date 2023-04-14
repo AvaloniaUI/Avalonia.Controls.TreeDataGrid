@@ -2,7 +2,7 @@
 
 namespace Avalonia.Controls.Primitives
 {
-    internal interface ITreeDataGridCell :  ISelectable
+    internal interface ITreeDataGridCell
     {
         int ColumnIndex { get; }
 

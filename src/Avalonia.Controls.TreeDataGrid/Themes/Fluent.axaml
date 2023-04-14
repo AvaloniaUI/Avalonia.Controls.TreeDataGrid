@@ -14,8 +14,4 @@
     <Setter Property="MinHeight" Value="25"/>
   </Style>
   
-  <Style Selector=":is(TreeDataGridCell):selected">
-    <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
-  </Style>
-
 </Styles>

@@ -40,7 +40,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             Expression<Func<TModel, TValue?>> getter,
             Action<TModel, TValue?>? setter,
             GridLength? width,
-            ColumnOptions<TModel>? options)
+            ColumnOptions<TModel> options)
             : base(header, width, options)
         {
             ValueSelector = getter.Compile();
@@ -73,7 +73,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             TypedBinding<TModel, TValue?> binding,
             GridLength? width,
             ColumnOptions<TModel>? options)
-            : base(header, width, options)
+            : base(header, width, options ?? new())
         {
             ValueSelector = valueSelector;
             Binding = binding;

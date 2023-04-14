@@ -11,16 +11,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public abstract class ColumnBase<TModel> : NotifyingBase, IColumn<TModel>, IUpdateColumnLayout
     {
         private double _actualWidth = double.NaN;
-        private bool? _canUserResize;
         private GridLength _width;
-        private GridLength? _minWidth;
-        private GridLength? _maxWidth;
         private double _autoWidth = double.NaN;
         private double _starWidth = double.NaN;
         private bool _starWidthWasConstrained;
         private object? _header;
         private ListSortDirection? _sortDirection;
-        private bool _isVisible = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnBase{TModel, TValue}"/> class.
@@ -33,13 +29,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public ColumnBase(
             object? header,
             GridLength? width,
-            ColumnOptions<TModel>? options)
-        {
-            _canUserResize = options?.CanUserResizeColumn;
-            _minWidth = options?.MinWidth ?? new GridLength(30, GridUnitType.Pixel);
-            _maxWidth = options?.MaxWidth;
+            ColumnOptions<TModel> options)
+        {            
             _header = header;
-            _isVisible = options?.IsVisible ?? true;
+            Options = options;
             SetWidth(width ?? GridLength.Auto);
         }
 
@@ -50,15 +43,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             get => _actualWidth;
             private set => RaiseAndSetIfChanged(ref _actualWidth, value);
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the user can resize the column.
-        /// </summary>
-        public bool? CanUserResize
-        {
-            get => _canUserResize;
-            set => RaiseAndSetIfChanged(ref _canUserResize, value);
         }
 
         /// <summary>
@@ -83,6 +67,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         /// <summary>
+        /// Gets the column options.
+        /// </summary>
+        public ColumnOptions<TModel> Options { get; }
+
+        /// <summary>
         /// Gets or sets the sort direction indicator that will be displayed on the column.
         /// </summary>
         /// <remarks>
@@ -101,6 +90,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         public object? Tag { get; set; }
 
+        bool? IColumn.CanUserResize => Options.CanUserResizeColumn;
         double IUpdateColumnLayout.MinActualWidth => CoerceActualWidth(0);
         double IUpdateColumnLayout.MaxActualWidth =>
             IsVisible
@@ -119,7 +109,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         double IUpdateColumnLayout.CellMeasured(double width, int rowIndex)
         {
-            if (!IsVisible)
+            if (!Options.IsVisible)
             {
                 return 0;
             }
@@ -158,18 +148,18 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private double CoerceActualWidth(double width)
         {
-            width = _minWidth?.GridUnitType switch
+            width = Options.MinWidth.GridUnitType switch
             {
                 GridUnitType.Auto => Math.Max(width, _autoWidth),
-                GridUnitType.Pixel => Math.Max(width, _minWidth.Value.Value),
+                GridUnitType.Pixel => Math.Max(width, Options.MinWidth.Value),
                 GridUnitType.Star => throw new NotImplementedException(),
                 _ => width
             };
 
-            return _maxWidth?.GridUnitType switch
+            return Options.MaxWidth?.GridUnitType switch
             {
                 GridUnitType.Auto => Math.Min(width, _autoWidth),
-                GridUnitType.Pixel => Math.Min(width, _maxWidth.Value.Value),
+                GridUnitType.Pixel => Math.Min(width, Options.MaxWidth.Value.Value),
                 GridUnitType.Star => throw new NotImplementedException(),
                 _ => width
             };
@@ -187,8 +177,15 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public bool IsVisible
         {
-            get => _isVisible;
-            set => RaiseAndSetIfChanged(ref _isVisible, value);
+            get => Options.IsVisible;
+            set
+            {
+                if (Options.IsVisible != value)
+                {
+                    Options.IsVisible = value;
+                    RaisePropertyChanged(nameof(IsVisible));
+                }
+            }
         }
 
     }
