@@ -13,8 +13,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TValue">The column data type.</typeparam>
     public class TemplateColumn<TModel> : ColumnBase<TModel>, ITextSearchableColumn<TModel>
     {
-        private readonly Comparison<TModel?>? _sortAscending;
-        private readonly Comparison<TModel?>? _sortDescending;
         private readonly Func<Control, IDataTemplate> _getCellTemplate;
         private IDataTemplate? _cellTemplate;
         private object? _cellTemplateResourceKey;
@@ -23,11 +21,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             object? header,
             IDataTemplate cellTemplate,
             GridLength? width = null,
-            ColumnOptions<TModel>? options = null)
-            : base(header, width, options)
+            TemplateColumnOptions<TModel>? options = null)
+            : base(header, width, options ?? new())
         {
-            _sortAscending = options?.CompareAscending;
-            _sortDescending = options?.CompareDescending;
             _getCellTemplate = GetCellTemplate;
             _cellTemplate = cellTemplate;
         }
@@ -36,19 +32,17 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             object? header,
             object cellTemplateResourceKey,
             GridLength? width = null,
-            ColumnOptions<TModel>? options = null)
-            : base(header, width, options)
+            TemplateColumnOptions<TModel>? options = null)
+            : base(header, width, options ?? new())
         {
-            _sortAscending = options?.CompareAscending;
-            _sortDescending = options?.CompareDescending;
             _getCellTemplate = GetCellTemplate;
             _cellTemplateResourceKey = cellTemplateResourceKey ??
                 throw new ArgumentNullException(nameof(cellTemplateResourceKey));
         }
 
-        public Func<TModel, string?>? TextSearchValueSelector { get; set; }
-        public bool IsTextSearchEnabled { get; set; }
+        public new TemplateColumnOptions<TModel> Options => (TemplateColumnOptions<TModel>)base.Options;
 
+        bool ITextSearchableColumn<TModel>.IsTextSearchEnabled => Options.IsTextSearchEnabled;
 
         /// <summary>
         /// Gets the template to use to display the contents of a cell that is not in editing mode.
@@ -79,12 +73,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             return direction switch
             {
-                ListSortDirection.Ascending => _sortAscending,
-                ListSortDirection.Descending => _sortDescending,
+                ListSortDirection.Ascending => Options.CompareAscending,
+                ListSortDirection.Descending => Options.CompareDescending,
                 _ => null,
             };
         }
 
-        string? ITextSearchableColumn<TModel>.SelectValue(TModel model) => TextSearchValueSelector?.Invoke(model);
+        string? ITextSearchableColumn<TModel>.SelectValue(TModel model) => Options.TextSearchValueSelector?.Invoke(model);
     }
 }

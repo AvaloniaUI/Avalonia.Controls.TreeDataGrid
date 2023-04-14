@@ -1,17 +1,9 @@
-﻿using System;
+﻿using Avalonia.Media;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    /// <summary>
-    /// Represents a cell in an <see cref="ITreeDataGridSource"/>.
-    /// </summary>
-    public interface ICell
+    public interface ITextCellOptions
     {
-        /// <summary>
-        /// Gets a value indicating whether the cell can enter edit mode.
-        /// </summary>
-        bool CanEdit { get; }
-
         /// <summary>
         /// Gets a value indicating whether a single tap will begin edit mode on a cell.
         /// </summary>
@@ -21,8 +13,13 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         bool SingleTapEdit { get; }
 
         /// <summary>
-        /// Gets the value of the cell.
+        /// Gets the text trimming mode for the cell.
         /// </summary>
-        object? Value { get; }
+        TextTrimming TextTrimming { get; }
+
+        /// <summary>
+        /// Gets the text alignment mode for the cell.
+        /// </summary>
+        TextAlignment TextAlignment { get; }
     }
 }

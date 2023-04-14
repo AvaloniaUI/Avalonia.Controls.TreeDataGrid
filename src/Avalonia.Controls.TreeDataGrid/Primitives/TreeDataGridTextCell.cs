@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Models.TreeDataGrid;
+﻿using System.ComponentModel;
+using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -39,7 +40,11 @@ namespace Avalonia.Controls.Primitives
         public string? Value
         {
             get => _value;
-            set => SetAndRaise(ValueProperty, ref _value, value);
+            set
+            {
+                if (SetAndRaise(ValueProperty, ref _value, value) && Model is ITextCell cell)
+                    cell.Text = _value;
+            }
         }
 
         public TextAlignment TextAlignment
@@ -57,6 +62,13 @@ namespace Avalonia.Controls.Primitives
             TextTrimming = (model as ITextCell)?.TextTrimming ?? TextTrimming.CharacterEllipsis;
             TextAlignment = (model as ITextCell)?.TextAlignment ?? TextAlignment.Left;
             base.Realize(factory, model, columnIndex, rowIndex);
+            SubscribeToModelChanges();
+        }
+
+        public override void Unrealize()
+        {
+            UnsubscribeFromModelChanges();
+            base.Unrealize();
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -78,6 +90,14 @@ namespace Avalonia.Controls.Primitives
                 _edit.KeyDown += EditKeyDown;
                 _edit.LostFocus += EditLostFocus;
             }
+        }
+
+        protected override void OnModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            base.OnModelPropertyChanged(sender, e);
+
+            if (e.PropertyName == nameof(ITextCell.Value))
+                Value = Model?.Value?.ToString();
         }
 
         private void EditKeyDown(object? sender, KeyEventArgs e)
