@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Documents;
@@ -8,10 +7,8 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Shapes;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -95,6 +92,7 @@ namespace Avalonia.Controls
         private ListSortDirection _userSortDirection;
         private TreeDataGridCellEventArgs? _cellArgs;
         private Canvas? _dragAdorner;
+        private bool _hideDragAdorner;
         private DispatcherTimer? _autoScrollTimer;
         private bool _autoScrollDirection;
 
@@ -448,6 +446,8 @@ namespace Avalonia.Controls
 
         private Canvas? GetOrCreateDragAdorner()
         {
+            _hideDragAdorner = false;
+
             if (_dragAdorner is not null)
                 return _dragAdorner;
 
@@ -512,13 +512,16 @@ namespace Avalonia.Controls
 
         private void HideDragAdorner()
         {
-            if (_dragAdorner is null)
-                return;
+            _hideDragAdorner = true;
 
-            if (_dragAdorner.Parent is AdornerLayer layer)
-                layer.Children.Remove(_dragAdorner);
-
-            _dragAdorner = null;
+            DispatcherTimer.RunOnce(() =>
+            {
+                if (_hideDragAdorner && _dragAdorner?.Parent is AdornerLayer layer)
+                {
+                    layer.Children.Remove(_dragAdorner);
+                    _dragAdorner = null;
+                }
+            }, TimeSpan.FromMilliseconds(50));
         }
 
         private void StopDrag()
