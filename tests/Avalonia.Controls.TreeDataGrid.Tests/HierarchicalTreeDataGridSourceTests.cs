@@ -216,6 +216,22 @@ namespace Avalonia.Controls.TreeDataGridTests
             [Theory]
             [InlineData(false)]
             [InlineData(true)]
+            public void Supports_Adding_Child_To_Expanded_Then_Unexpanded_Root_Node(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+
+                target.Expand(new IndexPath(0));
+                target.Collapse(new IndexPath(0));
+
+                data[0].Children!.Add(new Node { Id = 100, Caption = "New Node 1" });
+
+                AssertState(target, data, 5, sorted);
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
             public void Supports_Inserting_Child_Row(bool sorted)
             {
                 var data = CreateData();
