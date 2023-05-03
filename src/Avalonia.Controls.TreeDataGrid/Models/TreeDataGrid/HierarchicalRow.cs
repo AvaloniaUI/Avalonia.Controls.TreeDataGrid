@@ -211,7 +211,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
             {
-                _owner._controller.OnChildCollectionChanged(_owner, e);
+                if (_owner.IsExpanded)
+                    _owner._controller.OnChildCollectionChanged(_owner, e);
             }
         }
     }
