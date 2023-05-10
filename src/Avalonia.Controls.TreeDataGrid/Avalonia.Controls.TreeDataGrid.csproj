@@ -7,6 +7,12 @@
   <PropertyGroup>
     <PackageId>Avalonia.Controls.TreeDataGrid</PackageId>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <NoWarn>$(NoWarn);AVP1002</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <NoWarn>$(NoWarn);AVP1002</NoWarn>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
     
