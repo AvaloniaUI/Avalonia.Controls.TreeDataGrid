@@ -13,6 +13,7 @@ namespace Avalonia.Controls.Primitives
 {
     public abstract class TreeDataGridPresenterBase<TItem> : Border, IPresenter
     {
+#pragma warning disable AVP1002
         public static readonly DirectProperty<TreeDataGridPresenterBase<TItem>, TreeDataGridElementFactory?>
             ElementFactoryProperty =
                 AvaloniaProperty.RegisterDirect<TreeDataGridPresenterBase<TItem>, TreeDataGridElementFactory?>(
@@ -25,7 +26,7 @@ namespace Avalonia.Controls.Primitives
                 nameof(Items),
                 o => o.Items,
                 (o, v) => o.Items = v);
-
+#pragma warning restore AVP1002
         private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
         private readonly Action<Control> _recycleElement;
         private readonly Action<Control, int> _updateElementIndex;
