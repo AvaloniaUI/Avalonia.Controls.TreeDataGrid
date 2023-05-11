@@ -12,6 +12,8 @@ namespace Avalonia.Controls.Selection
         where TModel : class
     {
         private static readonly Point s_InvalidPoint = new(double.NegativeInfinity, double.NegativeInfinity);
+        private readonly ITreeDataGridColumnSelectionModel _selectedColumns;
+        private ITreeDataGridRowSelectionModel<TModel> _selectedRows;
         private readonly ITreeDataGridSource<TModel> _source;
         private EventHandler? _viewSelectionChanged;
         private Point _pressedPoint = s_InvalidPoint;
@@ -20,26 +22,31 @@ namespace Avalonia.Controls.Selection
         {
             _source = source;
             SelectedCells = Array.Empty<ICell>();
-            SelectedColumns = new TreeDataGridColumnSelectionModel(source.Columns);
-            SelectedRows = new TreeDataGridRowSelectionModel<TModel>(source);
+            _selectedColumns = new TreeDataGridColumnSelectionModel(source.Columns);
+            _selectedRows = new TreeDataGridRowSelectionModel<TModel>(source);
+            _selectedRows.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(_selectedRows.AnchorIndex))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Row anchor changed to {_selectedRows.AnchorIndex}");
+                }
+            };
         }
 
-        public int Count => SelectedColumns.Count * SelectedRows.Count;
+        public int Count => _selectedColumns.Count * _selectedRows.Count;
 
         public bool SingleSelect
         {
-            get => SelectedRows.SingleSelect;
-            set => SelectedColumns.SingleSelect = SelectedRows.SingleSelect = value;
+            get => _selectedRows.SingleSelect;
+            set => _selectedColumns.SingleSelect = _selectedRows.SingleSelect = value;
         }
 
         public IReadOnlyList<ICell> SelectedCells { get; }
-        public ITreeDataGridColumnSelectionModel SelectedColumns { get; }
-        public ITreeDataGridRowSelectionModel<TModel> SelectedRows { get; }
 
         IEnumerable? ITreeDataGridSelection.Source
         {
-            get => ((ITreeDataGridSelection)SelectedRows).Source;
-            set => ((ITreeDataGridSelection)SelectedRows).Source = value;
+            get => ((ITreeDataGridSelection)_selectedRows).Source;
+            set => ((ITreeDataGridSelection)_selectedRows).Source = value;
         }
 
         event EventHandler? ITreeDataGridSelectionInteraction.SelectionChanged
@@ -50,13 +57,13 @@ namespace Avalonia.Controls.Selection
 
         private bool IsSelected(int columnIndex, IndexPath rowIndex)
         {
-            return SelectedColumns.IsSelected(columnIndex) && SelectedRows.IsSelected(rowIndex);
+            return _selectedColumns.IsSelected(columnIndex) && _selectedRows.IsSelected(rowIndex);
         }
 
         public void Select(int columnIndex, IndexPath rowIndex)
         {
-            SelectedColumns.SelectedIndex = columnIndex;
-            SelectedRows.SelectedIndex = rowIndex;
+            _selectedColumns.SelectedIndex = columnIndex;
+            _selectedRows.SelectedIndex = rowIndex;
             _viewSelectionChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -141,8 +148,8 @@ namespace Avalonia.Controls.Selection
                 if (!treeDataGrid.QueryCancelSelection())
                     SelectFromAnchorTo(columnIndex, rowIndex);
             }
-            else if (SelectedColumns.SelectedIndex != columnIndex || 
-                SelectedRows.SelectedIndex != modelIndex ||
+            else if (_selectedColumns.SelectedIndex != columnIndex || 
+                _selectedRows.SelectedIndex != modelIndex ||
                 Count > 1)
             {
                 if (!treeDataGrid.QueryCancelSelection())
@@ -152,23 +159,23 @@ namespace Avalonia.Controls.Selection
 
         private void SelectFromAnchorTo(int columnIndex, int rowIndex)
         {
-            var anchorColumnIndex = SelectedColumns.AnchorIndex;
-            var anchorModelIndex = SelectedRows.AnchorIndex;
+            var anchorColumnIndex = _selectedColumns.AnchorIndex;
+            var anchorModelIndex = _selectedRows.AnchorIndex;
             var anchorRowIndex = _source.Rows.ModelIndexToRowIndex(anchorModelIndex);
 
-            SelectedColumns.BeginBatchUpdate();
-            SelectedColumns.Clear();
-            SelectedColumns.SelectRange(anchorColumnIndex, columnIndex);
-            SelectedColumns.EndBatchUpdate();
+            _selectedColumns.BeginBatchUpdate();
+            _selectedColumns.Clear();
+            _selectedColumns.SelectRange(anchorColumnIndex, columnIndex);
+            _selectedColumns.EndBatchUpdate();
 
-            SelectedRows.BeginBatchUpdate();
-            SelectedRows.Clear();
+            _selectedRows.BeginBatchUpdate();
+            _selectedRows.Clear();
             for (var i = Math.Min(anchorRowIndex, rowIndex); i <= Math.Max(anchorRowIndex, rowIndex); ++i)
             {
-                SelectedRows.Select(_source.Rows.RowIndexToModelIndex(i));
+                _selectedRows.Select(_source.Rows.RowIndexToModelIndex(i));
             }
-            SelectedRows.AnchorIndex = anchorRowIndex;
-            SelectedRows.EndBatchUpdate();
+            _selectedRows.AnchorIndex = anchorModelIndex;
+            _selectedRows.EndBatchUpdate();
 
             _viewSelectionChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -176,7 +183,7 @@ namespace Avalonia.Controls.Selection
         private bool IsSelected(int columnIndex, int rowIndex)
         {
             var modelIndex = _source.Rows.RowIndexToModelIndex(rowIndex);
-            return SelectedColumns.IsSelected(columnIndex) && SelectedRows.IsSelected(modelIndex);
+            return _selectedColumns.IsSelected(columnIndex) && _selectedRows.IsSelected(modelIndex);
         }
     }
 }

@@ -20,15 +20,5 @@ namespace Avalonia.Controls.Selection
         /// Gets the currently selected cells.
         /// </summary>
         IReadOnlyList<ICell> SelectedCells { get; }
-
-        /// <summary>
-        /// Gets the currently selected columns.
-        /// </summary>
-        ITreeDataGridColumnSelectionModel SelectedColumns { get; }
-
-        /// <summary>
-        /// Gets the currently selected rows.
-        /// </summary>
-        ITreeDataGridRowSelectionModel<T> SelectedRows { get; }
     }
 }
