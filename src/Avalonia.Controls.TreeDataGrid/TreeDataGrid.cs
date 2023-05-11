@@ -243,6 +243,20 @@ namespace Avalonia.Controls
             return RowsPresenter?.TryGetElement(rowIndex) as TreeDataGridRow;
         }
 
+        public bool TryGetCell(Control? element, [MaybeNullWhen(false)] out TreeDataGridCell result)
+        {
+            if (element.FindAncestorOfType<TreeDataGridCell>(true) is { } cell && 
+                cell.ColumnIndex >= 0 &&
+                cell.RowIndex >= 0)
+            {
+                result = cell;
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
+
         public bool TryGetRow(Control? element, [MaybeNullWhen(false)] out TreeDataGridRow result)
         {
             if (element is TreeDataGridRow row && row.RowIndex >= 0)
