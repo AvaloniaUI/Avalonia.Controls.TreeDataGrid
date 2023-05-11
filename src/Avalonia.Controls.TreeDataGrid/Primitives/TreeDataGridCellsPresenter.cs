@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Xml.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Layout;
@@ -51,6 +52,12 @@ namespace Avalonia.Controls.Primitives
             if (index < 0 || Rows is null || index >= Rows.Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
             RowIndex = index;
+
+            foreach (var element in RealizedElements)
+            {
+                if (element is TreeDataGridCell { RowIndex: >= 0, ColumnIndex: >= 0 } cell)
+                    cell.UpdateRowIndex(index);
+            }
         }
 
         protected override Size MeasureElement(int index, Control element, Size availableSize)

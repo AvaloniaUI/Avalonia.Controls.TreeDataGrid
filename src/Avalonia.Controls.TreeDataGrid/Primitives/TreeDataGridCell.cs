@@ -196,6 +196,8 @@ namespace Avalonia.Controls.Primitives
             base.OnPropertyChanged(change);
         }
 
+        public void UpdateRowIndex(int index) => RowIndex = index;
+
         internal void UpdateSelection(ITreeDataGridSelectionInteraction? selection)
         {
             IsSelected = selection?.IsCellSelected(ColumnIndex, RowIndex) ?? false;
