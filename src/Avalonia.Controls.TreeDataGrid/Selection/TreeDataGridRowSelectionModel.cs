@@ -384,13 +384,16 @@ namespace Avalonia.Controls.Selection
 
             var commandModifiers = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.CommandModifiers;
             var toggleModifier = commandModifiers is not null ? e.KeyModifiers.HasFlag(commandModifiers) : false;
+            var isRightButton = point.Properties.PointerUpdateKind is PointerUpdateKind.RightButtonPressed or
+                PointerUpdateKind.RightButtonReleased;
+
             UpdateSelection(
                 sender,
                 row.RowIndex,
                 select: true,
                 rangeModifier: e.KeyModifiers.HasFlag(KeyModifiers.Shift),
                 toggleModifier: toggleModifier,
-                rightButton: point.Properties.IsRightButtonPressed);
+                rightButton: isRightButton);
             e.Handled = true;
         }
 

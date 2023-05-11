@@ -122,7 +122,7 @@ namespace Avalonia.Controls.Primitives
 
             if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || 
                 e.Handled ||
-                delta.X < DragDistance && delta.Y < DragDistance ||
+                Math.Abs(delta.X) < DragDistance && Math.Abs(delta.Y) < DragDistance ||
                 _mouseDownPosition == s_InvalidPoint)
                 return;
 

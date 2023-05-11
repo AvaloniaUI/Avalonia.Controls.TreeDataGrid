@@ -1,15 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
-using Avalonia.Data;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -92,7 +91,8 @@ namespace Avalonia.Controls
         private Control? _userSortColumn;
         private ListSortDirection _userSortDirection;
         private TreeDataGridCellEventArgs? _cellArgs;
-        private Border? _dragAdorner;
+        private Canvas? _dragAdorner;
+        private bool _hideDragAdorner;
         private DispatcherTimer? _autoScrollTimer;
         private bool _autoScrollDirection;
 
@@ -444,8 +444,10 @@ namespace Avalonia.Controls
             }
         }
 
-        private Border? GetOrCreateDragAdorner()
+        private Canvas? GetOrCreateDragAdorner()
         {
+            _hideDragAdorner = false;
+
             if (_dragAdorner is not null)
                 return _dragAdorner;
 
@@ -454,22 +456,28 @@ namespace Avalonia.Controls
             if (adornerLayer is null)
                 return null;
 
-            _dragAdorner ??= new Border
+            _dragAdorner ??= new Canvas
             {
-                BorderBrush = Brushes.Black,
-                BorderThickness = new Thickness(2),
+                Children =
+                {
+                    new Rectangle
+                    {
+                        Stroke = TextElement.GetForeground(this),
+                        StrokeThickness = 2,
+                    },
+                },
                 IsHitTestVisible = false,
-                Margin = new Thickness(0, -1),
             };
 
             adornerLayer.Children.Add(_dragAdorner);
-            AdornerLayer.SetIsClipEnabled(_dragAdorner, false);
+            AdornerLayer.SetAdornedElement(_dragAdorner, this);
             return _dragAdorner;
         }
 
         private void ShowDragAdorner(TreeDataGridRow row, TreeDataGridRowDropPosition position)
         {
-            if (position == TreeDataGridRowDropPosition.None)
+            if (position == TreeDataGridRowDropPosition.None ||
+                row.TransformToVisual(this) is not { } transform)
             {
                 HideDragAdorner();
                 return;
@@ -479,31 +487,41 @@ namespace Avalonia.Controls
             if (adorner is null)
                 return;
 
-            AdornerLayer.SetAdornedElement(adorner, row);
+            var rectangle = (Rectangle)adorner.Children[0];
+            var rowBounds = new Rect(row.Bounds.Size).TransformToAABB(transform);
+
+            Canvas.SetLeft(rectangle, rowBounds.Left);
+            rectangle.Width = rowBounds.Width;
 
             switch (position)
             {
                 case TreeDataGridRowDropPosition.Before:
-                    adorner.BorderThickness = new(0, 2, 0, 0);
+                    Canvas.SetTop(rectangle, rowBounds.Top);
+                    rectangle.Height = 0;
                     break;
                 case TreeDataGridRowDropPosition.After:
-                    adorner.BorderThickness = new(0, 0, 0, 2);
+                    Canvas.SetTop(rectangle, rowBounds.Bottom);
+                    rectangle.Height = 0;
                     break;
                 case TreeDataGridRowDropPosition.Inside:
-                    adorner.BorderThickness = new(2);
+                    Canvas.SetTop(rectangle, rowBounds.Top);
+                    rectangle.Height = rowBounds.Height;
                     break;
             }
         }
 
         private void HideDragAdorner()
         {
-            if (_dragAdorner is null)
-                return;
+            _hideDragAdorner = true;
 
-            if (_dragAdorner.Parent is AdornerLayer layer)
-                layer.Children.Remove(_dragAdorner);
-
-            _dragAdorner = null;
+            DispatcherTimer.RunOnce(() =>
+            {
+                if (_hideDragAdorner && _dragAdorner?.Parent is AdornerLayer layer)
+                {
+                    layer.Children.Remove(_dragAdorner);
+                    _dragAdorner = null;
+                }
+            }, TimeSpan.FromMilliseconds(50));
         }
 
         private void StopDrag()
@@ -604,7 +622,10 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnDragLeave(RoutedEventArgs e) => StopDrag();
+        private void OnDragLeave(RoutedEventArgs e)
+        {
+            StopDrag();
+        }
 
         private void OnDrop(DragEventArgs e)
         {

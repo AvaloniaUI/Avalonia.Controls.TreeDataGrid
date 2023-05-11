@@ -94,6 +94,27 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public void UpdateModelIndex(int delta)
         {
             ModelIndexPath = ModelIndexPath[..^1].Append(ModelIndexPath[^1] + delta);
+
+            if (_childRows is null)
+                return;
+
+            var childCount = _childRows.Count;
+
+            for (var i = 0; i < childCount; ++i)
+                _childRows[i].UpdateParentModelIndex(ModelIndexPath);
+        }
+
+        public void UpdateParentModelIndex(IndexPath parentIndex)
+        {
+            ModelIndexPath = parentIndex.Append(ModelIndex);
+
+            if (_childRows is null)
+                return;
+
+            var childCount = _childRows.Count;
+
+            for (var i = 0; i < childCount; ++i)
+                _childRows[i].UpdateParentModelIndex(ModelIndexPath);
         }
 
         void IExpanderRow<TModel>.UpdateShowExpander(IExpanderCell cell, bool value)
@@ -190,7 +211,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
             {
-                _owner._controller.OnChildCollectionChanged(_owner, e);
+                if (_owner.IsExpanded)
+                    _owner._controller.OnChildCollectionChanged(_owner, e);
             }
         }
     }
