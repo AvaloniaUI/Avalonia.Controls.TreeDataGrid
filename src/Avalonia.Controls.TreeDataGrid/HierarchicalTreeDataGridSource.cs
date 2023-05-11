@@ -77,6 +77,7 @@ namespace Avalonia.Controls
             }
         }
 
+        public ITreeDataGridCellSelectionModel<TModel>? CellSelection => Selection as ITreeDataGridCellSelectionModel<TModel>;
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
         public bool IsHierarchical => true;
         public bool IsSorted => _comparison is not null;
