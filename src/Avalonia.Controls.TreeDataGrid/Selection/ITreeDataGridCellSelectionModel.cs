@@ -1,13 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls.Selection
 {
+    /// <summary>
+    /// Maintains the cell selection state for an <see cref="ITreeDataGridSource"/>.
+    /// </summary>
     public interface ITreeDataGridCellSelectionModel : ITreeDataGridSelection
     {
+        /// <summary>
+        /// Occurs when the cell selection changes.
+        /// </summary>
+        event EventHandler<TreeDataGridCellSelectionChangedEventArgs>? SelectionChanged;
     }
 
+    /// <summary>
+    /// Maintains the cell selection state for an <see cref="ITreeDataGridSource"/>.
+    /// </summary>
     public interface ITreeDataGridCellSelectionModel<T> : ITreeDataGridCellSelectionModel
         where T : class
     {
@@ -17,8 +26,13 @@ namespace Avalonia.Controls.Selection
         bool SingleSelect { get; set; }
 
         /// <summary>
-        /// Gets the currently selected cells.
+        /// Gets the indexes of the currently selected cells.
         /// </summary>
-        IReadOnlyList<ICell> SelectedCells { get; }
+        IReadOnlyList<CellIndex> SelectedIndexes { get; }
+
+        /// <summary>
+        /// Occurs when the cell selection changes.
+        /// </summary>
+        new event EventHandler<TreeDataGridCellSelectionChangedEventArgs<T>>? SelectionChanged;
     }
 }

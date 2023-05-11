@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 
@@ -13,24 +12,23 @@ namespace Avalonia.Controls.Selection
     {
         private static readonly Point s_InvalidPoint = new(double.NegativeInfinity, double.NegativeInfinity);
         private readonly ITreeDataGridColumnSelectionModel _selectedColumns;
-        private ITreeDataGridRowSelectionModel<TModel> _selectedRows;
+        private readonly ITreeDataGridRowSelectionModel<TModel> _selectedRows;
+        private readonly SelectedCellIndexes _selectedIndexes;
         private readonly ITreeDataGridSource<TModel> _source;
+        private EventHandler<TreeDataGridCellSelectionChangedEventArgs>? _untypedSelectionChanged;
         private EventHandler? _viewSelectionChanged;
         private Point _pressedPoint = s_InvalidPoint;
+        private bool _columnsChanged;
+        private bool _rowsChanged;
 
         public TreeDataGridCellSelectionModel(ITreeDataGridSource<TModel> source)
         {
             _source = source;
-            SelectedCells = Array.Empty<ICell>();
             _selectedColumns = new TreeDataGridColumnSelectionModel(source.Columns);
             _selectedRows = new TreeDataGridRowSelectionModel<TModel>(source);
-            _selectedRows.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(_selectedRows.AnchorIndex))
-                {
-                    System.Diagnostics.Debug.WriteLine($"Row anchor changed to {_selectedRows.AnchorIndex}");
-                }
-            };
+            _selectedColumns.SelectionChanged += OnSelectedColumnsSelectionChanged;
+            _selectedRows.SelectionChanged += OnSelectedRowsSelectionChanged;
+            _selectedIndexes = new(_selectedColumns, _selectedRows);
         }
 
         public int Count => _selectedColumns.Count * _selectedRows.Count;
@@ -41,7 +39,7 @@ namespace Avalonia.Controls.Selection
             set => _selectedColumns.SingleSelect = _selectedRows.SingleSelect = value;
         }
 
-        public IReadOnlyList<ICell> SelectedCells { get; }
+        public IReadOnlyList<CellIndex> SelectedIndexes => _selectedIndexes;
 
         IEnumerable? ITreeDataGridSelection.Source
         {
@@ -49,10 +47,18 @@ namespace Avalonia.Controls.Selection
             set => ((ITreeDataGridSelection)_selectedRows).Source = value;
         }
 
+        public event EventHandler<TreeDataGridCellSelectionChangedEventArgs<TModel>>? SelectionChanged;
+
         event EventHandler? ITreeDataGridSelectionInteraction.SelectionChanged
         {
             add => _viewSelectionChanged += value;
             remove => _viewSelectionChanged -= value;
+        }
+
+        event EventHandler<TreeDataGridCellSelectionChangedEventArgs>? ITreeDataGridCellSelectionModel.SelectionChanged
+        {
+            add => _untypedSelectionChanged += value;
+            remove => _untypedSelectionChanged -= value;
         }
 
         private bool IsSelected(int columnIndex, IndexPath rowIndex)
@@ -62,9 +68,10 @@ namespace Avalonia.Controls.Selection
 
         public void Select(int columnIndex, IndexPath rowIndex)
         {
+            BeginBatchUpdate();
             _selectedColumns.SelectedIndex = columnIndex;
             _selectedRows.SelectedIndex = rowIndex;
-            _viewSelectionChanged?.Invoke(this, EventArgs.Empty);
+            EndBatchUpdate();
         }
 
         bool ITreeDataGridSelectionInteraction.IsCellSelected(int columnIndex, int rowIndex)
@@ -105,6 +112,27 @@ namespace Avalonia.Controls.Selection
                 var p = e.GetPosition(sender);
                 if (Math.Abs(p.X - _pressedPoint.X) <= 3 || Math.Abs(p.Y - _pressedPoint.Y) <= 3)
                     PointerSelect(sender, cell, e);
+            }
+        }
+
+        private void BeginBatchUpdate()
+        {
+            _selectedColumns.BeginBatchUpdate();
+            _selectedRows.BeginBatchUpdate();
+        }
+
+        private void EndBatchUpdate()
+        {
+            _columnsChanged = _rowsChanged = false;
+            _selectedColumns.EndBatchUpdate();
+            _selectedRows.EndBatchUpdate();
+
+            if (_columnsChanged || _rowsChanged)
+            {
+                var e = new TreeDataGridCellSelectionChangedEventArgs<TModel>();
+                _viewSelectionChanged?.Invoke(this, EventArgs.Empty);
+                SelectionChanged?.Invoke(this, e);
+                _untypedSelectionChanged?.Invoke(this, e);
             }
         }
 
@@ -163,27 +191,36 @@ namespace Avalonia.Controls.Selection
             var anchorModelIndex = _selectedRows.AnchorIndex;
             var anchorRowIndex = _source.Rows.ModelIndexToRowIndex(anchorModelIndex);
 
-            _selectedColumns.BeginBatchUpdate();
+            BeginBatchUpdate();
+
             _selectedColumns.Clear();
             _selectedColumns.SelectRange(anchorColumnIndex, columnIndex);
-            _selectedColumns.EndBatchUpdate();
-
-            _selectedRows.BeginBatchUpdate();
             _selectedRows.Clear();
+
             for (var i = Math.Min(anchorRowIndex, rowIndex); i <= Math.Max(anchorRowIndex, rowIndex); ++i)
             {
                 _selectedRows.Select(_source.Rows.RowIndexToModelIndex(i));
             }
-            _selectedRows.AnchorIndex = anchorModelIndex;
-            _selectedRows.EndBatchUpdate();
 
-            _viewSelectionChanged?.Invoke(this, EventArgs.Empty);
+            _selectedRows.AnchorIndex = anchorModelIndex;
+
+            EndBatchUpdate();
         }
 
         private bool IsSelected(int columnIndex, int rowIndex)
         {
             var modelIndex = _source.Rows.RowIndexToModelIndex(rowIndex);
             return _selectedColumns.IsSelected(columnIndex) && _selectedRows.IsSelected(modelIndex);
+        }
+
+        private void OnSelectedColumnsSelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs e)
+        {
+            _columnsChanged = true;
+        }
+
+        private void OnSelectedRowsSelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs<TModel> e)
+        {
+            _rowsChanged = true;
         }
     }
 }

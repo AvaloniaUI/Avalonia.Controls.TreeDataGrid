@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <IsPackable>True</IsPackable>
+    <LangVersion>10</LangVersion>
     <RootNamespace>Avalonia.Controls</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
