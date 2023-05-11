@@ -113,7 +113,6 @@ namespace Avalonia.Controls.Selection
                     }
                 }
             }
-
         }
 
         protected void HandleTextInput(string? text, TreeDataGrid treeDataGrid, int selectedRowIndex)

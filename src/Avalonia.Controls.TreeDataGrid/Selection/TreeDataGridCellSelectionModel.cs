@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 
@@ -18,6 +19,7 @@ namespace Avalonia.Controls.Selection
         private EventHandler<TreeDataGridCellSelectionChangedEventArgs>? _untypedSelectionChanged;
         private EventHandler? _viewSelectionChanged;
         private Point _pressedPoint = s_InvalidPoint;
+        private (int x, int y) _rangeAnchor = (-1, -1);
         private bool _columnsChanged;
         private bool _rowsChanged;
 
@@ -61,22 +63,49 @@ namespace Avalonia.Controls.Selection
             remove => _untypedSelectionChanged -= value;
         }
 
-        private bool IsSelected(int columnIndex, IndexPath rowIndex)
+        public bool IsSelected(int columnIndex, IndexPath rowIndex)
         {
             return _selectedColumns.IsSelected(columnIndex) && _selectedRows.IsSelected(rowIndex);
         }
 
         public void Select(int columnIndex, IndexPath rowIndex)
         {
-            BeginBatchUpdate();
-            _selectedColumns.SelectedIndex = columnIndex;
-            _selectedRows.SelectedIndex = rowIndex;
-            EndBatchUpdate();
+            var ri = _source.Rows.ModelIndexToRowIndex(rowIndex);
+            Select(columnIndex, ri, rowIndex);
         }
 
         bool ITreeDataGridSelectionInteraction.IsCellSelected(int columnIndex, int rowIndex)
         {
             return IsSelected(columnIndex, rowIndex);
+        }
+
+        void ITreeDataGridSelectionInteraction.OnKeyDown(TreeDataGrid sender, KeyEventArgs e)
+        {
+            var direction = e.Key.ToNavigationDirection();
+            var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+
+            if (sender.RowsPresenter is null ||
+                sender.Columns is null ||
+                sender.Rows is null ||
+                e.Handled || !direction.HasValue)
+                return;
+
+            var (x, y) = direction switch
+            {
+                NavigationDirection.Up => (0, -1),
+                NavigationDirection.Down => (0, 1),
+                NavigationDirection.Left => (-1, 0),
+                NavigationDirection.Right => (1, 0),
+                _ => (0, 0)
+            };
+
+            var columnIndex = Math.Clamp(_rangeAnchor.x + x, 0, sender.Columns.Count - 1);
+            var rowIndex = Math.Clamp(_rangeAnchor.y + y, 0, sender.Rows.Count - 1);
+
+            if (!shift)
+                Select(columnIndex, rowIndex);
+            else
+                SelectFromAnchorTo(columnIndex, rowIndex);
         }
 
         void ITreeDataGridSelectionInteraction.OnPointerPressed(TreeDataGrid sender, PointerPressedEventArgs e)
@@ -169,7 +198,7 @@ namespace Avalonia.Controls.Selection
             if (rightButton)
             {
                 if (IsSelected(columnIndex, modelIndex) == false && !treeDataGrid.QueryCancelSelection())
-                    Select(columnIndex, modelIndex);
+                    Select(columnIndex, rowIndex, modelIndex);
             }
             else if (range)
             {
@@ -181,8 +210,23 @@ namespace Avalonia.Controls.Selection
                 Count > 1)
             {
                 if (!treeDataGrid.QueryCancelSelection())
-                    Select(columnIndex, modelIndex);
+                    Select(columnIndex, rowIndex, modelIndex);
             }
+        }
+
+        private void Select(int columnIndex, int rowIndex)
+        {
+            var modelIndex = _source.Rows.RowIndexToModelIndex(rowIndex);
+            Select(columnIndex, rowIndex, modelIndex);
+        }
+
+        private void Select(int columnIndex, int rowIndex, IndexPath modelndex)
+        {
+            BeginBatchUpdate();
+            _selectedColumns.SelectedIndex = columnIndex;
+            _selectedRows.SelectedIndex = modelndex;
+            _rangeAnchor = (columnIndex, rowIndex);
+            EndBatchUpdate();
         }
 
         private void SelectFromAnchorTo(int columnIndex, int rowIndex)
@@ -203,6 +247,7 @@ namespace Avalonia.Controls.Selection
             }
 
             _selectedRows.AnchorIndex = anchorModelIndex;
+            _rangeAnchor = (columnIndex, rowIndex);
 
             EndBatchUpdate();
         }
