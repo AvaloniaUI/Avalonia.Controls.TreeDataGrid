@@ -16,8 +16,8 @@ namespace Avalonia.Controls.Primitives
                 nameof(Columns),
                 o => o.Columns);
 
-        public static readonly DirectProperty<TreeDataGridRow, IElementFactory?> ElementFactoryProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGridRow, IElementFactory?>(
+        public static readonly DirectProperty<TreeDataGridRow, TreeDataGridElementFactory?> ElementFactoryProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridRow, TreeDataGridElementFactory?>(
                 nameof(ElementFactory),
                 o => o.ElementFactory,
                 (o, v) => o.ElementFactory = v);
@@ -34,7 +34,7 @@ namespace Avalonia.Controls.Primitives
                 o => o.Rows);
 
         private IColumns? _columns;
-        private IElementFactory? _elementFactory;
+        private TreeDataGridElementFactory? _elementFactory;
         private bool _isSelected;
         private IRows? _rows;
         private Point _mouseDownPosition = s_InvalidPoint;
@@ -45,7 +45,7 @@ namespace Avalonia.Controls.Primitives
             private set => SetAndRaise(ColumnsProperty, ref _columns, value);
         }
 
-        public IElementFactory? ElementFactory
+        public TreeDataGridElementFactory? ElementFactory
         {
             get => _elementFactory;
             set => SetAndRaise(ElementFactoryProperty, ref _elementFactory, value);
@@ -69,7 +69,7 @@ namespace Avalonia.Controls.Primitives
         public int RowIndex { get; private set; }
 
         public void Realize(
-            IElementFactory? elementFactory,
+            TreeDataGridElementFactory? elementFactory,
             IColumns? columns,
             IRows? rows,
             int rowIndex)
@@ -81,9 +81,9 @@ namespace Avalonia.Controls.Primitives
             UpdateIndex(rowIndex);
         }
 
-        public IControl? TryGetCell(int columnIndex)
+        public Control? TryGetCell(int columnIndex)
         {
-            return CellsPresenter?.TryGetElement(columnIndex) as ITreeDataGridCell;
+            return CellsPresenter?.TryGetElement(columnIndex);
         }
 
         public void UpdateIndex(int index)
@@ -122,7 +122,7 @@ namespace Avalonia.Controls.Primitives
 
             if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || 
                 e.Handled ||
-                delta.X < DragDistance && delta.Y < DragDistance ||
+                Math.Abs(delta.X) < DragDistance && Math.Abs(delta.Y) < DragDistance ||
                 _mouseDownPosition == s_InvalidPoint)
                 return;
 

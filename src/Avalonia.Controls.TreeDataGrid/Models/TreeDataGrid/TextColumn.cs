@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq.Expressions;
-using Avalonia.Media;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -12,9 +11,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public class TextColumn<TModel, TValue> : ColumnBase<TModel, TValue>, ITextSearchableColumn<TModel>
         where TModel : class
     {
-        private readonly TextTrimming _textTrimming;
-        private readonly TextWrapping _textWrapping;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="TextColumn{TModel, TValue}"/> class.
         /// </summary>
@@ -31,10 +27,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             Expression<Func<TModel, TValue?>> getter,
             GridLength? width = null,
             TextColumnOptions<TModel>? options = null)
-            : base(header, getter, null, width, options)
+            : base(header, getter, null, width, options ?? new())
         {
-            _textTrimming = options?.TextTrimming ?? TextTrimming.CharacterEllipsis;
-            _textWrapping = options?.TextWrapping ?? TextWrapping.NoWrap;
         }
 
         /// <summary>
@@ -58,21 +52,17 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             Action<TModel, TValue?> setter,
             GridLength? width = null,
             TextColumnOptions<TModel>? options = null)
-            : base(header, getter, setter, width, options)
+            : base(header, getter, setter, width, options ?? new())
         {
-            _textTrimming = options?.TextTrimming ?? TextTrimming.CharacterEllipsis;
-            _textWrapping = options?.TextWrapping ?? TextWrapping.NoWrap;
         }
 
-        public bool IsTextSearchEnabled { get; set; }
+        public new TextColumnOptions<TModel> Options => (TextColumnOptions<TModel>)base.Options;
+
+        bool ITextSearchableColumn<TModel>.IsTextSearchEnabled => Options?.IsTextSearchEnabled ?? false;
 
         public override ICell CreateCell(IRow<TModel> row)
         {
-            return new TextCell<TValue?>(
-                CreateBindingExpression(row.Model),
-                Binding.Write is null,
-                _textTrimming,
-                _textWrapping);
+            return new TextCell<TValue?>(CreateBindingExpression(row.Model), Binding.Write is null, Options);
         }
 
         string? ITextSearchableColumn<TModel>.SelectValue(TModel model)

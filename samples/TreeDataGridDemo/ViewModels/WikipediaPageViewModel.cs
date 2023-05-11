@@ -29,10 +29,7 @@ namespace TreeDataGridDemo.ViewModels
                 Columns =
                 {
                     new TemplateColumn<OnThisDayArticle>("Image", "WikipediaImageCell"),
-                    new TextColumn<OnThisDayArticle, string?>("Title", x => x.Titles!.Normalized) 
-                    { 
-                        IsTextSearchEnabled = true 
-                    },
+                    new TextColumn<OnThisDayArticle, string?>("Title", x => x.Titles!.Normalized),
                     new TextColumn<OnThisDayArticle, string?>("Extract", x => x.Extract, GridLength.Star, wrap)
                 }
             };

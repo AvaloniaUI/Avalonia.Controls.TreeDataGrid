@@ -33,6 +33,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         public bool CanEdit => false;
+        public bool SingleTapEdit => false;
         public bool IsReadOnly { get; }
         public bool IsThreeState { get; }
 

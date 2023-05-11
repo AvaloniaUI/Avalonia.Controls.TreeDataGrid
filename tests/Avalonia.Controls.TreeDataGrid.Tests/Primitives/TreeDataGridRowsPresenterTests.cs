@@ -238,7 +238,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         }
 
         [Fact]
-        public void Should_Remove_Logical_And_Visual_Children_On_Empty_Collection_Assignment_To_Items()
+        public void Should_Remove_Children_On_Empty_Collection_Assignment_To_Items()
         {
             using var app = App();
 
@@ -248,7 +248,6 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             items.RemoveRange(1, 99);
             Layout(target);
             Assert.Single(target.Items);
-            Assert.Single(target.GetLogicalChildren());
             Assert.Single(target.GetVisualChildren());
 
             target.Items = new AnonymousSortableRows<Model>(TreeDataGridItemsSourceView<Model>.Empty, null);
@@ -264,7 +263,6 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(5, target.Items.Count);
 
             Assert.Equal(5, target.GetVisualChildren().Count());
-            Assert.Equal(5, target.GetLogicalChildren().Count());
         }
 
         [Fact]
@@ -477,7 +475,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         {
             Assert.NotNull(target);
 
-            var rowIndexes = target!.GetLogicalChildren()
+            var rowIndexes = target!.GetVisualChildren()
                 .Cast<TreeDataGridRow>()
                 .Where(x => x.IsVisible)
                 .Select(x => x.RowIndex)
@@ -589,7 +587,6 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         private static IDisposable App()
         {
             var scope = AvaloniaLocator.EnterScope();
-            AvaloniaLocator.CurrentMutable.Bind<IStyler>().ToConstant(new Styler());
             return scope;
         }
 

@@ -45,7 +45,7 @@
     <TabItem Header="Files">
       <DockPanel>
         <DockPanel DockPanel.Dock="Top" Margin="0 4">
-          <ComboBox Items="{Binding Files.Drives}"
+          <ComboBox ItemsSource="{Binding Files.Drives}"
                     SelectedItem="{Binding Files.SelectedDrive}"
                     DockPanel.Dock="Left"/>
           <TextBox Text="{Binding Files.SelectedPath, Mode=OneWay}"

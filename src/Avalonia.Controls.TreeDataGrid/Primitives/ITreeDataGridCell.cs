@@ -2,11 +2,11 @@
 
 namespace Avalonia.Controls.Primitives
 {
-    internal interface ITreeDataGridCell : IControl, ISelectable
+    internal interface ITreeDataGridCell
     {
         int ColumnIndex { get; }
 
-        void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex);
+        void Realize(TreeDataGridElementFactory factory, ICell model, int columnIndex, int rowIndex);
         void Unrealize();
     }
 }

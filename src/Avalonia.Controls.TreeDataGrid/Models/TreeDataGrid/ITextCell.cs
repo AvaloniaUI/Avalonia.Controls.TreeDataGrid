@@ -9,6 +9,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public interface ITextCell : ICell
     {
         /// <summary>
+        /// Gets or sets the cell's value as a string.
+        /// </summary>
+        string? Text { get; set; }
+
+        /// <summary>
         /// Gets the cell's text trimming mode.
         /// </summary>
         TextTrimming TextTrimming { get; }

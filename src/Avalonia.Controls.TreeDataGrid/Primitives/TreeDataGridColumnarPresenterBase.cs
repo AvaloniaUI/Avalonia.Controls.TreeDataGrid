@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -16,13 +17,13 @@ namespace Avalonia.Controls.Primitives
     {
         protected IColumns? Columns => Items as IColumns;
 
-        protected sealed override Size GetInitialConstraint(IControl element, int index, Size availableSize)
+        protected sealed override Size GetInitialConstraint(Control element, int index, Size availableSize)
         {
             var column = (IUpdateColumnLayout)Columns![index];
             return new Size(Math.Min(availableSize.Width, column.MaxActualWidth), availableSize.Height);
         }
 
-        protected sealed override bool NeedsFinalMeasurePass(int firstIndex, IReadOnlyList<IControl?> elements)
+        protected sealed override bool NeedsFinalMeasurePass(int firstIndex, IReadOnlyList<Control?> elements)
         {
             var columns = Columns!;
 
@@ -33,8 +34,12 @@ namespace Avalonia.Controls.Primitives
             for (var i = 0; i < elements.Count; i++)
             {
                 var e = elements[i];
-                if (e?.PreviousMeasure!.Value.Width > columns[i + firstIndex].ActualWidth)
-                    return true;
+                if (e is not null)
+                {
+                    var previous = LayoutInformation.GetPreviousMeasureConstraint(e)!.Value;
+                    if (previous.Width > columns[i + firstIndex].ActualWidth)
+                        return true;
+                }
             }
 
             return false;
@@ -45,7 +50,7 @@ namespace Avalonia.Controls.Primitives
             return ((IColumns)Items!).GetColumnAt(position);
         }
 
-        protected sealed override Size GetFinalConstraint(IControl element, int index, Size availableSize)
+        protected sealed override Size GetFinalConstraint(Control element, int index, Size availableSize)
         {
             var column = Columns![index];
             return new(column.ActualWidth, double.PositiveInfinity);

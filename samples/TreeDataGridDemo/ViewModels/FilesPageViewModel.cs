@@ -45,7 +45,7 @@ namespace TreeDataGridDemo.ViewModels
                         null,
                         x => x.IsChecked,
                         (o, v) => o.IsChecked = v,
-                        options: new ColumnOptions<FileTreeNodeModel>
+                        options: new()
                         {
                             CanUserResizeColumn = false,
                         }),
@@ -54,22 +54,20 @@ namespace TreeDataGridDemo.ViewModels
                             "Name",
                             "FileNameCell",
                             new GridLength(1, GridUnitType.Star),
-                            new ColumnOptions<FileTreeNodeModel>
+                            new()
                             {
                                 CompareAscending = FileTreeNodeModel.SortAscending(x => x.Name),
                                 CompareDescending = FileTreeNodeModel.SortDescending(x => x.Name),
-                            })
-                        {
-                            IsTextSearchEnabled = true,
-                            TextSearchValueSelector = x => x.Name
-                        },
+                                IsTextSearchEnabled = true,
+                                TextSearchValueSelector = x => x.Name
+                            }),
                         x => x.Children,
                         x => x.HasChildren,
                         x => x.IsExpanded),
                     new TextColumn<FileTreeNodeModel, long?>(
                         "Size",
                         x => x.Size,
-                        options: new TextColumnOptions<FileTreeNodeModel>
+                        options: new()
                         {
                             CompareAscending = FileTreeNodeModel.SortAscending(x => x.Size),
                             CompareDescending = FileTreeNodeModel.SortDescending(x => x.Size),
@@ -77,7 +75,7 @@ namespace TreeDataGridDemo.ViewModels
                     new TextColumn<FileTreeNodeModel, DateTimeOffset?>(
                         "Modified",
                         x => x.Modified,
-                        options: new TextColumnOptions<FileTreeNodeModel>
+                        options: new()
                         {
                             CompareAscending = FileTreeNodeModel.SortAscending(x => x.Modified),
                             CompareDescending = FileTreeNodeModel.SortDescending(x => x.Modified),
@@ -118,11 +116,9 @@ namespace TreeDataGridDemo.ViewModels
             {
                 if (s_iconConverter is null)
                 {
-                    var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-
-                    using (var fileStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
-                    using (var folderStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
-                    using (var folderOpenStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
+                    using (var fileStream = AssetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
+                    using (var folderStream = AssetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
+                    using (var folderOpenStream = AssetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
                     {
                         var fileIcon = new Bitmap(fileStream);
                         var folderIcon = new Bitmap(folderStream);
