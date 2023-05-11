@@ -116,11 +116,9 @@ namespace TreeDataGridDemo.ViewModels
             {
                 if (s_iconConverter is null)
                 {
-                    var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-
-                    using (var fileStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
-                    using (var folderStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
-                    using (var folderOpenStream = assetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
+                    using (var fileStream = AssetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
+                    using (var folderStream = AssetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
+                    using (var folderOpenStream = AssetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
                     {
                         var fileIcon = new Bitmap(fileStream);
                         var folderIcon = new Bitmap(folderStream);
