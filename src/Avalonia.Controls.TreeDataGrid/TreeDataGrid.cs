@@ -180,31 +180,26 @@ namespace Avalonia.Controls
             {
                 if (_source != value)
                 {
-                    if (value != null)
-                    {
-                        value.Sorted += Source_Sorted;
-                    }
-
+                    if (SelectionInteraction != null)
+                        SelectionInteraction.SelectionChanged -= OnSelectionInteractionChanged;
                     if (_source != null)
-                    {
-                        _source.Sorted -= Source_Sorted;
-                    }
-
-                    void Source_Sorted()
-                    {
-                        RowsPresenter?.RecycleAllElements();
-                        RowsPresenter?.InvalidateMeasure();
-                    }
+                        _source.Sorted -= OnSourceSorted;
 
                     var oldSource = _source;
                     _source = value;
                     Columns = _source?.Columns;
                     Rows = _source?.Rows;
-                    SelectionInteraction = value?.Selection as ITreeDataGridSelectionInteraction;
+                    SelectionInteraction = _source?.Selection as ITreeDataGridSelectionInteraction;
+
+                    if (_source != null)
+                        _source.Sorted += OnSourceSorted;
+                    if (SelectionInteraction != null)
+                        SelectionInteraction.SelectionChanged += OnSelectionInteractionChanged;
+
                     RaisePropertyChanged(
                         SourceProperty,
                         oldSource,
-                        oldSource);
+                        _source);
                 }
             }
         }
@@ -679,6 +674,17 @@ namespace Avalonia.Controls
                 else
                     scroll.LineDown();
             }
+        }
+
+        private void OnSelectionInteractionChanged(object? sender, EventArgs e)
+        {
+            RowsPresenter?.UpdateSelection(SelectionInteraction);
+        }
+
+        private void OnSourceSorted()
+        {
+            RowsPresenter?.RecycleAllElements();
+            RowsPresenter?.InvalidateMeasure();
         }
 
         private static TreeDataGridRowDropPosition GetDropPosition(
