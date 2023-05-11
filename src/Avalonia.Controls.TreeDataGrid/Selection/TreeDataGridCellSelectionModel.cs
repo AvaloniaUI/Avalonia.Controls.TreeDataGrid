@@ -5,9 +5,12 @@ using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls.Selection
 {
-    public class TreeDataGridCellSelectionModel<TModel> : ITreeDataGridCellSelectionModel<TModel>
+    public class TreeDataGridCellSelectionModel<TModel> : ITreeDataGridCellSelectionModel<TModel>,
+        ITreeDataGridSelectionInteraction
         where TModel : class
     {
+        private EventHandler? _viewSelectionChanged;
+
         public TreeDataGridCellSelectionModel(ITreeDataGridSource<TModel> source)
         {
             SelectedCells = Array.Empty<ICell>();
@@ -29,6 +32,12 @@ namespace Avalonia.Controls.Selection
         {
             get => ((ITreeDataGridSelection)SelectedRows).Source;
             set => ((ITreeDataGridSelection)SelectedRows).Source = value;
+        }
+
+        event EventHandler? ITreeDataGridSelectionInteraction.SelectionChanged
+        {
+            add => _viewSelectionChanged += value;
+            remove => _viewSelectionChanged -= value;
         }
     }
 }

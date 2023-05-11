@@ -3,6 +3,7 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -80,7 +81,7 @@ namespace Avalonia.Controls.Primitives
 
         internal void UpdateSelection(ITreeDataGridSelectionInteraction? selection)
         {
-            foreach (var element in VisualChildren)
+            foreach (var element in RealizedElements)
             {
                 if (element is TreeDataGridRow { RowIndex: >= 0 } row)
                     row.UpdateSelection(selection);
@@ -100,7 +101,7 @@ namespace Avalonia.Controls.Primitives
 
         private ITreeDataGridSelectionInteraction? GetSelection()
         {
-            return (TemplatedParent as TreeDataGrid)?.SelectionInteraction ?? null;
+            return this.FindAncestorOfType<TreeDataGrid>()?.SelectionInteraction;
         }
 
         public int GetChildIndex(ILogical child)

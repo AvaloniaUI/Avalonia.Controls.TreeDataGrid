@@ -151,6 +151,7 @@ namespace Avalonia.Controls.Primitives
         internal void UpdateSelection(ITreeDataGridSelectionInteraction? selection)
         {
             IsSelected = selection?.IsRowSelected(RowIndex) ?? false;
+            CellsPresenter?.UpdateSelection(selection);
         }
     }
 }

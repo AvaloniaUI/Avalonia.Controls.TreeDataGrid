@@ -1,8 +1,10 @@
 ﻿using System;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -61,7 +63,7 @@ namespace Avalonia.Controls.Primitives
         {
             var model = _rows!.RealizeCell(column, index, RowIndex);
             var cell = (TreeDataGridCell)GetElementFromFactory(model, index, this);
-            cell.Realize(ElementFactory!, model, index, RowIndex);
+            cell.Realize(ElementFactory!, GetSelection(), model, index, RowIndex);
             return cell;
         }
 
@@ -76,7 +78,7 @@ namespace Avalonia.Controls.Primitives
             else if (cell.ColumnIndex == -1 && cell.RowIndex == -1)
             {
                 var model = _rows!.RealizeCell(column, index, RowIndex);
-                ((TreeDataGridCell)element).Realize(ElementFactory!, model, index, RowIndex);
+                ((TreeDataGridCell)element).Realize(ElementFactory!, GetSelection(), model, index, RowIndex);
                 ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
             }
             else
@@ -104,6 +106,20 @@ namespace Avalonia.Controls.Primitives
 
             if (change.Property == BackgroundProperty)
                 InvalidateVisual();
+        }
+        
+        internal void UpdateSelection(ITreeDataGridSelectionInteraction? selection)
+        {
+            foreach (var element in RealizedElements)
+            {
+                if (element is TreeDataGridCell { RowIndex: >= 0, ColumnIndex: >= 0 } cell)
+                    cell.UpdateSelection(selection);
+            }
+        }
+
+        private ITreeDataGridSelectionInteraction? GetSelection()
+        {
+            return this.FindAncestorOfType<TreeDataGrid>()?.SelectionInteraction;
         }
 
         public int GetChildIndex(ILogical child)
