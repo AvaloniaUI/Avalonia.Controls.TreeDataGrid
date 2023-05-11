@@ -119,17 +119,12 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 if (_contentContainer.Child is ITreeDataGridCell innerCell)
-                    innerCell.Realize(factory, GetSelection(), innerModel, ColumnIndex, RowIndex);
+                    innerCell.Realize(factory, null, innerModel, ColumnIndex, RowIndex);
             }
             else if (_contentContainer.Child is ITreeDataGridCell innerCell)
             {
                 innerCell.Unrealize();
             }
-        }
-
-        private ITreeDataGridSelectionInteraction? GetSelection()
-        {
-            return this.FindAncestorOfType<TreeDataGrid>()?.SelectionInteraction;
         }
 
         private void ModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
