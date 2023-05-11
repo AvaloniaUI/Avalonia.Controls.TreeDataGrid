@@ -41,6 +41,16 @@ namespace Avalonia.Controls.Selection
             set => _selectedColumns.SingleSelect = _selectedRows.SingleSelect = value;
         }
 
+        public CellIndex SelectedIndex
+        {
+            get => new(_selectedColumns.SelectedIndex, _selectedRows.SelectedIndex);
+            set
+            {
+                var rowIndex = _source.Rows.ModelIndexToRowIndex(value.RowIndex);
+                Select(value.ColumnIndex, rowIndex, value.RowIndex);
+            }
+        }
+
         public IReadOnlyList<CellIndex> SelectedIndexes => _selectedIndexes;
 
         IEnumerable? ITreeDataGridSelection.Source
@@ -66,12 +76,6 @@ namespace Avalonia.Controls.Selection
         public bool IsSelected(int columnIndex, IndexPath rowIndex)
         {
             return _selectedColumns.IsSelected(columnIndex) && _selectedRows.IsSelected(rowIndex);
-        }
-
-        public void Select(int columnIndex, IndexPath rowIndex)
-        {
-            var ri = _source.Rows.ModelIndexToRowIndex(rowIndex);
-            Select(columnIndex, ri, rowIndex);
         }
 
         bool ITreeDataGridSelectionInteraction.IsCellSelected(int columnIndex, int rowIndex)
@@ -237,9 +241,9 @@ namespace Avalonia.Controls.Selection
 
             BeginBatchUpdate();
 
-            _selectedColumns.Clear();
+            _selectedColumns.SelectedIndex = anchorColumnIndex;
             _selectedColumns.SelectRange(anchorColumnIndex, columnIndex);
-            _selectedRows.Clear();
+            _selectedRows.SelectedIndex = anchorModelIndex;
 
             for (var i = Math.Min(anchorRowIndex, rowIndex); i <= Math.Max(anchorRowIndex, rowIndex); ++i)
             {

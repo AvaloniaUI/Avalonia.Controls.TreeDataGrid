@@ -26,6 +26,11 @@ namespace Avalonia.Controls.Selection
         bool SingleSelect { get; set; }
 
         /// <summary>
+        /// Gets or sets the index of the currently selected cell.
+        /// </summary>
+        CellIndex SelectedIndex { get; set; }
+
+        /// <summary>
         /// Gets the indexes of the currently selected cells.
         /// </summary>
         IReadOnlyList<CellIndex> SelectedIndexes { get; }
@@ -34,5 +39,12 @@ namespace Avalonia.Controls.Selection
         /// Occurs when the cell selection changes.
         /// </summary>
         new event EventHandler<TreeDataGridCellSelectionChangedEventArgs<T>>? SelectionChanged;
+
+        /// <summary>
+        /// Checks whether the specified cell is selected.
+        /// </summary>
+        /// <param name="columnIndex">The column index of the cell.</param>
+        /// <param name="rowIndex">The model index of the cell.</param>
+        public bool IsSelected(int columnIndex, IndexPath rowIndex);
     }
 }
