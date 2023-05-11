@@ -103,8 +103,9 @@ namespace Avalonia.Controls.Selection
                 _ => (0, 0)
             };
 
-            var columnIndex = Math.Clamp(_rangeAnchor.x + x, 0, sender.Columns.Count - 1);
-            var rowIndex = Math.Clamp(_rangeAnchor.y + y, 0, sender.Rows.Count - 1);
+            var anchor = shift ? _rangeAnchor : GetAnchor();
+            var columnIndex = Math.Clamp(anchor.x + x, 0, sender.Columns.Count - 1);
+            var rowIndex = Math.Clamp(anchor.y + y, 0, sender.Rows.Count - 1);
 
             if (!shift)
                 Select(columnIndex, rowIndex);
@@ -184,38 +185,16 @@ namespace Avalonia.Controls.Selection
             e.Handled = true;
         }
 
-        private void UpdateSelection(
-            TreeDataGrid treeDataGrid,
-            int columnIndex,
-            int rowIndex,
-            bool rangeModifier = false,
-            bool rightButton = false)
+        private (int x, int y) GetAnchor()
+        {
+            var anchorModelIndex = _selectedRows.AnchorIndex;
+            return (_selectedColumns.AnchorIndex, _source.Rows.ModelIndexToRowIndex(anchorModelIndex));
+        }
+
+        private bool IsSelected(int columnIndex, int rowIndex)
         {
             var modelIndex = _source.Rows.RowIndexToModelIndex(rowIndex);
-
-            if (modelIndex == default)
-                return;
-
-            var multi = !SingleSelect;
-            var range = multi && rangeModifier;
-
-            if (rightButton)
-            {
-                if (IsSelected(columnIndex, modelIndex) == false && !treeDataGrid.QueryCancelSelection())
-                    Select(columnIndex, rowIndex, modelIndex);
-            }
-            else if (range)
-            {
-                if (!treeDataGrid.QueryCancelSelection())
-                    SelectFromAnchorTo(columnIndex, rowIndex);
-            }
-            else if (_selectedColumns.SelectedIndex != columnIndex || 
-                _selectedRows.SelectedIndex != modelIndex ||
-                Count > 1)
-            {
-                if (!treeDataGrid.QueryCancelSelection())
-                    Select(columnIndex, rowIndex, modelIndex);
-            }
+            return _selectedColumns.IsSelected(columnIndex) && _selectedRows.IsSelected(modelIndex);
         }
 
         private void Select(int columnIndex, int rowIndex)
@@ -255,11 +234,39 @@ namespace Avalonia.Controls.Selection
 
             EndBatchUpdate();
         }
-
-        private bool IsSelected(int columnIndex, int rowIndex)
+        
+        private void UpdateSelection(
+            TreeDataGrid treeDataGrid,
+            int columnIndex,
+            int rowIndex,
+            bool rangeModifier = false,
+            bool rightButton = false)
         {
             var modelIndex = _source.Rows.RowIndexToModelIndex(rowIndex);
-            return _selectedColumns.IsSelected(columnIndex) && _selectedRows.IsSelected(modelIndex);
+
+            if (modelIndex == default)
+                return;
+
+            var multi = !SingleSelect;
+            var range = multi && rangeModifier;
+
+            if (rightButton)
+            {
+                if (IsSelected(columnIndex, modelIndex) == false && !treeDataGrid.QueryCancelSelection())
+                    Select(columnIndex, rowIndex, modelIndex);
+            }
+            else if (range)
+            {
+                if (!treeDataGrid.QueryCancelSelection())
+                    SelectFromAnchorTo(columnIndex, rowIndex);
+            }
+            else if (_selectedColumns.SelectedIndex != columnIndex || 
+                _selectedRows.SelectedIndex != modelIndex ||
+                Count > 1)
+            {
+                if (!treeDataGrid.QueryCancelSelection())
+                    Select(columnIndex, rowIndex, modelIndex);
+            }
         }
 
         private void OnSelectedColumnsSelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs e)
