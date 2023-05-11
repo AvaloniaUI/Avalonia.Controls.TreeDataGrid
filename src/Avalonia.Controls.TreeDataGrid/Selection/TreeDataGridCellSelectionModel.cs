@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 
 namespace Avalonia.Controls.Selection
@@ -22,6 +23,8 @@ namespace Avalonia.Controls.Selection
             SelectedColumns = new TreeDataGridColumnSelectionModel(source.Columns);
             SelectedRows = new TreeDataGridRowSelectionModel<TModel>(source);
         }
+
+        public int Count => SelectedColumns.Count * SelectedRows.Count;
 
         public bool SingleSelect
         {
@@ -45,10 +48,15 @@ namespace Avalonia.Controls.Selection
             remove => _viewSelectionChanged -= value;
         }
 
+        private bool IsSelected(int columnIndex, IndexPath rowIndex)
+        {
+            return SelectedColumns.IsSelected(columnIndex) && SelectedRows.IsSelected(rowIndex);
+        }
+
         public void Select(int columnIndex, IndexPath rowIndex)
         {
-            SelectedColumns.Select(columnIndex);
-            SelectedRows.Select(rowIndex);
+            SelectedColumns.SelectedIndex = columnIndex;
+            SelectedRows.SelectedIndex = rowIndex;
             _viewSelectionChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -62,15 +70,17 @@ namespace Avalonia.Controls.Selection
             // Select a cell on pointer pressed if:
             //
             // - It's a mouse click, not touch: we don't want to select on touch scroll gesture start
+            // - The cell isn't already selected: we don't want to deselect an existing multiple selection
+            //   if the user is trying to drag multiple cells
             //
             // Otherwise select on pointer release.
             if (!e.Handled &&
                 e.Pointer.Type == PointerType.Mouse &&
                 e.Source is Control source &&
                 sender.TryGetCell(source, out var cell) &&
-                _source.Rows.RowIndexToModelIndex(cell.RowIndex) is { } modelIndex)
+                !IsSelected(cell.ColumnIndex, cell.RowIndex))
             {
-                Select(cell.ColumnIndex, modelIndex);
+                PointerSelect(sender, cell, e);
             }
             else
             {
@@ -78,11 +88,95 @@ namespace Avalonia.Controls.Selection
             }
         }
 
+        void ITreeDataGridSelectionInteraction.OnPointerReleased(TreeDataGrid sender, PointerReleasedEventArgs e)
+        {
+            if (!e.Handled &&
+                _pressedPoint != s_InvalidPoint &&
+                e.Source is Control source &&
+                sender.TryGetCell(source, out var cell))
+            {
+                var p = e.GetPosition(sender);
+                if (Math.Abs(p.X - _pressedPoint.X) <= 3 || Math.Abs(p.Y - _pressedPoint.Y) <= 3)
+                    PointerSelect(sender, cell, e);
+            }
+        }
+
+        private void PointerSelect(TreeDataGrid sender, TreeDataGridCell cell, PointerEventArgs e)
+        {
+            var point = e.GetCurrentPoint(sender);
+            var isRightButton = point.Properties.PointerUpdateKind is PointerUpdateKind.RightButtonPressed or
+                PointerUpdateKind.RightButtonReleased;
+
+            UpdateSelection(
+                sender,
+                cell.ColumnIndex,
+                cell.RowIndex,
+                rangeModifier: e.KeyModifiers.HasFlag(KeyModifiers.Shift),
+                rightButton: isRightButton);
+            e.Handled = true;
+        }
+
+        private void UpdateSelection(
+            TreeDataGrid treeDataGrid,
+            int columnIndex,
+            int rowIndex,
+            bool rangeModifier = false,
+            bool rightButton = false)
+        {
+            var modelIndex = _source.Rows.RowIndexToModelIndex(rowIndex);
+
+            if (modelIndex == default)
+                return;
+
+            var multi = !SingleSelect;
+            var range = multi && rangeModifier;
+
+            if (rightButton)
+            {
+                if (IsSelected(columnIndex, modelIndex) == false && !treeDataGrid.QueryCancelSelection())
+                    Select(columnIndex, modelIndex);
+            }
+            else if (range)
+            {
+                if (!treeDataGrid.QueryCancelSelection())
+                    SelectFromAnchorTo(columnIndex, rowIndex);
+            }
+            else if (SelectedColumns.SelectedIndex != columnIndex || 
+                SelectedRows.SelectedIndex != modelIndex ||
+                Count > 1)
+            {
+                if (!treeDataGrid.QueryCancelSelection())
+                    Select(columnIndex, modelIndex);
+            }
+        }
+
+        private void SelectFromAnchorTo(int columnIndex, int rowIndex)
+        {
+            var anchorColumnIndex = SelectedColumns.AnchorIndex;
+            var anchorModelIndex = SelectedRows.AnchorIndex;
+            var anchorRowIndex = _source.Rows.ModelIndexToRowIndex(anchorModelIndex);
+
+            SelectedColumns.BeginBatchUpdate();
+            SelectedColumns.Clear();
+            SelectedColumns.SelectRange(anchorColumnIndex, columnIndex);
+            SelectedColumns.EndBatchUpdate();
+
+            SelectedRows.BeginBatchUpdate();
+            SelectedRows.Clear();
+            for (var i = Math.Min(anchorRowIndex, rowIndex); i <= Math.Max(anchorRowIndex, rowIndex); ++i)
+            {
+                SelectedRows.Select(_source.Rows.RowIndexToModelIndex(i));
+            }
+            SelectedRows.AnchorIndex = anchorRowIndex;
+            SelectedRows.EndBatchUpdate();
+
+            _viewSelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+
         private bool IsSelected(int columnIndex, int rowIndex)
         {
-            if (_source.Rows.RowIndexToModelIndex(rowIndex) is { } modelIndex)
-                return SelectedColumns.IsSelected(columnIndex) && SelectedRows.IsSelected(rowIndex);
-            return false;
+            var modelIndex = _source.Rows.RowIndexToModelIndex(rowIndex);
+            return SelectedColumns.IsSelected(columnIndex) && SelectedRows.IsSelected(modelIndex);
         }
     }
 }
