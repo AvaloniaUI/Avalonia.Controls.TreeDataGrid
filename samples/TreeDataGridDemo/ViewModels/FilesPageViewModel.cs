@@ -20,6 +20,7 @@ namespace TreeDataGridDemo.ViewModels
     public class FilesPageViewModel : ReactiveObject
     {
         private static IconConverter? s_iconConverter;
+        private bool _cellSelection;
         private FileTreeNodeModel? _root;
         private string _selectedDrive;
         private string? _selectedPath;
@@ -92,6 +93,23 @@ namespace TreeDataGridDemo.ViewModels
                     _root = new FileTreeNodeModel(_selectedDrive, isDirectory: true, isRoot: true);
                     Source.Items = new[] { _root };
                 });
+        }
+
+        public bool CellSelection
+        {
+            get => _cellSelection;
+            set
+            {
+                if (_cellSelection != value)
+                {
+                    _cellSelection = value;
+                    if (_cellSelection)
+                        Source.Selection = new TreeDataGridCellSelectionModel<FileTreeNodeModel>(Source) { SingleSelect = false };
+                    else
+                        Source.Selection = new TreeDataGridRowSelectionModel<FileTreeNodeModel>(Source) { SingleSelect = false };
+                    this.RaisePropertyChanged();
+                }
+            }
         }
 
         public IList<string> Drives { get; }
