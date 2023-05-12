@@ -90,6 +90,7 @@ namespace Avalonia.Controls.Selection
             SetSelectedRange(
                 start.ColumnIndex,
                 _source.Rows.ModelIndexToRowIndex(start.RowIndex),
+                start.RowIndex,
                 columnCount,
                 rowCount);
         }
@@ -241,11 +242,17 @@ namespace Avalonia.Controls.Selection
             SetSelectedRange(
                 anchorColumnIndex,
                 anchorRowIndex,
+                _selectedRows.AnchorIndex,
                 (columnIndex - anchorColumnIndex) + 1,
                 (rowIndex - anchorRowIndex) + 1);
         }
 
-        private void SetSelectedRange(int columnIndex, int rowIndex, int columnCount, int rowCount)
+        private void SetSelectedRange(
+            int columnIndex,
+            int rowIndex,
+            IndexPath modelIndex,
+            int columnCount,
+            int rowCount)
         {
             var endColumnIndex = columnIndex + columnCount - 1;
             var endRowIndex = rowIndex + rowCount - 1;
@@ -261,7 +268,7 @@ namespace Avalonia.Controls.Selection
                 _selectedRows.Select(_source.Rows.RowIndexToModelIndex(i));
             }
 
-            _selectedRows.AnchorIndex = rowIndex;
+            _selectedRows.AnchorIndex = modelIndex;
             _rangeAnchor = (endColumnIndex, endRowIndex);
 
             EndBatchUpdate();
