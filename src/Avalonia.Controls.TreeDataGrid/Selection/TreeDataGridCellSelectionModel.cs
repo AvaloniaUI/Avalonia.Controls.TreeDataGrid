@@ -197,7 +197,7 @@ namespace Avalonia.Controls.Selection
             return _selectedColumns.IsSelected(columnIndex) && _selectedRows.IsSelected(modelIndex);
         }
 
-        protected void Select(int columnIndex, int rowIndex)
+        private void Select(int columnIndex, int rowIndex)
         {
             var modelIndex = _source.Rows.RowIndexToModelIndex(rowIndex);
             Select(columnIndex, rowIndex, modelIndex);
@@ -212,7 +212,7 @@ namespace Avalonia.Controls.Selection
             EndBatchUpdate();
         }
 
-        protected void SelectFromAnchorTo(int columnIndex, int rowIndex)
+        private void SelectFromAnchorTo(int columnIndex, int rowIndex)
         {
             var anchorColumnIndex = _selectedColumns.AnchorIndex;
             var anchorModelIndex = _selectedRows.AnchorIndex;
