@@ -82,14 +82,17 @@ namespace Avalonia.Controls.Primitives
         protected abstract Orientation Orientation { get; }
         protected Rect Viewport { get; private set; } = s_invalidViewport;
 
-        public void BringIntoView(int index)
+        public void BringIntoView(int index, Rect? rect = null)
         {
             if (_items is null || index < 0 || index >= _items.Count)
                 return;
 
             if (GetRealizedElement(index) is Control element)
             {
-                element.BringIntoView();
+                if (rect.HasValue)
+                    element.BringIntoView(rect.Value);
+                else
+                    element.BringIntoView();
             }
             else if (this.GetVisualRoot() is ILayoutRoot root)
             {
@@ -101,16 +104,16 @@ namespace Avalonia.Controls.Primitives
 
                 // Get the expected position of the elment and put it in place.
                 var anchorU = GetOrEstimateElementPosition(index);
-                var rect = Orientation == Orientation.Horizontal ?
+                var elementRect = Orientation == Orientation.Horizontal ?
                     new Rect(anchorU, 0, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height) :
                     new Rect(0, anchorU, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height);
-                _anchorElement.Arrange(rect);
+                _anchorElement.Arrange(elementRect);
 
                 // If the item being brought into view was added since the last layout pass then
                 // our bounds won't be updated, so any containing scroll viewers will not have an
                 // updated extent. Do a layout pass to ensure that the containing scroll viewers
                 // will be able to scroll the new item into view.
-                if (!Bounds.Contains(rect) && !Viewport.Contains(rect))
+                if (!Bounds.Contains(elementRect) && !Viewport.Contains(elementRect))
                 {
                     _isWaitingForViewportUpdate = true;
                     root.LayoutManager.ExecuteLayoutPass();
@@ -118,9 +121,12 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 // Try to bring the item into view and do a layout pass.
-                _anchorElement.BringIntoView();
+                if (rect.HasValue)
+                    _anchorElement.BringIntoView(rect.Value);
+                else
+                    _anchorElement.BringIntoView();
 
-                _isWaitingForViewportUpdate = !Viewport.Contains(rect);
+                _isWaitingForViewportUpdate = !Viewport.Contains(elementRect);
                 root.LayoutManager.ExecuteLayoutPass();
                 _isWaitingForViewportUpdate = false;
 

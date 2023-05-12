@@ -127,6 +127,11 @@ namespace Avalonia.Controls.Selection
                 Select(columnIndex, rowIndex);
             else
                 SelectFromAnchorTo(columnIndex, rowIndex);
+
+            sender.ColumnHeadersPresenter?.BringIntoView(columnIndex);
+            sender.RowsPresenter?.BringIntoView(
+                rowIndex,
+                sender.ColumnHeadersPresenter?.TryGetElement(columnIndex)?.Bounds);
         }
 
         void ITreeDataGridSelectionInteraction.OnPointerPressed(TreeDataGrid sender, PointerPressedEventArgs e)
