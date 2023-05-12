@@ -43,8 +43,20 @@ namespace Avalonia.Controls.Selection
         /// <summary>
         /// Checks whether the specified cell is selected.
         /// </summary>
-        /// <param name="columnIndex">The column index of the cell.</param>
-        /// <param name="rowIndex">The model index of the cell.</param>
-        public bool IsSelected(int columnIndex, IndexPath rowIndex);
+        /// <param name="index">The index of the cell.</param>
+        bool IsSelected(CellIndex index);
+
+        /// <summary>
+        /// Sets the current selection to the specified range of cells.
+        /// </summary>
+        /// <param name="start">The index of the cell from which the selection should start.</param>
+        /// <param name="columnCount">The number of columns in the selection.</param>
+        /// <param name="rowCount">The number of rows in the selection.</param>
+        /// <remarks>
+        /// This method clears the current selection and selects the specified range of cells.
+        /// Note that if the <see cref="ITreeDataGridSource"/> is currently sorted then the
+        /// resulting selection may not be contiguous in the data source.
+        /// </remarks>
+        void SetSelectedRange(CellIndex start, int columnCount, int rowCount);
     }
 }

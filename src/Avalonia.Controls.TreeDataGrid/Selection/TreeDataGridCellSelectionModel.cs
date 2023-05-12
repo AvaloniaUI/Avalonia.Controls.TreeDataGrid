@@ -73,9 +73,25 @@ namespace Avalonia.Controls.Selection
             remove => _untypedSelectionChanged -= value;
         }
 
+        public bool IsSelected(CellIndex index) => IsSelected(index.ColumnIndex, index.RowIndex);
+
+        /// <summary>
+        /// Checks whether the specified cell is selected.
+        /// </summary>
+        /// <param name="columnIndex">The column index of the cell.</param>
+        /// <param name="rowIndex">The row index of the cell.</param>
         public bool IsSelected(int columnIndex, IndexPath rowIndex)
         {
             return _selectedColumns.IsSelected(columnIndex) && _selectedRows.IsSelected(rowIndex);
+        }
+
+        public void SetSelectedRange(CellIndex start, int columnCount, int rowCount)
+        {
+            SetSelectedRange(
+                start.ColumnIndex,
+                _source.Rows.ModelIndexToRowIndex(start.RowIndex),
+                columnCount,
+                rowCount);
         }
 
         bool ITreeDataGridSelectionInteraction.IsCellSelected(int columnIndex, int rowIndex)
@@ -215,26 +231,37 @@ namespace Avalonia.Controls.Selection
         private void SelectFromAnchorTo(int columnIndex, int rowIndex)
         {
             var anchorColumnIndex = _selectedColumns.AnchorIndex;
-            var anchorModelIndex = _selectedRows.AnchorIndex;
-            var anchorRowIndex = _source.Rows.ModelIndexToRowIndex(anchorModelIndex);
+            var anchorRowIndex = _source.Rows.ModelIndexToRowIndex(_selectedRows.AnchorIndex);
+
+            SetSelectedRange(
+                anchorColumnIndex,
+                anchorRowIndex,
+                (columnIndex - anchorColumnIndex) + 1,
+                (rowIndex - anchorRowIndex) + 1);
+        }
+
+        private void SetSelectedRange(int columnIndex, int rowIndex, int columnCount, int rowCount)
+        {
+            var endColumnIndex = columnIndex + columnCount - 1;
+            var endRowIndex = rowIndex + rowCount - 1;
 
             BeginBatchUpdate();
 
-            _selectedColumns.SelectedIndex = anchorColumnIndex;
-            _selectedColumns.SelectRange(anchorColumnIndex, columnIndex);
-            _selectedRows.SelectedIndex = anchorModelIndex;
+            _selectedColumns.SelectedIndex = columnIndex;
+            _selectedColumns.SelectRange(columnIndex, endColumnIndex);
+            _selectedRows.SelectedIndex = rowIndex;
 
-            for (var i = Math.Min(anchorRowIndex, rowIndex); i <= Math.Max(anchorRowIndex, rowIndex); ++i)
+            for (var i = Math.Min(rowIndex, endRowIndex); i <= Math.Max(rowIndex, endRowIndex); ++i)
             {
                 _selectedRows.Select(_source.Rows.RowIndexToModelIndex(i));
             }
 
-            _selectedRows.AnchorIndex = anchorModelIndex;
-            _rangeAnchor = (columnIndex, rowIndex);
+            _selectedRows.AnchorIndex = rowIndex;
+            _rangeAnchor = (endColumnIndex, endRowIndex);
 
             EndBatchUpdate();
         }
-        
+
         private void UpdateSelection(
             TreeDataGrid treeDataGrid,
             int columnIndex,
