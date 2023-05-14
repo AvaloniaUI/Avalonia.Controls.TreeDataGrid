@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 
@@ -10,7 +11,13 @@ namespace Avalonia.Controls.Primitives
     [PseudoClasses(":editing")]
     public abstract class TreeDataGridCell : TemplatedControl, ITreeDataGridCell
     {
+        public static readonly DirectProperty<TreeDataGridCell, bool> IsSelectedProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridCell, bool>(
+                nameof(IsSelected),
+                o => o.IsSelected);
+
         private bool _isEditing;
+        private bool _isSelected;
         private TreeDataGrid? _treeDataGrid;
         private Point _pressedPoint;
 
@@ -24,7 +31,18 @@ namespace Avalonia.Controls.Primitives
         public int RowIndex { get; private set; } = -1;
         public ICell? Model { get; private set; }
 
-        public virtual void Realize(TreeDataGridElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        public bool IsSelected
+        {
+            get => _isSelected;
+            private set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
+        }
+
+        public virtual void Realize(
+            TreeDataGridElementFactory factory,
+            ITreeDataGridSelectionInteraction? selection,
+            ICell model,
+            int columnIndex,
+            int rowIndex)
         {
             if (columnIndex < 0)
                 throw new IndexOutOfRangeException("Invalid column index.");
@@ -32,6 +50,7 @@ namespace Avalonia.Controls.Primitives
             ColumnIndex = columnIndex;
             RowIndex = rowIndex;
             Model = model;
+            IsSelected = selection?.IsCellSelected(columnIndex, rowIndex) ?? false;
 
             _treeDataGrid?.RaiseCellPrepared(this, columnIndex, RowIndex);
         }
@@ -165,6 +184,23 @@ namespace Avalonia.Controls.Primitives
                     e.Handled = true;
                 }
             }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            if (change.Property == IsSelectedProperty)
+            {
+                PseudoClasses.Set(":selected", IsSelected);
+            }
+
+            base.OnPropertyChanged(change);
+        }
+
+        public void UpdateRowIndex(int index) => RowIndex = index;
+
+        internal void UpdateSelection(ITreeDataGridSelectionInteraction? selection)
+        {
+            IsSelected = selection?.IsCellSelected(ColumnIndex, RowIndex) ?? false;
         }
 
         private bool EndEditCore()

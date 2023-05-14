@@ -415,6 +415,20 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 Assert.Equal(0, raised);
             }
+
+            [Fact]
+            public void Selecting_Item_Twice_Results_In_Correct_Count()
+            {
+                var target = CreateTarget();
+
+                using (target.BatchUpdate())
+                {
+                    target.SelectedIndex = new IndexPath(1);
+                    target.Select(new IndexPath(1));
+                }
+
+                Assert.Equal(1, target.Count);
+            }
         }
 
         public class Deselect

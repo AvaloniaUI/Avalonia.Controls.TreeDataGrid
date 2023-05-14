@@ -44,8 +44,7 @@ namespace Avalonia.Controls.Selection
                 _ranges.Add(parent, ranges);
             }
 
-            IndexRange.Add(ranges, new IndexRange(index[^1]));
-            ++Count;
+            Count += IndexRange.Add(ranges, new IndexRange(index[^1]));
         }
 
         public void Add(in IndexPath parent, in IndexRange range)
