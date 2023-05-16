@@ -2,7 +2,7 @@
 {
     public interface ITextSearchableColumn<TModel>
     {
-        public bool IsTextSearchEnabled { get; set; }
+        public bool IsTextSearchEnabled { get; }
         internal string? SelectValue(TModel model);
     }
 }

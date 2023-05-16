@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 using Avalonia.Input;
 
 namespace Avalonia.Controls.Primitives
@@ -50,7 +51,12 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        public override void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        public override void Realize(
+            TreeDataGridElementFactory factory,
+            ITreeDataGridSelectionInteraction? selection,
+            ICell model,
+            int columnIndex,
+            int rowIndex)
         {
             if (model is CheckBoxCell cell)
             {
@@ -63,7 +69,7 @@ namespace Avalonia.Controls.Primitives
                 throw new InvalidOperationException("Invalid cell model.");
             }
 
-            base.Realize(factory, model, columnIndex, rowIndex);
+            base.Realize(factory, selection, model, columnIndex, rowIndex);
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)

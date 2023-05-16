@@ -113,7 +113,6 @@ namespace Avalonia.Controls.Selection
                     }
                 }
             }
-
         }
 
         protected void HandleTextInput(string? text, TreeDataGrid treeDataGrid, int selectedRowIndex)
@@ -209,7 +208,7 @@ namespace Avalonia.Controls.Selection
 
             }
 
-            static bool GetRowIndexIfFullyVisible(IControl? control, out int index)
+            static bool GetRowIndexIfFullyVisible(Control? control, out int index)
             {
                 if (control is TreeDataGridRow row &&
                     IsRowFullyVisibleToUser(row))
@@ -327,7 +326,7 @@ namespace Avalonia.Controls.Selection
             // Otherwise select on pointer release.
             if (!e.Handled &&
                 e.Pointer.Type == PointerType.Mouse &&
-                e.Source is IControl source &&
+                e.Source is Control source &&
                 sender.TryGetRow(source, out var row) &&
                 _source.Rows.RowIndexToModelIndex(row.RowIndex) is { } modelIndex &&
                 !IsSelected(modelIndex))
@@ -345,7 +344,7 @@ namespace Avalonia.Controls.Selection
         {
             if (!e.Handled &&
                 _pressedPoint != s_InvalidPoint &&
-                e.Source is IControl source &&
+                e.Source is Control source &&
                 sender.TryGetRow(source, out var row))
             {
                 var p = e.GetPosition(sender);
@@ -384,13 +383,16 @@ namespace Avalonia.Controls.Selection
 
             var commandModifiers = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.CommandModifiers;
             var toggleModifier = commandModifiers is not null ? e.KeyModifiers.HasFlag(commandModifiers) : false;
+            var isRightButton = point.Properties.PointerUpdateKind is PointerUpdateKind.RightButtonPressed or
+                PointerUpdateKind.RightButtonReleased;
+
             UpdateSelection(
                 sender,
                 row.RowIndex,
                 select: true,
                 rangeModifier: e.KeyModifiers.HasFlag(KeyModifiers.Shift),
                 toggleModifier: toggleModifier,
-                rightButton: point.Properties.IsRightButtonPressed);
+                rightButton: isRightButton);
             e.Handled = true;
         }
 

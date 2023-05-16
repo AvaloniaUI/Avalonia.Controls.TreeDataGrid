@@ -141,6 +141,27 @@ namespace Avalonia.Controls.TreeDataGridTests
             [Theory]
             [InlineData(false)]
             [InlineData(true)]
+            public void Supports_Removing_Root_Row_With_Later_Row_Expanded(bool sorted)
+            {
+                var data = CreateData();
+
+                var target = CreateTarget(data, sorted);
+
+                target.Expand(new IndexPath(4));
+
+                Assert.Equal(10, target.Rows.Count);
+
+                var raised = 0;
+                target.Rows.CollectionChanged += (s, e) => ++raised;
+
+                data.RemoveAt(1);
+
+                AssertState(target, data, 9, sorted, new IndexPath(3));
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
             public void Removing_Expanded_Root_Row_Unsubscribes_From_CollectionChanged(bool sorted)
             {
                 var data = CreateData();
@@ -190,6 +211,22 @@ namespace Avalonia.Controls.TreeDataGridTests
                 data[0].Children!.Add(new Node { Id = 100, Caption = "New Node 1" });
 
                 AssertState(target, data, 11, sorted, new IndexPath(0));
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void Supports_Adding_Child_To_Expanded_Then_Unexpanded_Root_Node(bool sorted)
+            {
+                var data = CreateData();
+                var target = CreateTarget(data, sorted);
+
+                target.Expand(new IndexPath(0));
+                target.Collapse(new IndexPath(0));
+
+                data[0].Children!.Add(new Node { Id = 100, Caption = "New Node 1" });
+
+                AssertState(target, data, 5, sorted);
             }
 
             [Theory]

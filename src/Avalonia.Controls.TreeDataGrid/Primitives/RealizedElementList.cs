@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Primitives
     internal struct RealizedElementList
     {
         private int _firstIndex;
-        private List<IControl?>? _elements;
+        private List<Control?>? _elements;
         private List<double>? _sizes;
         private double _startU;
 
@@ -32,7 +32,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the elements.
         /// </summary>
-        public IReadOnlyList<IControl?> Elements => _elements ??= new List<IControl?>();
+        public IReadOnlyList<Control?> Elements => _elements ??= new List<Control?>();
 
         /// <summary>
         /// Gets the sizes of the elements on the primary axis.
@@ -51,12 +51,12 @@ namespace Avalonia.Controls.Primitives
         /// <param name="element">The element.</param>
         /// <param name="u">The position of the elemnt on the primary axis.</param>
         /// <param name="sizeU">The size of the element on the primary axis.</param>
-        public void Add(int modelIndex, IControl element, double u, double sizeU)
+        public void Add(int modelIndex, Control element, double u, double sizeU)
         {
             if (modelIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(modelIndex));
 
-            _elements ??= new List<IControl?>();
+            _elements ??= new List<Control?>();
             _sizes ??= new List<double>();
 
             if (Count == 0)
@@ -89,7 +89,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="modelIndex">The index in the source collection of the element to get.</param>
         /// <returns>The element if realized; otherwise null.</returns>
-        public IControl? GetElement(int modelIndex)
+        public Control? GetElement(int modelIndex)
         {
             var index = modelIndex - FirstModelIndex;
             if (index >= 0 && index < _elements?.Count)
@@ -103,7 +103,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="modelIndex">The index in the source collection of the insert.</param>
         /// <param name="count">The number of items inserted.</param>
         /// <param name="updateElementIndex">A method used to update the element indexes.</param>
-        public void ItemsInserted(int modelIndex, int count, Action<IControl, int> updateElementIndex)
+        public void ItemsInserted(int modelIndex, int count, Action<Control, int> updateElementIndex)
         {
             if (modelIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(modelIndex));
@@ -123,7 +123,7 @@ namespace Avalonia.Controls.Primitives
 
                 for (var i = start; i < elementCount; ++i)
                 {
-                    if (_elements[i] is IControl element)
+                    if (_elements[i] is Control element)
                         updateElementIndex(element, first + i + count);
                 }
 
@@ -152,8 +152,8 @@ namespace Avalonia.Controls.Primitives
         public void ItemsRemoved(
             int modelIndex,
             int count,
-            Action<IControl, int> updateElementIndex,
-            Action<IControl> recycleElement)
+            Action<Control, int> updateElementIndex,
+            Action<Control> recycleElement)
         {
             if (modelIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(modelIndex));
@@ -174,7 +174,7 @@ namespace Avalonia.Controls.Primitives
 
                 for (var i = 0; i < _elements.Count; ++i)
                 {
-                    if (_elements[i] is IControl element)
+                    if (_elements[i] is Control element)
                         updateElementIndex(element, _firstIndex + i);
                 }
             }
@@ -186,7 +186,7 @@ namespace Avalonia.Controls.Primitives
 
                 for (var i = start; i < end; ++i)
                 {
-                    if (_elements[i] is IControl element)
+                    if (_elements[i] is Control element)
                         recycleElement(element);
                 }
 
@@ -202,7 +202,7 @@ namespace Avalonia.Controls.Primitives
                 end = _elements.Count;
                 for (var i = start; i < end; ++i)
                 {
-                    if (_elements[i] is IControl element)
+                    if (_elements[i] is Control element)
                         updateElementIndex(element, first + i);
                 }
             }
@@ -213,7 +213,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="modelIndex">The index in the source collection of new first element.</param>
         /// <param name="recycleElement">A method used to recycle elements.</param>
-        public void RecycleElementsBefore(int modelIndex, Action<IControl> recycleElement)
+        public void RecycleElementsBefore(int modelIndex, Action<Control> recycleElement)
         {
             if (modelIndex <= FirstModelIndex || _elements is null || _elements.Count == 0)
                 return;
@@ -228,7 +228,7 @@ namespace Avalonia.Controls.Primitives
 
                 for (var i = 0; i < endIndex; ++i)
                 {
-                    if (_elements[i] is IControl e)
+                    if (_elements[i] is Control e)
                         recycleElement(e);
                 }
 
@@ -243,7 +243,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="modelIndex">The index in the source collection of new last element.</param>
         /// <param name="recycleElement">A method used to recycle elements.</param>
-        public void RecycleElementsAfter(int modelIndex, Action<IControl> recycleElement)
+        public void RecycleElementsAfter(int modelIndex, Action<Control> recycleElement)
         {
             if (modelIndex >= LastModelIndex || _elements is null || _elements.Count == 0)
                 return;
@@ -259,7 +259,7 @@ namespace Avalonia.Controls.Primitives
 
                 for (var i = startIndex; i < count; ++i)
                 {
-                    if (_elements[i] is IControl e)
+                    if (_elements[i] is Control e)
                         recycleElement(e);
                 }
 
@@ -272,7 +272,7 @@ namespace Avalonia.Controls.Primitives
         /// Recycles all realized elements.
         /// </summary>
         /// <param name="recycleElement">A method used to recycle elements.</param>
-        public void RecycleAllElements(Action<IControl> recycleElement)
+        public void RecycleAllElements(Action<Control> recycleElement)
         {
             if (_elements is null || _elements.Count == 0)
                 return;

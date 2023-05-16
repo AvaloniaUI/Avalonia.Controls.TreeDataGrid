@@ -1,12 +1,14 @@
 ﻿using System;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
 {
     [PseudoClasses(":selected")]
-    public class TreeDataGridRow : TemplatedControl, ISelectable
+    public class TreeDataGridRow : TemplatedControl
     {
         private const double DragDistance = 3;
         private static readonly Point s_InvalidPoint = new(double.NegativeInfinity, double.NegativeInfinity);
@@ -16,8 +18,8 @@ namespace Avalonia.Controls.Primitives
                 nameof(Columns),
                 o => o.Columns);
 
-        public static readonly DirectProperty<TreeDataGridRow, IElementFactory?> ElementFactoryProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGridRow, IElementFactory?>(
+        public static readonly DirectProperty<TreeDataGridRow, TreeDataGridElementFactory?> ElementFactoryProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridRow, TreeDataGridElementFactory?>(
                 nameof(ElementFactory),
                 o => o.ElementFactory,
                 (o, v) => o.ElementFactory = v);
@@ -25,8 +27,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly DirectProperty<TreeDataGridRow, bool> IsSelectedProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridRow, bool>(
                 nameof(IsSelected),
-                o => o.IsSelected,
-                (o, v) => o.IsSelected = v);
+                o => o.IsSelected);
 
         public static readonly DirectProperty<TreeDataGridRow, IRows?> RowsProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridRow, IRows?>(
@@ -34,7 +35,7 @@ namespace Avalonia.Controls.Primitives
                 o => o.Rows);
 
         private IColumns? _columns;
-        private IElementFactory? _elementFactory;
+        private TreeDataGridElementFactory? _elementFactory;
         private bool _isSelected;
         private IRows? _rows;
         private Point _mouseDownPosition = s_InvalidPoint;
@@ -45,7 +46,7 @@ namespace Avalonia.Controls.Primitives
             private set => SetAndRaise(ColumnsProperty, ref _columns, value);
         }
 
-        public IElementFactory? ElementFactory
+        public TreeDataGridElementFactory? ElementFactory
         {
             get => _elementFactory;
             set => SetAndRaise(ElementFactoryProperty, ref _elementFactory, value);
@@ -54,7 +55,7 @@ namespace Avalonia.Controls.Primitives
         public bool IsSelected
         {
             get => _isSelected;
-            set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
+            private set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
         }
 
         public object? Model => DataContext;
@@ -69,7 +70,8 @@ namespace Avalonia.Controls.Primitives
         public int RowIndex { get; private set; }
 
         public void Realize(
-            IElementFactory? elementFactory,
+            TreeDataGridElementFactory? elementFactory,
+            ITreeDataGridSelectionInteraction? selection,
             IColumns? columns,
             IRows? rows,
             int rowIndex)
@@ -78,12 +80,14 @@ namespace Avalonia.Controls.Primitives
             Columns = columns;
             Rows = rows;
             DataContext = rows?[rowIndex].Model;
+            IsSelected = selection?.IsRowSelected(rowIndex) ?? false;
             UpdateIndex(rowIndex);
+            UpdateSelection(selection);
         }
 
-        public IControl? TryGetCell(int columnIndex)
+        public Control? TryGetCell(int columnIndex)
         {
-            return CellsPresenter?.TryGetElement(columnIndex) as ITreeDataGridCell;
+            return CellsPresenter?.TryGetElement(columnIndex);
         }
 
         public void UpdateIndex(int index)
@@ -96,6 +100,7 @@ namespace Avalonia.Controls.Primitives
         {
             RowIndex = -1;
             DataContext = null;
+            IsSelected = false;
             CellsPresenter?.Unrealize();
         }
 
@@ -122,7 +127,7 @@ namespace Avalonia.Controls.Primitives
 
             if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || 
                 e.Handled ||
-                delta.X < DragDistance && delta.Y < DragDistance ||
+                Math.Abs(delta.X) < DragDistance && Math.Abs(delta.Y) < DragDistance ||
                 _mouseDownPosition == s_InvalidPoint)
                 return;
 
@@ -141,6 +146,12 @@ namespace Avalonia.Controls.Primitives
             }
             
             base.OnPropertyChanged(change);
+        }
+
+        internal void UpdateSelection(ITreeDataGridSelectionInteraction? selection)
+        {
+            IsSelected = selection?.IsRowSelected(RowIndex) ?? false;
+            CellsPresenter?.UpdateSelection(selection);
         }
     }
 }

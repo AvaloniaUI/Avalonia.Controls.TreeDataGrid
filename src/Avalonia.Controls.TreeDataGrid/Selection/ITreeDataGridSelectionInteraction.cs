@@ -12,8 +12,9 @@ namespace Avalonia.Controls.Selection
     {
         public event EventHandler? SelectionChanged;
 
-        bool IsRowSelected(IRow rowModel);
-        bool IsRowSelected(int rowIndex);
+        bool IsCellSelected(int columnIndex, int rowIndex) => false;
+        bool IsRowSelected(IRow rowModel) => false;
+        bool IsRowSelected(int rowIndex) => false;
         public void OnKeyDown(TreeDataGrid sender, KeyEventArgs e) { }
         public void OnPreviewKeyDown(TreeDataGrid sender, KeyEventArgs e) { }
         public void OnKeyUp(TreeDataGrid sender, KeyEventArgs e) { }
