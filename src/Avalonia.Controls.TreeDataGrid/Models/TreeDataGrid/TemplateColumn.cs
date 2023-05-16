@@ -31,7 +31,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _getCellTemplate = GetCellTemplate;
             _cellTemplate = cellTemplate;
             _cellEditingTemplate = cellEditingTemplate;
-            _getEditingCellTemplate = GetCellEditingTemplate;
+            _getEditingCellTemplate = cellEditingTemplate is not null ?
+                GetCellEditingTemplate : null;
         }
 
         public TemplateColumn(
