@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Controls.Models;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Input;
@@ -15,7 +16,8 @@ namespace Avalonia.Controls
     /// row may have multiple columns.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public class HierarchicalTreeDataGridSource<TModel> : ITreeDataGridSource<TModel>,
+    public class HierarchicalTreeDataGridSource<TModel> : NotifyingBase,
+        ITreeDataGridSource<TModel>,
         IDisposable,
         IExpanderRowController<TModel>
         where TModel: class
@@ -70,13 +72,20 @@ namespace Avalonia.Controls
             }
             set
             {
-                if (_selection is object)
-                    throw new InvalidOperationException("Selection is already initialized.");
-                _selection = value;
-                _isSelectionSet = true;
+                if (_selection != value)
+                {
+                    if (value?.Source != _items)
+                        throw new InvalidOperationException("Selection source must be set to Items.");
+                    _selection = value;
+                    _isSelectionSet = true;
+                    RaisePropertyChanged();
+                }
             }
         }
 
+        IEnumerable<object> ITreeDataGridSource.Items => Items;
+
+        public ITreeDataGridCellSelectionModel<TModel>? CellSelection => Selection as ITreeDataGridCellSelectionModel<TModel>;
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
         public bool IsHierarchical => true;
         public bool IsSorted => _comparison is not null;
@@ -138,6 +147,11 @@ namespace Avalonia.Controls
         {
             _comparison = comparison;
             _rows?.Sort(_comparison);
+        }
+
+        IEnumerable<object>? ITreeDataGridSource.GetModelChildren(object model)
+        {
+            return GetModelChildren((TModel)model);
         }
 
         public bool SortBy(IColumn? column, ListSortDirection direction)

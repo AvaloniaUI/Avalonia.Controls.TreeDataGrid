@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -42,12 +43,17 @@ namespace Avalonia.Controls.Primitives
 
         protected override bool CanEdit => _canEdit;
 
-        public override void Realize(TreeDataGridElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        public override void Realize(
+            TreeDataGridElementFactory factory,
+            ITreeDataGridSelectionInteraction? selection,
+            ICell model,
+            int columnIndex,
+            int rowIndex)
         {
             _canEdit = model.CanEdit;
             Value = model.Value?.ToString();
             TextTrimming = (model as ITextCell)?.TextTrimming ?? TextTrimming.CharacterEllipsis;
-            base.Realize(factory, model, columnIndex, rowIndex);
+            base.Realize(factory, selection, model, columnIndex, rowIndex);
             SubscribeToModelChanges();
         }
 

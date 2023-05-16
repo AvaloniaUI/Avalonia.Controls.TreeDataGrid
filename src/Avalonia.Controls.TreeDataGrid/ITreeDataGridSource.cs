@@ -10,7 +10,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a data source for a <see cref="TreeDataGrid"/> control.
     /// </summary>
-    public interface ITreeDataGridSource
+    public interface ITreeDataGridSource : INotifyPropertyChanged
     {
         /// <summary>
         /// Gets the columns to be displayed.
@@ -58,6 +58,18 @@ namespace Avalonia.Controls
             DragDropEffects effects);
 
         /// <summary>
+        /// Gets the items in the data source.
+        /// </summary>
+        IEnumerable<object> Items { get; }
+
+        /// <summary>
+        /// Gets the children of a model, if any.
+        /// </summary>
+        /// <param name="model">The model from which to get the children.</param>
+        /// <returns>The children of the model. If there are no children, it will return an empty enumerable.</returns>
+        IEnumerable<object>? GetModelChildren(object model);
+
+        /// <summary>
         /// Requests to sort the source by the specified column.
         /// </summary>
         /// <param name="column">The column.</param>
@@ -74,6 +86,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the items in the data source.
         /// </summary>
-        IEnumerable<TModel> Items { get; }
+        new IEnumerable<TModel> Items { get; }
     }
 }
