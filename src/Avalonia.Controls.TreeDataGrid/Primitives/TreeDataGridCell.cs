@@ -102,16 +102,21 @@ namespace Avalonia.Controls.Primitives
         {
             _treeDataGrid = this.FindLogicalAncestorOfType<TreeDataGrid>();
             base.OnAttachedToLogicalTree(e);
-
-            // The cell may be realized before being parented. In this case raise the CellPrepared event here.
-            if (_treeDataGrid is not null && ColumnIndex >= 0 && RowIndex >= 0)
-                _treeDataGrid.RaiseCellPrepared(this, ColumnIndex, RowIndex);
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             _treeDataGrid = null;
             base.OnDetachedFromLogicalTree(e);
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            // The cell may be realized before being parented. In this case raise the CellPrepared event here.
+            if (_treeDataGrid is not null && ColumnIndex >= 0 && RowIndex >= 0)
+                _treeDataGrid.RaiseCellPrepared(this, ColumnIndex, RowIndex);
         }
 
         protected override Size MeasureOverride(Size availableSize)

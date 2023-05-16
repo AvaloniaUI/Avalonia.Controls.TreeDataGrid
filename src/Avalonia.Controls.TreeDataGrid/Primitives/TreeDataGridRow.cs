@@ -39,6 +39,7 @@ namespace Avalonia.Controls.Primitives
         private bool _isSelected;
         private IRows? _rows;
         private Point _mouseDownPosition = s_InvalidPoint;
+        private TreeDataGrid? _treeDataGrid;
 
         public IColumns? Columns
         {
@@ -83,6 +84,7 @@ namespace Avalonia.Controls.Primitives
             IsSelected = selection?.IsRowSelected(rowIndex) ?? false;
             UpdateIndex(rowIndex);
             UpdateSelection(selection);
+            _treeDataGrid?.RaiseRowPrepared(this, RowIndex);
         }
 
         public Control? TryGetCell(int columnIndex)
@@ -98,10 +100,32 @@ namespace Avalonia.Controls.Primitives
 
         public void Unrealize()
         {
+            _treeDataGrid?.RaiseRowClearing(this, RowIndex);
             RowIndex = -1;
             DataContext = null;
             IsSelected = false;
             CellsPresenter?.Unrealize();
+        }
+
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            _treeDataGrid = this.FindLogicalAncestorOfType<TreeDataGrid>();
+            base.OnAttachedToLogicalTree(e);
+        }
+
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            _treeDataGrid = null;
+            base.OnDetachedFromLogicalTree(e);
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            // The row may be realized before being parented. In this case raise the RowPrepared event here.
+            if (_treeDataGrid is not null && RowIndex >= 0)
+                _treeDataGrid.RaiseRowPrepared(this, RowIndex);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
