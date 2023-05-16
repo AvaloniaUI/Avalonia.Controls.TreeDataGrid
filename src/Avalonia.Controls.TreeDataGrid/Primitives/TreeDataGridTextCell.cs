@@ -66,7 +66,6 @@ namespace Avalonia.Controls.Primitives
             if (_edit is not null)
             {
                 _edit.KeyDown -= EditKeyDown;
-                _edit.LostFocus -= EditLostFocus;
             }
 
             _edit = e.NameScope.Find<TextBox>("PART_Edit");
@@ -76,7 +75,6 @@ namespace Avalonia.Controls.Primitives
                 _edit.SelectAll();
                 _edit.Focus();
                 _edit.KeyDown += EditKeyDown;
-                _edit.LostFocus += EditLostFocus;
             }
         }
 
@@ -101,7 +99,5 @@ namespace Avalonia.Controls.Primitives
                 e.Handled = true;
             }
         }
-
-        private void EditLostFocus(object? sender, RoutedEventArgs e) => EndEdit();
     }
 }

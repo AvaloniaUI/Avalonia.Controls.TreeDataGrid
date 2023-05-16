@@ -4,6 +4,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Platform;
 
@@ -116,6 +117,14 @@ namespace Avalonia.Controls.Primitives
             // The cell may be realized before being parented. In this case raise the CellPrepared event here.
             if (_treeDataGrid is not null && ColumnIndex >= 0 && RowIndex >= 0)
                 _treeDataGrid.RaiseCellPrepared(this, ColumnIndex, RowIndex);
+        }
+
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+
+            if (!IsKeyboardFocusWithin && IsEditing)
+                EndEdit();
         }
 
         protected override Size MeasureOverride(Size availableSize)
