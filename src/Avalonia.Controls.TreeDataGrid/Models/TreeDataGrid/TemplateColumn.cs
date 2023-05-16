@@ -96,7 +96,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <returns>The cell.</returns>
         public override ICell CreateCell(IRow<TModel> row)
         {
-            return new TemplateCell(row.Model, _getCellTemplate, _getEditingCellTemplate);
+            return new TemplateCell(row.Model, _getCellTemplate, _getEditingCellTemplate, Options);
         }
 
         public override Comparison<TModel?>? GetComparison(ListSortDirection direction)

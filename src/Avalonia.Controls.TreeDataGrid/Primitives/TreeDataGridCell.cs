@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Platform;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -18,9 +19,10 @@ namespace Avalonia.Controls.Primitives
                 nameof(IsSelected),
                 o => o.IsSelected);
 
+        private static readonly Point s_invalidPoint = new Point(double.NaN, double.NaN);
         private bool _isSelected;
         private TreeDataGrid? _treeDataGrid;
-        private Point _pressedPoint;
+        private Point _pressedPoint = s_invalidPoint;
 
         static TreeDataGridCell()
         {
@@ -37,6 +39,11 @@ namespace Avalonia.Controls.Primitives
         {
             get => _isSelected;
             private set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
+        }
+
+        public bool IsEffectivelySelected
+        {
+            get => IsSelected || this.FindAncestorOfType<TreeDataGridRow>()?.IsSelected == true;
         }
 
         public virtual void Realize(
@@ -139,18 +146,13 @@ namespace Avalonia.Controls.Primitives
             return result;
         }
 
-        protected virtual void OnTapped(TappedEventArgs e)
-        {
-            if (!IsEditing && Model?.CanEdit == true && Model?.SingleTapEdit == true && !e.Handled)
-            {
-                BeginEdit();
-                e.Handled = true;
-            }
-        }
-
         protected virtual void OnDoubleTapped(TappedEventArgs e)
         {
-            if (!IsEditing && Model?.CanEdit == true && Model?.SingleTapEdit != true && !e.Handled)
+            if (Model is not null &&
+                !e.Handled &&
+                !IsEditing &&
+                Model.CanEdit &&
+                IsEnabledEditGesture(EditGestures.DoubleTap, Model.EditGestures))
             {
                 BeginEdit();
                 e.Handled = true;
@@ -161,10 +163,13 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnKeyDown(e);
 
-            if (e.Handled)
+            if (Model is null || e.Handled)
                 return;
 
-            if (e.Key == Key.F22 && !IsEditing && Model?.CanEdit == true)
+            if (e.Key == Key.F2 && 
+                !IsEditing && 
+                Model.CanEdit &&
+                IsEnabledEditGesture(EditGestures.F2, Model.EditGestures))
             {
                 BeginEdit();
                 e.Handled = true;
@@ -189,10 +194,18 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerPressed(e);
 
-            if (!IsEditing && Model?.CanEdit == true && Model?.SingleTapEdit == true && !e.Handled)
+            if (Model is not null &&
+                !e.Handled &&
+                !IsEditing &&
+                Model.CanEdit &&
+                IsEnabledEditGesture(EditGestures.Tap, Model.EditGestures))
             {
                 _pressedPoint = e.GetCurrentPoint(this).Position;
                 e.Handled = true;
+            }
+            else
+            {
+                _pressedPoint = s_invalidPoint;
             }
         }
 
@@ -200,7 +213,12 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerReleased(e);
 
-            if (!IsEditing && Model?.CanEdit == true && Model?.SingleTapEdit == true && !e.Handled)
+            if (Model is not null &&
+                !e.Handled &&
+                !IsEditing &&
+                !double.IsNaN(_pressedPoint.X) &&
+                Model.CanEdit &&
+                IsEnabledEditGesture(EditGestures.Tap, Model.EditGestures))
             {
                 var point = e.GetCurrentPoint(this);
                 var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
@@ -215,6 +233,8 @@ namespace Avalonia.Controls.Primitives
                     e.Handled = true;
                 }
             }
+
+            _pressedPoint = s_invalidPoint;
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -227,7 +247,7 @@ namespace Avalonia.Controls.Primitives
             base.OnPropertyChanged(change);
         }
 
-        public void UpdateRowIndex(int index) => RowIndex = index;
+        internal void UpdateRowIndex(int index) => RowIndex = index;
 
         internal void UpdateSelection(ITreeDataGridSelectionInteraction? selection)
         {
@@ -247,6 +267,15 @@ namespace Avalonia.Controls.Primitives
             }
 
             return false;
+        }
+
+        private bool IsEnabledEditGesture(EditGestures gesture, EditGestures enabledGestures)
+        {
+            if (!enabledGestures.HasAllFlags(gesture))
+                return false;
+
+            return enabledGestures.HasAnyFlag(EditGestures.WhenSelected) ?
+                IsEffectivelySelected : true;
         }
     }
 }

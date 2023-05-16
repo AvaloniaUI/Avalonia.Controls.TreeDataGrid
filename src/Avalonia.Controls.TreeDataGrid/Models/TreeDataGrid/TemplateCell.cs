@@ -7,18 +7,22 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 {
     public class TemplateCell : ICell, IEditableObject
     {
+        private ITemplateCellOptions? _options;
+
         public TemplateCell(
             object? value,
             Func<Control, IDataTemplate> getCellTemplate,
-            Func<Control, IDataTemplate>? getCellEditingTemplate)
+            Func<Control, IDataTemplate>? getCellEditingTemplate,
+            ITemplateCellOptions? options)
         {
             GetCellTemplate = getCellTemplate;
             GetCellEditingTemplate = getCellEditingTemplate;
             Value = value;
+            _options = options;
         }
 
         public bool CanEdit => GetCellEditingTemplate is not null;
-        public bool SingleTapEdit => false;
+        public EditGestures EditGestures => _options?.EditGestures ?? EditGestures.Default;
         public Func<Control, IDataTemplate> GetCellTemplate { get; }
         public Func<Control, IDataTemplate>? GetCellEditingTemplate { get; }
         public object? Value { get; }

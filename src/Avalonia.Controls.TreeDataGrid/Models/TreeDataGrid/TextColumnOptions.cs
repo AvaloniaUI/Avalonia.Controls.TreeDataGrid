@@ -14,15 +14,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public bool IsTextSearchEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether a single tap will begin edit mode
-        /// on a cell.
-        /// </summary>
-        /// <remarks>
-        /// If false, a double-tap is required to enter edit mode.
-        /// </remarks>
-        public bool SingleTapEdit { get; set; }
-
-        /// <summary>
         /// Gets or sets the text trimming mode for the cells in the column.
         /// </summary>
         public TextTrimming TextTrimming { get; set; } = TextTrimming.CharacterEllipsis;

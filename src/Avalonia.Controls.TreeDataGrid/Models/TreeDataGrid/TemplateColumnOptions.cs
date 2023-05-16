@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// Holds less commonly-used options for a <see cref="TemplateColumn{TModel}"/>.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public class TemplateColumnOptions<TModel> : ColumnOptions<TModel>
+    public class TemplateColumnOptions<TModel> : ColumnOptions<TModel>, ITemplateCellOptions
     {
         /// <summary>
         /// Gets or sets a value indicating whether the column takes part in text searches.
