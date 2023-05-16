@@ -20,7 +20,6 @@ namespace Avalonia.Controls.Primitives
                 o => o.Value,
                 (o, v) => o.Value = v);
 
-        private bool _canEdit;
         private string? _value;
         private TextBox? _edit;
         private TextTrimming _textTrimming = TextTrimming.CharacterEllipsis;
@@ -41,8 +40,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override bool CanEdit => _canEdit;
-
         public override void Realize(
             TreeDataGridElementFactory factory,
             ITreeDataGridSelectionInteraction? selection,
@@ -50,7 +47,6 @@ namespace Avalonia.Controls.Primitives
             int columnIndex,
             int rowIndex)
         {
-            _canEdit = model.CanEdit;
             Value = model.Value?.ToString();
             TextTrimming = (model as ITextCell)?.TextTrimming ?? TextTrimming.CharacterEllipsis;
             base.Realize(factory, selection, model, columnIndex, rowIndex);

@@ -78,7 +78,23 @@
                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
               </StackPanel>
             </DataTemplate>
-              
+
+            <!-- Edit template for Name column cells -->
+            <DataTemplate x:Key="FileNameEditCell" DataType="m:FileTreeNodeModel">
+              <StackPanel Orientation="Horizontal">
+                <Image Margin="0 0 4 0"
+                       VerticalAlignment="Center">
+                  <Image.Source>
+                    <MultiBinding Converter="{x:Static vm:FilesPageViewModel.FileIconConverter}">
+                      <Binding Path="IsDirectory"/>
+                      <Binding Path="IsExpanded"/>
+                    </MultiBinding>
+                  </Image.Source>
+                </Image>
+                <TextBox Text="{Binding Name}" VerticalAlignment="Center"/>
+              </StackPanel>
+            </DataTemplate>
+
           </TreeDataGrid.Resources>
           <TreeDataGrid.Styles>
             <Style Selector="TreeDataGrid TreeDataGridRow:nth-child(2n)">

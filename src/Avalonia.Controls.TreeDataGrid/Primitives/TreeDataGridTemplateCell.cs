@@ -18,18 +18,31 @@ namespace Avalonia.Controls.Primitives
                 nameof(ContentTemplate),
                 x => x.ContentTemplate);
 
+        public static readonly DirectProperty<TreeDataGridTemplateCell, IDataTemplate?> EditingTemplateProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridTemplateCell, IDataTemplate?>(
+                nameof(EditingTemplate),
+                x => x.EditingTemplate);
+
         private object? _content;
         private IDataTemplate? _contentTemplate;
+        private IDataTemplate? _editingTemplate;
 
         public object? Content 
         { 
             get => _content;
             private set => SetAndRaise(ContentProperty, ref _content, value);
         }
+
         public IDataTemplate? ContentTemplate 
         { 
             get => _contentTemplate;
             set => SetAndRaise(ContentTemplateProperty, ref _contentTemplate, value);
+        }
+
+        public IDataTemplate? EditingTemplate
+        {
+            get => _editingTemplate;
+            set => SetAndRaise(EditingTemplateProperty, ref _editingTemplate, value);
         }
 
         public override void Realize(
@@ -70,7 +83,10 @@ namespace Avalonia.Controls.Primitives
                 Content = cell.Value;
 
                 if (((ILogical)this).IsAttachedToLogicalTree)
+                {
                     ContentTemplate = cell.GetCellTemplate(this);
+                    EditingTemplate = cell.GetCellEditingTemplate?.Invoke(this);
+                }
             }
             else
             {

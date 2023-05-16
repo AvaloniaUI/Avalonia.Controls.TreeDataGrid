@@ -5,6 +5,7 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -16,7 +17,6 @@ namespace Avalonia.Controls.Primitives
                 nameof(IsSelected),
                 o => o.IsSelected);
 
-        private bool _isEditing;
         private bool _isSelected;
         private TreeDataGrid? _treeDataGrid;
         private Point _pressedPoint;
@@ -29,6 +29,7 @@ namespace Avalonia.Controls.Primitives
 
         public int ColumnIndex { get; private set; } = -1;
         public int RowIndex { get; private set; } = -1;
+        public bool IsEditing { get; private set; }
         public ICell? Model { get; private set; }
 
         public bool IsSelected
@@ -62,13 +63,11 @@ namespace Avalonia.Controls.Primitives
             Model = null;
         }
 
-        protected virtual bool CanEdit => false;
-
         protected void BeginEdit()
         {
-            if (!_isEditing)
+            if (!IsEditing)
             {
-                _isEditing = true;
+                IsEditing = true;
                 (Model as IEditableObject)?.BeginEdit();
                 PseudoClasses.Add(":editing");
             }
@@ -133,7 +132,7 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual void OnTapped(TappedEventArgs e)
         {
-            if (!_isEditing && CanEdit && Model?.SingleTapEdit == true && !e.Handled)
+            if (!IsEditing && Model?.CanEdit == true && Model?.SingleTapEdit == true && !e.Handled)
             {
                 BeginEdit();
                 e.Handled = true;
@@ -142,7 +141,7 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual void OnDoubleTapped(TappedEventArgs e)
         {
-            if (!_isEditing && CanEdit && Model?.SingleTapEdit != true && !e.Handled)
+            if (!IsEditing && Model?.CanEdit == true && Model?.SingleTapEdit != true && !e.Handled)
             {
                 BeginEdit();
                 e.Handled = true;
@@ -153,7 +152,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnKeyDown(e);
 
-            if (!_isEditing && CanEdit && !e.Handled && e.Key == Key.F2)
+            if (!IsEditing && Model?.CanEdit == true && !e.Handled && e.Key == Key.F2)
             {
                 BeginEdit();
                 e.Handled = true;
@@ -168,7 +167,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerPressed(e);
 
-            if (!_isEditing && CanEdit && Model?.SingleTapEdit == true && !e.Handled)
+            if (!IsEditing && Model?.CanEdit == true && Model?.SingleTapEdit == true && !e.Handled)
             {
                 _pressedPoint = e.GetCurrentPoint(this).Position;
                 e.Handled = true;
@@ -179,11 +178,16 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerReleased(e);
 
-            if (!_isEditing && CanEdit && Model?.SingleTapEdit == true && !e.Handled)
+            if (!IsEditing && Model?.CanEdit == true && Model?.SingleTapEdit == true && !e.Handled)
             {
-                var point = e.GetCurrentPoint(this).Position;
+                var point = e.GetCurrentPoint(this);
+                var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
+                var tapRect = new Rect(_pressedPoint, new Size())
+                       .Inflate(new Thickness(tapSize.Width, tapSize.Height));
 
-                if (new Rect(Bounds.Size).ContainsExclusive(point))
+                if (new Rect(Bounds.Size).ContainsExclusive(point.Position) &&
+                    tapRect.ContainsExclusive(point.Position))
                 {
                     BeginEdit();
                     e.Handled = true;
@@ -210,10 +214,10 @@ namespace Avalonia.Controls.Primitives
 
         private bool EndEditCore()
         {
-            if (_isEditing)
+            if (IsEditing)
             {
                 var restoreFocus = IsKeyboardFocusWithin;
-                _isEditing = false;
+                IsEditing = false;
                 PseudoClasses.Remove(":editing");
                 if (restoreFocus)
                     Focus();
