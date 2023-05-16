@@ -30,7 +30,7 @@
                         DockPanel.Dock="Top">
             <DropDownButton.Flyout>
                 <Flyout Placement="Bottom">
-                    <ItemsControl Items="{Binding #countries.Columns}">
+                    <ItemsControl ItemsSource="{Binding #countries.Columns}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding IsVisible}"
