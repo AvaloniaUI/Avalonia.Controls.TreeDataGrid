@@ -200,7 +200,7 @@ namespace Avalonia.Controls.Primitives
                 Model.CanEdit &&
                 IsEnabledEditGesture(EditGestures.Tap, Model.EditGestures))
             {
-                _pressedPoint = e.GetCurrentPoint(this).Position;
+                _pressedPoint = e.GetCurrentPoint(null).Position;
                 e.Handled = true;
             }
             else
@@ -227,7 +227,7 @@ namespace Avalonia.Controls.Primitives
                        .Inflate(new Thickness(tapSize.Width, tapSize.Height));
 
                 if (new Rect(Bounds.Size).ContainsExclusive(point.Position) &&
-                    tapRect.ContainsExclusive(point.Position))
+                    tapRect.ContainsExclusive(e.GetCurrentPoint(null).Position))
                 {
                     BeginEdit();
                     e.Handled = true;
