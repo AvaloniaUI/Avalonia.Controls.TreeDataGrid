@@ -2,27 +2,29 @@
 using System.ComponentModel;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    [PseudoClasses(":selected", ":editing")]
+    [PseudoClasses(":editing")]
     public abstract class TreeDataGridCell : TemplatedControl, ITreeDataGridCell
     {
         public static readonly DirectProperty<TreeDataGridCell, bool> IsSelectedProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridCell, bool>(
                 nameof(IsSelected),
-                o => o.IsSelected,
-                (o, v) => o.IsSelected = v);
+                o => o.IsSelected);
 
         private bool _isEditing;
         private bool _isSelected;
         private TreeDataGrid? _treeDataGrid;
+        private Point _pressedPoint;
 
         static TreeDataGridCell()
         {
             FocusableProperty.OverrideDefaultValue<TreeDataGridCell>(true);
+            DoubleTappedEvent.AddClassHandler<TreeDataGridCell>((x, e) => x.OnDoubleTapped(e));
         }
 
         public int ColumnIndex { get; private set; } = -1;
@@ -32,10 +34,15 @@ namespace Avalonia.Controls.Primitives
         public bool IsSelected
         {
             get => _isSelected;
-            set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
+            private set => SetAndRaise(IsSelectedProperty, ref _isSelected, value);
         }
 
-        public virtual void Realize(IElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        public virtual void Realize(
+            TreeDataGridElementFactory factory,
+            ITreeDataGridSelectionInteraction? selection,
+            ICell model,
+            int columnIndex,
+            int rowIndex)
         {
             if (columnIndex < 0)
                 throw new IndexOutOfRangeException("Invalid column index.");
@@ -43,6 +50,7 @@ namespace Avalonia.Controls.Primitives
             ColumnIndex = columnIndex;
             RowIndex = rowIndex;
             Model = model;
+            IsSelected = selection?.IsCellSelected(columnIndex, rowIndex) ?? false;
 
             _treeDataGrid?.RaiseCellPrepared(this, columnIndex, RowIndex);
         }
@@ -61,21 +69,33 @@ namespace Avalonia.Controls.Primitives
             if (!_isEditing)
             {
                 _isEditing = true;
-                (DataContext as IEditableObject)?.BeginEdit();
+                (Model as IEditableObject)?.BeginEdit();
                 PseudoClasses.Add(":editing");
             }
         }
 
         protected void CancelEdit()
         {
-            if (EndEditCore())
-                (DataContext as IEditableObject)?.CancelEdit();
+            if (EndEditCore() && Model is IEditableObject editable)
+                editable.CancelEdit();
         }
 
         protected void EndEdit()
         {
-            if (EndEditCore())
-                (DataContext as IEditableObject)?.EndEdit();
+            if (EndEditCore() && Model is IEditableObject editable)
+                editable.EndEdit();
+        }
+
+        protected void SubscribeToModelChanges()
+        {
+            if (Model is INotifyPropertyChanged inpc)
+                inpc.PropertyChanged += OnModelPropertyChanged;
+        }
+
+        protected void UnsubscribeFromModelChanges()
+        {
+            if (Model is INotifyPropertyChanged inpc)
+                inpc.PropertyChanged -= OnModelPropertyChanged;
         }
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -111,6 +131,24 @@ namespace Avalonia.Controls.Primitives
             return result;
         }
 
+        protected virtual void OnTapped(TappedEventArgs e)
+        {
+            if (!_isEditing && CanEdit && Model?.SingleTapEdit == true && !e.Handled)
+            {
+                BeginEdit();
+                e.Handled = true;
+            }
+        }
+
+        protected virtual void OnDoubleTapped(TappedEventArgs e)
+        {
+            if (!_isEditing && CanEdit && Model?.SingleTapEdit != true && !e.Handled)
+            {
+                BeginEdit();
+                e.Handled = true;
+            }
+        }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -122,14 +160,34 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected virtual void OnModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+        }
+
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
 
-            if (!_isEditing && CanEdit && !e.Handled && IsSelected)
+            if (!_isEditing && CanEdit && Model?.SingleTapEdit == true && !e.Handled)
             {
-                BeginEdit();
+                _pressedPoint = e.GetCurrentPoint(this).Position;
                 e.Handled = true;
+            }
+        }
+
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+
+            if (!_isEditing && CanEdit && Model?.SingleTapEdit == true && !e.Handled)
+            {
+                var point = e.GetCurrentPoint(this).Position;
+
+                if (new Rect(Bounds.Size).ContainsExclusive(point))
+                {
+                    BeginEdit();
+                    e.Handled = true;
+                }
             }
         }
 
@@ -137,8 +195,17 @@ namespace Avalonia.Controls.Primitives
         {
             if (change.Property == IsSelectedProperty)
             {
-                PseudoClasses.Set(":selected", change.GetNewValue<bool>());
+                PseudoClasses.Set(":selected", IsSelected);
             }
+
+            base.OnPropertyChanged(change);
+        }
+
+        public void UpdateRowIndex(int index) => RowIndex = index;
+
+        internal void UpdateSelection(ITreeDataGridSelectionInteraction? selection)
+        {
+            IsSelected = selection?.IsCellSelected(ColumnIndex, RowIndex) ?? false;
         }
 
         private bool EndEditCore()

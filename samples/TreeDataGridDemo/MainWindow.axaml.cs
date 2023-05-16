@@ -13,7 +13,7 @@ using TreeDataGridDemo.ViewModels;
 
 namespace TreeDataGridDemo
 {
-    public class MainWindow : Window
+    public partial class MainWindow : Window
     {
         private readonly TabControl? _tabs;
 
@@ -125,7 +125,7 @@ namespace TreeDataGridDemo
                 .First(x => x is TextBlock tb && tb.Classes.Contains("realized-count"));
             var rows = treeDataGrid!.RowsPresenter!;
             var realizedRowCount = rows.RealizedElements.Count;
-            var unrealizedRowCount = ((ILogical)rows).LogicalChildren.Count - realizedRowCount;
+            var unrealizedRowCount = rows.GetVisualChildren().Count() - realizedRowCount;
             textBlock.Text = $"{realizedRowCount} rows realized ({unrealizedRowCount} unrealized)";
         }
     }

@@ -1,15 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
-using Avalonia.Data;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -32,8 +31,8 @@ namespace Avalonia.Controls
                 nameof(Columns),
                 o => o.Columns);
 
-        public static readonly DirectProperty<TreeDataGrid, IElementFactory> ElementFactoryProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGrid, IElementFactory>(
+        public static readonly DirectProperty<TreeDataGrid, TreeDataGridElementFactory> ElementFactoryProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGrid, TreeDataGridElementFactory>(
                 nameof(ElementFactory),
                 o => o.ElementFactory,
                 (o, v) => o.ElementFactory = v);
@@ -43,13 +42,6 @@ namespace Avalonia.Controls
                 nameof(Rows),
                 o => o.Rows,
                 (o, v) => o.Rows = v);
-
-        [Browsable(false)]
-        public static readonly DirectProperty<TreeDataGrid, ITreeDataGridSelectionInteraction?> SelectionInteractionProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGrid, ITreeDataGridSelectionInteraction?>(
-                nameof(SelectionInteraction),
-                o => o.SelectionInteraction,
-                (o, v) => o.SelectionInteraction = v);
 
         public static readonly DirectProperty<TreeDataGrid, IScrollable?> ScrollProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, IScrollable?>(
@@ -82,18 +74,19 @@ namespace Avalonia.Controls
 
         private const double AutoScrollMargin = 60;
         private const int AutoScrollSpeed = 50;
-        private IElementFactory? _elementFactory;
+        private TreeDataGridElementFactory? _elementFactory;
         private ITreeDataGridSource? _source;
         private IColumns? _columns;
         private IRows? _rows;
         private IScrollable? _scroll;
         private IScrollable? _headerScroll;
         private ITreeDataGridSelectionInteraction? _selection;
-        private IControl? _userSortColumn;
+        private Control? _userSortColumn;
         private ListSortDirection _userSortDirection;
         private TreeDataGridCellEventArgs? _cellArgs;
         private TreeDataGridRowEventArgs? _rowArgs;
-        private Border? _dragAdorner;
+        private Canvas? _dragAdorner;
+        private bool _hideDragAdorner;
         private DispatcherTimer? _autoScrollTimer;
         private bool _autoScrollDirection;
 
@@ -134,7 +127,7 @@ namespace Avalonia.Controls
             private set => SetAndRaise(ColumnsProperty, ref _columns, value);
         }
 
-        public IElementFactory ElementFactory
+        public TreeDataGridElementFactory ElementFactory
         {
             get => _elementFactory ??= CreateDefaultElementFactory();
             set
@@ -148,13 +141,6 @@ namespace Avalonia.Controls
         {
             get => _rows;
             private set => SetAndRaise(RowsProperty, ref _rows, value);
-        }
-
-        [Browsable(false)]
-        public ITreeDataGridSelectionInteraction? SelectionInteraction
-        {
-            get => _selection;
-            private set => SetAndRaise(SelectionInteractionProperty, ref _selection, value);
         }
 
         public TreeDataGridColumnHeadersPresenter? ColumnHeadersPresenter { get; private set; }
@@ -172,7 +158,8 @@ namespace Avalonia.Controls
             set => SetValue(ShowColumnHeadersProperty, value);
         }
 
-        public ITreeSelectionModel? RowSelection => Source?.Selection as ITreeSelectionModel;
+        public ITreeDataGridCellSelectionModel? ColumnSelection => Source?.Selection as ITreeDataGridCellSelectionModel;
+        public ITreeDataGridRowSelectionModel? RowSelection => Source?.Selection as ITreeDataGridRowSelectionModel;
 
         public ITreeDataGridSource? Source
         {
@@ -181,31 +168,44 @@ namespace Avalonia.Controls
             {
                 if (_source != value)
                 {
-                    if (value != null)
-                    {
-                        value.Sorted += Source_Sorted;
-                    }
-
                     if (_source != null)
                     {
-                        _source.Sorted -= Source_Sorted;
-                    }
-
-                    void Source_Sorted()
-                    {
-                        RowsPresenter?.RecycleAllElements();
-                        RowsPresenter?.InvalidateMeasure();
+                        _source.PropertyChanged -= OnSourcePropertyChanged;
+                        _source.Sorted -= OnSourceSorted;
                     }
 
                     var oldSource = _source;
                     _source = value;
                     Columns = _source?.Columns;
                     Rows = _source?.Rows;
-                    SelectionInteraction = value?.Selection as ITreeDataGridSelectionInteraction;
+                    SelectionInteraction = _source?.Selection as ITreeDataGridSelectionInteraction;
+
+                    if (_source != null)
+                    {
+                        _source.PropertyChanged += OnSourcePropertyChanged;
+                        _source.Sorted += OnSourceSorted;
+                    }
+
                     RaisePropertyChanged(
                         SourceProperty,
-                        new Optional<ITreeDataGridSource?>(oldSource),
-                        new BindingValue<ITreeDataGridSource?>(oldSource));
+                        oldSource,
+                        _source);
+                }
+            }
+        }
+
+        internal ITreeDataGridSelectionInteraction? SelectionInteraction
+        {
+            get => _selection;
+            set
+            {
+                if (_selection != value)
+                {
+                    if (_selection != null)
+                        _selection.SelectionChanged -= OnSelectionInteractionChanged;
+                    _selection = value;
+                    if (_selection != null)
+                        _selection.SelectionChanged += OnSelectionInteractionChanged;
                 }
             }
         }
@@ -235,10 +235,10 @@ namespace Avalonia.Controls
 
         public event CancelEventHandler? SelectionChanging;
 
-        public IControl? TryGetCell(int columnIndex, int rowIndex)
+        public Control? TryGetCell(int columnIndex, int rowIndex)
         {
             if (TryGetRow(rowIndex) is TreeDataGridRow row &&
-                row.TryGetCell(columnIndex) is IControl cell)
+                row.TryGetCell(columnIndex) is Control cell)
             {
                 return cell;
             }
@@ -251,7 +251,21 @@ namespace Avalonia.Controls
             return RowsPresenter?.TryGetElement(rowIndex) as TreeDataGridRow;
         }
 
-        public bool TryGetRow(IControl? element, [MaybeNullWhen(false)] out TreeDataGridRow result)
+        public bool TryGetCell(Control? element, [MaybeNullWhen(false)] out TreeDataGridCell result)
+        {
+            if (element.FindAncestorOfType<TreeDataGridCell>(true) is { } cell &&
+                cell.ColumnIndex >= 0 &&
+                cell.RowIndex >= 0)
+            {
+                result = cell;
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
+
+        public bool TryGetRow(Control? element, [MaybeNullWhen(false)] out TreeDataGridRow result)
         {
             if (element is TreeDataGridRow row && row.RowIndex >= 0)
             {
@@ -270,7 +284,7 @@ namespace Avalonia.Controls
             return result is not null;
         }
 
-        public bool TryGetRowModel<TModel>(IControl element, [MaybeNullWhen(false)] out TModel result)
+        public bool TryGetRowModel<TModel>(Control element, [MaybeNullWhen(false)] out TModel result)
         {
             if (Source is object &&
                 TryGetRow(element, out var row) &&
@@ -294,7 +308,7 @@ namespace Avalonia.Controls
             return e.Cancel;
         }
 
-        protected virtual IElementFactory CreateDefaultElementFactory() => new TreeDataGridElementFactory();
+        protected virtual TreeDataGridElementFactory CreateDefaultElementFactory() => new TreeDataGridElementFactory();
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
@@ -324,7 +338,7 @@ namespace Avalonia.Controls
         }
 
         protected void OnPreviewKeyDown(object? o, KeyEventArgs e)
-        {         
+        {
             _selection?.OnPreviewKeyDown(this, e);
         }
 
@@ -423,8 +437,8 @@ namespace Avalonia.Controls
             if (_source is null || RowSelection is null)
                 return;
 
-            var allowedEffects = AutoDragDropRows && !_source.IsSorted ? 
-                DragDropEffects.Move : 
+            var allowedEffects = AutoDragDropRows && !_source.IsSorted ?
+                DragDropEffects.Move :
                 DragDropEffects.None;
             var route = BuildEventRoute(RowDragStartedEvent);
 
@@ -469,8 +483,10 @@ namespace Avalonia.Controls
             }
         }
 
-        private Border? GetOrCreateDragAdorner()
+        private Canvas? GetOrCreateDragAdorner()
         {
+            _hideDragAdorner = false;
+
             if (_dragAdorner is not null)
                 return _dragAdorner;
 
@@ -479,22 +495,28 @@ namespace Avalonia.Controls
             if (adornerLayer is null)
                 return null;
 
-            _dragAdorner ??= new Border
+            _dragAdorner ??= new Canvas
             {
-                BorderBrush = Brushes.Black,
-                BorderThickness = new Thickness(2),
+                Children =
+                {
+                    new Rectangle
+                    {
+                        Stroke = TextElement.GetForeground(this),
+                        StrokeThickness = 2,
+                    },
+                },
                 IsHitTestVisible = false,
-                Margin = new Thickness(0, -1),
             };
 
             adornerLayer.Children.Add(_dragAdorner);
-            AdornerLayer.SetIsClipEnabled(_dragAdorner, false);
+            AdornerLayer.SetAdornedElement(_dragAdorner, this);
             return _dragAdorner;
         }
 
         private void ShowDragAdorner(TreeDataGridRow row, TreeDataGridRowDropPosition position)
         {
-            if (position == TreeDataGridRowDropPosition.None)
+            if (position == TreeDataGridRowDropPosition.None ||
+                row.TransformToVisual(this) is not { } transform)
             {
                 HideDragAdorner();
                 return;
@@ -504,31 +526,41 @@ namespace Avalonia.Controls
             if (adorner is null)
                 return;
 
-            AdornerLayer.SetAdornedElement(adorner, row);
+            var rectangle = (Rectangle)adorner.Children[0];
+            var rowBounds = new Rect(row.Bounds.Size).TransformToAABB(transform);
+
+            Canvas.SetLeft(rectangle, rowBounds.Left);
+            rectangle.Width = rowBounds.Width;
 
             switch (position)
             {
                 case TreeDataGridRowDropPosition.Before:
-                    adorner.BorderThickness = new(0, 2, 0, 0);
+                    Canvas.SetTop(rectangle, rowBounds.Top);
+                    rectangle.Height = 0;
                     break;
                 case TreeDataGridRowDropPosition.After:
-                    adorner.BorderThickness = new(0, 0, 0, 2);
+                    Canvas.SetTop(rectangle, rowBounds.Bottom);
+                    rectangle.Height = 0;
                     break;
                 case TreeDataGridRowDropPosition.Inside:
-                    adorner.BorderThickness = new(2);
+                    Canvas.SetTop(rectangle, rowBounds.Top);
+                    rectangle.Height = rowBounds.Height;
                     break;
             }
         }
 
         private void HideDragAdorner()
         {
-            if (_dragAdorner is null)
-                return;
+            _hideDragAdorner = true;
 
-            if (_dragAdorner.Parent is AdornerLayer layer)
-                layer.Children.Remove(_dragAdorner);
-
-            _dragAdorner = null;
+            DispatcherTimer.RunOnce(() =>
+            {
+                if (_hideDragAdorner && _dragAdorner?.Parent is AdornerLayer layer)
+                {
+                    layer.Children.Remove(_dragAdorner);
+                    _dragAdorner = null;
+                }
+            }, TimeSpan.FromMilliseconds(50));
         }
 
         private void StopDrag()
@@ -559,7 +591,7 @@ namespace Avalonia.Controls
         [MemberNotNullWhen(true, nameof(_source))]
         private bool CalculateAutoDragDrop(
             TreeDataGridRow targetRow,
-            DragEventArgs e, 
+            DragEventArgs e,
             [NotNullWhen(true)] out DragInfo? data,
             out TreeDataGridRowDropPosition position)
         {
@@ -608,7 +640,7 @@ namespace Avalonia.Controls
 
             if (route.HasHandlers)
             {
-                var ev = new TreeDataGridRowDragEventArgs(row, e);
+                var ev = new TreeDataGridRowDragEventArgs(RowDragOverEvent, row, e);
                 ev.Position = adorner;
                 RaiseEvent(ev);
                 adorner = ev.Position;
@@ -629,12 +661,15 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnDragLeave(RoutedEventArgs e) => StopDrag();
+        private void OnDragLeave(RoutedEventArgs e)
+        {
+            StopDrag();
+        }
 
         private void OnDrop(DragEventArgs e)
         {
             StopDrag();
-            
+
             if (!TryGetRow(e.Source as Control, out var row))
                 return;
 
@@ -643,7 +678,7 @@ namespace Avalonia.Controls
 
             if (route.HasHandlers)
             {
-                var ev = new TreeDataGridRowDragEventArgs(row, e);
+                var ev = new TreeDataGridRowDragEventArgs(RowDropEvent, row, e);
                 ev.Position = position;
                 RaiseEvent(ev);
 
@@ -653,7 +688,7 @@ namespace Avalonia.Controls
                 position = ev.Position;
             }
 
-            if (autoDrop && 
+            if (autoDrop &&
                 _source is not null &&
                 position != TreeDataGridRowDropPosition.None)
             {
@@ -683,6 +718,26 @@ namespace Avalonia.Controls
                 else
                     scroll.LineDown();
             }
+        }
+
+        private void OnSelectionInteractionChanged(object? sender, EventArgs e)
+        {
+            RowsPresenter?.UpdateSelection(SelectionInteraction);
+        }
+
+        private void OnSourcePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ITreeDataGridSource.Selection))
+            {
+                SelectionInteraction = Source?.Selection as ITreeDataGridSelectionInteraction;
+                RowsPresenter?.UpdateSelection(SelectionInteraction);
+            }
+        }
+
+        private void OnSourceSorted()
+        {
+            RowsPresenter?.RecycleAllElements();
+            RowsPresenter?.InvalidateMeasure();
         }
 
         private static TreeDataGridRowDropPosition GetDropPosition(

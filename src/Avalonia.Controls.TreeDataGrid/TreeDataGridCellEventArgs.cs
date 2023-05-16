@@ -4,7 +4,7 @@ namespace Avalonia.Controls
 {
     public class TreeDataGridCellEventArgs
     {
-        public TreeDataGridCellEventArgs(IControl cell, int columnIndex, int rowIndex)
+        public TreeDataGridCellEventArgs(Control cell, int columnIndex, int rowIndex)
         {
             Cell = cell;
             ColumnIndex = columnIndex;
@@ -16,11 +16,11 @@ namespace Avalonia.Controls
             Cell = null!;
         }
 
-        public IControl Cell { get; private set; }
+        public Control Cell { get; private set; }
         public int ColumnIndex { get; private set; }
         public int RowIndex { get; private set; }
 
-        internal void Update(IControl? cell, int columnIndex, int rowIndex)
+        internal void Update(Control? cell, int columnIndex, int rowIndex)
         {
             if (cell is object && Cell is object)
                 throw new NotSupportedException("Nested TreeDataGrid cell prepared/clearing detected.");
