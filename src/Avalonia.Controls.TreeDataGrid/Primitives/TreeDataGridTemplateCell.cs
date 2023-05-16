@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 
@@ -31,10 +32,15 @@ namespace Avalonia.Controls.Primitives
             set => SetAndRaise(ContentTemplateProperty, ref _contentTemplate, value);
         }
 
-        public override void Realize(TreeDataGridElementFactory factory, ICell model, int columnIndex, int rowIndex)
+        public override void Realize(
+            TreeDataGridElementFactory factory,
+            ITreeDataGridSelectionInteraction? selection, 
+            ICell model,
+            int columnIndex,
+            int rowIndex)
         {
             DataContext = model;
-            base.Realize(factory, model, columnIndex, rowIndex);
+            base.Realize(factory, selection, model, columnIndex, rowIndex);
         }
 
         public override void Unrealize()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Avalonia.Controls.Models;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Input;
@@ -12,8 +13,10 @@ namespace Avalonia.Controls
     /// A data source for a <see cref="TreeDataGrid"/> which displays a flat grid.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public class FlatTreeDataGridSource<TModel> : ITreeDataGridSource<TModel>, IDisposable
-        where TModel: class
+    public class FlatTreeDataGridSource<TModel> : NotifyingBase,
+        ITreeDataGridSource<TModel>,
+        IDisposable
+            where TModel: class
     {
         private IEnumerable<TModel> _items;
         private TreeDataGridItemsSourceView<TModel> _itemsView;
@@ -45,6 +48,7 @@ namespace Avalonia.Controls
                     _rows?.SetItems(_itemsView);
                     if (_selection is object)
                         _selection.Source = value;
+                    RaisePropertyChanged();
                 }
             }
         }
@@ -59,13 +63,20 @@ namespace Avalonia.Controls
             }
             set
             {
-                if (_selection is object)
-                    throw new InvalidOperationException("Selection is already initialized.");
-                _selection = value;
-                _isSelectionSet = true;
+                if (_selection != value)
+                {
+                    if (value?.Source != _items)
+                        throw new InvalidOperationException("Selection source must be set to Items.");
+                    _selection = value;
+                    _isSelectionSet = true;
+                    RaisePropertyChanged();
+                }
             }
         }
 
+        IEnumerable<object> ITreeDataGridSource.Items => Items;
+
+        public ITreeDataGridCellSelectionModel<TModel>? CellSelection => Selection as ITreeDataGridCellSelectionModel<TModel>;
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
         public bool IsHierarchical => false;
         public bool IsSorted => _comparer is not null;
@@ -145,6 +156,11 @@ namespace Avalonia.Controls
             }
 
             return false;
+        }
+
+        IEnumerable<object> ITreeDataGridSource.GetModelChildren(object model)
+        {
+            return Enumerable.Empty<object>();
         }
 
         private AnonymousSortableRows<TModel> CreateRows()
