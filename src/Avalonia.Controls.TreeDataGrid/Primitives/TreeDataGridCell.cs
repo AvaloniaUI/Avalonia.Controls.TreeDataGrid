@@ -161,9 +161,22 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnKeyDown(e);
 
-            if (!IsEditing && Model?.CanEdit == true && !e.Handled && e.Key == Key.F2)
+            if (e.Handled)
+                return;
+
+            if (e.Key == Key.F22 && !IsEditing && Model?.CanEdit == true)
             {
                 BeginEdit();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Enter && IsEditing)
+            {
+                EndEdit();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape && IsEditing)
+            {
+                CancelEdit();
                 e.Handled = true;
             }
         }

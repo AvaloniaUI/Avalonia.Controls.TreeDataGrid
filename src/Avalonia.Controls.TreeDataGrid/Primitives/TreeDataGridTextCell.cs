@@ -63,18 +63,12 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnApplyTemplate(e);
 
-            if (_edit is not null)
-            {
-                _edit.KeyDown -= EditKeyDown;
-            }
-
             _edit = e.NameScope.Find<TextBox>("PART_Edit");
 
             if (_edit is not null)
             {
                 _edit.SelectAll();
                 _edit.Focus();
-                _edit.KeyDown += EditKeyDown;
             }
         }
 
@@ -84,20 +78,6 @@ namespace Avalonia.Controls.Primitives
 
             if (e.PropertyName == nameof(ITextCell.Value))
                 Value = Model?.Value?.ToString();
-        }
-
-        private void EditKeyDown(object? sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                EndEdit();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Escape)
-            {
-                CancelEdit();
-                e.Handled = true;
-            }
         }
     }
 }
