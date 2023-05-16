@@ -9,28 +9,28 @@ namespace Avalonia.Experimental.Data
     internal class ParentDataContextRoot<T> : SingleSubscriberObservableBase<T?>
         where T : class
     {
-        private readonly IVisual _source;
+        private readonly Visual _source;
 
-        public ParentDataContextRoot(IVisual source)
+        public ParentDataContextRoot(Visual source)
         {
             _source = source;
         }
 
         protected override void Subscribed()
         {
-            ((IAvaloniaObject)_source).PropertyChanged += SourcePropertyChanged;
-            StartListeningToDataContext(_source.VisualParent);
+            ((AvaloniaObject)_source).PropertyChanged += SourcePropertyChanged;
+            StartListeningToDataContext(_source.GetVisualParent());
             PublishValue();
         }
 
         protected override void Unsubscribed()
         {
-            ((IAvaloniaObject)_source).PropertyChanged -= SourcePropertyChanged;
+            ((AvaloniaObject)_source).PropertyChanged -= SourcePropertyChanged;
         }
 
         private void PublishValue()
         {
-            var parent = _source.VisualParent as IStyledElement;
+            var parent = _source.GetVisualParent() as StyledElement;
 
             if (parent?.DataContext is null)
             {
@@ -46,17 +46,17 @@ namespace Avalonia.Experimental.Data
             }
         }
 
-        private void StartListeningToDataContext(IVisual? visual)
+        private void StartListeningToDataContext(Visual? visual)
         {
-            if (visual is IStyledElement styled)
+            if (visual is StyledElement styled)
             {
                 styled.PropertyChanged += ParentPropertyChanged;
             }
         }
 
-        private void StopListeningToDataContext(IVisual? visual)
+        private void StopListeningToDataContext(Visual? visual)
         {
-            if (visual is IStyledElement styled)
+            if (visual is StyledElement styled)
             {
                 styled.PropertyChanged -= ParentPropertyChanged;
             }
@@ -64,10 +64,11 @@ namespace Avalonia.Experimental.Data
 
         private void SourcePropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
+            // TODO: Double check this with @grokys
             if (e.Property == Visual.VisualParentProperty)
             {
-                StopListeningToDataContext(_source.VisualParent);
-                StartListeningToDataContext(_source.VisualParent);
+                StopListeningToDataContext(_source.GetVisualParent());
+                StartListeningToDataContext(_source.GetVisualParent());
                 PublishValue();
             }
         }

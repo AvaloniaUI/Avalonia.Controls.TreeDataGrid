@@ -29,19 +29,12 @@ namespace Avalonia.Controls.TreeDataGridTests
                         {
                             Name = "PART_ContentPresenter",
                             [~ContentPresenter.ContentProperty] = x[~ContentControl.ContentProperty],
-                            [~~ScrollContentPresenter.ExtentProperty] = x[~~ScrollViewer.ExtentProperty],
                             [~~ScrollContentPresenter.OffsetProperty] = x[~~ScrollViewer.OffsetProperty],
-                            [~~ScrollContentPresenter.ViewportProperty] = x[~~ScrollViewer.ViewportProperty],
-                            [~ScrollContentPresenter.CanHorizontallyScrollProperty] = x[~ScrollViewer.CanHorizontallyScrollProperty],
-                            [~ScrollContentPresenter.CanVerticallyScrollProperty] = x[~ScrollViewer.CanVerticallyScrollProperty],
                         }.RegisterInNameScope(ns),
                         new ScrollBar
                         {
                             Name = "horizontalScrollBar",
                             Orientation = Orientation.Horizontal,
-                            [~RangeBase.MaximumProperty] = x[~ScrollViewer.HorizontalScrollBarMaximumProperty],
-                            [~~RangeBase.ValueProperty] = x[~~ScrollViewer.HorizontalScrollBarValueProperty],
-                            [~ScrollBar.ViewportSizeProperty] = x[~ScrollViewer.HorizontalScrollBarViewportSizeProperty],
                             [~ScrollBar.VisibilityProperty] = x[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
                             [Grid.RowProperty] = 1,
                         }.RegisterInNameScope(ns),
@@ -49,9 +42,6 @@ namespace Avalonia.Controls.TreeDataGridTests
                         {
                             Name = "verticalScrollBar",
                             Orientation = Orientation.Vertical,
-                            [~RangeBase.MaximumProperty] = x[~ScrollViewer.VerticalScrollBarMaximumProperty],
-                            [~~RangeBase.ValueProperty] = x[~~ScrollViewer.VerticalScrollBarValueProperty],
-                            [~ScrollBar.ViewportSizeProperty] = x[~ScrollViewer.VerticalScrollBarViewportSizeProperty],
                             [~ScrollBar.VisibilityProperty] = x[~ScrollViewer.VerticalScrollBarVisibilityProperty],
                             [Grid.ColumnProperty] = 1,
                         }.RegisterInNameScope(ns),
@@ -89,7 +79,6 @@ namespace Avalonia.Controls.TreeDataGridTests
                                 [!TreeDataGridRowsPresenter.ColumnsProperty] = x[!TreeDataGrid.ColumnsProperty],
                                 [!TreeDataGridRowsPresenter.ElementFactoryProperty] = x[!TreeDataGrid.ElementFactoryProperty],
                                 [!TreeDataGridRowsPresenter.ItemsProperty] = x[!TreeDataGrid.RowsProperty],
-                                [!TreeDataGridRowsPresenter.SelectionProperty] = x[!TreeDataGrid.SelectionInteractionProperty],
                             }.RegisterInNameScope(ns),
                         }.RegisterInNameScope(ns)
                     }

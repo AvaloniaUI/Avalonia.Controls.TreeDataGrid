@@ -10,7 +10,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a data source for a <see cref="TreeDataGrid"/> control.
     /// </summary>
-    public interface ITreeDataGridSource
+    public interface ITreeDataGridSource : INotifyPropertyChanged
     {
         /// <summary>
         /// Gets the columns to be displayed.

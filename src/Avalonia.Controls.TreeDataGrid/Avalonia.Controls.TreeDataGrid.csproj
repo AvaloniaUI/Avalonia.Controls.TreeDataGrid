@@ -1,13 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <IsPackable>True</IsPackable>
+    <LangVersion>10</LangVersion>
     <RootNamespace>Avalonia.Controls</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Avalonia.Controls.TreeDataGrid</PackageId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"/>
+    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+    
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 </Project>
