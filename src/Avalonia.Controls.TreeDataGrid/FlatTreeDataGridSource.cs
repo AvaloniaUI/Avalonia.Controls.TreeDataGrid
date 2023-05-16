@@ -74,6 +74,8 @@ namespace Avalonia.Controls
             }
         }
 
+        IEnumerable<object> ITreeDataGridSource.Items => Items;
+
         public ITreeDataGridCellSelectionModel<TModel>? CellSelection => Selection as ITreeDataGridCellSelectionModel<TModel>;
         public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
         public bool IsHierarchical => false;
@@ -154,6 +156,11 @@ namespace Avalonia.Controls
             }
 
             return false;
+        }
+
+        IEnumerable<object> ITreeDataGridSource.GetModelChildren(object model)
+        {
+            return Enumerable.Empty<object>();
         }
 
         private AnonymousSortableRows<TModel> CreateRows()
