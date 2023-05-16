@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -26,6 +31,7 @@ namespace Avalonia.Controls.Primitives
         private object? _content;
         private IDataTemplate? _contentTemplate;
         private IDataTemplate? _editingTemplate;
+        private ContentPresenter? _editingContentPresenter;
 
         public object? Content 
         { 
@@ -62,6 +68,27 @@ namespace Avalonia.Controls.Primitives
             base.Unrealize();
         }
 
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+
+            if (_editingContentPresenter is not null)
+                _editingContentPresenter.LostFocus -= EditingContentPresenterLostFocus;
+
+            _editingContentPresenter = e.NameScope.Find<ContentPresenter>("PART_EditingContentPresenter");
+
+            if (_editingContentPresenter is not null)
+            {
+                _editingContentPresenter.UpdateChild();
+
+                var focus = (IInputElement?)_editingContentPresenter.GetVisualDescendants()
+                    .FirstOrDefault(x => (x as IInputElement)?.Focusable == true);
+                focus?.Focus();
+
+                _editingContentPresenter.LostFocus += EditingContentPresenterLostFocus;
+            }
+        }
+
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
@@ -92,6 +119,11 @@ namespace Avalonia.Controls.Primitives
             {
                 Content = null;
             }
+        }
+
+        private void EditingContentPresenterLostFocus(object? sender, RoutedEventArgs e)
+        {
+            EndEdit();
         }
     }
 }

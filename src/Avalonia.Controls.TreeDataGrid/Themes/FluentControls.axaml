@@ -260,7 +260,7 @@
       <Setter Property="Padding" Value="4 2" />
       <Setter Property="Template">
         <ControlTemplate>
-          <ContentPresenter Name="PART_ContentPresenter"
+          <ContentPresenter Name="PART_EditingContentPresenter"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
