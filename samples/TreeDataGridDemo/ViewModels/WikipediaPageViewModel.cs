@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
-using Avalonia.Controls.Templates;
 using Avalonia.Media;
 using TreeDataGridDemo.Models;
 
@@ -52,9 +51,6 @@ namespace TreeDataGridDemo.ViewModels
                 {
                     PropertyNameCaseInsensitive = true,
                 });
-
-                //var s = await client.GetStreamAsync(uri);
-                //var data = await JsonSerializer.DeserializeAsync<OnThisDay>(s);
 
                 if (data?.Selected is not null)
                     _data.AddRange(data.Selected.SelectMany(x => x.Pages!));

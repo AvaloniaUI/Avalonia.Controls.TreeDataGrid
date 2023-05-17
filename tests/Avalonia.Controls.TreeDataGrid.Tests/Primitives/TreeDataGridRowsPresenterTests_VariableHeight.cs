@@ -25,8 +25,6 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
             var (target, scroll, _) = CreateTarget();
 
-            scroll.GetObservable(ScrollViewer.OffsetProperty).Subscribe(x => { });
-
             Layout(target);
 
             var index = GetFirstRowIndex(target);
@@ -67,7 +65,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
         private static int GetFirstRowIndex(TreeDataGridRowsPresenter target)
         {
-            return target!.GetLogicalChildren()
+            return target!.GetVisualChildren()
                 .Cast<TreeDataGridRow>()
                 .Where(x => x.IsVisible)
                 .Select(x => x.RowIndex)
@@ -77,7 +75,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
         private static int GetLastRowIndex(TreeDataGridRowsPresenter target)
         {
-            return target!.GetLogicalChildren()
+            return target!.GetVisualChildren()
                 .Cast<TreeDataGridRow>()
                 .Where(x => x.IsVisible)
                 .Select(x => x.RowIndex)
@@ -155,7 +153,6 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         private static IDisposable App()
         {
             var scope = AvaloniaLocator.EnterScope();
-            AvaloniaLocator.CurrentMutable.Bind<IStyler>().ToConstant(new Styler());
             return scope;
         }
 
