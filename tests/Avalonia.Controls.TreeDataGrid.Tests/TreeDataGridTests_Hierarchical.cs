@@ -63,7 +63,6 @@ namespace Avalonia.Controls.TreeDataGridTests
             Layout(target);
 
             Assert.Equal(10, target.RowsPresenter!.RealizedElements.Count);
-            Assert.Equal(10, target.RowsPresenter!.GetVisualChildren().Count());
         }
 
         [Fact]

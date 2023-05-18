@@ -17,5 +17,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets the cell's text trimming mode.
         /// </summary>
         TextTrimming TextTrimming { get; }
+
+        /// <summary>
+        /// Gets the cell's text wrapping mode.
+        /// </summary>
+        TextWrapping TextWrapping { get; }
     }
 }

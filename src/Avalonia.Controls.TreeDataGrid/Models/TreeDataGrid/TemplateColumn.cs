@@ -57,7 +57,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             if (_cellTemplate is null)
                 throw new KeyNotFoundException(
                     $"No data template resource with the key of '{_cellTemplateResourceKey}' " +
-                    "could be found for the template column '{Header}'.");
+                    $"could be found for the template column '{Header}'.");
 
             return _cellTemplate;
         }

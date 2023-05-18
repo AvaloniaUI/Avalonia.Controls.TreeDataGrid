@@ -88,6 +88,18 @@
         </TreeDataGrid>
       </DockPanel>
     </TabItem>
+    <TabItem Header="Wikipedia">
+      <DockPanel>
+        <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
+        <TreeDataGrid Name="wikipedia" Source="{Binding Wikipedia.Source}">
+          <TreeDataGrid.Resources>
+            <DataTemplate x:Key="WikipediaImageCell">
+              <Image Source="{Binding Image}"/>
+            </DataTemplate>
+          </TreeDataGrid.Resources>
+        </TreeDataGrid>
+      </DockPanel>
+    </TabItem>
     <TabItem Header="Drag/Drop">
       <DockPanel>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
