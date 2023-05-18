@@ -401,7 +401,14 @@ namespace Avalonia.Controls.Primitives
             var oldViewportStart = vertical ? Viewport.Top : Viewport.Left;
             var oldViewportEnd = vertical ? Viewport.Bottom : Viewport.Right;
 
-            Viewport = e.EffectiveViewport.Intersect(new(Bounds.Size));
+            // We sometimes get sent a viewport of 0,0 because the EffectiveViewportChanged event
+            // is being raised when the parent control hasn't yet been arranged. This is a bug in
+            // Avalonia, but we can work around it by forcing MeasureOverride to estimate the
+            // viewport.
+            Viewport = e.EffectiveViewport.Size == default ? 
+                s_invalidViewport :
+                e.EffectiveViewport.Intersect(new(Bounds.Size));
+
             _isWaitingForViewportUpdate = false;
 
             var newViewportStart = vertical ? Viewport.Top : Viewport.Left;
