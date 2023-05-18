@@ -1,9 +1,9 @@
 ﻿using System;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
-using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -15,14 +15,7 @@ namespace Avalonia.Controls.Primitives
                 o => o.Columns,
                 (o, v) => o.Columns = v);
 
-        public static readonly DirectProperty<TreeDataGridRowsPresenter, ITreeDataGridSelectionInteraction?> SelectionProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGridRowsPresenter, ITreeDataGridSelectionInteraction?>(
-                nameof(Selection),
-                o => o.Selection,
-                (o, v) => o.Selection = v);
-
         private IColumns? _columns;
-        private ITreeDataGridSelectionInteraction? _selection;
 
         public event EventHandler<ChildIndexChangedEventArgs>? ChildIndexChanged;
 
@@ -30,35 +23,6 @@ namespace Avalonia.Controls.Primitives
         {
             get => _columns;
             set => SetAndRaise(ColumnsProperty, ref _columns, value);
-        }
-
-        public ITreeDataGridSelectionInteraction? Selection
-        {
-            get => _selection;
-            set
-            {
-                if (_selection != value)
-                {
-                    var oldValue = _selection;
-
-                    if (_selection is object)
-                    {
-                        _selection.SelectionChanged -= OnSelectionChanged;
-                    }
-
-                    _selection = value;
-
-                    if (_selection is object)
-                    {
-                        _selection.SelectionChanged += OnSelectionChanged;
-                    }
-
-                    RaisePropertyChanged(
-                        SelectionProperty,
-                        oldValue,
-                        _selection);
-                }
-            }
         }
 
         protected override Orientation Orientation => Orientation.Vertical;
@@ -71,8 +35,7 @@ namespace Avalonia.Controls.Primitives
         protected override void RealizeElement(Control element, IRow rowModel, int index)
         {
             var row = (TreeDataGridRow)element;
-            row.Realize(ElementFactory, Columns, (IRows?)Items, index);
-            row.IsSelected = _selection?.IsRowSelected(rowModel) == true;
+            row.Realize(ElementFactory, GetSelection(), Columns, (IRows?)Items, index);
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
         }
 
@@ -86,17 +49,6 @@ namespace Avalonia.Controls.Primitives
         {
             ((TreeDataGridRow)element).Unrealize();
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, ((TreeDataGridRow)element).RowIndex));
-        }
-
-        private void UpdateSelection()
-        {
-            foreach (var element in VisualChildren)
-            {
-                if (element is TreeDataGridRow { RowIndex: >= 0 } row)
-                {
-                    row.IsSelected = _selection?.IsRowSelected(row.RowIndex) == true;
-                }
-            }
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -127,6 +79,15 @@ namespace Avalonia.Controls.Primitives
             base.OnPropertyChanged(change);
         }
 
+        internal void UpdateSelection(ITreeDataGridSelectionInteraction? selection)
+        {
+            foreach (var element in RealizedElements)
+            {
+                if (element is TreeDataGridRow { RowIndex: >= 0 } row)
+                    row.UpdateSelection(selection);
+            }
+        }
+
         private void OnColumnLayoutInvalidated(object? sender, EventArgs e)
         {
             InvalidateMeasure();
@@ -138,9 +99,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void OnSelectionChanged(object? sender, EventArgs e)
+        private ITreeDataGridSelectionInteraction? GetSelection()
         {
-            UpdateSelection();
+            return this.FindAncestorOfType<TreeDataGrid>()?.SelectionInteraction;
         }
 
         public int GetChildIndex(ILogical child)

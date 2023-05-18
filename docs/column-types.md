@@ -20,6 +20,24 @@ This is the signature of the `TextColumn` constructor. There are two most import
 **Note**:               
 The sample above is taken from [this article](https://github.com/AvaloniaUI/Avalonia.Controls.TreeDataGrid/blob/master/docs/get-started-flat.md). If you feel like you need more examples feel free to check it, there is a sample that shows how to use TextColumns and how to run a whole `TreeDataGrid` using them. 
 
+## CheckBoxColumn
+
+As its name suggests, `CheckBoxColumn` displays a `CheckBox` in its cells. For a readonly checkbox:
+
+```csharp
+new CheckColumn<Person>("Firstborn", x => x.IsFirstborn)
+```
+
+The first parameter defines the column header. The second parameter is an expression which gets the value of the property from the model.
+
+For a read/write checkbox:
+
+```csharp
+new CheckColumn<Person>("Firstborn", x => x.IsFirstborn, (o, v) => o.IsFirstborn = v)
+```
+
+This overload adds a second paramter which is the expression used to set the property in the model.
+
 ## HierarchicalExpanderColumn
 `HierarchicalExpanderColumn` can be used only with `HierarchicalTreeDataGrid` (a.k.a TreeView) thats what Hierarchical stands for in its name, also it can be used only with `HierarchicalTreeDataGridSource`. This type of columns can be useful when you want cells to show an expander to reveal nested data.
 

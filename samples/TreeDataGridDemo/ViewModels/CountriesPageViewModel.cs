@@ -3,13 +3,15 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
+using ReactiveUI;
 using TreeDataGridDemo.Models;
 
 namespace TreeDataGridDemo.ViewModels
 {
-    internal class CountriesPageViewModel
+    internal class CountriesPageViewModel : ReactiveObject
     {
         private readonly ObservableCollection<Country> _data;
+        private bool _cellSelection;
 
         public CountriesPageViewModel()
         {
@@ -20,8 +22,8 @@ namespace TreeDataGridDemo.ViewModels
                 Columns =
                 {
                     new TextColumn<Country, string>("Country", x => x.Name, (r, v) => r.Name = v, new GridLength(6, GridUnitType.Star), new()
-                    { 
-                        IsTextSearchEnabled = true 
+                    {
+                        IsTextSearchEnabled = true
                     }),
                     new TextColumn<Country, string>("Region", x => x.Region, new GridLength(4, GridUnitType.Star)),
                     new TextColumn<Country, int>("Population", x => x.Population, new GridLength(3, GridUnitType.Star)),
@@ -33,6 +35,23 @@ namespace TreeDataGridDemo.ViewModels
                 }
             };
             Source.RowSelection!.SingleSelect = false;
+        }
+
+        public bool CellSelection
+        {
+            get => _cellSelection;
+            set
+            {
+                if (_cellSelection != value)
+                {
+                    _cellSelection = value;
+                    if (_cellSelection)
+                        Source.Selection = new TreeDataGridCellSelectionModel<Country>(Source) { SingleSelect = false };
+                    else
+                        Source.Selection = new TreeDataGridRowSelectionModel<Country>(Source) { SingleSelect = false };
+                    this.RaisePropertyChanged();
+                }
+            }
         }
 
         public FlatTreeDataGridSource<Country> Source { get; }

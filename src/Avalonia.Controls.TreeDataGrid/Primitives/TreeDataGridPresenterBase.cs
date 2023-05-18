@@ -92,7 +92,7 @@ namespace Avalonia.Controls.Primitives
         protected abstract Orientation Orientation { get; }
         protected Rect Viewport { get; private set; } = s_invalidViewport;
 
-        public Control? BringIntoView(int index)
+        public Control? BringIntoView(int index, Rect? rect = null)
         {
             var items = Items;
 
@@ -101,7 +101,10 @@ namespace Avalonia.Controls.Primitives
 
             if (GetRealizedElement(index) is Control element)
             {
-                element.BringIntoView();
+                if (rect.HasValue)
+                    element.BringIntoView(rect.Value);
+                else
+                    element.BringIntoView();
                 return element;
             }
             else if (this.GetVisualRoot() is ILayoutRoot root)
@@ -114,31 +117,34 @@ namespace Avalonia.Controls.Primitives
 
                 // Get the expected position of the elment and put it in place.
                 var anchorU = _realizedElements.GetOrEstimateElementU(index, ref _lastEstimatedElementSizeU);
-                var rect = Orientation == Orientation.Horizontal ?
+                var elementRect = Orientation == Orientation.Horizontal ?
                     new Rect(anchorU, 0, _scrollToElement.DesiredSize.Width, _scrollToElement.DesiredSize.Height) :
                     new Rect(0, anchorU, _scrollToElement.DesiredSize.Width, _scrollToElement.DesiredSize.Height);
-                _scrollToElement.Arrange(rect);
+                _scrollToElement.Arrange(elementRect);
 
                 // If the item being brought into view was added since the last layout pass then
                 // our bounds won't be updated, so any containing scroll viewers will not have an
                 // updated extent. Do a layout pass to ensure that the containing scroll viewers
                 // will be able to scroll the new item into view.
-                if (!Bounds.Contains(rect) && !Viewport.Contains(rect))
+                if (!Bounds.Contains(elementRect) && !Viewport.Contains(elementRect))
                 {
                     _isWaitingForViewportUpdate = true;
                     root.LayoutManager.ExecuteLayoutPass();
                     _isWaitingForViewportUpdate = false;
                 }
 
-                // Try to bring the item into view.
-                _scrollToElement.BringIntoView();
+                // Try to bring the item into view and do a layout pass.
+                if (rect.HasValue)
+                    _scrollToElement.BringIntoView(rect.Value);
+                else
+                    _scrollToElement.BringIntoView();
 
                 // If the viewport does not contain the item to scroll to, set _isWaitingForViewportUpdate:
                 // this should cause the following chain of events:
                 // - Measure is first done with the old viewport (which will be a no-op, see MeasureOverride)
                 // - The viewport is then updated by the layout system which invalidates our measure
                 // - Measure is then done with the new viewport.
-                _isWaitingForViewportUpdate = !Viewport.Contains(rect);
+                _isWaitingForViewportUpdate = !Viewport.Contains(elementRect);
                 root.LayoutManager.ExecuteLayoutPass();
 
                 // If for some reason the layout system didn't give us a new viewport during the layout, we

@@ -33,8 +33,7 @@
               <TreeDataGridRowsPresenter Name="PART_RowsPresenter"
                                          Columns="{TemplateBinding Columns}"
                                          ElementFactory="{TemplateBinding ElementFactory}"
-                                         Items="{TemplateBinding Rows}"
-                                         Selection="{TemplateBinding SelectionInteraction}"/>
+                                         Items="{TemplateBinding Rows}"/>
             </ScrollViewer>
           </DockPanel>
         </Border>

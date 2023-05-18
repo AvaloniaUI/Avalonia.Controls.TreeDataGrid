@@ -11,7 +11,8 @@
     <TabItem Header="Countries">
       <DockPanel>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
-        <StackPanel DockPanel.Dock="Right" Spacing="4">
+        <StackPanel DockPanel.Dock="Right" Spacing="4" Margin="4 0 0 0">
+          <CheckBox IsChecked="{Binding Countries.CellSelection}">Cell Selection</CheckBox>
           <Label Target="countryTextBox">_Country</Label>
           <TextBox Name="countryTextBox">Sealand</TextBox>
           <Label Target="regionTextBox">_Region</Label>
@@ -48,6 +49,11 @@
           <ComboBox ItemsSource="{Binding Files.Drives}"
                     SelectedItem="{Binding Files.SelectedDrive}"
                     DockPanel.Dock="Left"/>
+          <CheckBox IsChecked="{Binding Files.CellSelection}"
+                    Margin="4 0 0 0"
+                    DockPanel.Dock="Right">
+            Cell Selection
+          </CheckBox>
           <TextBox Text="{Binding Files.SelectedPath, Mode=OneWay}"
                    Margin="4 0 0 0"
                    VerticalContentAlignment="Center"
