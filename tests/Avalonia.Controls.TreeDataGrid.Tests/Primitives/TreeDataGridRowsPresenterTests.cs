@@ -288,7 +288,8 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 
             // Row indexes updated.
             indexes = GetRealizedRowIndexes(target);
-            Assert.Equal(Enumerable.Range(1, 9), indexes);
+
+            Assert.Equal(new[] { -1, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, indexes);
 
             var elements = target.RealizedElements.ToList();
             Layout(target);
@@ -299,7 +300,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(Enumerable.Range(0, 10), indexes);
 
             // And the removed row should now have been recycled as the first row.
-            elements.Insert(0, toRecycle);
+            elements[0] = toRecycle;
             Assert.Equal(elements, target.RealizedElements);
         }
 

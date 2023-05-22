@@ -60,6 +60,11 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            return RowIndex == -1 ? default : base.MeasureOverride(availableSize);
+        }
+
         protected override Size MeasureElement(int index, Control element, Size availableSize)
         {
             element.Measure(availableSize);
@@ -102,9 +107,9 @@ namespace Avalonia.Controls.Primitives
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, cell.RowIndex));
         }
 
-        protected override void UpdateElementIndex(Control element, int index)
+        protected override void UpdateElementIndex(Control element, int oldIndex, int newIndex)
         {
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, newIndex));
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

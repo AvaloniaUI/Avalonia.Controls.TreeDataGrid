@@ -14,6 +14,11 @@ namespace Avalonia.Controls.Primitives
                 nameof(TextTrimming),
                 o => o.TextTrimming);
 
+        public static readonly DirectProperty<TreeDataGridTextCell, TextWrapping> TextWrappingProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridTextCell, TextWrapping>(
+                nameof(TextWrapping),
+                o => o.TextWrapping);
+
         public static readonly DirectProperty<TreeDataGridTextCell, string?> ValueProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridTextCell, string?>(
                 nameof(Value),
@@ -30,12 +35,19 @@ namespace Avalonia.Controls.Primitives
         private string? _value;
         private TextBox? _edit;
         private TextTrimming _textTrimming = TextTrimming.CharacterEllipsis;
+        private TextWrapping _textWrapping = TextWrapping.NoWrap;
         private TextAlignment _textAlignment = TextAlignment.Left;
 
         public TextTrimming TextTrimming
         {
             get => _textTrimming;
             set => SetAndRaise(TextTrimmingProperty, ref _textTrimming, value);
+        }
+
+        public TextWrapping TextWrapping
+        {
+            get => _textWrapping;
+            set => SetAndRaise(TextWrappingProperty, ref _textWrapping, value);
         }
 
         public string? Value
@@ -66,6 +78,7 @@ namespace Avalonia.Controls.Primitives
             _canEdit = model.CanEdit;
             Value = model.Value?.ToString();
             TextTrimming = (model as ITextCell)?.TextTrimming ?? TextTrimming.CharacterEllipsis;
+            TextWrapping = (model as ITextCell)?.TextWrapping ?? TextWrapping.NoWrap;
             TextAlignment = (model as ITextCell)?.TextAlignment ?? TextAlignment.Left;
             base.Realize(factory, selection, model, columnIndex, rowIndex);
             SubscribeToModelChanges();
