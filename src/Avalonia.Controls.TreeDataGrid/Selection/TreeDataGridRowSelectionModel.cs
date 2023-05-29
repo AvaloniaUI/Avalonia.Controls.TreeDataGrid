@@ -101,7 +101,7 @@ namespace Avalonia.Controls.Selection
                         var newIndex = hierarchicalRows.GetParentRowIndex(AnchorIndex);
                         UpdateSelection(sender, newIndex, true);
                         sender.RowsPresenter.BringIntoView(newIndex);
-                        FocusManager.Instance?.Focus(sender);
+                        sender.Focus();
                     }
 
                     if (!e.Handled && direction == NavigationDirection.Right

@@ -682,7 +682,7 @@ namespace Avalonia.Controls
                 ev.Position = position;
                 RaiseEvent(ev);
 
-                if (ev.Handled || !e.DragEffects.HasAnyFlag(DragDropEffects.Move))
+                if (ev.Handled || e.DragEffects != DragDropEffects.Move)
                     return;
 
                 position = ev.Position;

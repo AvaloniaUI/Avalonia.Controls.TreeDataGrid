@@ -96,7 +96,7 @@ namespace Avalonia.Controls
             TreeDataGridRowDropPosition position,
             DragDropEffects effects)
         {
-            if (!effects.HasAnyFlag(DragDropEffects.Move))
+            if (effects != DragDropEffects.Move)
                 throw new NotSupportedException("Only move is currently supported for drag/drop.");
             if (IsSorted)
                 throw new NotSupportedException("Drag/drop is not supported on sorted data.");
