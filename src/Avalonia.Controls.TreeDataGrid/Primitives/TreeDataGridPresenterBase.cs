@@ -107,7 +107,7 @@ namespace Avalonia.Controls.Primitives
                     element.BringIntoView();
                 return element;
             }
-            else if (this.GetVisualRoot() is TopLevel root)
+            else if (this.IsAttachedToVisualTree())
             {
                 // Create and measure the element to be brought into view. Store it in a field so that
                 // it can be re-used in the layout pass.
@@ -129,7 +129,7 @@ namespace Avalonia.Controls.Primitives
                 if (!Bounds.Contains(elementRect) && !Viewport.Contains(elementRect))
                 {
                     _isWaitingForViewportUpdate = true;
-                    root.UpdateLayout();
+                    UpdateLayout();
                     _isWaitingForViewportUpdate = false;
                 }
 
@@ -145,7 +145,7 @@ namespace Avalonia.Controls.Primitives
                 // - The viewport is then updated by the layout system which invalidates our measure
                 // - Measure is then done with the new viewport.
                 _isWaitingForViewportUpdate = !Viewport.Contains(elementRect);
-                root.UpdateLayout();
+                UpdateLayout();
 
                 // If for some reason the layout system didn't give us a new viewport during the layout, we
                 // need to do another layout pass as the one that took place was a no-op.
@@ -153,7 +153,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     _isWaitingForViewportUpdate = false;
                     InvalidateMeasure();
-                    root.UpdateLayout();
+                    UpdateLayout();
                 }
 
                 var result = _scrollToElement;
