@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Controls.Presenters;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Rendering;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using CollectionExtensions = Avalonia.Controls.Models.TreeDataGrid.CollectionExtensions;
@@ -28,20 +32,26 @@ namespace Avalonia.Controls.Primitives
                 (o, v) => o.Items = v);
 #pragma warning restore AVP1002
         private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
-        private readonly Action<Control> _recycleElement;
-        private readonly Action<Control, int> _updateElementIndex;
-        private int _anchorIndex = -1;
-        private Control? _anchorElement;
+        private readonly Action<Control, int> _recycleElement;
+        private readonly Action<Control> _recycleElementOnItemRemoved;
+        private readonly Action<Control, int, int> _updateElementIndex;
+        private int _scrollToIndex = -1;
+        private Control? _scrollToElement;
         private TreeDataGridElementFactory? _elementFactory;
+        private bool _isInLayout;
         private bool _isWaitingForViewportUpdate;
         private IReadOnlyList<TItem>? _items;
-        private RealizedElementList _measureElements = new();
-        private RealizedElementList _realizedElements = new();
+        private RealizedStackElements? _measureElements;
+        private RealizedStackElements? _realizedElements;
+        private ScrollViewer? _scrollViewer;
         private double _lastEstimatedElementSizeU = 25;
+        private Control? _unrealizedFocusedElement;
+        private int _unrealizedFocusedIndex = -1;
 
         public TreeDataGridPresenterBase()
         {
             _recycleElement = RecycleElement;
+            _recycleElementOnItemRemoved = RecycleElementOnItemRemoved;
             _updateElementIndex = UpdateElementIndex;
             EffectiveViewportChanged += OnEffectiveViewportChanged;
         }
@@ -77,15 +87,17 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        public IReadOnlyList<Control?> RealizedElements => _realizedElements.Elements;
+        internal IReadOnlyList<Control?> RealizedElements => _realizedElements?.Elements ?? Array.Empty<Control>();
 
         protected abstract Orientation Orientation { get; }
         protected Rect Viewport { get; private set; } = s_invalidViewport;
 
-        public void BringIntoView(int index, Rect? rect = null)
+        public Control? BringIntoView(int index, Rect? rect = null)
         {
-            if (_items is null || index < 0 || index >= _items.Count)
-                return;
+            var items = Items;
+
+            if (_isInLayout || items is null || index < 0 || index >= items.Count || _realizedElements is null)
+                return null;
 
             if (GetRealizedElement(index) is Control element)
             {
@@ -93,21 +105,22 @@ namespace Avalonia.Controls.Primitives
                     element.BringIntoView(rect.Value);
                 else
                     element.BringIntoView();
+                return element;
             }
             else if (this.GetVisualRoot() is ILayoutRoot root)
             {
                 // Create and measure the element to be brought into view. Store it in a field so that
                 // it can be re-used in the layout pass.
-                _anchorElement = GetOrCreateElement(index);
-                _anchorElement.Measure(Size.Infinity);
-                _anchorIndex = index;
+                _scrollToElement = GetOrCreateElement(items, index);
+                _scrollToElement.Measure(Size.Infinity);
+                _scrollToIndex = index;
 
                 // Get the expected position of the elment and put it in place.
-                var anchorU = GetOrEstimateElementPosition(index);
+                var anchorU = _realizedElements.GetOrEstimateElementU(index, ref _lastEstimatedElementSizeU);
                 var elementRect = Orientation == Orientation.Horizontal ?
-                    new Rect(anchorU, 0, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height) :
-                    new Rect(0, anchorU, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height);
-                _anchorElement.Arrange(elementRect);
+                    new Rect(anchorU, 0, _scrollToElement.DesiredSize.Width, _scrollToElement.DesiredSize.Height) :
+                    new Rect(0, anchorU, _scrollToElement.DesiredSize.Width, _scrollToElement.DesiredSize.Height);
+                _scrollToElement.Arrange(elementRect);
 
                 // If the item being brought into view was added since the last layout pass then
                 // our bounds won't be updated, so any containing scroll viewers will not have an
@@ -122,22 +135,47 @@ namespace Avalonia.Controls.Primitives
 
                 // Try to bring the item into view and do a layout pass.
                 if (rect.HasValue)
-                    _anchorElement.BringIntoView(rect.Value);
+                    _scrollToElement.BringIntoView(rect.Value);
                 else
-                    _anchorElement.BringIntoView();
+                    _scrollToElement.BringIntoView();
 
+                // If the viewport does not contain the item to scroll to, set _isWaitingForViewportUpdate:
+                // this should cause the following chain of events:
+                // - Measure is first done with the old viewport (which will be a no-op, see MeasureOverride)
+                // - The viewport is then updated by the layout system which invalidates our measure
+                // - Measure is then done with the new viewport.
                 _isWaitingForViewportUpdate = !Viewport.Contains(elementRect);
                 root.LayoutManager.ExecuteLayoutPass();
-                _isWaitingForViewportUpdate = false;
 
-                _anchorElement = null;
-                _anchorIndex = -1;
+                // If for some reason the layout system didn't give us a new viewport during the layout, we
+                // need to do another layout pass as the one that took place was a no-op.
+                if (_isWaitingForViewportUpdate)
+                {
+                    _isWaitingForViewportUpdate = false;
+                    InvalidateMeasure();
+                    root.LayoutManager.ExecuteLayoutPass();
+                }
+
+                var result = _scrollToElement;
+                _scrollToElement = null;
+                _scrollToIndex = -1;
+                return result;
             }
+
+            return null;
+        }
+
+        public IEnumerable<Control> GetRealizedElements()
+        {
+            if (_realizedElements is not null)
+                return _realizedElements.Elements.Where(x => x is not null)!;
+            else
+                return Array.Empty<Control>();
         }
 
         public Control? TryGetElement(int index) => GetRealizedElement(index);
 
-        internal void RecycleAllElements() => _realizedElements.RecycleAllElements(_recycleElement);
+        internal void RecycleAllElements() => _realizedElements?.RecycleAllElements(_recycleElement);
 
         protected virtual Rect ArrangeElement(int index, Control element, Rect rect)
         {
@@ -199,7 +237,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="index">The index of the element.</param>
         /// <param name="availableSize">The available size.</param>
         /// <returns>
-        /// The measure constraint for the element. The constraint must not contain infinity values.
+        /// The measure constraint for the element.
         /// </returns>
         /// <see cref="GetInitialConstraint(Control, int, Size)"/>
         protected virtual Size GetFinalConstraint(
@@ -223,7 +261,7 @@ namespace Avalonia.Controls.Primitives
         protected virtual (int index, double position) GetElementAt(double position) => (-1, -1);
         protected virtual double GetElementPosition(int index) => -1;
         protected abstract void RealizeElement(Control element, TItem item, int index);
-        protected abstract void UpdateElementIndex(Control element, int index);
+        protected abstract void UpdateElementIndex(Control element, int oldIndex, int newIndex);
         protected abstract void UnrealizeElement(Control element);
 
         protected virtual double CalculateSizeU(Size availableSize)
@@ -237,10 +275,9 @@ namespace Avalonia.Controls.Primitives
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (!IsEffectivelyVisible)
-                return default;
+            var items = Items;
 
-            if (Items is null || Items.Count == 0)
+            if (items is null || items.Count == 0)
             {
                 TrimUnrealizedChildren();
                 return default;
@@ -249,101 +286,113 @@ namespace Avalonia.Controls.Primitives
             // If we're bringing an item into view, ignore any layout passes until we receive a new
             // effective viewport.
             if (_isWaitingForViewportUpdate)
+                return DesiredSize;
+
+            _isInLayout = true;
+
+            try
             {
-                var sizeV = Orientation == Orientation.Horizontal ? DesiredSize.Height : DesiredSize.Width;
-                return CalculateDesiredSize(availableSize, sizeV);
-            }
+                var orientation = Orientation;
 
-            // We handle horizontal and vertical layouts here so X and Y are abstracted to:
-            // - Horizontal layouts: U = horizontal, V = vertical
-            // - Vertical layouts: U = vertical, V = horizontal
-            var viewport = CalculateMeasureViewport();
+                _realizedElements ??= new();
+                _measureElements ??= new();
 
-            // Recycle elements outside of the expected range.
-            RecycleElementsBefore(viewport.firstIndex);
-            RecycleElementsAfter(viewport.estimatedLastIndex);
+                // We handle horizontal and vertical layouts here so X and Y are abstracted to:
+                // - Horizontal layouts: U = horizontal, V = vertical
+                // - Vertical layouts: U = vertical, V = horizontal
+                var viewport = CalculateMeasureViewport(items, availableSize);
 
-            // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
-            // write to _realizedElements yet, only _measureElements.
-            GenerateElements(availableSize, ref viewport);
+                // If the viewport is disjunct then we can recycle everything.
+                if (viewport.viewportIsDisjunct)
+                    _realizedElements.RecycleAllElements(_recycleElement);
 
-            // Now we know what definitely fits, recycle anything left over.
-            RecycleElementsAfter(_measureElements.LastModelIndex);
+                // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
+                // write to _realizedElements yet, only _measureElements.
+                RealizeElements(items, availableSize, ref viewport);
 
-            // Run the final measure pass if necessary.
-            if (NeedsFinalMeasurePass(_measureElements.FirstModelIndex, _measureElements.Elements))
-            {
-                var count = _measureElements.Count;
-
-                for (var i = 0; i < count; ++i)
+                // Run the final measure pass if necessary.
+                if (NeedsFinalMeasurePass(_measureElements.FirstIndex, _measureElements.Elements))
                 {
-                    var e = _measureElements.Elements[i];
-                    if (e is not null)
+                    var count = _measureElements.Count;
+
+                    for (var i = 0; i < count; ++i)
                     {
+                        var e = _measureElements.Elements[i]!;
                         var previous = LayoutInformation.GetPreviousMeasureConstraint(e)!.Value;
+
                         if (HasInfinity(previous))
                         {
-                            var index = _measureElements.FirstModelIndex + i;
+                            var index = _measureElements.FirstIndex + i;
                             var constraint = GetFinalConstraint(e, index, availableSize);
                             e.Measure(constraint);
+                            viewport.measuredV = Math.Max(
+                                viewport.measuredV,
+                                Orientation == Orientation.Horizontal ?
+                                    e.DesiredSize.Height : e.DesiredSize.Width);
                         }
                     }
                 }
+
+                // Now swap the measureElements and realizedElements collection.
+                (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
+                _measureElements.ResetForReuse();
+
+                TrimUnrealizedChildren();
+
+                return CalculateDesiredSize(orientation, items.Count, viewport);
             }
-
-            // And swap the measureElements and realizedElements collection.
-            (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
-            _measureElements.ResetForReuse();
-
-            TrimUnrealizedChildren();
-
-            return CalculateDesiredSize(availableSize, viewport.measuredV);
-        }
-
-        private void GenerateElements(Size availableSize, ref MeasureViewport viewport)
-        {
-            _ = Items ?? throw new AvaloniaInternalException("Items may not be null.");
-
-            var horizontal = Orientation == Orientation.Horizontal;
-            var index = viewport.firstIndex;
-            var u = viewport.startU;
-
-            do
+            finally
             {
-                var e = GetOrCreateElement(index);
-                var constraint = GetInitialConstraint(e, index, availableSize);
-                var slot = MeasureElement(index, e, constraint);
-                var sizeU = horizontal ? slot.Width : slot.Height;
-
-                _measureElements.Add(index, e, u, sizeU);
-                viewport.measuredV = Math.Max(viewport.measuredV, horizontal ? slot.Height : slot.Width);
-
-                u += sizeU;
-                ++index;
-            } while (u < viewport.viewportUEnd && index < Items.Count);
+                _isInLayout = false;
+            }
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var orientation = Orientation;
-            var u = _realizedElements.StartU;
+            if (_realizedElements is null)
+                return default;
 
-            for (var i = 0; i < _realizedElements.Count; ++i)
+            _isInLayout = true;
+
+            try
             {
-                var e = _realizedElements.Elements[i];
+                var orientation = Orientation;
+                var u = _realizedElements!.StartU;
 
-                if (e is object)
+                for (var i = 0; i < _realizedElements.Count; ++i)
                 {
-                    var sizeU = _realizedElements.SizeU[i];
-                    var rect = orientation == Orientation.Horizontal ?
-                        new Rect(u, 0, sizeU, finalSize.Height) :
-                        new Rect(0, u, finalSize.Width, sizeU);
-                    rect = ArrangeElement(i + _realizedElements.FirstModelIndex, e, rect);
-                    u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
-                }
-            }
+                    var e = _realizedElements.Elements[i];
 
-            return finalSize;
+                    if (e is not null)
+                    {
+                        var sizeU = _realizedElements.SizeU[i];
+                        var rect = orientation == Orientation.Horizontal ?
+                            new Rect(u, 0, sizeU, finalSize.Height) :
+                            new Rect(0, u, finalSize.Width, sizeU);
+                        rect = ArrangeElement(i + _realizedElements.FirstIndex, e, rect);
+                        _scrollViewer?.RegisterAnchorCandidate(e);
+                        u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
+                    }
+                }
+
+                return finalSize;
+            }
+            finally
+            {
+                _isInLayout = false;
+            }
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            _scrollViewer = this.FindAncestorOfType<ScrollViewer>();
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            _scrollViewer = null;
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -354,90 +403,159 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
         {
-            Viewport = e.EffectiveViewport;
+            var vertical = Orientation == Orientation.Vertical;
+            var oldViewportStart = vertical ? Viewport.Top : Viewport.Left;
+            var oldViewportEnd = vertical ? Viewport.Bottom : Viewport.Right;
+
+            // We sometimes get sent a viewport of 0,0 because the EffectiveViewportChanged event
+            // is being raised when the parent control hasn't yet been arranged. This is a bug in
+            // Avalonia, but we can work around it by forcing MeasureOverride to estimate the
+            // viewport.
+            Viewport = e.EffectiveViewport.Size == default ? 
+                s_invalidViewport :
+                e.EffectiveViewport.Intersect(new(Bounds.Size));
+
             _isWaitingForViewportUpdate = false;
-            InvalidateMeasure();
+
+            var newViewportStart = vertical ? Viewport.Top : Viewport.Left;
+            var newViewportEnd = vertical ? Viewport.Bottom : Viewport.Right;
+
+            if (!MathUtilities.AreClose(oldViewportStart, newViewportStart) ||
+                !MathUtilities.AreClose(oldViewportEnd, newViewportEnd))
+            {
+                InvalidateMeasure();
+            }
         }
 
-        private Size CalculateDesiredSize(Size availableSize, double sizeV)
+        private void RealizeElements(
+            IReadOnlyList<TItem> items,
+            Size availableSize,
+            ref MeasureViewport viewport)
         {
-            var sizeU = CalculateSizeU(availableSize);
+            Debug.Assert(_measureElements is not null);
+            Debug.Assert(_realizedElements is not null);
+            Debug.Assert(items.Count > 0);
 
-            if (double.IsInfinity(sizeU) || double.IsNaN(sizeU))
-                throw new InvalidOperationException("Invalid calculated size.");
+            var index = viewport.anchorIndex;
+            var horizontal = Orientation == Orientation.Horizontal;
+            var u = viewport.anchorU;
 
-            return Orientation == Orientation.Horizontal ?
-                new Size(sizeU, sizeV) :
-                new Size(sizeV, sizeU);
+            // If the anchor element is at the beginning of, or before, the start of the viewport
+            // then we can recycle all elements before it.
+            if (u <= viewport.anchorU)
+                _realizedElements.RecycleElementsBefore(viewport.anchorIndex, _recycleElement);
+
+            // Start at the anchor element and move forwards, realizing elements.
+            do
+            {
+                var e = GetOrCreateElement(items, index);
+                var constraint = GetInitialConstraint(e, index, availableSize);
+                var slot = MeasureElement(index, e, constraint);
+
+                var sizeU = horizontal ? slot.Width : slot.Height;
+                var sizeV = horizontal ? slot.Height : slot.Width;
+
+                _measureElements!.Add(index, e, u, sizeU);
+                viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
+
+                u += sizeU;
+                ++index;
+            } while (u < viewport.viewportUEnd && index < items.Count);
+
+            // Store the last index and end U position for the desired size calculation.
+            viewport.lastIndex = index - 1;
+            viewport.realizedEndU = u;
+
+            // We can now recycle elements after the last element.
+            _realizedElements.RecycleElementsAfter(viewport.lastIndex, _recycleElement);
+
+            // Next move backwards from the anchor element, realizing elements.
+            index = viewport.anchorIndex - 1;
+            u = viewport.anchorU;
+
+            while (u > viewport.viewportUStart && index >= 0)
+            {
+                var e = GetOrCreateElement(items, index);
+                var constraint = GetInitialConstraint(e, index, availableSize);
+                var slot = MeasureElement(index, e, constraint);
+
+                var sizeU = horizontal ? slot.Width : slot.Height;
+                var sizeV = horizontal ? slot.Height : slot.Width;
+                u -= sizeU;
+
+                _measureElements.Add(index, e, u, sizeU);
+                viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
+                --index;
+            }
+
+            // We can now recycle elements before the first element.
+            _realizedElements.RecycleElementsBefore(index + 1, _recycleElement);
         }
 
-        private MeasureViewport CalculateMeasureViewport()
+        private Size CalculateDesiredSize(Orientation orientation, int itemCount, in MeasureViewport viewport)
         {
+            var sizeU = 0.0;
+            var sizeV = viewport.measuredV;
+
+            if (viewport.lastIndex >= 0)
+            {
+                var remaining = itemCount - viewport.lastIndex - 1;
+                sizeU = viewport.realizedEndU + (remaining * EstimateElementSizeU());
+            }
+
+            return orientation == Orientation.Horizontal ? new(sizeU, sizeV) : new(sizeV, sizeU);
+        }
+
+        private MeasureViewport CalculateMeasureViewport(IReadOnlyList<TItem> items, Size availableSize)
+        {
+            Debug.Assert(_realizedElements is not null);
+
             // If the control has not yet been laid out then the effective viewport won't have been set.
             // Try to work it out from an ancestor control.
-            var viewport = Viewport != s_invalidViewport ? Viewport : EstimateViewport();
+            var viewport = Viewport != s_invalidViewport ? Viewport : EstimateViewport(availableSize);
 
             // Get the viewport in the orientation direction.
             var viewportStart = Orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
             var viewportEnd = Orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
 
-            var (firstIndex, firstIndexU) = GetElementAt(viewportStart);
-            var (lastIndex, _) = GetElementAt(viewportEnd);
-            var estimatedElementSize = -1.0;
-            var itemCount = Items?.Count ?? 0;
+            // Get or estimate the anchor element from which to start realization.
+            var itemCount = items.Count;
+            var (anchorIndex, anchorU) = _realizedElements.GetOrEstimateAnchorElementForViewport(
+                viewportStart,
+                viewportEnd,
+                itemCount,
+                ref _lastEstimatedElementSizeU);
 
-            if (firstIndex == -1)
-            {
-                estimatedElementSize = EstimateElementSizeU();
-                firstIndex = (int)(viewportStart / estimatedElementSize);
-                firstIndexU = firstIndex * estimatedElementSize;
-            }
-
-            if (lastIndex == -1)
-            {
-                if (estimatedElementSize == -1)
-                    estimatedElementSize = EstimateElementSizeU();
-                lastIndex = (int)(viewportEnd / estimatedElementSize);
-            }
+            // Check if the anchor element is not within the currently realized elements.
+            var disjunct = anchorIndex < _realizedElements.FirstIndex ||
+                anchorIndex > _realizedElements.LastIndex;
 
             return new MeasureViewport
             {
-                firstIndex = MathUtilities.Clamp(firstIndex, 0, itemCount - 1),
-                estimatedLastIndex = MathUtilities.Clamp(lastIndex, 0, itemCount - 1),
+                anchorIndex = anchorIndex,
+                anchorU = anchorU,
                 viewportUStart = viewportStart,
                 viewportUEnd = viewportEnd,
-                startU = firstIndexU,
+                viewportIsDisjunct = disjunct,
             };
         }
 
-        private Control GetOrCreateElement(int index)
+        private Control GetOrCreateElement(IReadOnlyList<TItem> items, int index)
         {
-            var e = GetRealizedElement(index) ?? GetRecycledOrCreateElement(index);
-            InvalidateHack(e);
+            var e = GetRealizedElement(index) ?? GetRecycledOrCreateElement(items, index);
             return e;
-        }
-
-        private double GetOrEstimateElementPosition(int index)
-        {
-            var u = GetElementPosition(index);
-
-            if (u >= 0)
-                return u;
-
-            var estimatedElementSize = EstimateElementSizeU();
-            return index * estimatedElementSize;
         }
 
         private Control? GetRealizedElement(int index)
         {
-            if (_anchorIndex == index)
-                return _anchorElement;
-            return _realizedElements.GetElement(index);
+            if (_scrollToIndex == index)
+                return _scrollToElement;
+            return _realizedElements?.GetElement(index);
         }
 
-        private Control GetRecycledOrCreateElement(int index)
+        private Control GetRecycledOrCreateElement(IReadOnlyList<TItem> items, int index)
         {
-            var item = Items![index];
+            var item = items[index];
             var e = GetElementFromFactory(item, index);
             e.IsVisible = true;
             RealizeElement(e, item, index);
@@ -451,71 +569,62 @@ namespace Avalonia.Controls.Primitives
 
         private double EstimateElementSizeU()
         {
-            var count = _realizedElements.Count;
-            var divisor = 0.0;
-            var total = 0.0;
-
-            for (var i = 0; i < count; ++i)
-            {
-                if (_realizedElements.Elements[i] is object)
-                {
-                    total += _realizedElements.SizeU[i];
-                    ++divisor;
-                }
-            }
-
-            if (divisor == 0 || total == 0)
+            if (_realizedElements is null)
                 return _lastEstimatedElementSizeU;
 
-            _lastEstimatedElementSizeU = total / divisor;
+            var result = _realizedElements.EstimateElementSizeU();
+            if (result >= 0)
+                _lastEstimatedElementSizeU = result;
             return _lastEstimatedElementSizeU;
         }
 
-        private Rect EstimateViewport()
+        private Rect EstimateViewport(Size availableSize)
         {
             var c = this.GetVisualParent();
-            var viewport = new Rect();
 
             if (c is null)
             {
-                return viewport;
+                return default;
             }
 
             while (c is not null)
             {
                 if (!c.Bounds.Equals(default) && c.TransformToVisual(this) is Matrix transform)
                 {
-                    viewport = new Rect(0, 0, c.Bounds.Width, c.Bounds.Height)
-                        .TransformToAABB(transform);
-                    break;
+                    return new Rect(0, 0, c.Bounds.Width, c.Bounds.Height).TransformToAABB(transform);
                 }
 
                 c = c?.GetVisualParent();
             }
 
-
-            return viewport;
+            return new Rect(
+                0,
+                0,
+                double.IsFinite(availableSize.Width) ? availableSize.Width : 0,
+                double.IsFinite(availableSize.Height) ? availableSize.Height : 0); 
         }
 
-        private void RecycleElement(Control element)
+        private void RecycleElement(Control element, int index)
+        {
+            if (element.IsKeyboardFocusWithin)
+            {
+                _unrealizedFocusedElement = element;
+                _unrealizedFocusedIndex = index;
+                _unrealizedFocusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
+            }
+            else
+            {
+                UnrealizeElement(element);
+                element.IsVisible = false;
+                ElementFactory!.RecycleElement(element);
+            }
+        }
+
+        private void RecycleElementOnItemRemoved(Control element)
         {
             UnrealizeElement(element);
             element.IsVisible = false;
-
-            // Hackfix for https://github.com/AvaloniaUI/Avalonia/issues/7552
-            element.Measure(default);
-
             ElementFactory!.RecycleElement(element);
-        }
-
-        private void RecycleElementsAfter(int index)
-        {
-            _realizedElements.RecycleElementsAfter(index, _recycleElement);
-        }
-
-        private void RecycleElementsBefore(int index)
-        {
-            _realizedElements.RecycleElementsBefore(index, _recycleElement);
         }
 
         private void TrimUnrealizedChildren()
@@ -523,12 +632,15 @@ namespace Avalonia.Controls.Primitives
             var count = Items?.Count ?? 0;
             var children = VisualChildren;
 
-            if (children.Count > _realizedElements.Elements.Count && _realizedElements.Count == count)
+            if (children.Count > count)
             {
-                for (var i = children.Count - 1; i >= _realizedElements.Elements.Count; i--)
+                for (var i = children.Count - 1; i >= 0; --i)
                 {
-                    if (!_realizedElements.Elements.Contains(children.ElementAt(i)))
+                    var child = children[i];
+
+                    if (!child.IsVisible)
                     {
+                        ((ISetLogicalParent)child).SetParent(null);
                         children.RemoveAt(i);
                     }
                 }
@@ -537,66 +649,53 @@ namespace Avalonia.Controls.Primitives
 
         private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            InvalidateMeasure();
+
+            if (_realizedElements is null)
+                return;
+
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
                     _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex,
-                        _recycleElement);
+                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Move:
+                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
+                    _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    RecycleAllElements();
+                    _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
                     break;
             }
-
-            InvalidateMeasure();
         }
 
-        private static void InvalidateHack(Control c)
+        private void OnUnrealizedFocusedElementLostFocus(object? sender, RoutedEventArgs e)
         {
-            bool HasInvalidations(Control c)
-            {
-                if (!c.IsMeasureValid)
-                    return true;
+            if (_unrealizedFocusedElement is null || sender != _unrealizedFocusedElement)
+                return;
 
-                // TODO: not sure if this is correct.
-                foreach (var visualChild in c.GetVisualChildren())
-                {
-                    if (visualChild is Control child && (!child.IsMeasureValid || HasInvalidations(child)))
-                        return true;
-                }
-
-                return false;
-            }
-
-            void Invalidate(Control c)
-            {
-                c.InvalidateMeasure();
-
-                // TODO: double check again.
-                foreach (var visualChild in c.GetVisualChildren())
-                {
-                    if (visualChild is Control child)
-                        Invalidate(child);
-                }
-            }
-
-            if (HasInvalidations(c))
-                Invalidate(c);
+            _unrealizedFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
+            RecycleElement(_unrealizedFocusedElement, _unrealizedFocusedIndex);
+            _unrealizedFocusedElement = null;
+            _unrealizedFocusedIndex = -1;
         }
 
         private static bool HasInfinity(Size s) => double.IsInfinity(s.Width) || double.IsInfinity(s.Height);
 
         private struct MeasureViewport
         {
-            public int firstIndex;
-            public int estimatedLastIndex;
+            public int anchorIndex;
+            public double anchorU;
             public double viewportUStart;
             public double viewportUEnd;
             public double measuredV;
-            public double startU;
+            public double realizedEndU;
+            public int lastIndex;
+            public bool viewportIsDisjunct;
         }
     }
 }

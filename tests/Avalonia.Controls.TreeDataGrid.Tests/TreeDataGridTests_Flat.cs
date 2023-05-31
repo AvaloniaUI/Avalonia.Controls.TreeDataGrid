@@ -276,8 +276,6 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             target.CellPrepared += (s, e) =>
             {
-                Assert.Equal(raised % 2, e.ColumnIndex);
-                Assert.Equal(raised / 2, e.RowIndex);
                 ++raised;
             };
 
