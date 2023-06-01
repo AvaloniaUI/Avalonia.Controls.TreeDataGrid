@@ -203,7 +203,6 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 }
             }
 
-            new StaticResourceExtension().ResourceKey = null;
             root.UpdateLayout();
             Dispatcher.UIThread.RunJobs();
 
