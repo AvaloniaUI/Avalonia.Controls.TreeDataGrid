@@ -4,10 +4,11 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
-using Avalonia.Layout;
+using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -15,10 +16,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 {
     public class TreeDataGridRowsPresenterTests
     {
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Nth_Child_Handles_Deletion_And_Addition_Correctly()
         {
-            using var app = App();
             var (target, scroll, items) = CreateTarget(additionalStyles:
                 new List<IStyle>
                 {
@@ -61,11 +61,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.True(CountEvenRedRows(target) == 5);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Creates_Initial_Rows()
         {
-            using var app = App();
-
             var (target, scroll, _) = CreateTarget();
 
             Assert.Equal(new Size(100, 1000), scroll.Extent);
@@ -73,11 +71,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Scrolls_Down_One_Row()
         {
-            using var app = App();
-
             var (target, scroll, _) = CreateTarget();
 
             scroll.Offset = new Vector(0, 10);
@@ -87,11 +83,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Scrolls_Down_More_Than_A_Page()
         {
-            using var app = App();
-
             var (target, scroll, _) = CreateTarget();
 
             scroll.Offset = new Vector(0, 200);
@@ -101,11 +95,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Scrolls_Up_More_Than_A_Page()
         {
-            using var app = App();
-
             var (target, scroll, _) = CreateTarget();
 
             scroll.Offset = new Vector(0, 200);
@@ -118,11 +110,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Handles_Inserted_Row()
         {
-            using var app = App();
-
             var (target, _, items) = CreateTarget();
 
             Assert.Equal(10, target.RealizedElements.Count);
@@ -150,11 +140,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(elements, target.RealizedElements);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Handles_Removed_Row()
         {
-            using var app = App();
-
             var (target, _, items) = CreateTarget();
 
             Assert.Equal(10, target.RealizedElements.Count);
@@ -180,11 +168,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(elements, target.RealizedElements);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Handles_Unrealized_Rows_Being_Removed_From_End()
         {
-            using var app = App();
-
             var (target, scroll, items) = CreateTarget();
 
             Assert.Equal(new Size(100, 1000), scroll.Extent);
@@ -197,11 +183,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Handles_Unrealized_Rows_Being_Removed_From_Start()
         {
-            using var app = App();
-
             var (target, scroll, items) = CreateTarget();
 
             Assert.Equal(new Size(100, 1000), scroll.Extent);
@@ -217,11 +201,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Realized_Children_Should_Not_Be_Removed()
         {
-            using var app = App();
-
             var (target, _, items) = CreateTarget();
 
             Assert.Equal(100, target!.Items!.Count);
@@ -237,11 +219,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             }
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Should_Remove_Children_On_Empty_Collection_Assignment_To_Items()
         {
-            using var app = App();
-
             var (target, _, items) = CreateTarget();
             Layout(target);
             Assert.Equal(100, items.Count);
@@ -265,11 +245,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(5, target.GetVisualChildren().Count());
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Handles_Removed_And_Reinserted_Row()
         {
-            using var app = App();
-
             var (target, _, items) = CreateTarget();
 
             Assert.Equal(10, target.RealizedElements.Count);
@@ -304,11 +282,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(elements, target.RealizedElements);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Handles_Removing_Row_Range_That_Spans_Realized_And_Unrealized_Elements()
         {
-            using var app = App();
-
             var (target, scroll, items) = CreateTarget();
 
             // Scroll down one item.
@@ -338,11 +314,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(elements, target.RealizedElements);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Handles_Removing_All_Rows_When_Scrolled()
         {
-            using var app = App();
-
             var (target, scroll, items) = CreateTarget();
 
             // Scroll down one item.
@@ -358,11 +332,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Empty(target.RealizedElements);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Handles_Removing_Row_Range_That_Invalidates_Current_Viewport()
         {
-            using var app = App();
-
             var (target, scroll, items) = CreateTarget();
 
             // Scroll down ten items.
@@ -380,11 +352,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(new Size(100, 100), target.Bounds.Size);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Updates_Star_Column_ActualWidth()
         {
-            using var app = App();
-
             var columns = new ColumnList<Model>
             {
                 new TextColumn<Model, int>("ID", x => x.Id, new GridLength(1, GridUnitType.Star)),
@@ -399,11 +369,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             }
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Brings_Next_Item_Into_View()
         {
-            using var app = App();
-
             var (target, scroll, _) = CreateTarget();
 
             target.BringIntoView(10);
@@ -412,11 +380,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRowIndexes(target, 1, 10);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Handles_Bringing_Item_Into_View_Which_Will_Already_Be_In_View_When_Created()
         {
-            using var app = App();
-
             var (target, scroll, _) = CreateTarget();
 
             // Clear the items and do a layout to simulate starting from an empty state.
@@ -435,12 +401,10 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRowIndexes(target, 0, 10);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Brings_Partially_Visible_New_Item_Into_View()
         {
             // Issue #77
-            using var app = App();
-
             var (target, scroll, items) = CreateTarget(itemCount: 9, rootSize: new Size(100, 95));
 
             AssertRowIndexes(target, 0, 9);
@@ -452,11 +416,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRowIndexes(target, 0, 10);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Assigns_Row_DataContexts()
         {
-            using var app = App();
-
             var (target, scroll, items) = CreateTarget();
             var lastRow = (TreeDataGridRow)target.RealizedElements.Last()!;
 
@@ -549,7 +511,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 Content = target,
             };
 
-            var root = new TestRoot
+            var root = new TestWindow(scrollViewer, rootSize)
             {
                 Styles =
                 {
@@ -560,12 +522,8 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                             new Setter(TreeDataGridRow.HeightProperty, 10.0),
                         }
                     }
-                },
-                Child = scrollViewer,
+                }
             };
-
-            if (rootSize.HasValue)
-                root.ClientSize = rootSize.Value;
 
             if (additionalStyles != null)
             {
@@ -575,20 +533,15 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 }
             }
 
-            root.LayoutManager.ExecuteInitialLayoutPass();
+            root.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+
             return (target, scrollViewer, items);
         }
 
         private static void Layout(TreeDataGridRowsPresenter target)
         {
-            var root = (ILayoutRoot?)target.GetVisualRoot();
-            root?.LayoutManager.ExecuteLayoutPass();
-        }
-
-        private static IDisposable App()
-        {
-            var scope = AvaloniaLocator.EnterScope();
-            return scope;
+            target.UpdateLayout();
         }
 
         private class Model

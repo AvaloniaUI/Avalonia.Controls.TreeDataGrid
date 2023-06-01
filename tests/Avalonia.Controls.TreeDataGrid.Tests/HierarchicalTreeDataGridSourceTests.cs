@@ -114,7 +114,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             public void Supports_Removing_Root_Row_With_Earlier_Row_Expanded_To_Grandchildren(bool sorted)
             {
                 var data = CreateData();
-                data[0].Children![0].Children = new AvaloniaList<Node>
+                data[0].Children![0].Children = new AvaloniaListDebug<Node>
                 {
                     new Node
                     {
@@ -184,7 +184,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 var target = CreateTarget(data, sorted);
                 var toRemove = data[1].Children![1];
 
-                toRemove.Children = new AvaloniaList<Node> { new Node() };
+                toRemove.Children = new AvaloniaListDebug<Node> { new Node() };
 
                 target.Expand(new IndexPath(1, 1));
                 Assert.Equal(1, toRemove.Children!.CollectionChangedSubscriberCount());
@@ -382,7 +382,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 var data = CreateData();
                 var target = CreateTarget(data, false);
 
-                data[0].Children![0].Children = new AvaloniaList<Node>
+                data[0].Children![0].Children = new AvaloniaListDebug<Node>
                 {
                     new Node { Id = 100, Caption = "Grandchild" }
                 };
@@ -800,7 +800,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 var target = CreateTarget(data, sorted);
                 var toRemove = data[1].Children![1];
 
-                toRemove.Children = new AvaloniaList<Node> { new Node() };
+                toRemove.Children = new AvaloniaListDebug<Node> { new Node() };
 
                 target.Expand(new IndexPath(1, 1));
                 Assert.Equal(1, toRemove.Children!.CollectionChangedSubscriberCount());
@@ -836,10 +836,10 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
-        private static AvaloniaList<Node> CreateData(int count = 5, int childCount = 5)
+        private static AvaloniaListDebug<Node> CreateData(int count = 5, int childCount = 5)
         {
             var id = 0;
-            var result = new AvaloniaList<Node>();
+            var result = new AvaloniaListDebug<Node>();
 
             for (var i = 0; i < count; ++i)
             {
@@ -847,7 +847,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 {
                     Id = id++,
                     Caption = $"Node {i}",
-                    Children = new AvaloniaList<Node>(),
+                    Children = new AvaloniaListDebug<Node>(),
                 };
 
                 result.Add(node);
@@ -858,7 +858,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                     {
                         Id = id++,
                         Caption = $"Node {i}-{j}",
-                        Children = new AvaloniaList<Node>(),
+                        Children = new AvaloniaListDebug<Node>(),
                     });
                 }
             }
@@ -959,7 +959,7 @@ namespace Avalonia.Controls.TreeDataGridTests
         {
             private int _id;
             private string? _caption;
-            private AvaloniaList<Node>? _children;
+            private AvaloniaListDebug<Node>? _children;
             private bool _isExpanded;
 
             public int Id
@@ -974,7 +974,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 set => RaiseAndSetIfChanged(ref _caption, value);
             }
 
-            public AvaloniaList<Node>? Children 
+            public AvaloniaListDebug<Node>? Children 
             {
                 get => _children;
                 set => RaiseAndSetIfChanged(ref _children, value);

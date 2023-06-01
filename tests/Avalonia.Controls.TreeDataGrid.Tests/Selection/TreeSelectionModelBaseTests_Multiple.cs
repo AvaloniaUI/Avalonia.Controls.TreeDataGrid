@@ -1501,7 +1501,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 target.Select(new IndexPath(1, 1));
 
-                var debug = (INotifyCollectionChangedDebug)data[1].Children!;
+                var debug = (AvaloniaListDebug<Node>)data[1].Children!;
                 Assert.Single(debug.GetCollectionChangedSubscribers());
 
                 target.Deselect(new IndexPath(1, 1));
@@ -1543,9 +1543,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             }
         }
 
-        private static AvaloniaList<Node> CreateNodes(IndexPath parentId, int depth = 2)
+        private static AvaloniaListDebug<Node> CreateNodes(IndexPath parentId, int depth = 2)
         {
-            var result = new AvaloniaList<Node>();
+            var result = new AvaloniaListDebug<Node>();
 
             for (var i = 0; i < 5; ++i)
             {
@@ -1564,7 +1564,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
             return result;
         }
 
-        private static AvaloniaList<Node> CreateData(int depth = 2)
+        private static AvaloniaListDebug<Node> CreateData(int depth = 2)
         {
             return CreateNodes(default, depth);
         }
