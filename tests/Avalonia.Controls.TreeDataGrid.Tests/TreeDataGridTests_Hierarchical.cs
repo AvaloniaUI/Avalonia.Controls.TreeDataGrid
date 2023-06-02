@@ -7,9 +7,11 @@ using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Headless.XUnit;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -17,11 +19,9 @@ namespace Avalonia.Controls.TreeDataGridTests
 {
     public class TreeDataGridTests_Hierarchical
     {
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Should_Display_Initial_Row_And_Cells()
         {
-            using var app = App();
-
             var (target, _) = CreateTarget();
 
             Assert.NotNull(target.RowsPresenter);
@@ -43,11 +43,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Should_Display_Expanded_Root_Node()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
 
             Assert.NotNull(target.RowsPresenter);
@@ -65,11 +63,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(10, target.RowsPresenter!.RealizedElements.Count);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Should_Display_Added_Root_Node()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
             var items = (IList<Model>)source.Items;
 
@@ -81,11 +77,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(3, target.RowsPresenter!.GetVisualChildren().Count());
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Should_Display_Added_Child_Node()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
             var items = (IList<Model>)source.Items;
             var children = items[1].Children = new AvaloniaList<Model>
@@ -103,11 +97,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(4, target.RowsPresenter!.GetVisualChildren().Count());
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Should_Subscribe_To_Models_For_Initial_Rows()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
             var items = (IList<Model>)source.Items;
 
@@ -117,11 +109,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Should_Subscribe_To_Models_For_Expanded_Rows()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
             var items = (IList<Model>)source.Items;
 
@@ -139,11 +129,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Should_Subscribe_To_Correct_Models_After_Scrolling_Down_One_Row()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
             var items = (IList<Model>)source.Items;
 
@@ -163,11 +151,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Scrolling_Should_Not_Rebuild_Templates_In_Expander_Columns()
         {
-            using var app = App();
-
             var instantiations = 0;
 
             Control Template(Model model, INameScope ns)
@@ -190,16 +176,17 @@ namespace Avalonia.Controls.TreeDataGridTests
             var items = (IList<Model>)source.Items;
 
             // Expand the first root and do the initial layout now.
+            instantiations = 0;
             source.Expand(new IndexPath(0));
             InitialLayout(target);
-            Assert.Equal(10, instantiations);
+            Assert.Equal(9, instantiations);
 
             // Scroll down a row.
             target.Scroll!.Offset = new Vector(0, 10);
             Layout(target);
 
             // Template should have been recycled and not rebuilt.
-            Assert.Equal(10, instantiations);
+            Assert.Equal(9, instantiations);
             Assert.Equal(10, target.RowsPresenter!.RealizedElements.Count);
 
             for (var i = 0; i < 10; ++i)
@@ -216,15 +203,13 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Should_Unsubscribe_From_Models_When_Detached_From_Logical_Tree()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
             var items = (IList<Model>)source.Items;
 
-            ((TestRoot)target.Parent!).Child = null;
+            ((Window)target.Parent!).Content = null;
 
             for (var i = 0; i < items.Count; ++i)
             {
@@ -232,11 +217,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Should_Hide_Expander_When_Node_With_No_Children_Expanded()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
             var cell = target.TryGetCell(0, 1);
             var expander = Assert.IsType<TreeDataGridExpanderCell>(cell);
@@ -250,11 +233,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.False(expander.ShowExpander);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Can_Reassign_Items_When_Displaying_Child_Items_Followed_By_Root_Items()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
             var cell = target.TryGetCell(0, 0);
             var expander = Assert.IsType<TreeDataGridExpanderCell>(cell);
@@ -294,11 +275,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(new Vector(0, 0), target.Scroll!.Offset);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Can_Reassign_Items_When_Displaying_Grandchild_Items_Followed_By_Root_Items()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
             var cell = target.TryGetCell(0, 0);
             var expander = Assert.IsType<TreeDataGridExpanderCell>(cell);
@@ -341,11 +320,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(new Vector(0, 0), target.Scroll!.Offset);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Can_Reset_Items_When_Displaying_Child_Items_Followed_By_Root_Items()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
             var cell = target.TryGetCell(0, 0);
             var expander = Assert.IsType<TreeDataGridExpanderCell>(cell);
@@ -377,11 +354,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(new Vector(0, 0), target.Scroll!.Offset);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Can_Reset_Child_Items_When_Displaying_Grandchild_Items_Followed_By_Root_Items()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
             var cell = target.TryGetCell(0, 0);
             var expander = Assert.IsType<TreeDataGridExpanderCell>(cell);
@@ -417,11 +392,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(new Vector(0, 0), target.Scroll!.Offset);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Can_Remove_Selected_Item()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
 
             source.Expand(new IndexPath(0, 0));
@@ -435,11 +408,9 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(-1, target.RowSelection.SelectedIndex);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Can_Remove_Selected_Item_Sorted()
         {
-            using var app = App();
-
             var (target, source) = CreateTarget();
             target.Source!.SortBy(target.Columns![0], ListSortDirection.Descending);
 
@@ -491,7 +462,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Source = source,
             };
 
-            var root = new TestRoot
+            var root = new TestWindow(target)
             {
                 Styles =
                 {
@@ -511,32 +482,24 @@ namespace Avalonia.Controls.TreeDataGridTests
                             new Setter(TreeDataGridCell.HeightProperty, 10.0),
                         }
                     }
-                },
-                Child = target,
+                }
             };
 
             if (runLayout)
-                root.LayoutManager.ExecuteInitialLayoutPass();
+                root.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
 
             return (target, source);
         }
 
         private static void Layout(TreeDataGrid target)
         {
-            var root = (ILayoutRoot?)target.GetVisualRoot();
-            root?.LayoutManager.ExecuteLayoutPass();
+            target.UpdateLayout();
         }
 
         private static void InitialLayout(TreeDataGrid target)
         {
-            var root = (ILayoutRoot?)target.GetVisualRoot();
-            root?.LayoutManager.ExecuteInitialLayoutPass();
-        }
-
-        private static IDisposable App()
-        {
-            var scope = AvaloniaLocator.EnterScope();
-            return scope;
+            target.UpdateLayout();
         }
 
         private static IEnumerable<Model> CreateModels(

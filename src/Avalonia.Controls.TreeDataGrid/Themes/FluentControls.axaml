@@ -1,12 +1,35 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:conv="clr-namespace:Avalonia.Controls.Converters">
+                    xmlns:conv="using:Avalonia.Controls.Converters"
+                    x:ClassModifier="internal">
 
-  <SolidColorBrush x:Key="TreeDataGridGridLinesBrush"
-                   Color="{StaticResource SystemBaseMediumLowColor}"
-                   Opacity="0.4" />
-  <StreamGeometry x:Key="TreeDataGridGridSortIconDescendingPath">M1875 1011l-787 787v-1798h-128v1798l-787 -787l-90 90l941 941l941 -941z</StreamGeometry>
-  <StreamGeometry x:Key="TreeDataGridGridSortIconAscendingPath">M1965 947l-941 -941l-941 941l90 90l787 -787v1798h128v-1798l787 787z</StreamGeometry>
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Default">
+      <SolidColorBrush x:Key="TreeDataGridGridLinesBrush" Color="{StaticResource SystemListLowColor}" />
+      <SolidColorBrush x:Key="TreeDataGridHeaderBackgroundPointerOverBrush" Color="{StaticResource SystemBaseHighColor}" Opacity="0.1" />
+      <SolidColorBrush x:Key="TreeDataGridHeaderBackgroundPressedBrush" Color="{StaticResource SystemBaseMediumLowColor}" />
+      <SolidColorBrush x:Key="TreeDataGridHeaderBorderBrushPointerOverBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="TreeDataGridHeaderBorderBrushPressedBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="TreeDataGridHeaderForegroundPointerOverBrush" Color="{StaticResource SystemBaseHighColor}" />
+      <SolidColorBrush x:Key="TreeDataGridHeaderForegroundPressedBrush" Color="{StaticResource SystemBaseHighColor}" />
+      <SolidColorBrush x:Key="TreeDataGridSelectedCellBackgroundBrush" Color="{StaticResource SystemAccentColor}" Opacity="0.4" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="TreeDataGridGridLinesBrush" Color="{StaticResource SystemListLowColor}" />
+      <SolidColorBrush x:Key="TreeDataGridHeaderBackgroundPointerOverBrush" Color="{StaticResource SystemBaseHighColor}" Opacity="0.1" />
+      <SolidColorBrush x:Key="TreeDataGridHeaderBackgroundPressedBrush" Color="{StaticResource SystemBaseMediumLowColor}" />
+      <SolidColorBrush x:Key="TreeDataGridHeaderBorderBrushPointerOverBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="TreeDataGridHeaderBorderBrushPressedBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="TreeDataGridHeaderForegroundPointerOverBrush" Color="{StaticResource SystemBaseHighColor}" />
+      <SolidColorBrush x:Key="TreeDataGridHeaderForegroundPressedBrush" Color="{StaticResource SystemBaseHighColor}" />
+      <SolidColorBrush x:Key="TreeDataGridSelectedCellBackgroundBrush" Color="{StaticResource SystemAccentColor}" Opacity="0.4" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <StreamGeometry x:Key="TreeDataGridSortIconDescendingPath">M1875 1011l-787 787v-1798h-128v1798l-787 -787l-90 90l941 941l941 -941z</StreamGeometry>
+  <StreamGeometry x:Key="TreeDataGridSortIconAscendingPath">M1965 947l-941 -941l-941 941l90 90l787 -787v1798h128v-1798l787 787z</StreamGeometry>
+  <StreamGeometry x:Key="TreeDataGridItemCollapsedChevronPathData">M 1,0 10,10 l -9,10 -1,-1 L 8,10 -0,1 Z</StreamGeometry>
+  <StreamGeometry x:Key="TreeDataGridItemExpandedChevronPathData">M0,1 L10,10 20,1 19,0 10,8 1,0 Z</StreamGeometry>
 
   <ControlTheme x:Key="{x:Type TreeDataGrid}" TargetType="TreeDataGrid">
     <Setter Property="Template">
@@ -106,25 +129,25 @@
     </Setter>
 
     <Style Selector="^:pointerover /template/ Border#DataGridBorder">
-      <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
-      <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundPointerOver}" />
+      <Setter Property="Background" Value="{DynamicResource TreeDataGridHeaderBackgroundPointerOverBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource TreeDataGridHeaderBorderBrushPointerOverBrush}" />
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource TreeDataGridHeaderForegroundPointerOverBrush}" />
     </Style>
 
     <Style Selector="^:pressed /template/ Border#DataGridBorder">
-      <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}" />
-      <Setter Property="TextBlock.Foreground" Value="{DynamicResource ButtonForegroundPressed}" />
+      <Setter Property="Background" Value="{DynamicResource TreeDataGridHeaderBackgroundPressedBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource TreeDataGridHeaderBorderBrushPressedBrush}" />
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource TreeDataGridHeaderForegroundPressedBrush}" />
     </Style>
 
     <Style Selector="^[SortDirection=Ascending] /template/ Path#SortIcon">
       <Setter Property="IsVisible" Value="True" />
-      <Setter Property="Data" Value="{StaticResource TreeDataGridGridSortIconAscendingPath}" />
+      <Setter Property="Data" Value="{StaticResource TreeDataGridSortIconAscendingPath}" />
     </Style>
 
     <Style Selector="^[SortDirection=Descending] /template/ Path#SortIcon">
       <Setter Property="IsVisible" Value="True" />
-      <Setter Property="Data" Value="{StaticResource TreeDataGridGridSortIconDescendingPath}" />
+      <Setter Property="Data" Value="{StaticResource TreeDataGridSortIconDescendingPath}" />
     </Style>
 
   </ControlTheme>
@@ -146,7 +169,7 @@
     </Setter>
 
     <Style Selector="^:selected /template/ TreeDataGridCellsPresenter#PART_CellsPresenter">
-      <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource TreeDataGridSelectedCellBackgroundBrush}"/>
     </Style>
 
   </ControlTheme>
@@ -169,6 +192,31 @@
     </Setter>
   </ControlTheme>
 
+  <ControlTheme x:Key="TreeDataGridExpandCollapseChevron" TargetType="ToggleButton">
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Width" Value="12" />
+    <Setter Property="Height" Value="12" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="Transparent"
+                Width="{TemplateBinding Width}"
+                Height="{TemplateBinding Height}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+          <Path x:Name="ChevronPath"
+                Data="{StaticResource TreeDataGridItemCollapsedChevronPathData}"
+                Fill="{TemplateBinding Foreground}"
+                Stretch="Uniform"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:checked /template/ Path#ChevronPath">
+      <Setter Property="Data" Value="{StaticResource TreeDataGridItemExpandedChevronPathData}" />
+    </Style>
+  </ControlTheme>
+  
   <ControlTheme x:Key="{x:Type TreeDataGridExpanderCell}" TargetType="TreeDataGridExpanderCell">
     <Setter Property="Template">
       <ControlTemplate>
@@ -182,7 +230,7 @@
             <Border DockPanel.Dock="Left"
                     Margin="4 0"
                     Width="12" Height="12">
-              <ToggleButton Theme="{StaticResource FluentTreeViewExpandCollapseChevron}"
+              <ToggleButton Theme="{StaticResource TreeDataGridExpandCollapseChevron}"
                             Focusable="False"
                             IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
                             IsVisible="{TemplateBinding ShowExpander}"/>

@@ -5,13 +5,14 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
+using Avalonia.Headless.XUnit;
 using Xunit;
 
 namespace Avalonia.Controls.TreeDataGridTests
 {
     public class FlatTreeDataGridSourceTests
     {
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Creates_Initial_Rows()
         {
             var data = CreateData();
@@ -20,7 +21,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             AssertRows(target.Rows, data);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Supports_Adding_Row()
         {
             var data = CreateData();
@@ -44,7 +45,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             AssertRows(target.Rows, data);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Supports_Removing_Row()
         {
             var data = CreateData();
@@ -66,7 +67,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             AssertRows(target.Rows, data);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Supports_Replacing_Row()
         {
             var data = CreateData();
@@ -89,7 +90,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             AssertRows(target.Rows, data);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Supports_Moving_Row()
         {
             var data = CreateData();
@@ -112,7 +113,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             AssertRows(target.Rows, data);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Supports_Clearing_Rows()
         {
             var data = CreateData();
@@ -133,7 +134,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             AssertRows(target.Rows, data);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Can_Reassign_Items()
         {
             var data = CreateData();
@@ -154,7 +155,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             AssertRows(target.Rows, data);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Raises_Rows_Reset_When_Reassigning_Items_But_Rows_Not_Yet_Read()
         {
             var data = CreateData();
@@ -174,7 +175,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         public class Sorted
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Sorts_Initial_Cells()
             {
                 var data = CreateData();
@@ -185,7 +186,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 AssertRows(target.Rows, data);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Supports_Adding_Row()
             {
                 var data = CreateData();
@@ -211,7 +212,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 AssertRows(target.Rows, data);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Supports_Removing_Row()
             {
                 var data = CreateData();
@@ -235,7 +236,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 AssertRows(target.Rows, data);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Supports_Replacing_Row()
             {
                 var data = CreateData();
@@ -261,7 +262,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 AssertRows(target.Rows, data);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Supports_Moving_Row()
             {
                 var data = CreateData();
@@ -287,7 +288,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 AssertRows(target.Rows, data);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Supports_Clearing_Rows()
             {
                 var data = CreateData();
@@ -308,7 +309,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 AssertRows(target.Rows, data);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Can_Reassign_Items()
             {
                 var data = CreateData();
@@ -329,7 +330,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 AssertRows(target.Rows, data);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Raises_Rows_Reset_When_Reassigning_Items_But_Rows_Not_Yet_Read()
             {
                 var data = CreateData();
@@ -373,7 +374,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         public class Selection
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Reassigning_Source_Updates_Selection_Model_Source()
             {
                 var data1 = CreateData();
