@@ -96,7 +96,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(200, target.DesiredSize.Width);
         }
 
-        [AvaloniaFact(Timeout = 10000, Skip = "Revisit")]
+        [AvaloniaFact(Timeout = 10000)]
         public void Star_Cells_Are_Measured_With_Final_Column_Width()
         {
             // Issue #70
@@ -106,36 +106,21 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 new LayoutTestColumn<Model>("Col1", GridLength.Star),
             };
 
-            var (target, scroll) = CreateTarget(columns);
+            var (target, _) = CreateTarget(columns);
 
             for (var i = 0; i < target.RealizedElements.Count; ++i)
             {
                 var cell = (LayoutTestCellControl)target.RealizedElements[i]!;
 
-                if (i == 0)
-                {
-                    // The first cell will be laid out on the initial layout before the control has
-                    // a viewport, and so will receive two layout passes.
-                    Assert.Equal(
-                        new[]
-                        {
+                Assert.Equal(
+                    new[]
+                    {
                             Size.Infinity,
                             new Size(0, double.PositiveInfinity),
                             Size.Infinity,
                             new Size(50, double.PositiveInfinity),
-                        },
-                        cell!.MeasureConstraints);
-                }
-                else
-                {
-                    Assert.Equal(
-                        new[]
-                        {
-                            Size.Infinity,
-                            new Size(50, double.PositiveInfinity),
-                        },
-                        cell!.MeasureConstraints);
-                }
+                    },
+                    cell!.MeasureConstraints);
             }
         }
 
