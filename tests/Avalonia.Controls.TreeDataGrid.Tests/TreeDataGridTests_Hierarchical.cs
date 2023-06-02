@@ -151,7 +151,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
-        [AvaloniaFact(Timeout = 10000, Skip = "Revisit")]
+        [AvaloniaFact(Timeout = 10000)]
         public void Scrolling_Should_Not_Rebuild_Templates_In_Expander_Columns()
         {
             var instantiations = 0;
@@ -176,16 +176,17 @@ namespace Avalonia.Controls.TreeDataGridTests
             var items = (IList<Model>)source.Items;
 
             // Expand the first root and do the initial layout now.
+            instantiations = 0;
             source.Expand(new IndexPath(0));
             InitialLayout(target);
-            Assert.Equal(10, instantiations);
+            Assert.Equal(9, instantiations);
 
             // Scroll down a row.
             target.Scroll!.Offset = new Vector(0, 10);
             Layout(target);
 
             // Template should have been recycled and not rebuilt.
-            Assert.Equal(10, instantiations);
+            Assert.Equal(9, instantiations);
             Assert.Equal(10, target.RowsPresenter!.RealizedElements.Count);
 
             for (var i = 0; i < 10; ++i)
