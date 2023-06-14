@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets the gesture(s) that will cause the cell to enter edit mode.
         /// </summary>
-        EditGestures EditGestures { get; }
+        BeginEditGestures EditGestures { get; }
 
         /// <summary>
         /// Gets the value of the cell.

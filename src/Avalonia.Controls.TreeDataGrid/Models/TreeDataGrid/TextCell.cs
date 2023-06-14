@@ -40,7 +40,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         public bool CanEdit => !IsReadOnly;
-        public EditGestures EditGestures => _options?.EditGestures ?? EditGestures.Default;
+        public BeginEditGestures EditGestures => _options?.BeginEditGestures ?? BeginEditGestures.Default;
         public bool IsReadOnly { get; }
         public TextTrimming TextTrimming => _options?.TextTrimming ?? TextTrimming.None;
         public TextWrapping TextWrapping => _options?.TextWrapping ?? TextWrapping.NoWrap;

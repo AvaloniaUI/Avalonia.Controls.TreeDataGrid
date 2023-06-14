@@ -3,7 +3,7 @@
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
     [Flags]
-    public enum EditGestures
+    public enum BeginEditGestures
     {
         /// <summary>
         /// A cell will only enter edit mode programmatically.
@@ -84,6 +84,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Gets or sets the gesture(s) that will cause a cell to enter edit mode.
         /// </summary>
-        public EditGestures EditGestures { get; set; } = EditGestures.Default;
+        public BeginEditGestures BeginEditGestures { get; set; } = BeginEditGestures.Default;
     }
 }

@@ -34,7 +34,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         public bool CanEdit => false;
-        public EditGestures EditGestures => EditGestures.None;
+        public BeginEditGestures EditGestures => BeginEditGestures.None;
         public bool SingleTapEdit => false;
         public bool IsReadOnly { get; }
         public bool IsThreeState { get; }

@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         public bool CanEdit => GetCellEditingTemplate is not null;
-        public EditGestures EditGestures => _options?.EditGestures ?? EditGestures.Default;
+        public BeginEditGestures EditGestures => _options?.BeginEditGestures ?? BeginEditGestures.Default;
         public Func<Control, IDataTemplate> GetCellTemplate { get; }
         public Func<Control, IDataTemplate>? GetCellEditingTemplate { get; }
         public object? Value { get; }

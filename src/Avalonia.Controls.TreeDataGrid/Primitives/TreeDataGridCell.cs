@@ -152,7 +152,7 @@ namespace Avalonia.Controls.Primitives
                 !e.Handled &&
                 !IsEditing &&
                 Model.CanEdit &&
-                IsEnabledEditGesture(EditGestures.DoubleTap, Model.EditGestures))
+                IsEnabledEditGesture(BeginEditGestures.DoubleTap, Model.EditGestures))
             {
                 BeginEdit();
                 e.Handled = true;
@@ -169,7 +169,7 @@ namespace Avalonia.Controls.Primitives
             if (e.Key == Key.F2 && 
                 !IsEditing && 
                 Model.CanEdit &&
-                IsEnabledEditGesture(EditGestures.F2, Model.EditGestures))
+                IsEnabledEditGesture(BeginEditGestures.F2, Model.EditGestures))
             {
                 BeginEdit();
                 e.Handled = true;
@@ -198,7 +198,7 @@ namespace Avalonia.Controls.Primitives
                 !e.Handled &&
                 !IsEditing &&
                 Model.CanEdit &&
-                IsEnabledEditGesture(EditGestures.Tap, Model.EditGestures))
+                IsEnabledEditGesture(BeginEditGestures.Tap, Model.EditGestures))
             {
                 _pressedPoint = e.GetCurrentPoint(null).Position;
                 e.Handled = true;
@@ -218,7 +218,7 @@ namespace Avalonia.Controls.Primitives
                 !IsEditing &&
                 !double.IsNaN(_pressedPoint.X) &&
                 Model.CanEdit &&
-                IsEnabledEditGesture(EditGestures.Tap, Model.EditGestures))
+                IsEnabledEditGesture(BeginEditGestures.Tap, Model.EditGestures))
             {
                 var point = e.GetCurrentPoint(this);
                 var settings = TopLevel.GetTopLevel(this)?.PlatformSettings;
@@ -269,12 +269,12 @@ namespace Avalonia.Controls.Primitives
             return false;
         }
 
-        private bool IsEnabledEditGesture(EditGestures gesture, EditGestures enabledGestures)
+        private bool IsEnabledEditGesture(BeginEditGestures gesture, BeginEditGestures enabledGestures)
         {
             if (!enabledGestures.HasFlag(gesture))
                 return false;
 
-            return enabledGestures.HasFlag(EditGestures.WhenSelected) ?
+            return enabledGestures.HasFlag(BeginEditGestures.WhenSelected) ?
                 IsEffectivelySelected : true;
         }
     }

@@ -38,7 +38,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public bool CanEdit => _inner.CanEdit;
         public ICell Content => _inner;
-        public EditGestures EditGestures => _inner.EditGestures;
+        public BeginEditGestures EditGestures => _inner.EditGestures;
         public IExpanderRow<TModel> Row { get; }
         public bool ShowExpander => Row.ShowExpander;
         public object? Value => _inner.Value;
