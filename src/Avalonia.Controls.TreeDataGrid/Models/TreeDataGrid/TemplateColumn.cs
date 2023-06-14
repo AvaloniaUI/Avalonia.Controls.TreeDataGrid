@@ -38,7 +38,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public TemplateColumn(
             object? header,
             object cellTemplateResourceKey,
-            object cellEditingTemplateResourceKey,
+            object? cellEditingTemplateResourceKey = null,
             GridLength? width = null,
             TemplateColumnOptions<TModel>? options = null)
             : base(header, width, options ?? new())

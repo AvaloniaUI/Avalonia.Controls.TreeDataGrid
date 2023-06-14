@@ -94,7 +94,10 @@ namespace Avalonia.Controls.Primitives
             base.OnAttachedToLogicalTree(e);
 
             if (ContentTemplate is null && DataContext is TemplateCell cell)
+            {
                 ContentTemplate = cell.GetCellTemplate(this);
+                EditingTemplate = cell.GetCellEditingTemplate?.Invoke(this);
+            }
         }
 
         protected override void OnDataContextChanged(EventArgs e)
