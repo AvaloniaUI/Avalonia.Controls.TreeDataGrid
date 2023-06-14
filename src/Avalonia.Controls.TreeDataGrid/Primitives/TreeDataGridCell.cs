@@ -221,7 +221,7 @@ namespace Avalonia.Controls.Primitives
                 IsEnabledEditGesture(EditGestures.Tap, Model.EditGestures))
             {
                 var point = e.GetCurrentPoint(this);
-                var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                var settings = TopLevel.GetTopLevel(this)?.PlatformSettings;
                 var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
                 var tapRect = new Rect(_pressedPoint, new Size())
                        .Inflate(new Thickness(tapSize.Width, tapSize.Height));
@@ -271,10 +271,10 @@ namespace Avalonia.Controls.Primitives
 
         private bool IsEnabledEditGesture(EditGestures gesture, EditGestures enabledGestures)
         {
-            if (!enabledGestures.HasAllFlags(gesture))
+            if (!enabledGestures.HasFlag(gesture))
                 return false;
 
-            return enabledGestures.HasAnyFlag(EditGestures.WhenSelected) ?
+            return enabledGestures.HasFlag(EditGestures.WhenSelected) ?
                 IsEffectivelySelected : true;
         }
     }

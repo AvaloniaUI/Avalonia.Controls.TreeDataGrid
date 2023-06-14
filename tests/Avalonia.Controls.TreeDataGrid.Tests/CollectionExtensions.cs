@@ -5,9 +5,9 @@ namespace Avalonia.Controls.TreeDataGridTests
 {
     internal static class CollectionExtensions
     {
-        public static int CollectionChangedSubscriberCount<T>(this AvaloniaList<T> list)
+        public static int CollectionChangedSubscriberCount<T>(this AvaloniaListDebug<T> list)
         {
-            return ((INotifyCollectionChangedDebug)list).GetCollectionChangedSubscribers()?.Length ?? 0;
+            return list.GetCollectionChangedSubscribers()?.Length ?? 0;
         }
     }
 }

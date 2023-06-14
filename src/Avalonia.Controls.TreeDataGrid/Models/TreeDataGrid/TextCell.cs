@@ -43,6 +43,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public EditGestures EditGestures => _options?.EditGestures ?? EditGestures.Default;
         public bool IsReadOnly { get; }
         public TextTrimming TextTrimming => _options?.TextTrimming ?? TextTrimming.None;
+        public TextWrapping TextWrapping => _options?.TextWrapping ?? TextWrapping.NoWrap;
 
         public string? Text
         {

@@ -17,5 +17,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets or sets the text trimming mode for the cells in the column.
         /// </summary>
         public TextTrimming TextTrimming { get; set; } = TextTrimming.CharacterEllipsis;
+
+        /// <summary>
+        /// Gets or sets the text wrapping mode for the cells in the column.
+        /// </summary>
+        public TextWrapping TextWrapping { get; set; } = TextWrapping.NoWrap;
     }
 }

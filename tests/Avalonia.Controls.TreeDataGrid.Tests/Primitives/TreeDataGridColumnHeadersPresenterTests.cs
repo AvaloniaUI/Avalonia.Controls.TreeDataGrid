@@ -4,10 +4,13 @@ using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
+using Avalonia.Headless.XUnit;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -15,24 +18,20 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 {
     public class TreeDataGridColumnHeadersPresenterTests
     {
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Creates_Initial_Columns()
         {
-            using var app = App();
-
             var (target, _) = CreateTarget();
 
             AssertColumnIndexes(target, 0, 10);
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Updates_Auto_Column_ActualWidth()
         {
-            using var app = App();
-
             // We're testing Auto columns so make cells have a width of 10.
-            var root = new TestRoot
+            var root = new TestWindow
             {
                 Styles =
                 {
@@ -55,11 +54,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             }
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Scrolls_Right_One_Row()
         {
-            using var app = App();
-
             var (target, scroll) = CreateTarget();
 
             scroll.Offset = new Vector(10, 00);
@@ -69,11 +66,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Scrolls_Right_More_Than_A_Page()
         {
-            using var app = App();
-
             var (target, scroll) = CreateTarget();
 
             scroll.Offset = new Vector(200, 0);
@@ -83,11 +78,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Scrolls_Left_More_Than_A_Page()
         {
-            using var app = App();
-
             var (target, scroll) = CreateTarget();
 
             scroll!.Offset = new Vector(200, 0);
@@ -100,11 +93,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Updates_Column_Width_When_Width_Changes()
         {
-            using var app = App();
-
             var (target, _) = CreateTarget();
 
             foreach (var child in target.GetVisualChildren())
@@ -119,10 +110,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             }
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Nth_Child_Handles_Deletion_And_Addition_Correctly()
         {
-            using var app = App();
             var (target, scroll) = CreateTarget(additionalStyles:
                 new List<IStyle>
                 {
@@ -177,7 +167,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         }
 
         private static (TreeDataGridColumnHeadersPresenter, ScrollViewer) CreateTarget(
-            TestRoot? root = null,
+            TestWindow? root = null,
             GridLength? width = null,
             int columnCount = 100,
             List<IStyle>? additionalStyles = null)
@@ -202,8 +192,8 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
             };
 
-            root ??= new TestRoot();
-            root.Child = scrollViewer;
+            root ??= new TestWindow();
+            root.Content = scrollViewer;
 
             if (additionalStyles != null)
             {
@@ -213,22 +203,17 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 }
             }
 
-            root.LayoutManager.ExecuteInitialLayoutPass();
+            root.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+
             return (target, scrollViewer);
         }
 
         private static void Layout(TreeDataGridColumnHeadersPresenter target)
         {
-            var root = (ILayoutRoot?)target.GetVisualRoot();
-            root?.LayoutManager.ExecuteLayoutPass();
+            target.UpdateLayout();
         }
-
-        private static IDisposable App()
-        {
-            var scope = AvaloniaLocator.EnterScope();
-            return scope;
-        }
-
+        
         private class TestColumn : ColumnBase<string>
         {
             public TestColumn(string header, GridLength width)
