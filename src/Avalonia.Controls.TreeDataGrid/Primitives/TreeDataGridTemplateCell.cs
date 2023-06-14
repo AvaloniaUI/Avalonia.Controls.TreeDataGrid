@@ -124,9 +124,30 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void EditingContentPresenterLostFocus(object? sender, RoutedEventArgs e)
+        protected override void OnLostFocus(RoutedEventArgs e) => EndEditIfFocusLost();
+        private void EditingContentPresenterLostFocus(object? sender, RoutedEventArgs e) => EndEditIfFocusLost();
+
+        private void EndEditIfFocusLost()
         {
-            EndEdit();
+            if (TopLevel.GetTopLevel(this) is { } topLevel &&
+                topLevel?.FocusManager?.GetFocusedElement() is Control newFocus &&
+                !IsDescendent(newFocus))
+            {
+                EndEdit();
+            }
+        }
+
+        private bool IsDescendent(Control c)
+        {
+            if (this.IsVisualAncestorOf(c))
+                return true;
+
+            // If the control is not a direct visual descendent, then check to make sure it's not
+            // hosted in a popup that is a descendent of the cell.
+            if (TopLevel.GetTopLevel(c)?.Parent is Control host)
+                return this.IsVisualAncestorOf(host);
+
+            return false;
         }
     }
 }
