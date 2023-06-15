@@ -2,6 +2,41 @@
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
+    [Flags]
+    public enum BeginEditGestures
+    {
+        /// <summary>
+        /// A cell will only enter edit mode programmatically.
+        /// </summary>
+        None = 0x00,
+
+        /// <summary>
+        /// A cell will enter edit mode when the user presses F2.
+        /// </summary>
+        F2 = 0x01,
+
+        /// <summary>
+        /// A cell will enter edit mode when the user taps it.
+        /// </summary>
+        Tap = 0x02,
+
+        /// <summary>
+        /// A cell will enter edit mode when the user double-taps it.
+        /// </summary>
+        DoubleTap = 0x4,
+
+        /// <summary>
+        /// A cell will enter edit mode in conjuction with a gesture only when the cell or row
+        /// is currently selected.
+        /// </summary>
+        WhenSelected = 0x1000,
+
+        /// <summary>
+        /// A cell will enter edit mode when the user presses F2 or double-taps it.
+        /// </summary>
+        Default = F2 | DoubleTap,
+    }
+
     /// <summary>
     /// Holds less commonly-used options for an <see cref="IColumn{TModel}"/>.
     /// </summary>
@@ -45,5 +80,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets or sets a custom comparison for descending ordered columns.
         /// </summary>
         public Comparison<TModel?>? CompareDescending { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gesture(s) that will cause a cell to enter edit mode.
+        /// </summary>
+        public BeginEditGestures BeginEditGestures { get; set; } = BeginEditGestures.Default;
     }
 }

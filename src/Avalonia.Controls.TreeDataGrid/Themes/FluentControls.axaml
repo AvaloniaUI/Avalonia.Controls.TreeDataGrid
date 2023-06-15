@@ -304,6 +304,22 @@
                           Padding="{TemplateBinding Padding}"/>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^:editing">
+      <Setter Property="Padding" Value="4 2" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <ContentPresenter Name="PART_EditingContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            ContentTemplate="{TemplateBinding EditingTemplate}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Content="{TemplateBinding Content}"
+                            Padding="{TemplateBinding Padding}"/>
+        </ControlTemplate>
+      </Setter>
+    </Style>
   </ControlTheme>
 
 </ResourceDictionary>

@@ -54,6 +54,7 @@ namespace TreeDataGridDemo.ViewModels
                         new TemplateColumn<FileTreeNodeModel>(
                             "Name",
                             "FileNameCell",
+                            "FileNameEditCell",
                             new GridLength(1, GridUnitType.Star),
                             new()
                             {

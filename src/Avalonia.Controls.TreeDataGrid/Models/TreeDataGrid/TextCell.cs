@@ -15,12 +15,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         [AllowNull] private T? _value;
         [AllowNull] private T? _cancelValue;
         private bool _isEditing;
+        private ITextCellOptions? _options;
 
         public TextCell(T? value)
         {
             _value = value;
             IsReadOnly = true;
-            TextTrimming = TextTrimming.None;
         }
 
         public TextCell(
@@ -30,9 +30,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             _binding = binding;
             IsReadOnly = isReadOnly;
-            TextTrimming = options?.TextTrimming ?? TextTrimming.None;
-            TextWrapping = options?.TextWrapping ?? TextWrapping.NoWrap;
-            SingleTapEdit = options?.SingleTapEdit ?? false;
+            _options = options;
 
             _subscription = binding.Subscribe(x =>
             {
@@ -42,10 +40,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         public bool CanEdit => !IsReadOnly;
+        public BeginEditGestures EditGestures => _options?.BeginEditGestures ?? BeginEditGestures.Default;
         public bool IsReadOnly { get; }
-        public bool SingleTapEdit { get; }
-        public TextTrimming TextTrimming { get; }
-        public TextWrapping TextWrapping { get; }
+        public TextTrimming TextTrimming => _options?.TextTrimming ?? TextTrimming.None;
+        public TextWrapping TextWrapping => _options?.TextWrapping ?? TextWrapping.NoWrap;
 
         public string? Text
         {

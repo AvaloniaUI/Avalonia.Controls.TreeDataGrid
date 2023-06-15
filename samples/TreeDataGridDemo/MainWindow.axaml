@@ -29,6 +29,17 @@
         <TreeDataGrid Name="countries"
                       Source="{Binding Countries.Source}"
                       AutoDragDropRows="True">
+          <TreeDataGrid.Resources>
+            <!-- Template for Region column cells -->
+            <DataTemplate x:Key="RegionCell" DataType="m:Country">
+              <TextBlock Text="{Binding Region}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="RegionEditCell" DataType="m:Country">
+              <ComboBox ItemsSource="{x:Static m:Countries.Regions}"
+                        SelectedItem="{Binding Region}"/>
+            </DataTemplate>
+
+          </TreeDataGrid.Resources>
           <TreeDataGrid.Styles>
             <Style Selector="TreeDataGrid TreeDataGridRow:nth-last-child(2n)">
               <Setter Property="Background" Value="#20808080"/>
@@ -62,8 +73,8 @@
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
         <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}">
           <TreeDataGrid.Resources>
-            
-              <!-- Template for Name column cells -->
+
+            <!-- Template for Name column cells -->
             <DataTemplate x:Key="FileNameCell" DataType="m:FileTreeNodeModel">
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0 0 4 0"
@@ -78,7 +89,23 @@
                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
               </StackPanel>
             </DataTemplate>
-              
+
+            <!-- Edit template for Name column cells -->
+            <DataTemplate x:Key="FileNameEditCell" DataType="m:FileTreeNodeModel">
+              <StackPanel Orientation="Horizontal">
+                <Image Margin="0 0 4 0"
+                       VerticalAlignment="Center">
+                  <Image.Source>
+                    <MultiBinding Converter="{x:Static vm:FilesPageViewModel.FileIconConverter}">
+                      <Binding Path="IsDirectory"/>
+                      <Binding Path="IsExpanded"/>
+                    </MultiBinding>
+                  </Image.Source>
+                </Image>
+                <TextBox Text="{Binding Name}" VerticalAlignment="Center"/>
+              </StackPanel>
+            </DataTemplate>
+
           </TreeDataGrid.Resources>
           <TreeDataGrid.Styles>
             <Style Selector="TreeDataGrid TreeDataGridRow:nth-child(2n)">

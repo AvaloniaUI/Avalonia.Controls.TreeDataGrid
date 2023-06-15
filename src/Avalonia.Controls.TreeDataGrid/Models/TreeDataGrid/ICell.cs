@@ -13,12 +13,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         bool CanEdit { get; }
 
         /// <summary>
-        /// Gets a value indicating whether a single tap will begin edit mode on a cell.
+        /// Gets the gesture(s) that will cause the cell to enter edit mode.
         /// </summary>
-        /// <remarks>
-        /// If false, a double-tap is required to enter edit mode.
-        /// </remarks>
-        bool SingleTapEdit { get; }
+        BeginEditGestures EditGestures { get; }
 
         /// <summary>
         /// Gets the value of the cell.
