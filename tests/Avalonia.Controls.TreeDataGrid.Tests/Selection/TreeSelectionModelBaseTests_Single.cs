@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
+using Avalonia.Headless.XUnit;
 using Xunit;
 
 namespace Avalonia.Controls.TreeDataGridTests
@@ -13,7 +14,7 @@ namespace Avalonia.Controls.TreeDataGridTests
     {
         public class Source
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Changing_Source_To_NonNull_First_Clears_Old_Selection()
             {
                 var target = CreateTarget();
@@ -41,7 +42,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, raised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Can_Assign_ValueType_Collection_To_SelectionModel_Of_Object()
             {
                 var target = (ISelectionModel)new SelectionModel<object>();
@@ -52,7 +53,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         public class SelectedIndex
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Can_Set_SelectedIndex()
             {
                 var target = CreateTarget();
@@ -78,7 +79,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal("Node 0-2", target.SelectedItems.Single()!.Caption);
             }
             
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Can_Set_Grandchild_SelectedIndex()
             {
                 var data = CreateData(depth: 3);
@@ -104,7 +105,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal("Node 0-0-2", target.SelectedItems.Single()!.Caption);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Setting_SelectedIndex_Clears_Old_Selection()
             {
                 var target = CreateTarget();
@@ -130,7 +131,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal("Node 0-2", target.SelectedItems.Single()!.Caption);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Can_Set_SelectedIndex_To_Empty()
             {
                 var target = CreateTarget();
@@ -156,7 +157,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Empty(target.SelectedItems);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Out_Of_Range_SelectedIndex_Clears_Selection()
             {
                 var target = CreateTarget();
@@ -182,7 +183,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Empty(target.SelectedItems);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Can_Select_Unexpanded_Item()
             {
                 var target = CreateTarget();
@@ -207,7 +208,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal("Node 1-2", target.SelectedItems.Single()!.Caption);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Setting_SelectedIndex_During_CollectionChanged_Results_In_Correct_Selection()
             {
                 var data = new AvaloniaList<Node>();
@@ -219,7 +220,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(new IndexPath(0), target.SelectedIndex);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void PropertyChanged_Is_Raised()
             {
                 var target = CreateTarget();
@@ -265,7 +266,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         public class SelectedItem
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void PropertyChanged_Is_Raised_When_SelectedIndex_Changes()
             {
                 var target = CreateTarget();
@@ -287,7 +288,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         public class SelectedIndexes
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void PropertyChanged_Is_Raised_When_SelectedIndex_Changes()
             {
                 var target = CreateTarget();
@@ -309,7 +310,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         public class SelectedItems
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void PropertyChanged_Is_Raised_When_SelectedIndex_Changes()
             {
                 var target = CreateTarget();
@@ -331,7 +332,7 @@ namespace Avalonia.Controls.TreeDataGridTests
         
         public class Select
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Select_Sets_SelectedIndex()
             {
                 var target = CreateTarget();
@@ -356,7 +357,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal("Node 0-2", target.SelectedItems.Single()!.Caption);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Select_Clears_Old_Selection()
             {
                 var target = CreateTarget();
@@ -383,7 +384,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal("Node 0-2", target.SelectedItems.Single()!.Caption);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Select_With_Invalid_Index_Does_Nothing()
             {
                 var target = CreateTarget();
@@ -402,7 +403,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal("Node 0-2", target.SelectedItems.Single()!.Caption);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Selecting_Already_Selected_Item_Doesnt_Raise_SelectionChanged()
             {
                 var target = CreateTarget();
@@ -416,7 +417,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, raised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Selecting_Item_Twice_Results_In_Correct_Count()
             {
                 var target = CreateTarget();
@@ -433,7 +434,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         public class Deselect
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Deselect_Clears_Current_Selection()
             {
                 var target = CreateTarget();
@@ -460,7 +461,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, raised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Deselect_Does_Nothing_For_Nonselected_Item()
             {
                 var target = CreateTarget();
@@ -481,7 +482,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         public class Clear
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Clear_Raises_SelectionChanged()
             {
                 var target = CreateTarget();
@@ -506,7 +507,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         public class AnchorIndex
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Setting_SelectedIndex_Sets_AnchorIndex()
             {
                 var target = CreateTarget();
@@ -526,7 +527,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, raised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Setting_SelectedIndex_To_Empty_Doesnt_Clear_AnchorIndex()
             {
                 var target = CreateTarget();
@@ -548,7 +549,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, raised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Select_Sets_AnchorIndex()
             {
                 var target = CreateTarget();
@@ -568,7 +569,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, raised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Deselect_Doesnt_Clear_AnchorIndex()
             {
                 var target = CreateTarget();
@@ -590,7 +591,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, raised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Raises_PropertyChanged()
             {
                 var target = CreateTarget();
@@ -612,7 +613,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         public class SingleSelect
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Converting_To_Multiple_Selection_Preserves_Selection()
             {
                 var target = CreateTarget();
@@ -632,7 +633,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, raised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Raises_PropertyChanged()
             {
                 var target = CreateTarget();
@@ -654,7 +655,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         public class CollectionChanges
         {
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Adding_Root_Item_Before_Selected_Root_Item_Updates_Indexes()
             {
                 var data = CreateData();
@@ -696,7 +697,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, selectionChangedRaised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Adding_Child_Item_Before_Selected_Child_Item_Updates_Indexes()
             {
                 var data = CreateData();
@@ -738,7 +739,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, selectionChangedRaised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Adding_Root_Item_Before_Selected_Child_Item_Updates_Indexes()
             {
                 var data = CreateData();
@@ -780,7 +781,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, selectionChangedRaised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Adding_Root_Item_Before_Selected_Grandchild_Item_Updates_Indexes()
             {
                 var data = CreateData(depth: 3);
@@ -822,7 +823,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, selectionChangedRaised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Adding_Root_Item_After_Selected_Root_Item_Doesnt_Raise_Events()
             {
                 var data = CreateData();
@@ -846,7 +847,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, raised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Removing_Root_Selected_Item_Updates_State()
             {
                 var data = CreateData();
@@ -885,7 +886,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, selectedIndexRaised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Removing_Child_Selected_Item_Updates_State()
             {
                 var data = CreateData();
@@ -924,7 +925,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, selectedIndexRaised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Removing_Parent_Of_Selected_Item_Updates_State()
             {
                 var data = CreateData();
@@ -963,7 +964,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, selectedIndexRaised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Removing_Root_Item_Before_Selected_Root_Item_Updates_Indexes()
             {
                 var data = CreateData();
@@ -994,7 +995,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, selectionChangedRaised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Removing_Root_Item_Before_Selected_Child_Item_Updates_Indexes()
             {
                 var data = CreateData();
@@ -1025,7 +1026,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, selectionChangedRaised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Removing_Child_Item_Before_Selected_Grandhild_Item_Updates_Indexes()
             {
                 var data = CreateData(depth: 3);
@@ -1056,7 +1057,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, selectionChangedRaised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Removing_Root_Item_After_Selected_Root_Item_Doesnt_Raise_Events()
             {
                 var data = CreateData();
@@ -1080,7 +1081,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(0, raised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Replacing_Selected_Root_Item_Updates_State()
             {
                 var data = CreateData();
@@ -1125,7 +1126,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, selectedItemRaised);
             }
 
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Replacing_Selected_Child_Item_Updates_State()
             {
                 var data = CreateData();
@@ -1170,7 +1171,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, selectedItemRaised);
             }
 #if false
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Resetting_Root_Updates_State()
             {
                 var data = CreateData();
@@ -1203,7 +1204,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, selectedIndexRaised);
             }
 #endif
-            [Fact]
+            [AvaloniaFact(Timeout = 10000)]
             public void Handles_Selection_Made_In_CollectionChanged()
             {
                 // Tests the following scenario:

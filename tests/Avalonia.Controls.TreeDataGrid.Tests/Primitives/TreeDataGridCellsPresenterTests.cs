@@ -4,10 +4,12 @@ using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
+using Avalonia.Headless.XUnit;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -15,22 +17,18 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 {
     public class TreeDataGridCellsPresenterTests
     {
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Creates_Initial_Cells()
         {
-            using var app = App();
-
             var (target, _) = CreateTarget();
 
             AssertColumnIndexes(target, 0, 10);
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Updates_Column_ActualWidth()
         {
-            using var app = App();
-
             var (target, _) = CreateTarget();
 
             for (var i = 0; i < target.Items!.Count; ++i)
@@ -40,11 +38,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             }
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Scrolls_Right_One_Cell()
         {
-            using var app = App();
-
             var (target, scroll) = CreateTarget();
             
             scroll.Offset = new Vector(10, 0);
@@ -54,11 +50,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Scrolls_Right_More_Than_A_Page()
         {
-            using var app = App();
-
             var (target, scroll) = CreateTarget();
 
             scroll.Offset = new Vector(200, 0);
@@ -68,11 +62,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Scrolls_Left_More_Than_A_Page()
         {
-            using var app = App();
-
             var (target, scroll) = CreateTarget();
 
             scroll.Offset = new Vector(200, 0);
@@ -85,11 +77,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             AssertRecyclable(target, 0);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void DesiredSize_Takes_Min_Star_Column_Width_Into_Account()
         {
-            using var app = App();
-
             var minWidth = new ColumnOptions<Model>
             {
                 MinWidth = new GridLength(100),
@@ -106,55 +96,37 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(200, target.DesiredSize.Width);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Star_Cells_Are_Measured_With_Final_Column_Width()
         {
             // Issue #70
-            using var app = App();
-
             var columns = new ColumnList<Model>
             {
                 new LayoutTestColumn<Model>("Col0", GridLength.Star),
                 new LayoutTestColumn<Model>("Col1", GridLength.Star),
             };
 
-            var (target, scroll) = CreateTarget(columns);
+            var (target, _) = CreateTarget(columns);
 
             for (var i = 0; i < target.RealizedElements.Count; ++i)
             {
                 var cell = (LayoutTestCellControl)target.RealizedElements[i]!;
 
-                if (i == 0)
-                {
-                    // The first cell will be laid out on the initial layout before the control has
-                    // a viewport, and so will receive two layout passes.
-                    Assert.Equal(
-                        new[]
-                        {
+                Assert.Equal(
+                    new[]
+                    {
                             Size.Infinity,
                             new Size(0, double.PositiveInfinity),
                             Size.Infinity,
                             new Size(50, double.PositiveInfinity),
-                        },
-                        cell!.MeasureConstraints);
-                }
-                else
-                {
-                    Assert.Equal(
-                        new[]
-                        {
-                            Size.Infinity,
-                            new Size(50, double.PositiveInfinity),
-                        },
-                        cell!.MeasureConstraints);
-                }
+                    },
+                    cell!.MeasureConstraints);
             }
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Nth_Child_Handles_Deletion_And_Addition_Correctly()
         {
-            using var app = App();
             var (target, scroll) = CreateTarget(additionalStyles:
                 new List<IStyle>
                 {
@@ -246,7 +218,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
             };
 
-            var root = new TestRoot(scrollViewer);
+            var root = new TestWindow(scrollViewer);
 
             if (additionalStyles != null)
             {
@@ -256,20 +228,15 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 }
             }
 
-            root.LayoutManager.ExecuteInitialLayoutPass();
+            root.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+
             return (target, scrollViewer);
         }
 
         private static void Layout(TreeDataGridCellsPresenter target)
         {
-            var root = (ILayoutRoot?)target.GetVisualRoot();
-            root?.LayoutManager.ExecuteLayoutPass();
-        }
-
-        private static IDisposable App()
-        {
-            var scope = AvaloniaLocator.EnterScope();
-            return scope;
+            target.UpdateLayout();
         }
 
         private class Model : NotifyingBase

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Data;
+using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Xunit;
 
@@ -13,7 +14,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Models
 {
     public class TextCellTests
     {
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Value_Is_Initially_Read_From_String()
         {
             var binding = new BehaviorSubject<BindingValue<string>>("initial");
@@ -23,7 +24,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Models
             Assert.Equal("initial", target.Value);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Modified_Value_Is_Written_To_Binding()
         {
             var binding = new BehaviorSubject<BindingValue<string>>("initial");
@@ -36,7 +37,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Models
             Assert.Equal(new[] { "initial", "new" }, result);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Modified_Text_Is_Written_To_Binding()
         {
             var binding = new BehaviorSubject<BindingValue<string>>("initial");
@@ -49,7 +50,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Models
             Assert.Equal(new[] { "initial", "new" }, result);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Modified_Value_Is_Written_To_Binding_On_EndEdit()
         {
             var binding = new BehaviorSubject<BindingValue<string>>("initial");
@@ -72,7 +73,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Models
             Assert.Equal(new[] { "initial", "new" }, result);
         }
 
-        [Fact]
+        [AvaloniaFact(Timeout = 10000)]
         public void Modified_Value_Is_Not_Written_To_Binding_On_CancelEdit()
         {
             var binding = new BehaviorSubject<BindingValue<string>>("initial");

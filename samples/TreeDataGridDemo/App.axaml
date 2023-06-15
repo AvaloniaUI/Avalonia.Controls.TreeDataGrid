@@ -5,4 +5,15 @@
     <FluentTheme/>
     <StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
   </Application.Styles>
+  <!-- Uncomment to override resources -->
+  <!-- <Application.Resources> -->
+  <!--   <SolidColorBrush x:Key="TreeDataGridGridLinesBrush" Color="Yellow" /> -->
+  <!--   <SolidColorBrush x:Key="TreeDataGridSelectedCellBackgroundBrush" Color="Green" Opacity="0.4" /> -->
+  <!--   <SolidColorBrush x:Key="TreeDataGridHeaderBackgroundPointerOverBrush" Color="Yellow" /> -->
+  <!--   <SolidColorBrush x:Key="TreeDataGridHeaderBackgroundPressedBrush" Color="Red" /> -->
+  <!--   <SolidColorBrush x:Key="TreeDataGridHeaderBorderBrushPointerOverBrush" Color="DarkGreen" /> -->
+  <!--   <SolidColorBrush x:Key="TreeDataGridHeaderBorderBrushPressedBrush" Color="DarkRed" /> -->
+  <!--   <SolidColorBrush x:Key="TreeDataGridHeaderForegroundPointerOverBrush" Color="Black" /> -->
+  <!--   <SolidColorBrush x:Key="TreeDataGridHeaderForegroundPressedBrush" Color="Black" /> -->
+  <!-- </Application.Resources> -->
 </Application>

@@ -31,7 +31,6 @@ namespace Avalonia.Controls.Primitives
                 o => o.TextAlignment,
                 (o,v)=> o.TextAlignment = v);
 
-        private bool _canEdit;
         private string? _value;
         private TextBox? _edit;
         private TextTrimming _textTrimming = TextTrimming.CharacterEllipsis;
@@ -65,9 +64,6 @@ namespace Avalonia.Controls.Primitives
             get => _textAlignment;
             set => SetAndRaise(TextAlignmentProperty, ref _textAlignment, value);
         }
-
-        protected override bool CanEdit => _canEdit;
-
         public override void Realize(
             TreeDataGridElementFactory factory,
             ITreeDataGridSelectionInteraction? selection,
@@ -75,7 +71,6 @@ namespace Avalonia.Controls.Primitives
             int columnIndex,
             int rowIndex)
         {
-            _canEdit = model.CanEdit;
             Value = model.Value?.ToString();
             TextTrimming = (model as ITextCell)?.TextTrimming ?? TextTrimming.CharacterEllipsis;
             TextWrapping = (model as ITextCell)?.TextWrapping ?? TextWrapping.NoWrap;
@@ -94,20 +89,12 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnApplyTemplate(e);
 
-            if (_edit is not null)
-            {
-                _edit.KeyDown -= EditKeyDown;
-                _edit.LostFocus -= EditLostFocus;
-            }
-
             _edit = e.NameScope.Find<TextBox>("PART_Edit");
 
             if (_edit is not null)
             {
                 _edit.SelectAll();
                 _edit.Focus();
-                _edit.KeyDown += EditKeyDown;
-                _edit.LostFocus += EditLostFocus;
             }
         }
 
@@ -118,21 +105,5 @@ namespace Avalonia.Controls.Primitives
             if (e.PropertyName == nameof(ITextCell.Value))
                 Value = Model?.Value?.ToString();
         }
-
-        private void EditKeyDown(object? sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                EndEdit();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Escape)
-            {
-                CancelEdit();
-                e.Handled = true;
-            }
-        }
-
-        private void EditLostFocus(object? sender, RoutedEventArgs e) => EndEdit();
     }
 }

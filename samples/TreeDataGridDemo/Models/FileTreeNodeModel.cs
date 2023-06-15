@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using Avalonia.Threading;
 using ReactiveUI;
 
 namespace TreeDataGridDemo.Models
 {
-    public class FileTreeNodeModel : ReactiveObject
+    public class FileTreeNodeModel : ReactiveObject, IEditableObject
     {
         private string _path;
         private string _name;
+        private string? _undoName;
         private long? _size;
         private DateTimeOffset? _modified;
         private FileSystemWatcher? _watcher;
@@ -152,6 +154,10 @@ namespace TreeDataGridDemo.Models
                     return 1;
             };
         }
+
+        void IEditableObject.BeginEdit() => _undoName = _name;
+        void IEditableObject.CancelEdit() => _name = _undoName!;
+        void IEditableObject.EndEdit() => _undoName = null;
 
         private void OnChanged(object sender, FileSystemEventArgs e)
         {
