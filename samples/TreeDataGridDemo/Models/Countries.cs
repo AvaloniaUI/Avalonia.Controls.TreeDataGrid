@@ -6,6 +6,7 @@ namespace TreeDataGridDemo.Models
     internal static class Countries
     {
         private static IReadOnlyList<Country>? _all;
+        private static IReadOnlyList<string>? _regions;
 
         private static IEnumerable<Country> GetCountries()
         {
@@ -238,5 +239,6 @@ namespace TreeDataGridDemo.Models
         }
 
         public static IReadOnlyList<Country> All => _all ??= GetCountries().ToList();
+        public static IReadOnlyList<string> Regions => _regions ??= All.Select(x => x.Region).ToList();
     }
 }

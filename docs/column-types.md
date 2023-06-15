@@ -56,9 +56,18 @@ The first parameter in the constructor is a nested column, you would usually wan
 The sample above is taken from [this article](https://github.com/AvaloniaUI/Avalonia.Controls.TreeDataGrid/blob/master/docs/get-started-hierarchical.md). If you feel like you need more examples feel free to check it, there is a sample that shows how to use `HierarchicalExpanderColumn` and how to run a whole `TreeDataGrid` using it. 
 
 ## TemplateColumn
-TemplateColumn is the most customizable option to create a column. You can put basically everything that you can put into `IDataTemplate` into this column cells.
 
-There are two ways to instantiate a `TemplateColumn`:
+TemplateColumn is the most customizable way to create a column. Because cell contents are described by a data template, the options for how each cell is displayed is almost unlimited.
+
+The `TemplateColumn` constructor takes the following parameters:
+
+- `header`: The Column header
+- `cellTemplate`: A data template which describes how cells in the column will be displayed
+- `cellEditingTemplate`: A data template which describes how cells in the column will be displayed when in edit mode. If no `cellEditingTemplate` is provided, then edit mode will be disabled for the column.
+- `width`: The width of the column
+- `options`: Less frequently used options for the column
+
+There are two overloads of the `TemplateColumn` constructor, which corresponds to the two ways in which a template can be specified:
 
 1. Using a `FuncDataTemplate` to create a template in code:
 
@@ -93,9 +102,4 @@ new TemplateColumn<Person>(
 new TemplateColumn<Person>("Selected", "CheckBoxCell");
 ```
 
-`TemplateColumn` has only one generic parameter, it is your model type, same as in `TextColumn`, Person in this case. Code above will create a column with header *"Selected"* and `CheckBox` in each cell.
-
-`TemplateColumn` has two required parameters. The first one is the column header as everywhere. The second is either:
-
-1. An `IDataTemplate`; a template that contains stuff that you want to be displayed in the cells of this column.
-2. The key of a template defined in a XAML resource.
+`TemplateColumn` has only one generic parameter, it is your model type, the same as in `TextColumn`; `Person` in this case. The code above will create a column with header *"Selected"* and a `CheckBox` in each cell.

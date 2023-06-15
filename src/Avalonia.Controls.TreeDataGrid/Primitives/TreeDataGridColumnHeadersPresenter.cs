@@ -34,9 +34,9 @@ namespace Avalonia.Controls.Primitives
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
         }
 
-        protected override void UpdateElementIndex(Control element, int index)
+        protected override void UpdateElementIndex(Control element, int oldIndex, int newIndex)
         {
-            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, newIndex));
         }
 
         protected override void UnrealizeElement(Control element)

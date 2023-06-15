@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -44,9 +44,20 @@
         <TreeDataGrid Name="countries"
                       Source="{Binding Countries.Source}"
                       AutoDragDropRows="True">
+          <TreeDataGrid.Resources>
+            <!-- Template for Region column cells -->
+            <DataTemplate x:Key="RegionCell" DataType="m:Country">
+              <TextBlock Text="{Binding Region}"/>
+            </DataTemplate>
+            <DataTemplate x:Key="RegionEditCell" DataType="m:Country">
+              <ComboBox ItemsSource="{x:Static m:Countries.Regions}"
+                        SelectedItem="{Binding Region}"/>
+            </DataTemplate>
+
+          </TreeDataGrid.Resources>
           <TreeDataGrid.Styles>
             <Style Selector="TreeDataGrid TreeDataGridRow:nth-last-child(2n)">
-              <Setter Property="Background" Value="#fff8f8f8"/>
+              <Setter Property="Background" Value="#20808080"/>
             </Style>
             <Style Selector="TreeDataGrid :is(TreeDataGridCell):nth-last-child(1)">
               <Setter Property="TextBlock.FontWeight" Value="Bold"/>
@@ -77,8 +88,8 @@
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
         <TreeDataGrid Name="fileViewer" Source="{Binding Files.Source}">
           <TreeDataGrid.Resources>
-            
-              <!-- Template for Name column cells -->
+
+            <!-- Template for Name column cells -->
             <DataTemplate x:Key="FileNameCell" DataType="m:FileTreeNodeModel">
               <StackPanel Orientation="Horizontal">
                 <Image Margin="0 0 4 0"
@@ -93,13 +104,41 @@
                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
               </StackPanel>
             </DataTemplate>
-              
+
+            <!-- Edit template for Name column cells -->
+            <DataTemplate x:Key="FileNameEditCell" DataType="m:FileTreeNodeModel">
+              <StackPanel Orientation="Horizontal">
+                <Image Margin="0 0 4 0"
+                       VerticalAlignment="Center">
+                  <Image.Source>
+                    <MultiBinding Converter="{x:Static vm:FilesPageViewModel.FileIconConverter}">
+                      <Binding Path="IsDirectory"/>
+                      <Binding Path="IsExpanded"/>
+                    </MultiBinding>
+                  </Image.Source>
+                </Image>
+                <TextBox Text="{Binding Name}" VerticalAlignment="Center"/>
+              </StackPanel>
+            </DataTemplate>
+
           </TreeDataGrid.Resources>
           <TreeDataGrid.Styles>
             <Style Selector="TreeDataGrid TreeDataGridRow:nth-child(2n)">
-              <Setter Property="Background"  Value="#fff8f8f8"/>
+              <Setter Property="Background"  Value="#20808080"/>
             </Style>
           </TreeDataGrid.Styles>
+        </TreeDataGrid>
+      </DockPanel>
+    </TabItem>
+    <TabItem Header="Wikipedia">
+      <DockPanel>
+        <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
+        <TreeDataGrid Name="wikipedia" Source="{Binding Wikipedia.Source}">
+          <TreeDataGrid.Resources>
+            <DataTemplate x:Key="WikipediaImageCell">
+              <Image Source="{Binding Image}"/>
+            </DataTemplate>
+          </TreeDataGrid.Resources>
         </TreeDataGrid>
       </DockPanel>
     </TabItem>
