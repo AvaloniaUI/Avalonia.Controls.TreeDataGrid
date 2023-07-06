@@ -101,7 +101,7 @@ namespace Avalonia.Controls.Selection
                         var newIndex = hierarchicalRows.GetParentRowIndex(AnchorIndex);
                         UpdateSelection(sender, newIndex, true);
                         sender.RowsPresenter.BringIntoView(newIndex);
-                        FocusManager.Instance?.Focus(sender);
+                        sender.Focus();
                     }
 
                     if (!e.Handled && direction == NavigationDirection.Right
@@ -381,8 +381,8 @@ namespace Avalonia.Controls.Selection
         {
             var point = e.GetCurrentPoint(sender);
 
-            var commandModifiers = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.CommandModifiers;
-            var toggleModifier = commandModifiers is not null ? e.KeyModifiers.HasFlag(commandModifiers) : false;
+            var commandModifiers = TopLevel.GetTopLevel(sender)?.PlatformSettings?.HotkeyConfiguration.CommandModifiers;
+            var toggleModifier = commandModifiers is not null && e.KeyModifiers.HasFlag(commandModifiers);
             var isRightButton = point.Properties.PointerUpdateKind is PointerUpdateKind.RightButtonPressed or
                 PointerUpdateKind.RightButtonReleased;
 

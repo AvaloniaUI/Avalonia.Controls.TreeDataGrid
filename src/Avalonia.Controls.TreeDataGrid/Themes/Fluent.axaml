@@ -15,7 +15,7 @@
   </Style>
 
   <Style Selector=":is(TreeDataGridCell):selected">
-    <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource TreeDataGridSelectedCellBackgroundBrush}"/>
   </Style>
 
 </Styles>

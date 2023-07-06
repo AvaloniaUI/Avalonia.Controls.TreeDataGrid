@@ -26,7 +26,7 @@ namespace TreeDataGridDemo.Models
     {
         private const string UserAgent = @"AvaloniaTreeDataGridSample/1.0 (https://avaloniaui.net; team@avaloniaui.net)";
         private bool _loadedImage;
-        private IBitmap? _image;
+        private Bitmap? _image;
 
         public string? Type { get; set; }
         public OnThisDayTitles? Titles { get; set; }
@@ -34,7 +34,7 @@ namespace TreeDataGridDemo.Models
         public string? Description { get; set; }
         public string? Extract { get; set; }
 
-        public IBitmap? Image
+        public Bitmap? Image
         {
             get
             {

@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Headless.XUnit;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -15,14 +18,12 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
 {
     public class TreeDataGridRowsPresenterTests_VariableHeight
     {
-        [Theory]
+        [AvaloniaTheory(Timeout = 10000)]
         [InlineData(10)]
         [InlineData(20)]
         [InlineData(50)]
         public void Scroll_Down_To_Bottom(double step)
         {
-            using var app = App();
-
             var (target, scroll, _) = CreateTarget();
 
             Layout(target);
@@ -42,11 +43,9 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             }
         }
 
-        [Fact]
+        [AvaloniaFact]
         public void Scroll_To_Bottom()
         {
-            using var app = App();
-
             var (target, scroll, items) = CreateTarget();
 
             scroll.GetObservable(ScrollViewer.OffsetProperty).Subscribe(x => { });
@@ -113,7 +112,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 Content = target,
             };
 
-            var root = new TestRoot
+            var root = new TestWindow(scrollViewer, rootSize ?? new Size(100, 1000))
             {
                 Styles =
                 {
@@ -125,12 +124,8 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                         }
                     }
                 },
-                Child = scrollViewer,
                 Height = 1000,
             };
-
-            if (rootSize.HasValue)
-                root.ClientSize = rootSize.Value;
 
             if (additionalStyles != null)
             {
@@ -140,20 +135,15 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
                 }
             }
 
-            root.LayoutManager.ExecuteInitialLayoutPass();
+            root.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+
             return (target, scrollViewer, items);
         }
 
         private static void Layout(TreeDataGridRowsPresenter target)
         {
-            var root = (ILayoutRoot?)target.GetVisualRoot();
-            root?.LayoutManager.ExecuteLayoutPass();
-        }
-
-        private static IDisposable App()
-        {
-            var scope = AvaloniaLocator.EnterScope();
-            return scope;
+            target.UpdateLayout();
         }
 
         private class Model
