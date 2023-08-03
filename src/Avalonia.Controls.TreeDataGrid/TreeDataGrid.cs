@@ -71,6 +71,11 @@ namespace Avalonia.Controls
             RoutedEvent.Register<TreeDataGrid, TreeDataGridRowDragEventArgs>(
                 nameof(RowDrop),
                 RoutingStrategies.Bubble);
+        
+        public static readonly RoutedEvent<TreeDataGridRowDragEventArgs> AfterRowDropEvent =
+            RoutedEvent.Register<TreeDataGrid, TreeDataGridRowDragEventArgs>(
+                nameof(AfterRowDrop),
+                RoutingStrategies.Bubble);
 
         private const double AutoScrollMargin = 60;
         private const int AutoScrollSpeed = 50;
@@ -228,6 +233,12 @@ namespace Avalonia.Controls
         }
 
         public event EventHandler<TreeDataGridRowDragEventArgs>? RowDrop
+        {
+            add => AddHandler(RowDropEvent, value!);
+            remove => RemoveHandler(RowDropEvent, value!);
+        }
+        
+        public event EventHandler<TreeDataGridRowDragEventArgs>? AfterRowDrop
         {
             add => AddHandler(RowDropEvent, value!);
             remove => RemoveHandler(RowDropEvent, value!);
@@ -694,6 +705,14 @@ namespace Avalonia.Controls
             {
                 var targetIndex = _source.Rows.RowIndexToModelIndex(row.RowIndex);
                 _source.DragDropRows(_source, data!.Indexes, targetIndex, position, e.DragEffects);
+                
+                var afterDropRoute = BuildEventRoute(RowDropEvent);
+                if (afterDropRoute.HasHandlers)
+                {
+                    var ev = new TreeDataGridRowDragEventArgs(AfterRowDropEvent, row, e);
+                    ev.Position = position;
+                    RaiseEvent(ev);
+                }
             }
         }
 
