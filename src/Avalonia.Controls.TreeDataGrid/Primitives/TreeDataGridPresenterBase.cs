@@ -32,7 +32,7 @@ namespace Avalonia.Controls.Primitives
                 (o, v) => o.Items = v);
 #pragma warning restore AVP1002
         private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
-        private readonly Action<Control, int> _recycleElement;
+        //private readonly Action<Control, int> _recycleElement;
         private readonly Action<Control> _recycleElementOnItemRemoved;
         private readonly Action<Control, int, int> _updateElementIndex;
         private int _scrollToIndex = -1;
@@ -45,12 +45,12 @@ namespace Avalonia.Controls.Primitives
         private RealizedStackElements? _realizedElements;
         private ScrollViewer? _scrollViewer;
         private double _lastEstimatedElementSizeU = 25;
-        private Control? _unrealizedFocusedElement;
-        private int _unrealizedFocusedIndex = -1;
+        //private Control? _unrealizedFocusedElement;
+        //private int _unrealizedFocusedIndex = -1;
 
         public TreeDataGridPresenterBase()
         {
-            _recycleElement = RecycleElement;
+            //_recycleElement = RecycleElement;
             _recycleElementOnItemRemoved = RecycleElementOnItemRemoved;
             _updateElementIndex = UpdateElementIndex;
             EffectiveViewportChanged += OnEffectiveViewportChanged;
@@ -175,7 +175,7 @@ namespace Avalonia.Controls.Primitives
 
         public Control? TryGetElement(int index) => GetRealizedElement(index);
 
-        internal void RecycleAllElements() => _realizedElements?.RecycleAllElements(_recycleElement);
+        internal void RecycleAllElements() => _realizedElements?.RecycleAllElements(_recycleElementOnItemRemoved);
 
         protected virtual Rect ArrangeElement(int index, Control element, Rect rect)
         {
@@ -304,7 +304,7 @@ namespace Avalonia.Controls.Primitives
 
                 // If the viewport is disjunct then we can recycle everything.
                 if (viewport.viewportIsDisjunct)
-                    _realizedElements.RecycleAllElements(_recycleElement);
+                    _realizedElements.RecycleAllElements(_recycleElementOnItemRemoved);
 
                 // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
                 // write to _realizedElements yet, only _measureElements.
@@ -443,7 +443,7 @@ namespace Avalonia.Controls.Primitives
             // If the anchor element is at the beginning of, or before, the start of the viewport
             // then we can recycle all elements before it.
             if (u <= viewport.anchorU)
-                _realizedElements.RecycleElementsBefore(viewport.anchorIndex, _recycleElement);
+                _realizedElements.RecycleElementsBefore(viewport.anchorIndex, _recycleElementOnItemRemoved);
 
             // Start at the anchor element and move forwards, realizing elements.
             do
@@ -467,7 +467,7 @@ namespace Avalonia.Controls.Primitives
             viewport.realizedEndU = u;
 
             // We can now recycle elements after the last element.
-            _realizedElements.RecycleElementsAfter(viewport.lastIndex, _recycleElement);
+            _realizedElements.RecycleElementsAfter(viewport.lastIndex, _recycleElementOnItemRemoved);
 
             // Next move backwards from the anchor element, realizing elements.
             index = viewport.anchorIndex - 1;
@@ -489,7 +489,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             // We can now recycle elements before the first element.
-            _realizedElements.RecycleElementsBefore(index + 1, _recycleElement);
+            _realizedElements.RecycleElementsBefore(index + 1, _recycleElementOnItemRemoved);
         }
 
         private Size CalculateDesiredSize(Orientation orientation, int itemCount, in MeasureViewport viewport)
@@ -604,20 +604,27 @@ namespace Avalonia.Controls.Primitives
                 double.IsFinite(availableSize.Height) ? availableSize.Height : 0); 
         }
 
+        [Obsolete($"Use {nameof(RecycleElementOnItemRemoved)} instead")]
         private void RecycleElement(Control element, int index)
         {
-            if (element.IsKeyboardFocusWithin)
-            {
-                _unrealizedFocusedElement = element;
-                _unrealizedFocusedIndex = index;
-                _unrealizedFocusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
-            }
-            else
-            {
-                UnrealizeElement(element);
-                element.IsVisible = false;
-                ElementFactory!.RecycleElement(element);
-            }
+            RecycleElementOnItemRemoved(element);
+            
+            //if (element.IsKeyboardFocusWithin)
+            //{
+            //    // This optimization does not work correctly!
+            //    // Because of this the selected object is not reset during redrawing
+            //    // Look at 'Realized' count on Debug console
+            //    //
+            //    _unrealizedFocusedElement = element;
+            //    _unrealizedFocusedIndex = index;
+            //    _unrealizedFocusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
+            //}
+            //else
+            //{
+            //    UnrealizeElement(element);
+            //    element.IsVisible = false;
+            //    ElementFactory!.RecycleElement(element);
+            //}
         }
 
         private void RecycleElementOnItemRemoved(Control element)
@@ -673,16 +680,16 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void OnUnrealizedFocusedElementLostFocus(object? sender, RoutedEventArgs e)
-        {
-            if (_unrealizedFocusedElement is null || sender != _unrealizedFocusedElement)
-                return;
+        //private void OnUnrealizedFocusedElementLostFocus(object? sender, RoutedEventArgs e)
+        //{
+        //    if (_unrealizedFocusedElement is null || sender != _unrealizedFocusedElement)
+        //        return;
 
-            _unrealizedFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
-            RecycleElement(_unrealizedFocusedElement, _unrealizedFocusedIndex);
-            _unrealizedFocusedElement = null;
-            _unrealizedFocusedIndex = -1;
-        }
+        //    _unrealizedFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
+        //    RecycleElement(_unrealizedFocusedElement, _unrealizedFocusedIndex);
+        //    _unrealizedFocusedElement = null;
+        //    _unrealizedFocusedIndex = -1;
+        //}
 
         private static bool HasInfinity(Size s) => double.IsInfinity(s.Width) || double.IsInfinity(s.Height);
 

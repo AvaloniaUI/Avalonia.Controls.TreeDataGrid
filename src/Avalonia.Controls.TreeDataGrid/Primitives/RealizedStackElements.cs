@@ -412,7 +412,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="index">The index in the source collection of new first element.</param>
         /// <param name="recycleElement">A method used to recycle elements.</param>
-        public void RecycleElementsBefore(int index, Action<Control, int> recycleElement)
+        public void RecycleElementsBefore(int index, Action<Control> recycleElement)
         {
             if (index <= FirstIndex || _elements is null || _elements.Count == 0)
                 return;
@@ -430,7 +430,7 @@ namespace Avalonia.Controls.Primitives
                     if (_elements[i] is Control e)
                     {
                         _elements[i] = null;
-                        recycleElement(e, i + FirstIndex);
+                        recycleElement(e);
                     }
                 }
 
@@ -445,7 +445,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="index">The index in the source collection of new last element.</param>
         /// <param name="recycleElement">A method used to recycle elements.</param>
-        public void RecycleElementsAfter(int index, Action<Control, int> recycleElement)
+        public void RecycleElementsAfter(int index, Action<Control> recycleElement)
         {
             if (index >= LastIndex || _elements is null || _elements.Count == 0)
                 return;
@@ -464,7 +464,7 @@ namespace Avalonia.Controls.Primitives
                     if (_elements[i] is Control e)
                     {
                         _elements[i] = null;
-                        recycleElement(e, i + FirstIndex);
+                        recycleElement(e);
                     }
                 }
 
@@ -477,7 +477,7 @@ namespace Avalonia.Controls.Primitives
         /// Recycles all realized elements.
         /// </summary>
         /// <param name="recycleElement">A method used to recycle elements.</param>
-        public void RecycleAllElements(Action<Control, int> recycleElement)
+        public void RecycleAllElements(Action<Control> recycleElement)
         {
             if (_elements is null || _elements.Count == 0)
                 return;
@@ -487,7 +487,7 @@ namespace Avalonia.Controls.Primitives
                 if (_elements[i] is Control e)
                 {
                     _elements[i] = null;
-                    recycleElement(e, i + FirstIndex);
+                    recycleElement(e);
                 }
             }
 
