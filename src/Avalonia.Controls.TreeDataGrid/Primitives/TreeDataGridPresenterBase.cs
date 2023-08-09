@@ -32,7 +32,6 @@ namespace Avalonia.Controls.Primitives
                 (o, v) => o.Items = v);
 #pragma warning restore AVP1002
         private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
-        //private readonly Action<Control, int> _recycleElement;
         private readonly Action<Control> _recycleElementOnItemRemoved;
         private readonly Action<Control, int, int> _updateElementIndex;
         private int _scrollToIndex = -1;
@@ -45,8 +44,6 @@ namespace Avalonia.Controls.Primitives
         private RealizedStackElements? _realizedElements;
         private ScrollViewer? _scrollViewer;
         private double _lastEstimatedElementSizeU = 25;
-        //private Control? _unrealizedFocusedElement;
-        //private int _unrealizedFocusedIndex = -1;
 
         public TreeDataGridPresenterBase()
         {
@@ -604,29 +601,6 @@ namespace Avalonia.Controls.Primitives
                 double.IsFinite(availableSize.Height) ? availableSize.Height : 0); 
         }
 
-        [Obsolete($"Use {nameof(RecycleElementOnItemRemoved)} instead")]
-        private void RecycleElement(Control element, int index)
-        {
-            RecycleElementOnItemRemoved(element);
-            
-            //if (element.IsKeyboardFocusWithin)
-            //{
-            //    // This optimization does not work correctly!
-            //    // Because of this the selected object is not reset during redrawing
-            //    // Look at 'Realized' count on Debug console
-            //    //
-            //    _unrealizedFocusedElement = element;
-            //    _unrealizedFocusedIndex = index;
-            //    _unrealizedFocusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
-            //}
-            //else
-            //{
-            //    UnrealizeElement(element);
-            //    element.IsVisible = false;
-            //    ElementFactory!.RecycleElement(element);
-            //}
-        }
-
         private void RecycleElementOnItemRemoved(Control element)
         {
             UnrealizeElement(element);
@@ -679,17 +653,6 @@ namespace Avalonia.Controls.Primitives
                     break;
             }
         }
-
-        //private void OnUnrealizedFocusedElementLostFocus(object? sender, RoutedEventArgs e)
-        //{
-        //    if (_unrealizedFocusedElement is null || sender != _unrealizedFocusedElement)
-        //        return;
-
-        //    _unrealizedFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
-        //    RecycleElement(_unrealizedFocusedElement, _unrealizedFocusedIndex);
-        //    _unrealizedFocusedElement = null;
-        //    _unrealizedFocusedIndex = -1;
-        //}
 
         private static bool HasInfinity(Size s) => double.IsInfinity(s.Width) || double.IsInfinity(s.Height);
 

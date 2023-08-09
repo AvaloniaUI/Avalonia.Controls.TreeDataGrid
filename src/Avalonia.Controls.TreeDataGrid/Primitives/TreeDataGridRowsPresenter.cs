@@ -17,7 +17,6 @@ namespace Avalonia.Controls.Primitives
                 (o, v) => o.Columns = v);
 
         private IColumns? _columns;
-        private int _realizedCount;
 
         public event EventHandler<ChildIndexChangedEventArgs>? ChildIndexChanged;
 
@@ -36,9 +35,6 @@ namespace Avalonia.Controls.Primitives
 
         protected override void RealizeElement(Control element, IRow rowModel, int index)
         {
-            _realizedCount++;
-            Debug.WriteLine($"\t\t/-------{Environment.TickCount64}: {nameof(RealizeElement)} \t--- Realized: {_realizedCount}");
-
             var row = (TreeDataGridRow)element;
             row.Realize(ElementFactory, GetSelection(), Columns, (IRows?)Items, index);
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
@@ -52,9 +48,6 @@ namespace Avalonia.Controls.Primitives
 
         protected override void UnrealizeElement(Control element)
         {
-            _realizedCount--;
-            Debug.WriteLine($"\t\t/-------{Environment.TickCount64}: {nameof(UnrealizeElement)} \t--- Realized: {_realizedCount}");
-
             ((TreeDataGridRow)element).Unrealize();
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, ((TreeDataGridRow)element).RowIndex));
         }
