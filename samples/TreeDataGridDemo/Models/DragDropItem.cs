@@ -11,6 +11,7 @@ namespace TreeDataGridDemo.Models
         private ObservableCollection<DragDropItem>? _children;
         private bool _allowDrag = true;
         private bool _allowDrop = true;
+        private bool _isExpanded;
 
         public DragDropItem(string name) => Name = name;
         public string Name { get; }
@@ -25,6 +26,12 @@ namespace TreeDataGridDemo.Models
         {
             get => _allowDrop;
             set => this.RaiseAndSetIfChanged(ref _allowDrop, value);
+        }
+
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
         }
 
         public ObservableCollection<DragDropItem> Children => _children ??= CreateRandomItems();
