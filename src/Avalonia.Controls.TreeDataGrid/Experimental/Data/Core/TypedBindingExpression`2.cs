@@ -310,15 +310,7 @@ namespace Avalonia.Experimental.Data.Core
         {
             if (sender is null)
                 return;
-
-            var index = ChainIndexOf(sender);
-
-            if (index != -1)
-            {
-                StopListeningToChain(index);
-                ListenToChain(index);
-            }
-
+            
             PublishValue();
         }
 
