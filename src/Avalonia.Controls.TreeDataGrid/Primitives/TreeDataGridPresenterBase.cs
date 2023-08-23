@@ -591,7 +591,9 @@ namespace Avalonia.Controls.Primitives
             {
                 if (!c.Bounds.Equals(default) && c.TransformToVisual(this) is Matrix transform)
                 {
-                    return new Rect(0, 0, c.Bounds.Width, c.Bounds.Height).TransformToAABB(transform);
+                    return new Rect(0, 0, c.Bounds.Width, c.Bounds.Height)
+                        .TransformToAABB(transform)
+                        .Intersect(new(0, 0, double.PositiveInfinity, double.PositiveInfinity));
                 }
 
                 c = c?.GetVisualParent();
