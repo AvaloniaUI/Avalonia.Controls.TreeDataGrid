@@ -100,8 +100,7 @@ namespace Avalonia.Controls.Selection
                     {
                         var newIndex = hierarchicalRows.GetParentRowIndex(AnchorIndex);
                         UpdateSelection(sender, newIndex, true);
-                        sender.RowsPresenter.BringIntoView(newIndex);
-                        sender.Focus();
+                        FocusRow(sender, sender.RowsPresenter.BringIntoView(newIndex));
                     }
 
                     if (!e.Handled && direction == NavigationDirection.Right
@@ -223,8 +222,7 @@ namespace Avalonia.Controls.Selection
             void UpdateSelectionAndBringIntoView(int newIndex)
             {
                 UpdateSelection(sender, newIndex, true);
-                sender.RowsPresenter?.BringIntoView(newIndex);
-                sender.Focus();
+                FocusRow(sender, sender.RowsPresenter?.BringIntoView(newIndex));
                 e.Handled = true;
             }
 
@@ -533,12 +531,41 @@ namespace Avalonia.Controls.Selection
             if (newRowIndex != currentRowIndex)
             {
                 treeDataGrid.RowsPresenter?.BringIntoView(newRowIndex);
-                treeDataGrid.TryGetRow(newRowIndex)?.Focus();
+                FocusRow(treeDataGrid, treeDataGrid.TryGetRow(newRowIndex));
                 return true;
             }
             else
             {
                 return false;
+            }
+        }
+
+        private static void FocusRow(TreeDataGrid owner, Control? control)
+        {
+            if (!owner.TryGetRow(control, out var row) || row.CellsPresenter is null)
+                return;
+
+            // Get the column index of the currently focused cell if possible: we'll try to focus the
+            // same column in the new row.
+            if (TopLevel.GetTopLevel(owner)?.FocusManager is { } focusManager &&
+                focusManager.GetFocusedElement() is Control currentFocus &&
+                owner.TryGetCell(currentFocus, out var currentCell) &&
+                row.TryGetCell(currentCell.ColumnIndex) is { }  newCell &&
+                newCell.Focusable)
+            {
+                newCell.Focus();
+            }
+            else
+            {
+                // Otherwise, just focus the first focusable cell in the row.
+                foreach (var cell in row.CellsPresenter.GetRealizedElements())
+                {
+                    if (cell.Focusable)
+                    {
+                        cell.Focus();
+                        break;
+                    }
+                }
             }
         }
     }
