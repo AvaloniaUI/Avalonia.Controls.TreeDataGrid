@@ -251,7 +251,7 @@ namespace Avalonia.Controls
             return RowsPresenter?.TryGetElement(rowIndex) as TreeDataGridRow;
         }
 
-        public bool TryGetCell(Control? element, [MaybeNullWhen(false)] out TreeDataGridCell result)
+        public bool TryGetCell(Control? element, [NotNullWhen(true)] out TreeDataGridCell? result)
         {
             if (element.FindAncestorOfType<TreeDataGridCell>(true) is { } cell &&
                 cell.ColumnIndex >= 0 &&
@@ -265,7 +265,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        public bool TryGetRow(Control? element, [MaybeNullWhen(false)] out TreeDataGridRow result)
+        public bool TryGetRow(Control? element, [NotNullWhen(true)] out TreeDataGridRow? result)
         {
             if (element is TreeDataGridRow row && row.RowIndex >= 0)
             {
@@ -284,7 +284,8 @@ namespace Avalonia.Controls
             return result is not null;
         }
 
-        public bool TryGetRowModel<TModel>(Control element, [MaybeNullWhen(false)] out TModel result)
+        public bool TryGetRowModel<TModel>(Control element, [NotNullWhen(true)] out TModel? result)
+            where TModel : notnull
         {
             if (Source is object &&
                 TryGetRow(element, out var row) &&
