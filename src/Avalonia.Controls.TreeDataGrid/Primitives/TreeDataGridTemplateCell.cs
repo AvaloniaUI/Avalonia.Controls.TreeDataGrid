@@ -124,17 +124,27 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnLostFocus(RoutedEventArgs e) => EndEditIfFocusLost();
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            if (EndEditIfFocusLost())
+            {
+                base.OnLostFocus(e);
+            }
+        }
+
         private void EditingContentPresenterLostFocus(object? sender, RoutedEventArgs e) => EndEditIfFocusLost();
 
-        private void EndEditIfFocusLost()
+        private bool EndEditIfFocusLost()
         {
             if (TopLevel.GetTopLevel(this) is { } topLevel &&
                 topLevel?.FocusManager?.GetFocusedElement() is Control newFocus &&
                 !IsDescendent(newFocus))
             {
                 EndEdit();
+                return true;
             }
+
+            return false;
         }
 
         private bool IsDescendent(Control c)

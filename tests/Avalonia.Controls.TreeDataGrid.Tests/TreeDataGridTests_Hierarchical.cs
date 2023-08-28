@@ -98,6 +98,38 @@ namespace Avalonia.Controls.TreeDataGridTests
         }
 
         [AvaloniaFact(Timeout = 10000)]
+        public void RowIndexes_Should_Be_Correct_After_Expanding_Node_While_Scrolled()
+        {
+            var (target, source) = CreateTarget();
+            var items = (IList<Model>)source.Items;
+            var children = items[0].Children![1].Children = new AvaloniaList<Model>
+            {
+                new Model { Id = -1, Title = "First" }
+            };
+
+            source.Expand(0);
+            target.Scroll!.Offset = new Vector(0, 20);
+            Layout(target);
+            
+            var rowIndexes = target.RowsPresenter!.RealizedElements
+                .OfType<TreeDataGridRow>()
+                .Select(x => x.RowIndex)
+                .ToList();
+
+            Assert.Equal(Enumerable.Range(2, 10), rowIndexes);
+
+            source.Expand(new IndexPath(0, 1));
+            Layout(target);
+
+            rowIndexes = target.RowsPresenter!.RealizedElements
+                .OfType<TreeDataGridRow>()
+                .Select(x => x.RowIndex)
+                .ToList();
+
+            Assert.Equal(Enumerable.Range(2, 10), rowIndexes);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
         public void Should_Subscribe_To_Models_For_Initial_Rows()
         {
             var (target, source) = CreateTarget();
