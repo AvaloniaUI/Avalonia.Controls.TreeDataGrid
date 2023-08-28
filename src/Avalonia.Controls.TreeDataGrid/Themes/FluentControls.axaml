@@ -44,7 +44,8 @@
                           DockPanel.Dock="Top"
                           IsVisible="{TemplateBinding ShowColumnHeaders}"
                           HorizontalScrollBarVisibility="Hidden"
-                          VerticalScrollBarVisibility="Disabled">
+                          VerticalScrollBarVisibility="Disabled"
+                          BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
               <Border x:Name="ColumnHeadersPresenterBorder">
                 <TreeDataGridColumnHeadersPresenter Name="PART_ColumnHeadersPresenter"
                                                     ElementFactory="{TemplateBinding ElementFactory}"
@@ -52,7 +53,8 @@
               </Border>
             </ScrollViewer>
             <ScrollViewer Name="PART_ScrollViewer"
-                          HorizontalScrollBarVisibility="Auto">
+                          HorizontalScrollBarVisibility="Auto"
+                          BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
               <TreeDataGridRowsPresenter Name="PART_RowsPresenter"
                                          Columns="{TemplateBinding Columns}"
                                          ElementFactory="{TemplateBinding ElementFactory}"

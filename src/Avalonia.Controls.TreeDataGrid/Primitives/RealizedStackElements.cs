@@ -286,7 +286,7 @@ namespace Avalonia.Controls.Primitives
                 for (var i = start; i < elementCount; ++i)
                 {
                     if (_elements[i] is Control element)
-                        updateElementIndex(element, newIndex - count, newIndex);
+                        updateElementIndex(element, (newIndex - count) + first, newIndex + first);
                     ++newIndex;
                 }
 
