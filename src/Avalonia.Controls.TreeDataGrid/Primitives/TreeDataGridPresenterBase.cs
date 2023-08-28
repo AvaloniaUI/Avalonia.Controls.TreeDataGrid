@@ -177,6 +177,15 @@ namespace Avalonia.Controls.Primitives
 
         internal void RecycleAllElements() => _realizedElements?.RecycleAllElements(_recycleElement);
 
+        internal void RecycleAllElementsOnItemRemoved()
+        {
+            _realizedElements?.ItemsRemoved(
+                _realizedElements.FirstIndex,
+                _realizedElements.Count,
+                _updateElementIndex, 
+                _recycleElementOnItemRemoved);
+        }
+
         protected virtual Rect ArrangeElement(int index, Control element, Rect rect)
         {
             element.Arrange(rect);
@@ -427,6 +436,11 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected virtual void UnrealizeElementOnItemRemoved(Control element)
+        {
+            UnrealizeElement(element);
+        }
+
         private void RealizeElements(
             IReadOnlyList<TItem> items,
             Size availableSize,
@@ -643,7 +657,7 @@ namespace Avalonia.Controls.Primitives
 
         private void RecycleElementOnItemRemoved(Control element)
         {
-            UnrealizeElement(element);
+            UnrealizeElementOnItemRemoved(element);
             element.IsVisible = false;
             ElementFactory!.RecycleElement(element);
         }
