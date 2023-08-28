@@ -111,7 +111,7 @@ namespace Avalonia.Controls.Primitives
             {
                 // Create and measure the element to be brought into view. Store it in a field so that
                 // it can be re-used in the layout pass.
-                _scrollToElement = GetOrCreateElement(items, index);
+                var scrollToElement = _scrollToElement = GetOrCreateElement(items, index);
                 _scrollToElement.Measure(Size.Infinity);
                 _scrollToIndex = index;
 
@@ -156,7 +156,7 @@ namespace Avalonia.Controls.Primitives
                     UpdateLayout();
                 }
 
-                var result = _scrollToElement;
+                var result = scrollToElement;
                 _scrollToElement = null;
                 _scrollToIndex = -1;
                 return result;
