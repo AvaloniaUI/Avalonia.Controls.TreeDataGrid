@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
@@ -106,7 +107,6 @@ namespace Avalonia.Controls.Primitives
             IsSelected = false;
             CellsPresenter?.Unrealize();
         }
-
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             _treeDataGrid = this.FindLogicalAncestorOfType<TreeDataGrid>();
@@ -176,6 +176,15 @@ namespace Avalonia.Controls.Primitives
         {
             IsSelected = selection?.IsRowSelected(RowIndex) ?? false;
             CellsPresenter?.UpdateSelection(selection);
+        }
+
+        public void UnrealizeOnItemRemoved()
+        {
+            _treeDataGrid?.RaiseRowClearing(this, RowIndex);
+            RowIndex = -1;
+            DataContext = null;
+            IsSelected = false;
+            CellsPresenter?.UnrealizeOnRowRemoved();
         }
     }
 }

@@ -98,6 +98,38 @@ namespace Avalonia.Controls.TreeDataGridTests
         }
 
         [AvaloniaFact(Timeout = 10000)]
+        public void RowIndexes_Should_Be_Correct_After_Expanding_Node_While_Scrolled()
+        {
+            var (target, source) = CreateTarget();
+            var items = (IList<Model>)source.Items;
+            var children = items[0].Children![1].Children = new AvaloniaList<Model>
+            {
+                new Model { Id = -1, Title = "First" }
+            };
+
+            source.Expand(0);
+            target.Scroll!.Offset = new Vector(0, 20);
+            Layout(target);
+            
+            var rowIndexes = target.RowsPresenter!.RealizedElements
+                .OfType<TreeDataGridRow>()
+                .Select(x => x.RowIndex)
+                .ToList();
+
+            Assert.Equal(Enumerable.Range(2, 10), rowIndexes);
+
+            source.Expand(new IndexPath(0, 1));
+            Layout(target);
+
+            rowIndexes = target.RowsPresenter!.RealizedElements
+                .OfType<TreeDataGridRow>()
+                .Select(x => x.RowIndex)
+                .ToList();
+
+            Assert.Equal(Enumerable.Range(2, 10), rowIndexes);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
         public void Should_Subscribe_To_Models_For_Initial_Rows()
         {
             var (target, source) = CreateTarget();
@@ -423,6 +455,33 @@ namespace Avalonia.Controls.TreeDataGridTests
             ((AvaloniaList<Model>)source.Items)[0].Children!.RemoveAt(3);
 
             Assert.Equal(-1, target.RowSelection.SelectedIndex);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Recycle_Focused_Cell_When_Row_Collapsed()
+        {
+            // Issue #210.
+            var (target, source) = CreateTarget();
+
+            source.Expand(new IndexPath(0));
+            Layout(target);
+
+            Assert.Equal(10, target.RowsPresenter!.RealizedElements.Count);
+            var row = Assert.IsType<TreeDataGridRow>(target.TryGetRow(1));
+            var cell = Assert.IsType<TreeDataGridExpanderCell>(row.TryGetCell(0));
+
+            Assert.Equal(1, cell.RowIndex);
+            
+            cell.Focus();
+
+            source.Collapse(new IndexPath(0));
+
+            Assert.Equal(-1, row.RowIndex);
+
+            // At this point, the cell should have been recycled and should have a row index of -1,
+            // otherwise it can may recyled in a subsequent layout pass and the cell will not
+            // be updated correctly.
+            Assert.Equal(-1, cell.RowIndex);
         }
 
         private static (TreeDataGrid, HierarchicalTreeDataGridSource<Model>) CreateTarget(

@@ -45,8 +45,8 @@ namespace Avalonia.Controls.Primitives
         private RealizedStackElements? _realizedElements;
         private ScrollViewer? _scrollViewer;
         private double _lastEstimatedElementSizeU = 25;
-        private Control? _unrealizedFocusedElement;
-        private int _unrealizedFocusedIndex = -1;
+        private Control? _focusedElement;
+        private int _focusedIndex = -1;
 
         public TreeDataGridPresenterBase()
         {
@@ -111,7 +111,7 @@ namespace Avalonia.Controls.Primitives
             {
                 // Create and measure the element to be brought into view. Store it in a field so that
                 // it can be re-used in the layout pass.
-                _scrollToElement = GetOrCreateElement(items, index);
+                var scrollToElement = _scrollToElement = GetOrCreateElement(items, index);
                 _scrollToElement.Measure(Size.Infinity);
                 _scrollToIndex = index;
 
@@ -156,7 +156,7 @@ namespace Avalonia.Controls.Primitives
                     UpdateLayout();
                 }
 
-                var result = _scrollToElement;
+                var result = scrollToElement;
                 _scrollToElement = null;
                 _scrollToIndex = -1;
                 return result;
@@ -176,6 +176,15 @@ namespace Avalonia.Controls.Primitives
         public Control? TryGetElement(int index) => GetRealizedElement(index);
 
         internal void RecycleAllElements() => _realizedElements?.RecycleAllElements(_recycleElement);
+
+        internal void RecycleAllElementsOnItemRemoved()
+        {
+            _realizedElements?.ItemsRemoved(
+                _realizedElements.FirstIndex,
+                _realizedElements.Count,
+                _updateElementIndex, 
+                _recycleElementOnItemRemoved);
+        }
 
         protected virtual Rect ArrangeElement(int index, Control element, Rect rect)
         {
@@ -427,6 +436,11 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected virtual void UnrealizeElementOnItemRemoved(Control element)
+        {
+            UnrealizeElement(element);
+        }
+
         private void RealizeElements(
             IReadOnlyList<TItem> items,
             Size availableSize,
@@ -542,15 +556,34 @@ namespace Avalonia.Controls.Primitives
 
         private Control GetOrCreateElement(IReadOnlyList<TItem> items, int index)
         {
-            var e = GetRealizedElement(index) ?? GetRecycledOrCreateElement(items, index);
+            var e = GetRealizedElement(index) ??
+                GetRealizedElement(index, ref _focusedIndex, ref _focusedElement) ??
+                GetRealizedElement(index, ref _scrollToIndex, ref _scrollToElement) ??
+                GetRecycledOrCreateElement(items, index);
             return e;
         }
 
         private Control? GetRealizedElement(int index)
         {
-            if (_scrollToIndex == index)
-                return _scrollToElement;
             return _realizedElements?.GetElement(index);
+        }
+
+        private static Control? GetRealizedElement(
+            int index,
+            ref int specialIndex,
+            ref Control? specialElement)
+        {
+            if (specialIndex == index)
+            {
+                Debug.Assert(specialElement is not null);
+
+                var result = specialElement;
+                specialIndex = -1;
+                specialElement = null;
+                return result;
+            }
+
+            return null;
         }
 
         private Control GetRecycledOrCreateElement(IReadOnlyList<TItem> items, int index)
@@ -610,9 +643,9 @@ namespace Avalonia.Controls.Primitives
         {
             if (element.IsKeyboardFocusWithin)
             {
-                _unrealizedFocusedElement = element;
-                _unrealizedFocusedIndex = index;
-                _unrealizedFocusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
+                _focusedElement = element;
+                _focusedIndex = index;
+                _focusedElement.LostFocus += OnUnrealizedFocusedElementLostFocus;
             }
             else
             {
@@ -624,7 +657,7 @@ namespace Avalonia.Controls.Primitives
 
         private void RecycleElementOnItemRemoved(Control element)
         {
-            UnrealizeElement(element);
+            UnrealizeElementOnItemRemoved(element);
             element.IsVisible = false;
             ElementFactory!.RecycleElement(element);
         }
@@ -677,13 +710,13 @@ namespace Avalonia.Controls.Primitives
 
         private void OnUnrealizedFocusedElementLostFocus(object? sender, RoutedEventArgs e)
         {
-            if (_unrealizedFocusedElement is null || sender != _unrealizedFocusedElement)
+            if (_focusedElement is null || sender != _focusedElement)
                 return;
 
-            _unrealizedFocusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
-            RecycleElement(_unrealizedFocusedElement, _unrealizedFocusedIndex);
-            _unrealizedFocusedElement = null;
-            _unrealizedFocusedIndex = -1;
+            _focusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
+            RecycleElement(_focusedElement, _focusedIndex);
+            _focusedElement = null;
+            _focusedIndex = -1;
         }
 
         private static bool HasInfinity(Size s) => double.IsInfinity(s.Width) || double.IsInfinity(s.Height);
