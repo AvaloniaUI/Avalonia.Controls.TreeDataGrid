@@ -51,6 +51,12 @@ namespace Avalonia.Controls.Primitives
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, ((TreeDataGridRow)element).RowIndex));
         }
 
+        protected override void UnrealizeElementOnItemRemoved(Control element)
+        {
+            ((TreeDataGridRow)element).UnrealizeOnItemRemoved();
+            ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, ((TreeDataGridRow)element).RowIndex));
+        }
+
         protected override Size ArrangeOverride(Size finalSize)
         {
             Columns?.CommitActualWidths();

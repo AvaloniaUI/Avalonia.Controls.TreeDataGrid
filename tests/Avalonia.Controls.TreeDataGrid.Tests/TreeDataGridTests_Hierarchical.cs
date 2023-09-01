@@ -457,6 +457,33 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(-1, target.RowSelection.SelectedIndex);
         }
 
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Recycle_Focused_Cell_When_Row_Collapsed()
+        {
+            // Issue #210.
+            var (target, source) = CreateTarget();
+
+            source.Expand(new IndexPath(0));
+            Layout(target);
+
+            Assert.Equal(10, target.RowsPresenter!.RealizedElements.Count);
+            var row = Assert.IsType<TreeDataGridRow>(target.TryGetRow(1));
+            var cell = Assert.IsType<TreeDataGridExpanderCell>(row.TryGetCell(0));
+
+            Assert.Equal(1, cell.RowIndex);
+            
+            cell.Focus();
+
+            source.Collapse(new IndexPath(0));
+
+            Assert.Equal(-1, row.RowIndex);
+
+            // At this point, the cell should have been recycled and should have a row index of -1,
+            // otherwise it can may recyled in a subsequent layout pass and the cell will not
+            // be updated correctly.
+            Assert.Equal(-1, cell.RowIndex);
+        }
+
         private static (TreeDataGrid, HierarchicalTreeDataGridSource<Model>) CreateTarget(
             IEnumerable<IColumn<Model>>? columns = null,
             bool runLayout = true)
