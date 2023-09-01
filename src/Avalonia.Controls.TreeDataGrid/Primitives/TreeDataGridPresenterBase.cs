@@ -359,7 +359,7 @@ namespace Avalonia.Controls.Primitives
         protected override Size ArrangeOverride(Size finalSize)
         {
             if (_realizedElements is null)
-                return default;
+                return finalSize;
 
             _isInLayout = true;
 
