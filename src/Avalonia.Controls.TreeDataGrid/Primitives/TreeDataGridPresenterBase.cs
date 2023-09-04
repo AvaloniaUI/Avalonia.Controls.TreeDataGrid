@@ -179,11 +179,14 @@ namespace Avalonia.Controls.Primitives
 
         internal void RecycleAllElementsOnItemRemoved()
         {
-            _realizedElements?.ItemsRemoved(
-                _realizedElements.FirstIndex,
-                _realizedElements.Count,
-                _updateElementIndex, 
-                _recycleElementOnItemRemoved);
+            if (_realizedElements?.Count > 0)
+            {
+                _realizedElements?.ItemsRemoved(
+                    _realizedElements.FirstIndex,
+                    _realizedElements.Count,
+                    _updateElementIndex,
+                    _recycleElementOnItemRemoved);
+            }
         }
 
         protected virtual Rect ArrangeElement(int index, Control element, Rect rect)
