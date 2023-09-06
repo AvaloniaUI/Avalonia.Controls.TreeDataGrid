@@ -111,7 +111,7 @@ namespace Avalonia.Controls.Primitives
             {
                 // Create and measure the element to be brought into view. Store it in a field so that
                 // it can be re-used in the layout pass.
-                _scrollToElement = GetOrCreateElement(items, index);
+                var scrollToElement = _scrollToElement = GetOrCreateElement(items, index);
                 _scrollToElement.Measure(Size.Infinity);
                 _scrollToIndex = index;
 
@@ -156,7 +156,7 @@ namespace Avalonia.Controls.Primitives
                     UpdateLayout();
                 }
 
-                var result = _scrollToElement;
+                var result = scrollToElement;
                 _scrollToElement = null;
                 _scrollToIndex = -1;
                 return result;
@@ -176,6 +176,18 @@ namespace Avalonia.Controls.Primitives
         public Control? TryGetElement(int index) => GetRealizedElement(index);
 
         internal void RecycleAllElements() => _realizedElements?.RecycleAllElements(_recycleElement);
+
+        internal void RecycleAllElementsOnItemRemoved()
+        {
+            if (_realizedElements?.Count > 0)
+            {
+                _realizedElements?.ItemsRemoved(
+                    _realizedElements.FirstIndex,
+                    _realizedElements.Count,
+                    _updateElementIndex,
+                    _recycleElementOnItemRemoved);
+            }
+        }
 
         protected virtual Rect ArrangeElement(int index, Control element, Rect rect)
         {
@@ -350,7 +362,7 @@ namespace Avalonia.Controls.Primitives
         protected override Size ArrangeOverride(Size finalSize)
         {
             if (_realizedElements is null)
-                return default;
+                return finalSize;
 
             _isInLayout = true;
 
@@ -425,6 +437,11 @@ namespace Avalonia.Controls.Primitives
             {
                 InvalidateMeasure();
             }
+        }
+
+        protected virtual void UnrealizeElementOnItemRemoved(Control element)
+        {
+            UnrealizeElement(element);
         }
 
         private void RealizeElements(
@@ -643,7 +660,7 @@ namespace Avalonia.Controls.Primitives
 
         private void RecycleElementOnItemRemoved(Control element)
         {
-            UnrealizeElement(element);
+            UnrealizeElementOnItemRemoved(element);
             element.IsVisible = false;
             ElementFactory!.RecycleElement(element);
         }

@@ -129,6 +129,14 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        internal void UnrealizeOnRowRemoved()
+        {
+            if (RowIndex == -1)
+                throw new InvalidOperationException("Row is not realized.");
+            RowIndex = -1;
+            RecycleAllElementsOnItemRemoved();
+        }
+
         private ITreeDataGridSelectionInteraction? GetSelection()
         {
             return this.FindAncestorOfType<TreeDataGrid>()?.SelectionInteraction;
