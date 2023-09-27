@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (RowIndex != -1)
                 throw new InvalidOperationException("Row is already realized.");
-            UpdateRowIndex(index);
+            RowIndex = index;
             InvalidateMeasure();
         }
 
@@ -51,6 +51,9 @@ namespace Avalonia.Controls.Primitives
         {
             if (index < 0 || Rows is null || index >= Rows.Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
+            if (RowIndex == -1)
+                throw new InvalidOperationException("Row is not realized.");
+
             RowIndex = index;
 
             foreach (var element in RealizedElements)
