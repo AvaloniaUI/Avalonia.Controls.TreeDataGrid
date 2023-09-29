@@ -655,6 +655,7 @@ namespace Avalonia.Controls.Primitives
                 UnrealizeElement(element);
                 element.IsVisible = false;
                 ElementFactory!.RecycleElement(element);
+                _scrollViewer?.UnregisterAnchorCandidate(element);
             }
         }
 
@@ -663,6 +664,7 @@ namespace Avalonia.Controls.Primitives
             UnrealizeElementOnItemRemoved(element);
             element.IsVisible = false;
             ElementFactory!.RecycleElement(element);
+            _scrollViewer?.UnregisterAnchorCandidate(element);
         }
 
         private void TrimUnrealizedChildren()
