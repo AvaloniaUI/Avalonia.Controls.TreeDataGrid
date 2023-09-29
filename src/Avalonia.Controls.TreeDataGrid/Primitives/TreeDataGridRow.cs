@@ -83,8 +83,9 @@ namespace Avalonia.Controls.Primitives
             Rows = rows;
             DataContext = rows?[rowIndex].Model;
             IsSelected = selection?.IsRowSelected(rowIndex) ?? false;
-            UpdateIndex(rowIndex);
+            RowIndex = rowIndex;
             UpdateSelection(selection);
+            CellsPresenter?.Realize(rowIndex);
             _treeDataGrid?.RaiseRowPrepared(this, RowIndex);
         }
 
@@ -95,6 +96,9 @@ namespace Avalonia.Controls.Primitives
 
         public void UpdateIndex(int index)
         {
+            if (RowIndex == -1)
+                throw new InvalidOperationException("Row is not realized.");
+
             RowIndex = index;
             CellsPresenter?.UpdateRowIndex(index);
         }
@@ -107,6 +111,7 @@ namespace Avalonia.Controls.Primitives
             IsSelected = false;
             CellsPresenter?.Unrealize();
         }
+
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             _treeDataGrid = this.FindLogicalAncestorOfType<TreeDataGrid>();
