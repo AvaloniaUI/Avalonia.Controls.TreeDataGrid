@@ -250,7 +250,12 @@ namespace Avalonia.Controls.Primitives
             base.OnPropertyChanged(change);
         }
 
-        internal void UpdateRowIndex(int index) => RowIndex = index;
+        internal void UpdateRowIndex(int index)
+        {
+            if (RowIndex == -1)
+                throw new InvalidOperationException("Cell is not realized.");
+            RowIndex = index;
+        }
 
         internal void UpdateSelection(ITreeDataGridSelectionInteraction? selection)
         {
