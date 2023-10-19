@@ -111,16 +111,19 @@ namespace Avalonia.Controls.Primitives
             {
                 // Create and measure the element to be brought into view. Store it in a field so that
                 // it can be re-used in the layout pass.
-                var scrollToElement = _scrollToElement = GetOrCreateElement(items, index);
-                _scrollToElement.Measure(Size.Infinity);
-                _scrollToIndex = index;
+                var scrollToElement = GetOrCreateElement(items, index);
+                scrollToElement.Measure(Size.Infinity);
 
-                // Get the expected position of the elment and put it in place.
+                // Get the expected position of the element and put it in place.
                 var anchorU = _realizedElements.GetOrEstimateElementU(index, ref _lastEstimatedElementSizeU);
                 var elementRect = Orientation == Orientation.Horizontal ?
-                    new Rect(anchorU, 0, _scrollToElement.DesiredSize.Width, _scrollToElement.DesiredSize.Height) :
-                    new Rect(0, anchorU, _scrollToElement.DesiredSize.Width, _scrollToElement.DesiredSize.Height);
-                _scrollToElement.Arrange(elementRect);
+                    new Rect(anchorU, 0, scrollToElement.DesiredSize.Width, scrollToElement.DesiredSize.Height) :
+                    new Rect(0, anchorU, scrollToElement.DesiredSize.Width, scrollToElement.DesiredSize.Height);
+                scrollToElement.Arrange(elementRect);
+
+                // Store the element and index so that they can be used in the layout pass.
+                _scrollToElement = scrollToElement;
+                _scrollToIndex = index;
 
                 // If the item being brought into view was added since the last layout pass then
                 // our bounds won't be updated, so any containing scroll viewers will not have an
@@ -135,9 +138,9 @@ namespace Avalonia.Controls.Primitives
 
                 // Try to bring the item into view and do a layout pass.
                 if (rect.HasValue)
-                    _scrollToElement.BringIntoView(rect.Value);
+                    scrollToElement.BringIntoView(rect.Value);
                 else
-                    _scrollToElement.BringIntoView();
+                    scrollToElement.BringIntoView();
 
                 // If the viewport does not contain the item to scroll to, set _isWaitingForViewportUpdate:
                 // this should cause the following chain of events:
@@ -156,10 +159,9 @@ namespace Avalonia.Controls.Primitives
                     UpdateLayout();
                 }
 
-                var result = scrollToElement;
                 _scrollToElement = null;
                 _scrollToIndex = -1;
-                return result;
+                return scrollToElement;
             }
 
             return null;
