@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -22,5 +21,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets the cell's text wrapping mode.
         /// </summary>
         TextWrapping TextWrapping { get; }
+        
+        /// Gets the cell's text alignment mode.
+        /// </summary>
+        TextAlignment TextAlignment { get; }
     }
 }

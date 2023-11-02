@@ -44,6 +44,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public bool IsReadOnly { get; }
         public TextTrimming TextTrimming => _options?.TextTrimming ?? TextTrimming.None;
         public TextWrapping TextWrapping => _options?.TextWrapping ?? TextWrapping.NoWrap;
+        public TextAlignment TextAlignment => _options?.TextAlignment ?? TextAlignment.Left;
 
         public string? Text
         {
