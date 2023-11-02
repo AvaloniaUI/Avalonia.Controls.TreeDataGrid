@@ -190,6 +190,12 @@ namespace Avalonia.Controls
                         SourceProperty,
                         oldSource,
                         _source);
+                    
+                    var c = RowsPresenter?.GetVisualParent();
+                    if (c != null)
+                    {
+                        RowsPresenter?.Columns?.ViewportChanged(new Rect(0, 0, c.Bounds.Width, c.Bounds.Height));
+                    }
                 }
             }
         }
