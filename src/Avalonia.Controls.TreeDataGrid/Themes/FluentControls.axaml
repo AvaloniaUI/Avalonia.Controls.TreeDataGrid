@@ -257,6 +257,7 @@
           <TextBlock Text="{TemplateBinding Value}"
                      TextTrimming="{TemplateBinding TextTrimming}"
                      TextWrapping="{TemplateBinding TextWrapping}"
+                     TextAlignment="{TemplateBinding TextAlignment}"
                      VerticalAlignment="Center"/>
         </Border>
       </ControlTemplate>
