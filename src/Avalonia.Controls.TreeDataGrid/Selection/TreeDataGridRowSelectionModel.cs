@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -364,6 +365,44 @@ namespace Avalonia.Controls.Selection
             }
 
             return null;
+        }
+
+        protected internal override bool TryGetItemAt(IndexPath index, out TModel? result)
+        {
+            if (_source is FlatTreeDataGridSource<TModel> treeSource)
+            {
+                bool valid = index.Any(i => i >= treeSource.Items.Count()) == false;
+                result = valid ? treeSource.Items.ElementAt(index[0]) : null;
+                return valid;
+            }
+
+            var items = (IReadOnlyList<TModel>?)Root.ItemsView;
+            var count = index.Count;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (items is null)
+                {
+                    result = default;
+                    return false;
+                }
+
+                var j = index[i];
+
+                if (j < items.Count)
+                {
+                    if (i == count - 1)
+                    {
+                        result = items[j];
+                        return true;
+                    }
+                    else
+                        items = GetChildren(items[j]) as IReadOnlyList<TModel>;
+                }
+            }
+
+            result = default;
+            return false;
         }
 
         protected override void OnSourceCollectionChangeFinished()
