@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
@@ -26,7 +24,7 @@ namespace Avalonia.Controls.Primitives
                 (o, v) => o.Value = v);
 
         public static readonly DirectProperty<TreeDataGridTextCell,TextAlignment> TextAlignmentProperty =
-            AvaloniaProperty.RegisterDirect < TreeDataGridTextCell, TextAlignment>(
+            AvaloniaProperty.RegisterDirect <TreeDataGridTextCell, TextAlignment>(
                 nameof(TextAlignment),
                 o => o.TextAlignment,
                 (o,v)=> o.TextAlignment = v);
@@ -64,6 +62,7 @@ namespace Avalonia.Controls.Primitives
             get => _textAlignment;
             set => SetAndRaise(TextAlignmentProperty, ref _textAlignment, value);
         }
+
         public override void Realize(
             TreeDataGridElementFactory factory,
             ITreeDataGridSelectionInteraction? selection,

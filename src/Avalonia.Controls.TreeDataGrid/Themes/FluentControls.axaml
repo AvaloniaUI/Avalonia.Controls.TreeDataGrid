@@ -325,4 +325,80 @@
     </Style>
   </ControlTheme>
 
+  <ControlTheme x:Key="{x:Type TreeDataGridGruppedColumnHeader}" TargetType="TreeDataGridGruppedColumnHeader">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="MinHeight" Value="25"/>
+    <Setter Property="Padding" Value="4 2"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="DataGridBorder"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto,Auto">
+            <Panel Grid.Column="2"
+                   Grid.RowSpan="2"
+                   TabIndex="2">
+              <Rectangle Fill="{DynamicResource TreeDataGridGridLinesBrush}"
+                         HorizontalAlignment="Right"
+                         Width="1"/>
+              <Thumb Name="PART_Resizer"
+                     DockPanel.Dock="Right"
+                     Background="Transparent"
+                     Cursor="SizeWestEast"
+                     IsVisible="{TemplateBinding CanUserResize}"
+                     Width="5">
+                <Thumb.Template>
+                  <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            VerticalAlignment="Stretch"/>
+                  </ControlTemplate>
+                </Thumb.Template>
+              </Thumb>
+            </Panel>
+            <Path Name="SortIcon"
+                  Grid.Column="1"
+                  Fill="{TemplateBinding Foreground}"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Stretch="Uniform"
+                  Height="12"
+                  TabIndex="1" />
+            <ContentPresenter Name="PART_ContentPresenter"
+                              Content="{TemplateBinding Header}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Padding="{TemplateBinding Padding}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              TabIndex="0">
+              <ContentPresenter.DataTemplates>
+                <DataTemplate DataType="x:String">
+                  <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis"/>
+                </DataTemplate>
+              </ContentPresenter.DataTemplates>
+            </ContentPresenter>
+            <TreeDataGridColumnHeadersPresenter Grid.Row="1"
+                                                Grid.ColumnSpan="2"
+                                                ElementFactory="{Binding ElementFactory,RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TreeDataGrid}}}"
+                                                Items="{TemplateBinding Columns}"/>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type TreeDataGridGruppedTemplateCell}" TargetType="TreeDataGridGruppedTemplateCell">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <TreeDataGridCellsPresenter Name="PART_CellsPresenter"
+                                    ElementFactory="{Binding ElementFactory,RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TreeDataGrid}}}"
+                                    Items="{TemplateBinding Columns}"
+                                    Rows="{Binding Rows,RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TreeDataGridRow}}}"/>
+      </ControlTemplate>
+    </Setter>
+
+    
+  </ControlTheme>
 </ResourceDictionary>

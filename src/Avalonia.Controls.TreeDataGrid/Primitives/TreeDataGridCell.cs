@@ -18,10 +18,15 @@ namespace Avalonia.Controls.Primitives
                 nameof(IsSelected),
                 o => o.IsSelected);
 
+        private static readonly DirectProperty<TreeDataGridCell, ICell?> ModelProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridCell, ICell?>(nameof(Model)
+                , o => o.Model);
+
         private static readonly Point s_invalidPoint = new Point(double.NaN, double.NaN);
         private bool _isSelected;
         private TreeDataGrid? _treeDataGrid;
         private Point _pressedPoint = s_invalidPoint;
+        private ICell? _model;
 
         static TreeDataGridCell()
         {
@@ -32,7 +37,7 @@ namespace Avalonia.Controls.Primitives
         public int ColumnIndex { get; private set; } = -1;
         public int RowIndex { get; private set; } = -1;
         public bool IsEditing { get; private set; }
-        public ICell? Model { get; private set; }
+        public ICell? Model { get => _model; private set => SetAndRaise(ModelProperty, ref _model , value); }
 
         public bool IsSelected
         {

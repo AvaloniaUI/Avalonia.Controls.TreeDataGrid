@@ -1,15 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
-    /// <summary>
-    /// Base class for columns which select cell values from a model.
-    /// </summary>
-    /// <typeparam name="TModel">The model type.</typeparam>
-    public abstract class ColumnBase<TModel> : NotifyingBase, IColumn<TModel>, IUpdateColumnLayout
+    public class GrouppedColumnn<TModel> : ColumnList<TModel>, IGruppedColumn, IColumn<TModel>, IUpdateColumnLayout
+        where TModel : class
     {
+        private static readonly ColumnOptions<TModel> _defaultColumnOptions = new();
         private double _actualWidth = double.NaN;
         private GridLength _width;
         private double _autoWidth = double.NaN;
@@ -17,22 +16,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private bool _starWidthWasConstrained;
         private object? _header;
         private ListSortDirection? _sortDirection;
+        private readonly Comparison<TModel?> _comparison;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ColumnBase{TModel, TValue}"/> class.
-        /// </summary>
-        /// <param name="header">The column header.</param>
-        /// <param name="width">
-        /// The column width. If null defaults to <see cref="GridLength.Auto"/>.
-        /// </param>
-        /// <param name="options">Additional column options.</param>
-        public ColumnBase(
+        public GrouppedColumnn(
             object? header,
-            GridLength? width,
-            ColumnOptions<TModel> options)
+            GridLength? width = default,
+            ColumnOptions<TModel>? options = default)
         {
             _header = header;
-            Options = options;
+            Options = options ?? new();
+            _comparison = GrouppedColumnnComparison;
             SetWidth(width ?? GridLength.Auto);
         }
 
@@ -51,7 +44,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <remarks>
         /// To set the column width use <see cref="IColumns.SetColumnWidth(int, GridLength)"/>.
         /// </remarks>
-        public GridLength Width 
+        public GridLength Width
         {
             get => _width;
             private set => RaiseAndSetIfChanged(ref _width, value);
@@ -100,12 +93,23 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         /// <param name="row">The row.</param>
         /// <returns>The cell.</returns>
-        public abstract ICell CreateCell(IRow<TModel> row);
+        public ICell CreateCell(IRow<TModel> row) =>
+            new GruppedCell<TModel>(row, this);
 
-        public abstract Comparison<TModel?>? GetComparison(ListSortDirection direction);
+        public Comparison<TModel?>? GetComparison(ListSortDirection direction) =>
+            _comparison;
 
         double IUpdateColumnLayout.CellMeasured(double width, int rowIndex)
         {
+            double autoWidth = 0.0;
+            for (int i = 0; i < this.Count; i++)
+            {
+                if (this[i] is IUpdateColumnLayout columnLayout)
+                {
+                    var w = columnLayout.CellMeasured(width, rowIndex);
+                    autoWidth += w;
+                }
+            }
             _autoWidth = Math.Max(NonNaN(_autoWidth), CoerceActualWidth(width));
             return Width.GridUnitType == GridUnitType.Auto || double.IsNaN(ActualWidth) ?
                 _autoWidth : ActualWidth;
@@ -167,5 +171,23 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         private static double NonNaN(double v) => double.IsNaN(v) ? 0 : v;
+
+        private int GrouppedColumnnComparison(TModel? x, TModel? y)
+        {
+            var result = 0;
+            var direction = SortDirection ?? ListSortDirection.Ascending;
+            foreach (var item in this.OfType<ColumnBase<TModel>>())
+            {
+                if (item.GetComparison(direction) is { } comparer)
+                {
+                    result = comparer(x, y);
+                    if (result != 0)
+                    {
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
     }
 }

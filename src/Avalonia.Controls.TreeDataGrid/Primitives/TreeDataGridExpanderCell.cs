@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
