@@ -80,6 +80,13 @@ namespace Avalonia.Controls.Primitives
                     oldValue.LayoutInvalidated -= OnColumnLayoutInvalidated;
                 if (newValue is object)
                     newValue.LayoutInvalidated += OnColumnLayoutInvalidated;
+
+                // When for existing Presenter Columns would be recreated they won't get Viewport set so we need to track that
+                // and pass Viewport for a newly created object. 
+                if (oldValue != null && newValue != null)
+                {
+                    newValue.ViewportChanged(Viewport);
+                }
             }
 
             base.OnPropertyChanged(change);
