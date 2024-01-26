@@ -68,7 +68,7 @@ namespace TreeDataGridDemo
                 null,
                 null);
             var vm = (MainWindowViewModel)DataContext!;
-            vm.Countries.AddCountry(country);
+            
 
             var index = vm.Countries.Source.Rows.Count - 1;
             countries.RowsPresenter!.BringIntoView(index);

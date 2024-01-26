@@ -1,7 +1,20 @@
 ﻿namespace TreeDataGridDemo.Models
 {
-    internal class Country
+    using System.Windows.Input;
+    using ReactiveUI;
+
+    internal class Country : ReactiveObject
     {
+        private bool _isButtonVisible;
+
+        public bool IsButtonVisible
+        {
+            get => _isButtonVisible;
+            set => this.RaiseAndSetIfChanged(ref _isButtonVisible, value);
+        }
+        
+        public ICommand ToggleCommand { get; }
+        
         public string? Name { get; set; }
         public string Region { get; private set; }
         public int Population { get; private set; }
@@ -21,9 +34,16 @@
         public double? BirthRate { get; private set; }
         public double? DeathRate { get; private set; }
 
+        public bool HasChildren { get; set; }
+
         public Country(string name, string region, int population, int area, double density, double coast, double? migration,
                        double? infantMorality, int gdp, double? literacy, double? phones, double? birth, double? death)
         {
+            ToggleCommand = ReactiveCommand.Create(() =>
+            {
+                IsButtonVisible = !IsButtonVisible;
+            });
+            
             Name = name;
             Region = region;
             Population = population;
