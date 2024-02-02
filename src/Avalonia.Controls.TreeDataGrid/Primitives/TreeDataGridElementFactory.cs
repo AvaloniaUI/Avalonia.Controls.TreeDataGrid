@@ -66,6 +66,8 @@ namespace Avalonia.Controls.Primitives
             {
                 CheckBoxCell => new TreeDataGridCheckBoxCell(),
                 TemplateCell => new TreeDataGridTemplateCell(),
+                IGruppedColumn => new TreeDataGridGruppedColumnHeader(),
+                IGruppedCell => new TreeDataGridGruppedTemplateCell(),
                 IExpanderCell => new TreeDataGridExpanderCell(),
                 ICell => new TreeDataGridTextCell(),
                 IColumn => new TreeDataGridColumnHeader(),
@@ -81,6 +83,7 @@ namespace Avalonia.Controls.Primitives
                 CheckBoxCell => typeof(TreeDataGridCheckBoxCell).FullName!,
                 TemplateCell => typeof(TreeDataGridTemplateCell).FullName!,
                 IExpanderCell => typeof(TreeDataGridExpanderCell).FullName!,
+                IGruppedCell => typeof(TreeDataGridGruppedTemplateCell).FullName!,
                 ICell => typeof(TreeDataGridTextCell).FullName!,
                 IColumn => typeof(TreeDataGridColumnHeader).FullName!,
                 IRow => typeof(TreeDataGridRow).FullName!,

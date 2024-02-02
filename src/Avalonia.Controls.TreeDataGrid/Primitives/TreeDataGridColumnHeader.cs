@@ -59,7 +59,7 @@ namespace Avalonia.Controls.Primitives
             _columns = columns;
             _model = columns[columnIndex];
             ColumnIndex = columnIndex;
-            UpdatePropertiesFromModel();
+            UpdatePropertiesFromModel(_model);
 
             if (_model is INotifyPropertyChanged newInpc)
                 newInpc.PropertyChanged += OnModelPropertyChanged;
@@ -73,7 +73,7 @@ namespace Avalonia.Controls.Primitives
             _columns = null;
             _model = null;
             ColumnIndex = -1;
-            UpdatePropertiesFromModel();
+            UpdatePropertiesFromModel(_model);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -122,7 +122,7 @@ namespace Avalonia.Controls.Primitives
                 if (newModel is INotifyPropertyChanged newInpc)
                     newInpc.PropertyChanged += OnModelPropertyChanged;
 
-                UpdatePropertiesFromModel();
+                UpdatePropertiesFromModel(newModel);
             }
             else if (change.Property == ParentProperty)
             {
@@ -131,7 +131,7 @@ namespace Avalonia.Controls.Primitives
                 _owner = change.GetNewValue<StyledElement>()?.TemplatedParent as TreeDataGrid;
                 if (_owner is not null)
                     _owner.PropertyChanged += OnOwnerPropertyChanged;
-                UpdatePropertiesFromModel();
+                UpdatePropertiesFromModel(_model);
             }
 
             base.OnPropertyChanged(change);
@@ -142,7 +142,7 @@ namespace Avalonia.Controls.Primitives
             if (e.PropertyName == nameof(IColumn.CanUserResize) ||
                 e.PropertyName == nameof(IColumn.Header) ||
                 e.PropertyName == nameof(IColumn.SortDirection))
-                UpdatePropertiesFromModel();
+                UpdatePropertiesFromModel(_model);
         }
 
         private void OnOwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -167,7 +167,7 @@ namespace Avalonia.Controls.Primitives
             _columns.SetColumnWidth(ColumnIndex, width);
         }
 
-        private void UpdatePropertiesFromModel()
+        internal protected virtual void UpdatePropertiesFromModel(IColumn? model)
         {
             CanUserResize = _model?.CanUserResize ?? _owner?.CanUserResizeColumns ?? false;
             Header = _model?.Header;

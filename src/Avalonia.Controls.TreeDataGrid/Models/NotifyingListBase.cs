@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Avalonia.Controls.Models.TreeDataGrid;
 
 namespace Avalonia.Controls.Models
@@ -248,6 +249,31 @@ namespace Avalonia.Controls.Models
             Insert,
             Remove,
             Reset,
+        }
+
+        protected bool RaiseAndSetIfChanged<TField>(
+            ref TField field,
+            TField value,
+            [CallerMemberName] string? propertyName = null)
+        {
+            if (!EqualityComparer<TField>.Default.Equals(field, value))
+            {
+                field = value;
+                RaisePropertyChanged(propertyName);
+                return true;
+            }
+
+            return false;
+        }
+
+        protected void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected void RaisePropertyChanged(PropertyChangedEventArgs e)
+        {
+            PropertyChanged?.Invoke(this, e);
         }
     }
 }
