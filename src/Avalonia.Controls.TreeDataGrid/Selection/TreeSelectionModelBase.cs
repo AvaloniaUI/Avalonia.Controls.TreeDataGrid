@@ -89,7 +89,7 @@ namespace Avalonia.Controls.Selection
             get => _anchorIndex;
             set
             {
-                if (!TryGetItemAt(value, out _))
+                if (!IsValidIndex(value))
                     return;
                 using var update = BatchUpdate();
                 update.Operation.AnchorIndex = value;
@@ -101,7 +101,7 @@ namespace Avalonia.Controls.Selection
             get => _rangeAnchorIndex;
             set
             {
-                if (!TryGetItemAt(value, out _))
+                if (!IsValidIndex(value))
                     return;
                 using var update = BatchUpdate();
                 update.Operation.RangeAnchorIndex = value;
@@ -201,37 +201,6 @@ namespace Avalonia.Controls.Selection
         public void Select(IndexPath index) => Select(index, updateRangeAnchorIndex: false);
 
         protected internal abstract IEnumerable<T>? GetChildren(T node);
-        
-        protected virtual bool TryGetItemAt(IndexPath index, out T? result)
-        {
-            var items = (IReadOnlyList<T>?)_root.ItemsView;
-            var count = index.Count;
-
-            for (var i = 0; i < count; ++i)
-            {
-                if (items is null)
-                {
-                    result = default;
-                    return false;
-                }
-
-                var j = index[i];
-
-                if (j < items.Count)
-                {
-                    if (i == count - 1)
-                    {
-                        result = items[j];
-                        return true;
-                    }
-                    else
-                        items = GetChildren(items[j]) as IReadOnlyList<T>;
-                }
-            }
-
-            result = default;
-            return false;
-        }
 
         protected virtual void OnSourceCollectionChangeFinished()
         {
@@ -411,7 +380,7 @@ namespace Avalonia.Controls.Selection
 
         private void Select(IndexPath index, bool updateRangeAnchorIndex)
         {
-            if (index == default || !TryGetItemAt(index, out _))
+            if (index == default || !IsValidIndex(index))
                 return;
 
             using var update = BatchUpdate();
@@ -537,6 +506,39 @@ namespace Avalonia.Controls.Selection
             }
 
             return result;
+        }
+
+        private bool IsValidIndex(IndexPath index)
+        {
+            // If we already have a parent node for the index then we can short-circuit the check.
+            if (GetNode(index[..^1]) is { } node && node.Source is ICollection source)
+                return index[^1] < source.Count;
+
+            // Otherwise we need to walk the tree to check that the index is valid.
+            var items = (IReadOnlyList<T>?)_root.ItemsView;
+            var count = index.Count;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (items is null)
+                {
+                    return false;
+                }
+
+                var j = index[i];
+
+                if (j < items.Count)
+                {
+                    if (i == count - 1)
+                    {
+                        return true;
+                    }
+                    else
+                        items = GetChildren(items[j]) as IReadOnlyList<T>;
+                }
+            }
+
+            return false;
         }
 
         internal static bool ShiftIndex(IndexPath parentIndex, int shiftIndex, int shiftDelta, ref IndexPath path)
