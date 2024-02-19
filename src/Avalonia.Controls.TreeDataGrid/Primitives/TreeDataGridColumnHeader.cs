@@ -30,6 +30,7 @@ namespace Avalonia.Controls.Primitives
         private ListSortDirection? _sortDirection;
         private TreeDataGrid? _owner;
         private Thumb? _resizer;
+        private static readonly GridLength Zero = new GridLength(0, GridUnitType.Pixel);
 
         public bool CanUserResize
         {
@@ -141,7 +142,9 @@ namespace Avalonia.Controls.Primitives
         {
             if (e.PropertyName == nameof(IColumn.CanUserResize) ||
                 e.PropertyName == nameof(IColumn.Header) ||
-                e.PropertyName == nameof(IColumn.SortDirection))
+                e.PropertyName == nameof(IColumn.SortDirection)
+                || e.PropertyName == nameof(IColumn.IsVisible)
+                )
                 UpdatePropertiesFromModel();
         }
 
@@ -169,9 +172,16 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdatePropertiesFromModel()
         {
+            var oldVisibility = IsVisible;
             CanUserResize = _model?.CanUserResize ?? _owner?.CanUserResizeColumns ?? false;
             Header = _model?.Header;
             SortDirection = _model?.SortDirection;
+            IsVisible = _model?.IsVisible == true;
+            if(IsVisible!= oldVisibility)
+            {
+                _columns?.InvalidateLayout();
+            }
+            
         }
     }
 }

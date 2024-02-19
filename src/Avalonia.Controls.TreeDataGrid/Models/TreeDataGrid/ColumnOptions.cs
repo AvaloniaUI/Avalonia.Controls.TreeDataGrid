@@ -85,5 +85,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets or sets the gesture(s) that will cause a cell to enter edit mode.
         /// </summary>
         public BeginEditGestures BeginEditGestures { get; set; } = BeginEditGestures.Default;
+        
+        /// Determines whether or not this column is visible.
+        /// </summary>
+        public bool IsVisible { get; set; } = true;
     }
 }
