@@ -459,7 +459,7 @@ namespace Avalonia.Controls.Selection
             else if (toggle)
             {
                 if (!treeDataGrid.QueryCancelSelection())
-                    SelectedIndex = (SelectedIndex == rowIndex) ? -1 : modelIndex;
+                    SelectedIndex = (SelectedIndex == modelIndex) ? -1 : modelIndex;
             }
             else if (SelectedIndex != modelIndex || Count > 1)
             {
