@@ -18,20 +18,20 @@ namespace Avalonia.Controls
 
         private readonly int _index;
         private readonly int[]? _path;
-        private readonly string _hashCode;
+        private readonly int _hashCode;
 
         public IndexPath(int index)
         {
             _index = index + 1;
             _path = null;
-            _hashCode = CalculateHashCode();
+            _hashCode = CalculateHashCode(_path, _index);
         }
 
         public IndexPath(params int[] indexes)
         {
             _index = 0;
             _path = indexes;
-            _hashCode = CalculateHashCode();
+            _hashCode = CalculateHashCode(_path, _index);
         }
 
         public IndexPath(IEnumerable<int>? indexes)
@@ -47,7 +47,7 @@ namespace Avalonia.Controls
                 _path = null;
             }
 
-            _hashCode = CalculateHashCode();
+            _hashCode = CalculateHashCode(_path, _index);
         }
 
         private IndexPath(int[] basePath, int index)
@@ -59,7 +59,7 @@ namespace Avalonia.Controls
             Array.Copy(basePath, _path, basePath.Length);
             _path[basePath.Length] = index;
 
-            _hashCode = CalculateHashCode();
+            _hashCode = CalculateHashCode(_path, _index);
         }
 
         public int Count => _path?.Length ?? (_index == 0 ? 0 : 1);
@@ -159,18 +159,18 @@ namespace Avalonia.Controls
             return _hashCode;
         }
 
-        public override int CalculateHashCode()
+        public static int CalculateHashCode(int[]? path, int index)
         {
             var hashCode = -504981047;
 
-            if (_path != null)
+            if (path != null)
             {
-                foreach (var i in _path)
+                foreach (var i in path)
                     hashCode = hashCode * -1521134295 + i.GetHashCode();
             }
             else
             {
-                hashCode = hashCode * -1521134295 + _index.GetHashCode();
+                hashCode = hashCode * -1521134295 + index.GetHashCode();
             }
 
             return hashCode;
