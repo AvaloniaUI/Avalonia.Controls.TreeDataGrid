@@ -18,17 +18,20 @@ namespace Avalonia.Controls
 
         private readonly int _index;
         private readonly int[]? _path;
+        private readonly string _hashCode;
 
         public IndexPath(int index)
         {
             _index = index + 1;
             _path = null;
+            _hashCode = CalculateHashCode();
         }
 
         public IndexPath(params int[] indexes)
         {
             _index = 0;
             _path = indexes;
+            _hashCode = CalculateHashCode();
         }
 
         public IndexPath(IEnumerable<int>? indexes)
@@ -43,6 +46,8 @@ namespace Avalonia.Controls
                 _index = 0;
                 _path = null;
             }
+
+            _hashCode = CalculateHashCode();
         }
 
         private IndexPath(int[] basePath, int index)
@@ -53,6 +58,8 @@ namespace Avalonia.Controls
             _path = new int[basePath.Length + 1];
             Array.Copy(basePath, _path, basePath.Length);
             _path[basePath.Length] = index;
+
+            _hashCode = CalculateHashCode();
         }
 
         public int Count => _path?.Length ?? (_index == 0 ? 0 : 1);
@@ -69,6 +76,9 @@ namespace Avalonia.Controls
 
         public int CompareTo(IndexPath other)
         {
+            if (_hashCode == other._hashCode)
+                return 0;
+
             var rhsPath = other;
             var compareResult = 0;
             var lhsCount = Count;
@@ -131,7 +141,7 @@ namespace Avalonia.Controls
 
         public override bool Equals(object? obj) => obj is IndexPath other && Equals(other);
 
-        public bool Equals(IndexPath other) => CompareTo(other) == 0;
+        public bool Equals(IndexPath other) => _hashCode == other._hashCode;
 
         public IEnumerator<int> GetEnumerator()
         {
@@ -145,6 +155,11 @@ namespace Avalonia.Controls
         }
 
         public override int GetHashCode()
+        {
+            return _hashCode;
+        }
+
+        public override int CalculateHashCode()
         {
             var hashCode = -504981047;
 
@@ -233,9 +248,9 @@ namespace Avalonia.Controls
         public static bool operator >(IndexPath x, IndexPath y) => x.CompareTo(y) > 0;
         public static bool operator <=(IndexPath x, IndexPath y) => x.CompareTo(y) <= 0;
         public static bool operator >=(IndexPath x, IndexPath y) => x.CompareTo(y) >= 0;
-        public static bool operator ==(IndexPath x, IndexPath y) => x.CompareTo(y) == 0;
-        public static bool operator !=(IndexPath x, IndexPath y) => x.CompareTo(y) != 0;
-        public static bool operator ==(IndexPath? x, IndexPath? y) => (x ?? default).CompareTo(y ?? default) == 0;
-        public static bool operator !=(IndexPath? x, IndexPath? y) => (x ?? default).CompareTo(y ?? default) != 0;
+        public static bool operator ==(IndexPath x, IndexPath y) => x._hashCode == y._hashCode;
+        public static bool operator !=(IndexPath x, IndexPath y) => x._hashCode != y._hashCode;
+        public static bool operator ==(IndexPath? x, IndexPath? y) => (x ?? default)._hashCode == (y ?? default)._hashCode;
+        public static bool operator !=(IndexPath? x, IndexPath? y) => (x ?? default)._hashCode != (y ?? default)._hashCode;
     }
 }
