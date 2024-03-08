@@ -18,17 +18,20 @@ namespace Avalonia.Controls
 
         private readonly int _index;
         private readonly int[]? _path;
+        private readonly int _hashCode;
 
         public IndexPath(int index)
         {
             _index = index + 1;
             _path = null;
+            _hashCode = CalculateHashCode(_path, _index);
         }
 
         public IndexPath(params int[] indexes)
         {
             _index = 0;
             _path = indexes;
+            _hashCode = CalculateHashCode(_path, _index);
         }
 
         public IndexPath(IEnumerable<int>? indexes)
@@ -43,6 +46,8 @@ namespace Avalonia.Controls
                 _index = 0;
                 _path = null;
             }
+
+            _hashCode = CalculateHashCode(_path, _index);
         }
 
         private IndexPath(int[] basePath, int index)
@@ -53,6 +58,8 @@ namespace Avalonia.Controls
             _path = new int[basePath.Length + 1];
             Array.Copy(basePath, _path, basePath.Length);
             _path[basePath.Length] = index;
+
+            _hashCode = CalculateHashCode(_path, _index);
         }
 
         public int Count => _path?.Length ?? (_index == 0 ? 0 : 1);
@@ -69,6 +76,9 @@ namespace Avalonia.Controls
 
         public int CompareTo(IndexPath other)
         {
+            if (GetHashCode() == other.GetHashCode())
+                return 0;
+
             var rhsPath = other;
             var compareResult = 0;
             var lhsCount = Count;
@@ -131,7 +141,7 @@ namespace Avalonia.Controls
 
         public override bool Equals(object? obj) => obj is IndexPath other && Equals(other);
 
-        public bool Equals(IndexPath other) => CompareTo(other) == 0;
+        public bool Equals(IndexPath other) => GetHashCode() == other.GetHashCode();
 
         public IEnumerator<int> GetEnumerator()
         {
@@ -146,16 +156,21 @@ namespace Avalonia.Controls
 
         public override int GetHashCode()
         {
+            return _hashCode == 0 ? CalculateHashCode(_path, _index) : _hashCode;
+        }
+
+        private static int CalculateHashCode(int[]? path, int index)
+        {
             var hashCode = -504981047;
 
-            if (_path != null)
+            if (path != null)
             {
-                foreach (var i in _path)
+                foreach (var i in path)
                     hashCode = hashCode * -1521134295 + i.GetHashCode();
             }
             else
             {
-                hashCode = hashCode * -1521134295 + _index.GetHashCode();
+                hashCode = hashCode * -1521134295 + (index - 1).GetHashCode();
             }
 
             return hashCode;
@@ -233,9 +248,9 @@ namespace Avalonia.Controls
         public static bool operator >(IndexPath x, IndexPath y) => x.CompareTo(y) > 0;
         public static bool operator <=(IndexPath x, IndexPath y) => x.CompareTo(y) <= 0;
         public static bool operator >=(IndexPath x, IndexPath y) => x.CompareTo(y) >= 0;
-        public static bool operator ==(IndexPath x, IndexPath y) => x.CompareTo(y) == 0;
-        public static bool operator !=(IndexPath x, IndexPath y) => x.CompareTo(y) != 0;
-        public static bool operator ==(IndexPath? x, IndexPath? y) => (x ?? default).CompareTo(y ?? default) == 0;
-        public static bool operator !=(IndexPath? x, IndexPath? y) => (x ?? default).CompareTo(y ?? default) != 0;
+        public static bool operator ==(IndexPath x, IndexPath y) => x.GetHashCode() == y.GetHashCode();
+        public static bool operator !=(IndexPath x, IndexPath y) => x.GetHashCode() != y.GetHashCode();
+        public static bool operator ==(IndexPath? x, IndexPath? y) => (x ?? default).GetHashCode() == (y ?? default).GetHashCode();
+        public static bool operator !=(IndexPath? x, IndexPath? y) => (x ?? default).GetHashCode() != (y ?? default).GetHashCode();
     }
 }
