@@ -76,7 +76,7 @@ namespace Avalonia.Controls
 
         public int CompareTo(IndexPath other)
         {
-            if (_hashCode == other._hashCode)
+            if (GetHashCode() == other.GetHashCode())
                 return 0;
 
             var rhsPath = other;
@@ -141,7 +141,7 @@ namespace Avalonia.Controls
 
         public override bool Equals(object? obj) => obj is IndexPath other && Equals(other);
 
-        public bool Equals(IndexPath other) => _hashCode == other._hashCode;
+        public bool Equals(IndexPath other) => GetHashCode() == other.GetHashCode();
 
         public IEnumerator<int> GetEnumerator()
         {
@@ -156,10 +156,10 @@ namespace Avalonia.Controls
 
         public override int GetHashCode()
         {
-            return _hashCode;
+            return _hashCode == 0 ? CalculateHashCode(_path, _index) : _hashCode;
         }
 
-        public static int CalculateHashCode(int[]? path, int index)
+        private static int CalculateHashCode(int[]? path, int index)
         {
             var hashCode = -504981047;
 
@@ -170,7 +170,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                hashCode = hashCode * -1521134295 + index.GetHashCode();
+                hashCode = hashCode * -1521134295 + (index - 1).GetHashCode();
             }
 
             return hashCode;
@@ -248,9 +248,9 @@ namespace Avalonia.Controls
         public static bool operator >(IndexPath x, IndexPath y) => x.CompareTo(y) > 0;
         public static bool operator <=(IndexPath x, IndexPath y) => x.CompareTo(y) <= 0;
         public static bool operator >=(IndexPath x, IndexPath y) => x.CompareTo(y) >= 0;
-        public static bool operator ==(IndexPath x, IndexPath y) => x._hashCode == y._hashCode;
-        public static bool operator !=(IndexPath x, IndexPath y) => x._hashCode != y._hashCode;
-        public static bool operator ==(IndexPath? x, IndexPath? y) => (x ?? default)._hashCode == (y ?? default)._hashCode;
-        public static bool operator !=(IndexPath? x, IndexPath? y) => (x ?? default)._hashCode != (y ?? default)._hashCode;
+        public static bool operator ==(IndexPath x, IndexPath y) => x.GetHashCode() == y.GetHashCode();
+        public static bool operator !=(IndexPath x, IndexPath y) => x.GetHashCode() != y.GetHashCode();
+        public static bool operator ==(IndexPath? x, IndexPath? y) => (x ?? default).GetHashCode() == (y ?? default).GetHashCode();
+        public static bool operator !=(IndexPath? x, IndexPath? y) => (x ?? default).GetHashCode() != (y ?? default).GetHashCode();
     }
 }
