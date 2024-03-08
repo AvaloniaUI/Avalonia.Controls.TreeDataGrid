@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private readonly IExpanderColumn<TModel> _expanderColumn;
         private readonly List<HierarchicalRow<TModel>> _flattenedRows;
         private Comparison<TModel>? _comparison;
-        private bool _isExpandingCollapsing;
+        private bool _ignoreCollectionChanges;
 
         public HierarchicalRows(
             IExpanderRowController<TModel> controller,
@@ -90,10 +90,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 }
             }
 
-            _isExpandingCollapsing = true;
+            _ignoreCollectionChanges = true;
 
             try { Expand(_roots, filter); }
-            finally { _isExpandingCollapsing = false; }
+            finally { _ignoreCollectionChanges = false; }
 
             _flattenedRows.Clear();
             InitializeRows();
@@ -147,7 +147,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void SetItems(TreeDataGridItemsSourceView<TModel> items)
         {
-            _roots.SetItems(items);
+            _ignoreCollectionChanges = true;
+            
+            try {_roots.SetItems(items); }
+            finally { _ignoreCollectionChanges = false; }
+            
+            _flattenedRows.Clear();
+            InitializeRows();
+            CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
         }
 
         public void Sort(Comparison<TModel>? comparison)
@@ -214,6 +221,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             IExpanderRow<TModel> row,
             NotifyCollectionChangedEventArgs e)
         {
+            if (_ignoreCollectionChanges)
+                return;
+
             if (row is HierarchicalRow<TModel> h)
                 OnCollectionChanged(h.ModelIndexPath, e);
             else
@@ -269,7 +279,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private void OnCollectionChanged(in IndexPath parentIndex, NotifyCollectionChangedEventArgs e)
         {
-            if (_isExpandingCollapsing)
+            if (_ignoreCollectionChanges)
                 return;
 
             void Add(int index, IEnumerable? items, bool raise)

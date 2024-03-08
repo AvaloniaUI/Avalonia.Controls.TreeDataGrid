@@ -727,24 +727,20 @@ namespace Avalonia.Controls.TreeDataGridTests
             {
                 var data = CreateData();
                 var target = CreateTarget(data, sorted);
-                var rowsAddedRaised = 0;
-                var rowsRemovedRaised = 0;
+                var raised = 0;
 
                 Assert.Equal(5, target.Rows.Count);
 
                 target.Rows.CollectionChanged += (s, e) =>
                 {
-                    if (e.Action == NotifyCollectionChangedAction.Add)
-                        rowsAddedRaised += e.NewItems!.Count;
-                    else if (e.Action == NotifyCollectionChangedAction.Remove)
-                        rowsRemovedRaised += e.OldItems!.Count;
+                    Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+                    ++raised;
                 };
 
                 target.Items = CreateData(10);
 
                 Assert.Equal(10, target.Rows.Count);
-                Assert.Equal(5, rowsRemovedRaised);
-                Assert.Equal(10, rowsAddedRaised);
+                Assert.Equal(1, raised);
             }
 
             [AvaloniaTheory(Timeout = 10000)]
@@ -754,25 +750,21 @@ namespace Avalonia.Controls.TreeDataGridTests
             {
                 var data = CreateData();
                 var target = CreateTarget(data, sorted);
-                var rowsAddedRaised = 0;
-                var rowsRemovedRaised = 0;
+                var raised = 0;
 
                 target.Expand(0);
                 Assert.Equal(10, target.Rows.Count);
 
                 target.Rows.CollectionChanged += (s, e) =>
                 {
-                    if (e.Action == NotifyCollectionChangedAction.Add)
-                        rowsAddedRaised += e.NewItems!.Count;
-                    else if (e.Action == NotifyCollectionChangedAction.Remove)
-                        rowsRemovedRaised += e.OldItems!.Count;
+                    Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+                    ++raised;
                 };
 
                 target.Items = CreateData(12);
 
                 Assert.Equal(12, target.Rows.Count);
-                Assert.Equal(10, rowsRemovedRaised);
-                Assert.Equal(12, rowsAddedRaised);
+                Assert.Equal(1, raised);
             }
 
             [AvaloniaTheory(Timeout = 10000)]
