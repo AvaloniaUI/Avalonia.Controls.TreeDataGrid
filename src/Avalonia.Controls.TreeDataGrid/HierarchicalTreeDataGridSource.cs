@@ -104,8 +104,10 @@ namespace Avalonia.Controls
             GC.SuppressFinalize(this);
         }
 
-        public void Expand(IndexPath index) => GetOrCreateRows().Expand(index);
         public void Collapse(IndexPath index) => GetOrCreateRows().Collapse(index);
+        public void Expand(IndexPath index) => GetOrCreateRows().Expand(index);
+        public void ExpandAll() => GetOrCreateRows().ExpandRecursive(null);
+        public void ExpandRecursive(Func<TModel, bool> filter) => GetOrCreateRows().ExpandRecursive(filter);
 
         public bool TryGetModelAt(IndexPath index, [NotNullWhen(true)] out TModel? result)
         {

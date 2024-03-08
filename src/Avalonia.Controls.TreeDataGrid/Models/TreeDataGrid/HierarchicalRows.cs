@@ -17,6 +17,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private readonly IExpanderColumn<TModel> _expanderColumn;
         private readonly List<HierarchicalRow<TModel>> _flattenedRows;
         private Comparison<TModel>? _comparison;
+        private bool _isExpandingCollapsing;
 
         public HierarchicalRows(
             IExpanderRowController<TModel> controller,
@@ -25,11 +26,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             Comparison<TModel>? comparison)
         {
             _controller = controller;
+            _flattenedRows = new List<HierarchicalRow<TModel>>();
             _roots = new RootRows(this, items, comparison);
             _roots.CollectionChanged += OnRootsCollectionChanged;
             _expanderColumn = expanderColumn;
             _comparison = comparison;
-            _flattenedRows = new List<HierarchicalRow<TModel>>();
             InitializeRows();
         }
 
@@ -70,6 +71,33 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 if (!found)
                     break;
             }
+        }
+
+        internal void ExpandRecursive(Func<TModel, bool>? filter)
+        {
+            static void Expand(IReadOnlyList<HierarchicalRow<TModel>> rows, Func<TModel, bool>? filter)
+            {
+                for (var i = 0; i < rows.Count; ++i)
+                {
+                    var row = rows[i];
+
+                    if (filter is null || filter(row.Model))
+                    {
+                        row.IsExpanded = true;
+                        if (row.Children is { } children)
+                            Expand(children, filter);
+                    }
+                }
+            }
+
+            _isExpandingCollapsing = true;
+
+            try { Expand(_roots, filter); }
+            finally { _isExpandingCollapsing = false; }
+
+            _flattenedRows.Clear();
+            InitializeRows();
+            CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
         }
 
         public void Collapse(IndexPath index)
@@ -241,6 +269,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         private void OnCollectionChanged(in IndexPath parentIndex, NotifyCollectionChangedEventArgs e)
         {
+            if (_isExpandingCollapsing)
+                return;
+
             void Add(int index, IEnumerable? items, bool raise)
             {
                 if (items is null)
