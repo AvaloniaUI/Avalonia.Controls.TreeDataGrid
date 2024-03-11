@@ -40,6 +40,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void Dispose()
         {
+            _ignoreCollectionChanges = true;
             _roots.Dispose();
             GC.SuppressFinalize(this);
         }
