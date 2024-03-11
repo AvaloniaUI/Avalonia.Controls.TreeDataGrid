@@ -454,6 +454,19 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.False(expander.ShowExpander);
                 Assert.False(expander.IsExpanded);
             }
+
+            [AvaloniaTheory(Timeout = 10000)]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void ExpandAll_Expands_All_Rows(bool sorted)
+            {
+                var data = CreateData(5, 3, 3);
+                var target = CreateTarget(data, sorted);
+
+                target.ExpandAll();
+
+                Assert.Equal(65, target.Rows.Count);
+            }
         }
 
         public class ExpansionBinding
@@ -856,6 +869,35 @@ namespace Avalonia.Controls.TreeDataGridTests
                 }
             }
 
+            return result;
+        }
+
+        private static AvaloniaListDebug<Node> CreateData(params int[] counts)
+        {
+            var id = 0;
+
+            void Create(int[] counts, int index, IList<Node> result)
+            {
+                var count = counts[index];
+
+                for (var i = 0; i < count; ++i)
+                {
+                    var node = new Node
+                    {
+                        Id = id++,
+                        Caption = $"Node {i}",
+                        Children = new AvaloniaListDebug<Node>(),
+                    };
+
+                    if (index < counts.Length - 1)
+                        Create(counts, index + 1, node.Children!);
+
+                    result.Add(node);
+                }
+            }
+
+            var result = new AvaloniaListDebug<Node>();
+            Create(counts, 0, result);
             return result;
         }
 
