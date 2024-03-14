@@ -467,6 +467,28 @@ namespace Avalonia.Controls.TreeDataGridTests
 
                 Assert.Equal(65, target.Rows.Count);
             }
+
+            [AvaloniaTheory(Timeout = 10000)]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void CollapseAll_Collapses_All_Rows(bool sorted)
+            {
+                var data = CreateData(5, 3, 3);
+                var target = CreateTarget(data, sorted);
+
+                // We need to expand before we can collapse.
+                target.ExpandAll();
+                Assert.Equal(65, target.Rows.Count);
+
+                // Now we can test collapsing.
+                target.CollapseAll();
+                Assert.Equal(5, target.Rows.Count);
+
+                // Ensure that nested rows were collapsed, i.e. only the first level of rows is
+                // visible after expanding now.
+                target.Expand(0);
+                Assert.Equal(8, target.Rows.Count);
+            }
         }
 
         public class ExpansionBinding

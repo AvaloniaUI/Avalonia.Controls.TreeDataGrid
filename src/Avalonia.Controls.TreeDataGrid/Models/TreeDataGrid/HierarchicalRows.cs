@@ -131,6 +131,31 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             }
         }
 
+        internal void CollapseAll()
+        {
+            static void Collapse(IReadOnlyList<HierarchicalRow<TModel>> rows)
+            {
+                for (var i = 0; i < rows.Count; ++i)
+                {
+                    var row = rows[i];
+
+                    if (row.Children is { } children)
+                        Collapse(children);
+
+                    row.IsExpanded = false;
+                }
+            }
+
+            _ignoreCollectionChanges = true;
+
+            try { Collapse(_roots); }
+            finally { _ignoreCollectionChanges = false; }
+
+            _flattenedRows.Clear();
+            InitializeRows();
+            CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
+        }
+
         public (int index, double y) GetRowAt(double y)
         {
             if (MathUtilities.IsZero(y))

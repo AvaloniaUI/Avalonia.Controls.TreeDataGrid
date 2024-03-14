@@ -105,6 +105,7 @@ namespace Avalonia.Controls
         }
 
         public void Collapse(IndexPath index) => GetOrCreateRows().Collapse(index);
+        public void CollapseAll() => GetOrCreateRows().CollapseAll();
         public void Expand(IndexPath index) => GetOrCreateRows().Expand(index);
         public void ExpandAll() => GetOrCreateRows().ExpandRecursive(null);
         public void ExpandRecursive(Func<TModel, bool> filter) => GetOrCreateRows().ExpandRecursive(filter);
