@@ -78,7 +78,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             static void Expand(IReadOnlyList<HierarchicalRow<TModel>> rows, Func<TModel, bool>? filter)
             {
-                for (var i = 0; i < rows.Count; ++i)
+                for (int i=0; i < rows.Count; i++)
                 {
                     var row = rows[i];
 
@@ -86,6 +86,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     {
                         row.IsExpanded = true;
                         if (row.VisibleChildren is { } children)
+                            Expand(children, filter);
+                    }
+                    else
+                    {
+                        row.CreateChildRows();
+                        if (row.AllChildRows is { } children)
                             Expand(children, filter);
                     }
                 }

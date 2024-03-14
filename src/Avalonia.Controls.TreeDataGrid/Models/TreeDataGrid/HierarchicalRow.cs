@@ -40,6 +40,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         /// <summary>
+        /// Gets the row's child rows.
+        /// </summary>
+        public IReadOnlyList<HierarchicalRow<TModel>>? AllChildRows => _childRows;
+
+        /// <summary>
         /// Gets the row's visible child rows.
         /// </summary>
         public IReadOnlyList<HierarchicalRow<TModel>>? VisibleChildren => _isExpanded ? _childRows : null;
