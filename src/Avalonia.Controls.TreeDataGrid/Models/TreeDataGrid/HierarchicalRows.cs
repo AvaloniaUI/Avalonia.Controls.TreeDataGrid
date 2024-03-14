@@ -63,7 +63,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     if (row.ModelIndex == modelIndex)
                     {
                         row.IsExpanded = true;
-                        rows = row.Children;
+                        rows = row.VisibleChildren;
                         found = true;
                         break;
                     }
@@ -85,7 +85,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     if (filter is null || filter(row.Model))
                     {
                         row.IsExpanded = true;
-                        if (row.Children is { } children)
+                        if (row.VisibleChildren is { } children)
                             Expand(children, filter);
                     }
                 }
@@ -120,7 +120,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     {
                         if (i == count - 1)
                             row.IsExpanded = false;
-                        rows = row.Children;
+                        rows = row.VisibleChildren;
                         found = true;
                         break;
                     }
@@ -139,7 +139,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 {
                     var row = rows[i];
 
-                    if (row.Children is { } children)
+                    if (row.VisibleChildren is { } children)
                         Collapse(children);
 
                     row.IsExpanded = false;
@@ -292,9 +292,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             var i = index;
             _flattenedRows.Insert(i++, row);
 
-            if (row.Children is object)
+            if (row.VisibleChildren is object)
             {
-                foreach (var childRow in row.Children)
+                foreach (var childRow in row.VisibleChildren)
                 {
                     i += AddRowsAndDescendants(i, childRow);
                 }
@@ -366,8 +366,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 while (count > 0)
                 {
                     var row = _flattenedRows[i];
-                    if (row.Children?.Count > 0)
-                        i = Advance(i + 1, row.Children.Count);
+                    if (row.VisibleChildren?.Count > 0)
+                        i = Advance(i + 1, row.VisibleChildren.Count);
                     else
                         i += + 1;
                     --count;
@@ -430,7 +430,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 case NotifyCollectionChangedAction.Reset:
                     if (TryGetRowIndex(parentIndex, out parentRowIndex))
                     {
-                        var children = parentRowIndex >= 0 ? _flattenedRows[parentRowIndex].Children : _roots;
+                        var children = parentRowIndex >= 0 ? _flattenedRows[parentRowIndex].VisibleChildren : _roots;
                         var count = GetDescendentRowCount(parentRowIndex);
                         Remove(parentRowIndex + 1, count, true);
                         Add(parentRowIndex + 1, children, true);
