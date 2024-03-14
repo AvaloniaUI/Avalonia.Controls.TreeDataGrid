@@ -137,17 +137,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             }
         }
 
-        private void Expand()
+        internal void CreateChildRows()
         {
-            if (!_expanderColumn.HasChildren(Model))
-            {
-                _expanderColumn.SetModelIsExpanded(this);
-                return;
-            }
-
-            _controller.OnBeginExpandCollapse(this);
-
-            var oldExpanded = _isExpanded;
             var childModels = _expanderColumn.GetChildModels(Model);
 
             if (_childModels != childModels)
@@ -159,6 +150,21 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     TreeDataGridItemsSourceView<TModel>.GetOrCreate(childModels),
                     _comparison);
             }
+        }
+
+        private void Expand()
+        {
+            if (!_expanderColumn.HasChildren(Model))
+            {
+                _expanderColumn.SetModelIsExpanded(this);
+                return;
+            }
+
+            _controller.OnBeginExpandCollapse(this);
+
+            var oldExpanded = _isExpanded;
+
+            CreateChildRows();
 
             if (_childRows?.Count > 0)
                 _isExpanded = true;
