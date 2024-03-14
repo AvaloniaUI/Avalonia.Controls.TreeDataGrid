@@ -87,6 +87,6 @@ Or for multiple cell selection:
 Source.Selection = new TreeDataGridCellSelectionModel<Person>(Source) { SingleSelect = false };
 ```
 
-Cell selection is is exposed via the `CellSelection` property on the `FlatTreeDataGridSource<TModel>` and `HierarchicalTreeDataGridSource<TModel>` classes when enabled.
+Cell selection is exposed via the `CellSelection` property on the `FlatTreeDataGridSource<TModel>` and `HierarchicalTreeDataGridSource<TModel>` classes when enabled.
 
 The `CellIndex` struct indentifies an individual cell with by combination of an integer column index and an `IndexPath` row index.
