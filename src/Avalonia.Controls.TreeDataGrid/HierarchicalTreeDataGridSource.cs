@@ -109,6 +109,7 @@ namespace Avalonia.Controls
         public void Expand(IndexPath index) => GetOrCreateRows().Expand(index);
         public void ExpandAll() => GetOrCreateRows().ExpandRecursive(null);
         public void ExpandRecursive(Func<TModel, bool> filter) => GetOrCreateRows().ExpandRecursive(filter);
+        public void ExpandRecursive(HierarchicalRow<TModel> row, Func<TModel, bool> filter) => GetOrCreateRows().ExpandRecursive(row, filter);
 
         public bool TryGetModelAt(IndexPath index, [NotNullWhen(true)] out TModel? result)
         {

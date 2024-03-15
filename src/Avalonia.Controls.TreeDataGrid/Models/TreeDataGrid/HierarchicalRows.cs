@@ -76,25 +76,32 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         internal void ExpandRecursive(Func<TModel, bool>? filter)
         {
-            static void Expand(IReadOnlyList<HierarchicalRow<TModel>> rows, Func<TModel, bool>? filter)
-            {
-                for (var i = 0; i < rows.Count; ++i)
-                {
-                    var row = rows[i];
-
-                    if (filter is null || filter(row.Model))
-                    {
-                        row.IsExpanded = true;
-                        if (row.Children is { } children)
-                            Expand(children, filter);
-                    }
-                }
-            }
-
             _ignoreCollectionChanges = true;
 
-            try { Expand(_roots, filter); }
+            try { ExpandRecursiveCore(_roots, filter); }
             finally { _ignoreCollectionChanges = false; }
+
+            _flattenedRows.Clear();
+            InitializeRows();
+            CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
+        }
+
+        internal void ExpandRecursive(HierarchicalRow<TModel> row, Func<TModel, bool>? filter)
+        {
+            _ignoreCollectionChanges = true;
+
+            try 
+            {
+                if (filter is null || filter(row.Model))
+                    row.IsExpanded = true;
+
+                if (row.Children is { } children)
+                    ExpandRecursiveCore(children, filter); 
+            }
+            finally 
+            { 
+                _ignoreCollectionChanges = false; 
+            }
 
             _flattenedRows.Clear();
             InitializeRows();
@@ -301,6 +308,21 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             }
 
             return i - index;
+        }
+
+        private static void ExpandRecursiveCore(IReadOnlyList<HierarchicalRow<TModel>> rows, Func<TModel, bool>? filter)
+        {
+            for (var i = 0; i < rows.Count; ++i)
+            {
+                var row = rows[i];
+
+                if (filter is null || filter(row.Model))
+                {
+                    row.IsExpanded = true;
+                    if (row.Children is { } children)
+                        ExpandRecursiveCore(children, filter);
+                }
+            }
         }
 
         private void OnCollectionChanged(in IndexPath parentIndex, NotifyCollectionChangedEventArgs e)
