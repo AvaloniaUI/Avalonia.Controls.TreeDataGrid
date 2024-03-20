@@ -35,6 +35,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             get
             {
+                GetOrCreateRows();
+
                 if (_sortedIndexes is null)
                     return UnsortedRows[index];
                 else

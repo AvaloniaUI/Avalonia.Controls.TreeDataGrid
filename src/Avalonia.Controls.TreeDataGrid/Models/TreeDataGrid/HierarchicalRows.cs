@@ -17,6 +17,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private readonly IExpanderColumn<TModel> _expanderColumn;
         private readonly List<HierarchicalRow<TModel>> _flattenedRows;
         private Comparison<TModel>? _comparison;
+        private bool _ignoreCollectionChanges;
 
         public HierarchicalRows(
             IExpanderRowController<TModel> controller,
@@ -25,11 +26,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             Comparison<TModel>? comparison)
         {
             _controller = controller;
+            _flattenedRows = new List<HierarchicalRow<TModel>>();
             _roots = new RootRows(this, items, comparison);
             _roots.CollectionChanged += OnRootsCollectionChanged;
             _expanderColumn = expanderColumn;
             _comparison = comparison;
-            _flattenedRows = new List<HierarchicalRow<TModel>>();
             InitializeRows();
         }
 
@@ -39,6 +40,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void Dispose()
         {
+            _ignoreCollectionChanges = true;
             _roots.Dispose();
             GC.SuppressFinalize(this);
         }
@@ -70,6 +72,30 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 if (!found)
                     break;
             }
+        }
+
+        internal void ExpandCollapseRecursive(Func<TModel, bool> predicate, HierarchicalRow<TModel>? row = null)
+        {
+            _ignoreCollectionChanges = true;
+
+            try 
+            {
+                if (row is not null)
+                    row.IsExpanded = predicate(row.Model);
+
+                var children = row is null ? _roots : row.Children;
+
+                if (children is not null)
+                    ExpandCollapseRecursiveCore(children, predicate); 
+            }
+            finally 
+            { 
+                _ignoreCollectionChanges = false; 
+            }
+
+            _flattenedRows.Clear();
+            InitializeRows();
+            CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
         }
 
         public void Collapse(IndexPath index)
@@ -119,7 +145,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void SetItems(TreeDataGridItemsSourceView<TModel> items)
         {
-            _roots.SetItems(items);
+            _ignoreCollectionChanges = true;
+            
+            try {_roots.SetItems(items); }
+            finally { _ignoreCollectionChanges = false; }
+            
+            _flattenedRows.Clear();
+            InitializeRows();
+            CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
         }
 
         public void Sort(Comparison<TModel>? comparison)
@@ -186,6 +219,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             IExpanderRow<TModel> row,
             NotifyCollectionChangedEventArgs e)
         {
+            if (_ignoreCollectionChanges)
+                return;
+
             if (row is HierarchicalRow<TModel> h)
                 OnCollectionChanged(h.ModelIndexPath, e);
             else
@@ -239,8 +275,33 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return i - index;
         }
 
+        private static void ExpandCollapseRecursiveCore(IReadOnlyList<HierarchicalRow<TModel>> rows, Func<TModel, bool> predicate)
+        {
+            for (var i = 0; i < rows.Count; ++i)
+            {
+                var row = rows[i];
+                var expand = predicate(row.Model);
+
+                if (expand)
+                {
+                    row.IsExpanded = true;
+                    if (row.Children is { } children)
+                        ExpandCollapseRecursiveCore(children, predicate);
+                }
+                else
+                {
+                    if (row.Children is { } children)
+                        ExpandCollapseRecursiveCore(children, predicate);
+                    row.IsExpanded = false;
+                }
+            }
+        }
+
         private void OnCollectionChanged(in IndexPath parentIndex, NotifyCollectionChangedEventArgs e)
         {
+            if (_ignoreCollectionChanges)
+                return;
+
             void Add(int index, IEnumerable? items, bool raise)
             {
                 if (items is null)

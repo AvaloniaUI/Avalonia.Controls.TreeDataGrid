@@ -104,8 +104,54 @@ namespace Avalonia.Controls
             GC.SuppressFinalize(this);
         }
 
-        public void Expand(IndexPath index) => GetOrCreateRows().Expand(index);
+        /// <summary>
+        /// Collapses the row at the specified index.
+        /// </summary>
+        /// <param name="index">The index path of the row to collapse.</param>
         public void Collapse(IndexPath index) => GetOrCreateRows().Collapse(index);
+
+        /// <summary>
+        /// Collapses all rows.
+        /// </summary>
+        public void CollapseAll() => GetOrCreateRows().ExpandCollapseRecursive(_ => false);
+
+        /// <summary>
+        /// Expands the row at the specified index.
+        /// </summary>
+        /// <param name="index">The index path of the row to expand.</param>
+        public void Expand(IndexPath index) => GetOrCreateRows().Expand(index);
+
+        /// <summary>
+        /// Expands all rows.
+        /// </summary>
+        public void ExpandAll() => GetOrCreateRows().ExpandCollapseRecursive(_ => true);
+
+        /// <summary>
+        /// Expands or collapses rows according to a condition.
+        /// </summary>
+        /// <param name="predicate">
+        /// A function which is passed a model instance and returns a boolean value representing
+        /// the desired expanded state of the row.
+        /// </param>
+        public void ExpandCollapseRecursive(Func<TModel, bool> predicate)
+        {
+            GetOrCreateRows().ExpandCollapseRecursive(predicate);
+        }
+
+        /// <summary>
+        /// Expands or collapses rows according to a condition, starting from the specified row.
+        /// </summary>
+        /// <param name="row">
+        /// The row from which to start expanding or collapsing.
+        /// </param>
+        /// <param name="predicate">
+        /// A function which is passed a model instance and returns a boolean value representing
+        /// the desired expanded state of the row.
+        /// </param>
+        public void ExpandCollapseRecursive(HierarchicalRow<TModel> row, Func<TModel, bool> predicate)
+        {
+            GetOrCreateRows().ExpandCollapseRecursive(predicate, row);
+        }
 
         public bool TryGetModelAt(IndexPath index, [NotNullWhen(true)] out TModel? result)
         {
