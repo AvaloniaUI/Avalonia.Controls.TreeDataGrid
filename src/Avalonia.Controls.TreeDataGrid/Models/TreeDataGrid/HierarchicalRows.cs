@@ -74,29 +74,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             }
         }
 
-        internal void ExpandRecursive(Func<TModel, bool>? filter)
-        {
-            _ignoreCollectionChanges = true;
-
-            try { ExpandRecursiveCore(_roots, filter); }
-            finally { _ignoreCollectionChanges = false; }
-
-            _flattenedRows.Clear();
-            InitializeRows();
-            CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
-        }
-
-        internal void ExpandRecursive(HierarchicalRow<TModel> row, Func<TModel, bool>? filter)
+        internal void ExpandCollapseRecursive(Func<TModel, bool> predicate, HierarchicalRow<TModel>? row = null)
         {
             _ignoreCollectionChanges = true;
 
             try 
             {
-                if (filter is null || filter(row.Model))
-                    row.IsExpanded = true;
+                if (row is not null)
+                    row.IsExpanded = predicate(row.Model);
 
-                if (row.Children is { } children)
-                    ExpandRecursiveCore(children, filter); 
+                var children = row is null ? _roots : row.Children;
+
+                if (children is not null)
+                    ExpandCollapseRecursiveCore(children, predicate); 
             }
             finally 
             { 
@@ -136,31 +126,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 if (!found)
                     break;
             }
-        }
-
-        internal void CollapseAll()
-        {
-            static void Collapse(IReadOnlyList<HierarchicalRow<TModel>> rows)
-            {
-                for (var i = 0; i < rows.Count; ++i)
-                {
-                    var row = rows[i];
-
-                    if (row.Children is { } children)
-                        Collapse(children);
-
-                    row.IsExpanded = false;
-                }
-            }
-
-            _ignoreCollectionChanges = true;
-
-            try { Collapse(_roots); }
-            finally { _ignoreCollectionChanges = false; }
-
-            _flattenedRows.Clear();
-            InitializeRows();
-            CollectionChanged?.Invoke(this, CollectionExtensions.ResetEvent);
         }
 
         public (int index, double y) GetRowAt(double y)
@@ -310,17 +275,24 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return i - index;
         }
 
-        private static void ExpandRecursiveCore(IReadOnlyList<HierarchicalRow<TModel>> rows, Func<TModel, bool>? filter)
+        private static void ExpandCollapseRecursiveCore(IReadOnlyList<HierarchicalRow<TModel>> rows, Func<TModel, bool> predicate)
         {
             for (var i = 0; i < rows.Count; ++i)
             {
                 var row = rows[i];
+                var expand = predicate(row.Model);
 
-                if (filter is null || filter(row.Model))
+                if (expand)
                 {
                     row.IsExpanded = true;
                     if (row.Children is { } children)
-                        ExpandRecursiveCore(children, filter);
+                        ExpandCollapseRecursiveCore(children, predicate);
+                }
+                else
+                {
+                    if (row.Children is { } children)
+                        ExpandCollapseRecursiveCore(children, predicate);
+                    row.IsExpanded = false;
                 }
             }
         }
