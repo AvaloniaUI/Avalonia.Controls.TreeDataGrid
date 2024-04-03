@@ -202,36 +202,7 @@ namespace Avalonia.Controls.Selection
 
         protected internal abstract IEnumerable<T>? GetChildren(T node);
         
-        protected virtual bool TryGetItemAt(IndexPath index, out T? result)
-        {
-            var items = (IReadOnlyList<T>?)_root.ItemsView;
-            var count = index.Count;
-
-            for (var i = 0; i < count; ++i)
-            {
-                if (items is null)
-                {
-                    result = default;
-                    return false;
-                }
-
-                var j = index[i];
-
-                if (j < items.Count)
-                {
-                    if (i == count - 1)
-                    {
-                        result = items[j];
-                        return true;
-                    }
-                    else
-                        items = GetChildren(items[j]) as IReadOnlyList<T>;
-                }
-            }
-
-            result = default;
-            return false;
-        }
+        protected internal abstract bool TryGetItemAt(IndexPath index, out T? result);
 
         protected virtual void OnSourceCollectionChangeFinished()
         {

@@ -1596,6 +1596,14 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                     node.Children = CreateNodes(node.Id, node.TargetDepth);
                 return node.Children;
             }
+
+            protected internal override bool TryGetItemAt(IndexPath index, out Node? result)
+            {
+                var nodes = (IList<Node>)Source!;
+                bool valid = index.Any(i => i >= nodes.Count) == false;
+                result = valid ? nodes[index[0]] : null;
+                return valid;
+            }
         }
     }
 }

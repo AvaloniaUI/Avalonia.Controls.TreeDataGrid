@@ -78,7 +78,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal("Node 0-2", target.SelectedItem!.Caption);
                 Assert.Equal("Node 0-2", target.SelectedItems.Single()!.Caption);
             }
-            
+
             [AvaloniaFact(Timeout = 10000)]
             public void Can_Set_Grandchild_SelectedIndex()
             {
@@ -329,7 +329,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, raised);
             }
         }
-        
+
         public class Select
         {
             [AvaloniaFact(Timeout = 10000)]
@@ -1292,6 +1292,14 @@ namespace Avalonia.Controls.TreeDataGridTests
                 if (node.Children is null && node.Id.Count < node.TargetDepth)
                     node.Children = CreateNodes(node.Id, node.TargetDepth);
                 return node.Children;
+            }
+
+            protected internal override bool TryGetItemAt(IndexPath index, out Node? result)
+            {
+                var nodes = (IList<Node>)Source!;
+                bool valid = index.Any(i => i >= nodes.Count) == false;
+                result = valid ? nodes[index[0]] : null;
+                return valid;
             }
         }
     }
