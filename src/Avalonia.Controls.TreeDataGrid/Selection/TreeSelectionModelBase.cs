@@ -204,7 +204,7 @@ namespace Avalonia.Controls.Selection
         
         protected virtual bool TryGetItemAt(IndexPath index, out T? result)
         {
-            var items = (IReadOnlyList<T>?)_root.ItemsView;
+            var items = (IEnumerable<T>?)_root.ItemsView;
             var count = index.Count;
 
             for (var i = 0; i < count; ++i)
@@ -215,17 +215,21 @@ namespace Avalonia.Controls.Selection
                     return false;
                 }
 
-                var j = index[i];
-
-                if (j < items.Count)
+                if (TryGetElementAt(items, index[i], out var item))
                 {
                     if (i == count - 1)
                     {
-                        result = items[j];
+                        result = item;
                         return true;
                     }
                     else
-                        items = GetChildren(items[j]) as IReadOnlyList<T>;
+                    {
+                        items = GetChildren(item);
+                    }
+                }
+                else
+                {
+                    break;
                 }
             }
 
@@ -563,6 +567,40 @@ namespace Avalonia.Controls.Selection
                 }
             }
 
+            return false;
+        }
+
+        private static bool TryGetElementAt(IEnumerable<T> items, int index, [MaybeNullWhen(false)] out T result)
+        { 
+            if (items is IList<T> list)
+            {
+                if (index < list.Count)
+                {
+                    result = list[index];
+                    return true;
+                }
+            }
+            else if (items is IReadOnlyList<T> ro)
+            {
+                if (index < ro.Count)
+                {
+                    result = ro[index];
+                    return true;
+                }
+            }
+            else
+            {
+                foreach (var item in items)
+                {
+                    if (index-- == 0)
+                    {
+                        result = item;
+                        return true;
+                    }
+                }
+            }
+
+            result = default;
             return false;
         }
 
