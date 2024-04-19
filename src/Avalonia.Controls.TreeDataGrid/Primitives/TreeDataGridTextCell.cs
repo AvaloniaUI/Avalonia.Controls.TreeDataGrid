@@ -9,6 +9,11 @@ namespace Avalonia.Controls.Primitives
 {
     public class TreeDataGridTextCell : TreeDataGridCell
     {
+        public static readonly DirectProperty<TreeDataGridTextCell, string> StringFormatProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridTextCell, string>(
+                nameof(StringFormat),
+                o => o.StringFormat);
+
         public static readonly DirectProperty<TreeDataGridTextCell, TextTrimming> TextTrimmingProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridTextCell, TextTrimming>(
                 nameof(TextTrimming),
@@ -32,10 +37,17 @@ namespace Avalonia.Controls.Primitives
                 (o,v)=> o.TextAlignment = v);
 
         private string? _value;
+        private string _stringFormat = "{0}";
         private TextBox? _edit;
         private TextTrimming _textTrimming = TextTrimming.CharacterEllipsis;
         private TextWrapping _textWrapping = TextWrapping.NoWrap;
         private TextAlignment _textAlignment = TextAlignment.Left;
+
+        public string StringFormat
+        {
+            get => _stringFormat;
+            set => SetAndRaise(StringFormatProperty, ref _stringFormat, value);
+        }
 
         public TextTrimming TextTrimming
         {
@@ -71,7 +83,7 @@ namespace Avalonia.Controls.Primitives
             int columnIndex,
             int rowIndex)
         {
-            Value = model.Value?.ToString();
+            Value = string.Format((model as ITextCell)?.StringFormat ?? "{0}", model.Value);
             TextTrimming = (model as ITextCell)?.TextTrimming ?? TextTrimming.CharacterEllipsis;
             TextWrapping = (model as ITextCell)?.TextWrapping ?? TextWrapping.NoWrap;
             TextAlignment = (model as ITextCell)?.TextAlignment ?? TextAlignment.Left;
@@ -103,7 +115,7 @@ namespace Avalonia.Controls.Primitives
             base.OnModelPropertyChanged(sender, e);
 
             if (e.PropertyName == nameof(ITextCell.Value))
-                Value = Model?.Value?.ToString();
+                Value = string.Format((Model as ITextCell)?.StringFormat ?? "{0}", Model?.Value);
         }
     }
 }

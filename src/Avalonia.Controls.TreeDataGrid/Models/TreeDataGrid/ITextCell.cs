@@ -13,6 +13,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         string? Text { get; set; }
 
         /// <summary>
+        /// Format to use for the string
+        /// </summary>
+        string StringFormat { get; }
+
+        /// <summary>
         /// Gets the cell's text trimming mode.
         /// </summary>
         TextTrimming TextTrimming { get; }
@@ -21,7 +26,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets the cell's text wrapping mode.
         /// </summary>
         TextWrapping TextWrapping { get; }
-        
+
+        /// <summary>
         /// Gets the cell's text alignment mode.
         /// </summary>
         TextAlignment TextAlignment { get; }

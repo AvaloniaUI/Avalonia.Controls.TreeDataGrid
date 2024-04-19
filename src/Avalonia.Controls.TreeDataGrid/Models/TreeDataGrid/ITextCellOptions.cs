@@ -5,6 +5,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public interface ITextCellOptions : ICellOptions
     {
         /// <summary>
+        /// Format to use for the string
+        /// </summary>
+        string StringFormat { get; }
+
+        /// <summary>
         /// Gets the text trimming mode for the cell.
         /// </summary>
         TextTrimming TextTrimming { get; }
