@@ -14,6 +14,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public bool IsTextSearchEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets the format string for the cells in the column.
+        /// </summary>
+        public string StringFormat { get; set; } = "{0}";
+
+        /// <summary>
         /// Gets or sets the text trimming mode for the cells in the column.
         /// </summary>
         public TextTrimming TextTrimming { get; set; } = TextTrimming.CharacterEllipsis;
