@@ -26,7 +26,7 @@ namespace TreeDataGridDemo.ViewModels
                         IsTextSearchEnabled = true,
                     }),
                     new TemplateColumn<Country>("Region", "RegionCell", "RegionEditCell"),
-                    new TextColumn<Country, int>("Population", x => x.Population, new GridLength(3, GridUnitType.Star)),
+                    new TextColumn<Country, int>("Population", x => x.Population, new GridLength(3, GridUnitType.Star), new TextColumnOptions<Country>{StringFormat = "{0:N}"}),
                     new TextColumn<Country, int>("Area", x => x.Area, new GridLength(3, GridUnitType.Star)),
                     new TextColumn<Country, int>("GDP", x => x.GDP, new GridLength(3, GridUnitType.Star), new()
                     {
