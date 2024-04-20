@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -32,7 +33,9 @@ namespace TreeDataGridDemo.ViewModels
                     new TextColumn<Country, int>("GDP", x => x.GDP, new GridLength(3, GridUnitType.Star), new()
                     {
                         TextAlignment = Avalonia.Media.TextAlignment.Right,
-                        MaxWidth = new GridLength(150)
+                        MaxWidth = new GridLength(150),
+                        StringFormat = "{0:C}", // Format as Currency
+                        FormatCultureInfo = CultureInfo.GetCultureInfo("en-US"), // Format this as USD
                     }),
                 }
             };
