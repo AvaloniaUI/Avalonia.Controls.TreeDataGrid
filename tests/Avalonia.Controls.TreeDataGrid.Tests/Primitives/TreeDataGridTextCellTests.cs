@@ -42,6 +42,26 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             Assert.Equal(expected, cell.Value);
         }
 
+        [AvaloniaTheory(Timeout = 10000)]
+        [InlineData(10.1, "10.1")]
+        [InlineData(20.12345, "20.12345")]
+        [InlineData(5050.50, "5050.5")]
+        public void Formats_Doublet_With_Default_Formatter_Properly(double input, string expected)
+        {
+            var cell = SetupCellForType(input, null, null);
+            Assert.Equal(expected, cell.Value);
+        }
+
+        [AvaloniaTheory(Timeout = 10000)]
+        [InlineData(1_000_000, "1000000")]
+        [InlineData(2032, "2032")]
+        [InlineData(5050, "5050")]
+        public void Formats_Int_With_Default_Formatter_Properly(int input, string expected)
+        {
+            var cell = SetupCellForType(input, null, null);
+            Assert.Equal(expected, cell.Value);
+        }
+
         private static TreeDataGridTextCell SetupCellForType<T>(T input, CultureInfo? cultureInfo, string? formatString)
         {
             var subject = new Subject<BindingValue<T>>();
