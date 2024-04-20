@@ -23,7 +23,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <summary>
         /// Culture info used in conjunction with <see cref="StringFormat"/>
         /// </summary>
-        public CultureInfo FormatCultureInfo { get; } = CultureInfo.InvariantCulture;
+        public CultureInfo FormatCultureInfo { get; set; } = CultureInfo.InvariantCulture;
 
         /// <summary>
         /// Gets or sets the text trimming mode for the cells in the column.
