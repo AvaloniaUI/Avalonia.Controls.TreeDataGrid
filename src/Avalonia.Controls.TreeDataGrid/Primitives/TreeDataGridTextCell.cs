@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel;
+using System.Globalization;
+
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Input;
@@ -13,6 +15,11 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.RegisterDirect<TreeDataGridTextCell, string>(
                 nameof(StringFormat),
                 o => o.StringFormat);
+
+        public static readonly DirectProperty<TreeDataGridTextCell, CultureInfo> FormatCultureInfoProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridTextCell, CultureInfo>(
+                nameof(FormatCultureInfo),
+                o => o.FormatCultureInfo);
 
         public static readonly DirectProperty<TreeDataGridTextCell, TextTrimming> TextTrimmingProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridTextCell, TextTrimming>(
@@ -38,6 +45,7 @@ namespace Avalonia.Controls.Primitives
 
         private string? _value;
         private string _stringFormat = "{0}";
+        private CultureInfo _formatCultureInfo = CultureInfo.InvariantCulture;
         private TextBox? _edit;
         private TextTrimming _textTrimming = TextTrimming.CharacterEllipsis;
         private TextWrapping _textWrapping = TextWrapping.NoWrap;
@@ -47,6 +55,12 @@ namespace Avalonia.Controls.Primitives
         {
             get => _stringFormat;
             set => SetAndRaise(StringFormatProperty, ref _stringFormat, value);
+        }
+
+        public CultureInfo FormatCultureInfo
+        {
+            get => _formatCultureInfo;
+            set => SetAndRaise(FormatCultureInfoProperty, ref _formatCultureInfo, value);
         }
 
         public TextTrimming TextTrimming
@@ -83,7 +97,10 @@ namespace Avalonia.Controls.Primitives
             int columnIndex,
             int rowIndex)
         {
-            Value = string.Format((model as ITextCell)?.StringFormat ?? "{0}", model.Value);
+            var format = (model as ITextCell)?.StringFormat ?? "{0}";
+            var culture = (model as ITextCell)?.FormatCultureInfo ?? CultureInfo.InvariantCulture;
+
+            Value = string.Format(culture, format, model.Value);
             TextTrimming = (model as ITextCell)?.TextTrimming ?? TextTrimming.CharacterEllipsis;
             TextWrapping = (model as ITextCell)?.TextWrapping ?? TextWrapping.NoWrap;
             TextAlignment = (model as ITextCell)?.TextAlignment ?? TextAlignment.Left;
@@ -114,8 +131,11 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnModelPropertyChanged(sender, e);
 
-            if (e.PropertyName == nameof(ITextCell.Value))
-                Value = string.Format((Model as ITextCell)?.StringFormat ?? "{0}", Model?.Value);
+            if (e.PropertyName != nameof(ITextCell.Value)) return;
+            var format = (Model as ITextCell)?.StringFormat ?? "{0}";
+            var culture = (Model as ITextCell)?.FormatCultureInfo ?? CultureInfo.InvariantCulture;
+
+            Value = string.Format(culture, format, Model?.Value);
         }
     }
 }

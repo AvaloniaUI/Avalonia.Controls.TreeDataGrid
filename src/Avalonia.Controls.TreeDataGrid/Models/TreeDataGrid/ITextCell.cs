@@ -1,4 +1,6 @@
-﻿using Avalonia.Media;
+﻿using System.Globalization;
+
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -16,6 +18,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Format to use for the string
         /// </summary>
         string StringFormat { get; }
+
+        /// <summary>
+        /// Culture info used in conjunction with <see cref="StringFormat"/>
+        /// </summary>
+        CultureInfo FormatCultureInfo { get; }
 
         /// <summary>
         /// Gets the cell's text trimming mode.
