@@ -312,6 +312,46 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.True(double.IsNaN(columns[3].ActualWidth));
         }
 
+        [AvaloniaFact(Timeout = 10000)]
+        public void Columns_Are_Correctly_Sized_After_Changing_Source()
+        {
+            // Create the initial target with 2 columns and make sure our preconditions are correct.
+            var (target, items) = CreateTarget(columns: new IColumn<Model>[]
+            {
+                new TextColumn<Model, int>("ID", x => x.Id, width: new GridLength(1, GridUnitType.Star)),
+                new TextColumn<Model, string?>("Title1", x => x.Title, options: MinWidth(50)),
+            });
+
+            AssertColumnIndexes(target, 0, 2);
+
+            // Create a new source and assign it to the TreeDataGrid.
+            var newSource = new FlatTreeDataGridSource<Model>(items)
+            {
+                Columns =
+                {
+                    new TextColumn<Model, int>("ID", x => x.Id, width: new GridLength(1, GridUnitType.Star)),
+                    new TextColumn<Model, string?>("Title1", x => x.Title, options: MinWidth(20)),
+                    new TextColumn<Model, string?>("Title2", x => x.Title, options: MinWidth(20)),
+                }
+            };
+
+            target.Source = newSource;
+
+            // The columns should not have an ActualWidth yet.
+            Assert.True(double.IsNaN(newSource.Columns[0].ActualWidth));
+            Assert.True(double.IsNaN(newSource.Columns[1].ActualWidth));
+            Assert.True(double.IsNaN(newSource.Columns[2].ActualWidth));
+
+            // Do a layout pass and check that the columns have been correctly sized.
+            target.UpdateLayout();
+            AssertColumnIndexes(target, 0, 3);
+
+            var columns = (ColumnList<Model>)target.Columns!;
+            Assert.Equal(60, columns[0].ActualWidth);
+            Assert.Equal(20, columns[1].ActualWidth);
+            Assert.Equal(20, columns[2].ActualWidth);
+        }
+
         public class RemoveItems
         {
             [AvaloniaFact(Timeout = 10000)]
