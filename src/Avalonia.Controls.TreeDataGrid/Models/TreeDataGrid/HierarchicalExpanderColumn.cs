@@ -23,6 +23,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private readonly TypedBinding<TModel, bool>? _hasChildrenSelector;
         private readonly TypedBinding<TModel, bool>? _isExpandedBinding;
         private double _actualWidth = double.NaN;
+        private bool _isVisible = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HierarchicalExpanderColumn{TModel}"/> class.
@@ -159,6 +160,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
             if (width.IsAbsolute)
                 ActualWidth = width.Value;
+        }
+
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set => RaiseAndSetIfChanged(ref _isVisible, value);
         }
     }
 }
