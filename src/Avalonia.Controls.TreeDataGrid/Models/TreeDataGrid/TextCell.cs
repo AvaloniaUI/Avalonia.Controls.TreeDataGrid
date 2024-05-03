@@ -49,7 +49,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public string? Text
         {
             get => _value?.ToString();
-            set => Value = (T?)Convert.ChangeType(value, typeof(T));
+            set{
+                if (string.IsNullOrEmpty(value))
+                {
+                    Value = default(T?);
+                }
+                else
+                {
+                    Value = (T?)Convert.ChangeType(value, typeof(T));
+                }
+            }
         }
 
         public T? Value
