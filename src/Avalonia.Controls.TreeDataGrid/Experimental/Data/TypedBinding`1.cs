@@ -45,14 +45,16 @@ namespace Avalonia.Experimental.Data
                     $"Cannot create a two-way binding for '{expression}' because the expression does not target a property.",
                     nameof(expression));
 
-            if (property.GetGetMethod() is null)
+            MethodInfo? getMethodInfo = property.GetGetMethod(true);
+            if (getMethodInfo is null || getMethodInfo.IsPrivate)
                 throw new ArgumentException(
-                    $"Cannot create a two-way binding for '{expression}' because the property has no getter.",
+                    $"Cannot create a two-way binding for '{expression}' because the property has no getter or the getter is private.",
                     nameof(expression));
 
-            if (property.GetSetMethod() is null)
+            MethodInfo? setMethodInfo = property.GetSetMethod(true);
+            if (setMethodInfo is null || setMethodInfo.IsPrivate)
                 throw new ArgumentException(
-                    $"Cannot create a two-way binding for '{expression}' because the property has no setter.",
+                    $"Cannot create a two-way binding for '{expression}' because the property has no setter or the setter is private.",
                     nameof(expression));
 
             // TODO: This is using reflection and mostly untested. Unit test it properly and
