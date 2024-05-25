@@ -134,7 +134,8 @@
                       Source="{Binding DragDrop.Source}"
                       AutoDragDropRows="True"
                       RowDragStarted="DragDrop_RowDragStarted"
-                      RowDragOver="DragDrop_RowDragOver"/>
+                      RowDragOver="DragDrop_RowDragOver"
+                      PointerPressed="DragDrop_OnPointerPressed"/>
       </DockPanel>
     </TabItem>
   </TabControl>
