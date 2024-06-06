@@ -302,7 +302,7 @@ namespace Avalonia.Controls.Selection
             if (valueSelector != null && model != null)
             {
                 var value = valueSelector(model);
-                if (value != null && value.ToUpper().StartsWith(candidatePattern, StringComparison.Ordinal))
+                if (value != null && value.ToUpper().StartsWith(candidatePattern))
                 {
                     UpdateSelection(treeDataGrid, newIndex, true);
                     treeDataGrid.RowsPresenter?.BringIntoView(newIndex);

@@ -368,6 +368,10 @@ namespace Avalonia.Controls
         protected override void OnTextInput(TextInputEventArgs e)
         {
             base.OnTextInput(e);
+
+            if (e.Text is { Length: > 0 } && char.IsControl(e.Text[0]))
+                return;
+
             _selection?.OnTextInput(this, e);
         }
 
