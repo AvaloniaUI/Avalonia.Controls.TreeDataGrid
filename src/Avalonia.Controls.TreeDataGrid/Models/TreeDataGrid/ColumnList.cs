@@ -9,6 +9,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// </summary>
     public class ColumnList<TModel> : NotifyingListBase<IColumn<TModel>>, IColumns
     {
+        private bool _initialized;
         private double _viewportWidth;
 
         public event EventHandler? LayoutInvalidated;
@@ -22,6 +23,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public Size CellMeasured(int columnIndex, int rowIndex, Size size)
         {
             var column = (IUpdateColumnLayout)this[columnIndex];
+            _initialized = true;
             return new Size(column.CellMeasured(size.Width, rowIndex), size.Height);
         }
 
@@ -103,7 +105,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             if (_viewportWidth != viewport.Width)
             {
                 _viewportWidth = viewport.Width;
-                UpdateColumnSizes();
+                if (_initialized)
+                    UpdateColumnSizes();
             }
         }
 
