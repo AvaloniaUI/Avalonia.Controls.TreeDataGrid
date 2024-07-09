@@ -56,7 +56,8 @@ namespace Avalonia.Controls.Selection
             {
                 for (var i = range.Begin; i <= range.End; ++i)
                 {
-                    yield return node.ItemsView![i];
+                    if (node.ItemsView is not null)
+                        yield return node.ItemsView[i];
                 }
             }
 
