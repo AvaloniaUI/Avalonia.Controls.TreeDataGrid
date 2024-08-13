@@ -427,7 +427,7 @@ namespace Avalonia.Controls.Primitives
             // viewport.
             Viewport = e.EffectiveViewport.Size == default ? 
                 s_invalidViewport :
-                e.EffectiveViewport.Intersect(new(Bounds.Size));
+                Intersect(e.EffectiveViewport, new(Bounds.Size));
 
             _isWaitingForViewportUpdate = false;
 
@@ -729,6 +729,24 @@ namespace Avalonia.Controls.Primitives
         }
 
         private static bool HasInfinity(Size s) => double.IsInfinity(s.Width) || double.IsInfinity(s.Height);
+
+        private static Rect Intersect(Rect a, Rect b)
+        {
+            // Hack fix for https://github.com/AvaloniaUI/Avalonia/issues/15075
+            var newLeft = (a.X > b.X) ? a.X : b.X;
+            var newTop = (a.Y > b.Y) ? a.Y : b.Y;
+            var newRight = (a.Right < b.Right) ? a.Right : b.Right;
+            var newBottom = (a.Bottom < b.Bottom) ? a.Bottom : b.Bottom;
+
+            if ((newRight >= newLeft) && (newBottom >= newTop))
+            {
+                return new Rect(newLeft, newTop, newRight - newLeft, newBottom - newTop);
+            }
+            else
+            {
+                return default;
+            }
+        }
 
         private struct MeasureViewport
         {

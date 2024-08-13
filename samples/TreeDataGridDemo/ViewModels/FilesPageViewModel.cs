@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
@@ -20,6 +19,9 @@ namespace TreeDataGridDemo.ViewModels
     public class FilesPageViewModel : ReactiveObject
     {
         private static IconConverter? s_iconConverter;
+        private readonly HierarchicalTreeDataGridSource<FileTreeNodeModel>? _treeSource;
+        private FlatTreeDataGridSource<FileTreeNodeModel>? _flatSource;
+        private ITreeDataGridSource<FileTreeNodeModel> _source;
         private bool _cellSelection;
         private FileTreeNodeModel? _root;
         private string _selectedDrive;
@@ -38,7 +40,142 @@ namespace TreeDataGridDemo.ViewModels
                 _selectedDrive = Drives.FirstOrDefault() ?? "/";
             }
 
-            Source = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(Array.Empty<FileTreeNodeModel>())
+            _source = _treeSource = CreateTreeSource();
+
+            this.WhenAnyValue(x => x.SelectedDrive)
+                .Subscribe(x =>
+                {
+                    _root = new FileTreeNodeModel(_selectedDrive, isDirectory: true, isRoot: true);
+
+                    if (_treeSource is not null)
+                        _treeSource.Items = new[] { _root };
+                    else if (_flatSource is not null)
+                        _flatSource.Items = _root.Children;
+                });
+        }
+
+        public bool CellSelection
+        {
+            get => _cellSelection;
+            set
+            {
+                if (_cellSelection != value)
+                {
+                    _cellSelection = value;
+                    if (_cellSelection)
+                        Source.Selection = new TreeDataGridCellSelectionModel<FileTreeNodeModel>(Source) { SingleSelect = false };
+                    else
+                        Source.Selection = new TreeDataGridRowSelectionModel<FileTreeNodeModel>(Source) { SingleSelect = false };
+                    this.RaisePropertyChanged();
+                }
+            }
+        }
+
+        public IList<string> Drives { get; }
+
+        public bool FlatList
+        {
+            get => Source != _treeSource;
+            set
+            {
+                if (value != FlatList)
+                    Source = value ? _flatSource ??= CreateFlatSource() : _treeSource!;
+            }
+        }
+
+        public string SelectedDrive
+        {
+            get => _selectedDrive;
+            set => this.RaiseAndSetIfChanged(ref _selectedDrive, value);
+        }
+
+        public string? SelectedPath
+        {
+            get => _selectedPath;
+            set => SetSelectedPath(value);
+        }
+
+        public ITreeDataGridSource<FileTreeNodeModel> Source
+        {
+            get => _source;
+            private set => this.RaiseAndSetIfChanged(ref _source, value);
+        }
+
+        public static IMultiValueConverter FileIconConverter
+        {
+            get
+            {
+                if (s_iconConverter is null)
+                {
+                    using (var fileStream = AssetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
+                    using (var folderStream = AssetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
+                    using (var folderOpenStream = AssetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
+                    {
+                        var fileIcon = new Bitmap(fileStream);
+                        var folderIcon = new Bitmap(folderStream);
+                        var folderOpenIcon = new Bitmap(folderOpenStream);
+
+                        s_iconConverter = new IconConverter(fileIcon, folderOpenIcon, folderIcon);
+                    }
+                }
+
+                return s_iconConverter;
+            }
+        }
+
+        private FlatTreeDataGridSource<FileTreeNodeModel> CreateFlatSource()
+        {
+            var result = new FlatTreeDataGridSource<FileTreeNodeModel>(_root!.Children)
+            {
+                Columns =
+                {
+                    new CheckBoxColumn<FileTreeNodeModel>(
+                        null,
+                        x => x.IsChecked,
+                        (o, v) => o.IsChecked = v,
+                        options: new()
+                        {
+                            CanUserResizeColumn = false,
+                        }),
+                    new TemplateColumn<FileTreeNodeModel>(
+                        "Name",
+                        "FileNameCell",
+                        "FileNameEditCell",
+                        new GridLength(1, GridUnitType.Star),
+                        new()
+                        {
+                            CompareAscending = FileTreeNodeModel.SortAscending(x => x.Name),
+                            CompareDescending = FileTreeNodeModel.SortDescending(x => x.Name),
+                            IsTextSearchEnabled = true,
+                            TextSearchValueSelector = x => x.Name
+                        }),
+                    new TextColumn<FileTreeNodeModel, long?>(
+                        "Size",
+                        x => x.Size,
+                        options: new()
+                        {
+                            CompareAscending = FileTreeNodeModel.SortAscending(x => x.Size),
+                            CompareDescending = FileTreeNodeModel.SortDescending(x => x.Size),
+                        }),
+                    new TextColumn<FileTreeNodeModel, DateTimeOffset?>(
+                        "Modified",
+                        x => x.Modified,
+                        options: new()
+                        {
+                            CompareAscending = FileTreeNodeModel.SortAscending(x => x.Modified),
+                            CompareDescending = FileTreeNodeModel.SortDescending(x => x.Modified),
+                        }),
+                }
+            };
+
+            result.RowSelection!.SingleSelect = false;
+            result.RowSelection.SelectionChanged += SelectionChanged;
+            return result;
+        }
+
+        private HierarchicalTreeDataGridSource<FileTreeNodeModel> CreateTreeSource()
+        {
+            var result = new HierarchicalTreeDataGridSource<FileTreeNodeModel>(Array.Empty<FileTreeNodeModel>())
             {
                 Columns =
                 {
@@ -85,77 +222,16 @@ namespace TreeDataGridDemo.ViewModels
                 }
             };
 
-            Source.RowSelection!.SingleSelect = false;
-            Source.RowSelection.SelectionChanged += SelectionChanged;
-
-            this.WhenAnyValue(x => x.SelectedDrive)
-                .Subscribe(x =>
-                {
-                    _root = new FileTreeNodeModel(_selectedDrive, isDirectory: true, isRoot: true);
-                    Source.Items = new[] { _root };
-                });
-        }
-
-        public bool CellSelection
-        {
-            get => _cellSelection;
-            set
-            {
-                if (_cellSelection != value)
-                {
-                    _cellSelection = value;
-                    if (_cellSelection)
-                        Source.Selection = new TreeDataGridCellSelectionModel<FileTreeNodeModel>(Source) { SingleSelect = false };
-                    else
-                        Source.Selection = new TreeDataGridRowSelectionModel<FileTreeNodeModel>(Source) { SingleSelect = false };
-                    this.RaisePropertyChanged();
-                }
-            }
-        }
-
-        public IList<string> Drives { get; }
-
-        public string SelectedDrive
-        {
-            get => _selectedDrive;
-            set => this.RaiseAndSetIfChanged(ref _selectedDrive, value);
-        }
-
-        public string? SelectedPath
-        {
-            get => _selectedPath;
-            set => SetSelectedPath(value);
-        }
-
-        public HierarchicalTreeDataGridSource<FileTreeNodeModel> Source { get; }
-
-        public static IMultiValueConverter FileIconConverter
-        {
-            get
-            {
-                if (s_iconConverter is null)
-                {
-                    using (var fileStream = AssetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/file.png")))
-                    using (var folderStream = AssetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder.png")))
-                    using (var folderOpenStream = AssetLoader.Open(new Uri("avares://TreeDataGridDemo/Assets/folder-open.png")))
-                    {
-                        var fileIcon = new Bitmap(fileStream);
-                        var folderIcon = new Bitmap(folderStream);
-                        var folderOpenIcon = new Bitmap(folderOpenStream);
-
-                        s_iconConverter = new IconConverter(fileIcon, folderOpenIcon, folderIcon);
-                    }
-                }
-
-                return s_iconConverter;
-            }
+            result.RowSelection!.SingleSelect = false;
+            result.RowSelection.SelectionChanged += SelectionChanged;
+            return result;
         }
 
         private void SetSelectedPath(string? value)
         {
             if (string.IsNullOrEmpty(value))
             {
-                Source.RowSelection!.Clear();
+                GetRowSelection(Source).Clear();
                 return;
             }
 
@@ -204,12 +280,18 @@ namespace TreeDataGridDemo.ViewModels
                 }
             }
 
-            Source.RowSelection!.SelectedIndex = index;
+            GetRowSelection(Source).SelectedIndex = index;
+        }
+
+        private ITreeDataGridRowSelectionModel<FileTreeNodeModel> GetRowSelection(ITreeDataGridSource source)
+        {
+            return source.Selection as ITreeDataGridRowSelectionModel<FileTreeNodeModel> ??
+                throw new InvalidOperationException("Expected a row selection model.");
         }
 
         private void SelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs<FileTreeNodeModel> e)
         {
-            var selectedPath = Source.RowSelection?.SelectedItem?.Path;
+            var selectedPath = GetRowSelection(Source).SelectedItem?.Path;
             this.RaiseAndSetIfChanged(ref _selectedPath, selectedPath, nameof(SelectedPath));
 
             foreach (var i in e.DeselectedItems)
