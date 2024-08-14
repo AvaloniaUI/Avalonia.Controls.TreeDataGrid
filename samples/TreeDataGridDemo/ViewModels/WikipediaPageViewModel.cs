@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -11,7 +12,7 @@ using TreeDataGridDemo.Models;
 
 namespace TreeDataGridDemo.ViewModels
 {
-    internal class WikipediaPageViewModel
+    internal partial class WikipediaPageViewModel
     {
         private readonly AvaloniaList<OnThisDayArticle> _data = new();
 
@@ -47,15 +48,19 @@ namespace TreeDataGridDemo.ViewModels
                 var m = DateTimeOffset.Now.Month;
                 var uri = $"https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/{m}/{d}";
                 var s = await client.GetStringAsync(uri);
-                var data = JsonSerializer.Deserialize<OnThisDay>(s, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                });
+                var data = (OnThisDay)JsonSerializer.Deserialize(s, typeof(OnThisDay), SerializationContext.Default)!;
 
                 if (data?.Selected is not null)
                     _data.AddRange(data.Selected.SelectMany(x => x.Pages!));
             }
             catch { }
+        }
+
+        [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
+        [JsonSerializable(typeof(OnThisDay))]
+        internal partial class SerializationContext : JsonSerializerContext
+        {
+            
         }
     }
 }

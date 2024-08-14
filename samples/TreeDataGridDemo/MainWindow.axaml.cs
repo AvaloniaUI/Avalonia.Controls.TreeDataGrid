@@ -20,7 +20,6 @@ namespace TreeDataGridDemo
         public MainWindow()
         {
             InitializeComponent();
-            this.AttachDevTools();
             DataContext = new MainWindowViewModel();
 
             _tabs = this.FindControl<TabControl>("tabs");
@@ -73,11 +72,6 @@ namespace TreeDataGridDemo
             var index = vm.Countries.Source.Rows.Count - 1;
             countries.RowsPresenter!.BringIntoView(index);
             countries.TryGetRow(index)?.Focus();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         private void MainWindow_Activated(object? sender, EventArgs e)
