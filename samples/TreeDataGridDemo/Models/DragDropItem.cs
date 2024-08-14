@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace TreeDataGridDemo.Models
 {
-    public class DragDropItem : ReactiveObject
+    public class DragDropItem : ObservableObject
     {
         private static Random _random = new Random(0);
         private ObservableCollection<DragDropItem>? _children;
@@ -18,13 +18,13 @@ namespace TreeDataGridDemo.Models
         public bool AllowDrag
         {
             get => _allowDrag;
-            set => this.RaiseAndSetIfChanged(ref _allowDrag, value);
+            set => SetProperty(ref _allowDrag, value);
         }
 
         public bool AllowDrop
         {
             get => _allowDrop;
-            set => this.RaiseAndSetIfChanged(ref _allowDrop, value);
+            set => SetProperty(ref _allowDrop, value);
         }
 
         public ObservableCollection<DragDropItem> Children => _children ??= CreateRandomItems();
