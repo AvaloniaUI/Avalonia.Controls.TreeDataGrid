@@ -1,15 +1,16 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
     public class TextCell<T> : NotifyingBase, ITextCell, IDisposable, IEditableObject
     {
-        private readonly ISubject<BindingValue<T>>? _binding;
+        private readonly IObserver<BindingValue<T>>? _binding;
         private readonly ITextCellOptions? _options;
         private readonly IDisposable? _subscription;
         private string? _editText;
@@ -23,19 +24,29 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         public TextCell(
-            ISubject<BindingValue<T>> binding,
+            IObserver<BindingValue<T>> bindingSubject,
+            IObservable<BindingValue<T>> bindingObservable,
             bool isReadOnly,
             ITextCellOptions? options = null)
         {
-            _binding = binding;
+            _binding = bindingSubject;
             IsReadOnly = isReadOnly;
             _options = options;
 
-            _subscription = binding.Subscribe(x =>
+            _subscription = bindingObservable.Subscribe(new AnonymousObserver<BindingValue<T>>(x =>
             {
                 if (x.HasValue)
                     Value = x.Value;
-            });
+            }));
+        }
+
+        [Obsolete("ISubject<> might be removed in the future versions.")]
+        public TextCell(
+            System.Reactive.Subjects.ISubject<BindingValue<T>> binding,
+            bool isReadOnly,
+            ITextCellOptions? options = null)
+            : this(binding, binding, isReadOnly, options)
+        {
         }
 
         public bool CanEdit => !IsReadOnly;
