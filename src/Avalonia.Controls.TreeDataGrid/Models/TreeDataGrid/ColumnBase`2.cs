@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using Avalonia.Experimental.Data;
 using Avalonia.Experimental.Data.Core;
-using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
