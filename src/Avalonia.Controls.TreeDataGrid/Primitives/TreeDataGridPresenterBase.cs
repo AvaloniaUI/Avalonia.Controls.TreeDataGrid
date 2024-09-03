@@ -663,6 +663,13 @@ namespace Avalonia.Controls.Primitives
 
         private void RecycleElementOnItemRemoved(Control element)
         {
+            if (element == _focusedElement)
+            {
+                _focusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
+                _focusedElement = null;
+                _focusedIndex = -1;
+            }
+
             UnrealizeElementOnItemRemoved(element);
             element.IsVisible = false;
             ElementFactory!.RecycleElement(element);
@@ -691,6 +698,12 @@ namespace Avalonia.Controls.Primitives
 
         private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            void ClearFocusedElement(int index, int count)
+            {
+                if (_focusedElement is not null && _focusedIndex >= index && _focusedIndex < index + count)
+                    RecycleElementOnItemRemoved(_focusedElement);
+            }
+
             InvalidateMeasure();
 
             if (_realizedElements is null)
@@ -703,13 +716,16 @@ namespace Avalonia.Controls.Primitives
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
+                    ClearFocusedElement(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     _realizedElements.ItemsReplaced(e.OldStartingIndex, e.OldItems!.Count, _recycleElementOnItemRemoved);
+                    ClearFocusedElement(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Move:
                     _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
                     _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
+                    ClearFocusedElement(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
