@@ -49,7 +49,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public string? Text
         {
             get => _value?.ToString();
-            set{
+            set
+            {
+                if (IsReadOnly) return;
+
                 if (string.IsNullOrEmpty(value))
                 {
                     Value = default(T?);
