@@ -729,6 +729,8 @@ namespace Avalonia.Controls.Primitives
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
+                    if (_focusedElement is not null )
+                        RecycleElementOnItemRemoved(_focusedElement);
                     break;
             }
         }
