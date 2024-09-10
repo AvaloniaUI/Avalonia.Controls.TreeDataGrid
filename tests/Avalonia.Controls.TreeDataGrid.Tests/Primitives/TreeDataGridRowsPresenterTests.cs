@@ -353,6 +353,78 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         }
 
         [AvaloniaFact(Timeout = 10000)]
+        public void Handles_Removing_Focused_Row_While_Outside_Viewport()
+        {
+            var (target, scroll, items) = CreateTarget();
+            var element = target.RealizedElements.ElementAt(0)!;
+
+            element.Focusable = true;
+            element.Focus();
+
+            // Scroll down one item.
+            scroll.Offset = new Vector(0, 10);
+            Layout(target);
+
+            // Remove the focused element.
+            items.RemoveAt(0);
+
+            // Scroll back to the beginning.
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+
+            // The correct element should be shown.
+            Assert.Same(items[0], target.RealizedElements.ElementAt(0)!.DataContext);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Handles_Replacing_Focused_Row_While_Outside_Viewport()
+        {
+            var (target, scroll, items) = CreateTarget();
+            var element = target.RealizedElements.ElementAt(0)!;
+
+            element.Focusable = true;
+            element.Focus();
+
+            // Scroll down one item.
+            scroll.Offset = new Vector(0, 10);
+            Layout(target);
+
+            // Replace the focused element.
+            items[0] = new Model { Id = 100, Title = "New Item" };
+
+            // Scroll back to the beginning.
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+
+            // The correct element should be shown.
+            Assert.Same(items[0], target.RealizedElements.ElementAt(0)!.DataContext);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Handles_Moving_Focused_Row_While_Outside_Viewport()
+        {
+            var (target, scroll, items) = CreateTarget();
+            var element = target.RealizedElements.ElementAt(0)!;
+
+            element.Focusable = true;
+            element.Focus();
+
+            // Scroll down one item.
+            scroll.Offset = new Vector(0, 10);
+            Layout(target);
+
+            // Move the focused element.
+            items.Move(0, items.Count - 1);
+
+            // Scroll back to the beginning.
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+
+            // The correct element should be shown.
+            Assert.Same(items[0], target.RealizedElements.ElementAt(0)!.DataContext);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
         public void Updates_Star_Column_ActualWidth()
         {
             var columns = new ColumnList<Model>

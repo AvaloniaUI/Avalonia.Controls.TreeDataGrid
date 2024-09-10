@@ -9,6 +9,7 @@ namespace TreeDataGridDemo
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
+            Bogus.Randomizer.Seed = new System.Random(0);
         }
 
         public override void OnFrameworkInitializationCompleted()
