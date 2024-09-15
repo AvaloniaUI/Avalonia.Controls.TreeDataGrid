@@ -51,7 +51,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <remarks>
         /// To set the column width use <see cref="IColumns.SetColumnWidth(int, GridLength)"/>.
         /// </remarks>
-        public GridLength Width 
+        public GridLength Width
         {
             get => _width;
             private set => RaiseAndSetIfChanged(ref _width, value);
@@ -92,7 +92,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         bool? IColumn.CanUserResize => Options.CanUserResizeColumn;
         double IUpdateColumnLayout.MinActualWidth => CoerceActualWidth(0);
-        double IUpdateColumnLayout.MaxActualWidth => CoerceActualWidth(double.PositiveInfinity);
+        double IUpdateColumnLayout.MaxActualWidth =>
+            IsVisible
+             ? CoerceActualWidth(double.PositiveInfinity)
+             : 0;
         bool IUpdateColumnLayout.StarWidthWasConstrained => _starWidthWasConstrained;
 
         /// <summary>
@@ -106,6 +109,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         double IUpdateColumnLayout.CellMeasured(double width, int rowIndex)
         {
+            if (!Options.IsVisible)
+            {
+                return 0;
+            }
             _autoWidth = Math.Max(NonNaN(_autoWidth), CoerceActualWidth(width));
             return Width.GridUnitType == GridUnitType.Auto || double.IsNaN(ActualWidth) ?
                 _autoWidth : ActualWidth;
@@ -167,5 +174,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         private static double NonNaN(double v) => double.IsNaN(v) ? 0 : v;
+
+        public bool IsVisible
+        {
+            get => Options.IsVisible;
+            set
+            {
+                if (Options.IsVisible != value)
+                {
+                    Options.IsVisible = value;
+                    RaisePropertyChanged(nameof(IsVisible));
+                }
+            }
+        }
+
     }
 }
