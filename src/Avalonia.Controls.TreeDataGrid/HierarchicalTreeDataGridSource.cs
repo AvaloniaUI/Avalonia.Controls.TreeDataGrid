@@ -358,8 +358,6 @@ namespace Avalonia.Controls
                         }
                     }
                     break;
-                default:
-                    throw new NotImplementedException();
             }
         }
     }
