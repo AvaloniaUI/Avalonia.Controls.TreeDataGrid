@@ -367,8 +367,6 @@ namespace Avalonia.Controls
                     {
                         throw new InvalidOperationException("The expander column cannot be removed by a reset.");
                     }
-
-                    _expanderColumn = null; // Optionally clear the expander column
                     break;
 
                 default:
