@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -346,18 +347,66 @@ namespace Avalonia.Controls
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    if (_expanderColumn is null && e.NewItems is object)
-                    {
-                        foreach (var i in e.NewItems)
-                        {
-                            if (i is IExpanderColumn<TModel> expander)
-                            {
-                                _expanderColumn = expander;
-                                break;
-                            }
-                        }
-                    }
+                    HandleAdd(e.NewItems);
                     break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    HandleRemoveReplaceOrMove(e.OldItems, "removed");
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    HandleRemoveReplaceOrMove(e.NewItems, "replaced");
+                    break;
+
+                case NotifyCollectionChangedAction.Move:
+                    HandleRemoveReplaceOrMove(e.NewItems, "moved");
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    if (_expanderColumn is not null)
+                    {
+                        throw new InvalidOperationException("The expander column cannot be removed by a reset.");
+                    }
+
+                    _expanderColumn = null; // Optionally clear the expander column
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private void HandleAdd(IList? newItems)
+        {
+            if (newItems is not null)
+            {
+                foreach (var i in newItems)
+                {
+                    if (i is IExpanderColumn<TModel> expander)
+                    {
+                        if (_expanderColumn is not null)
+                        {
+                            throw new InvalidOperationException("Only one expander column is allowed.");
+                        }
+
+                        _expanderColumn = expander;
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void HandleRemoveReplaceOrMove(IList? items, string action)
+        {
+            if (items is not null)
+            {
+                foreach (var i in items)
+                {
+                    if (i is IExpanderColumn<TModel> && _expanderColumn is not null)
+                    {
+                        throw new InvalidOperationException($"The expander column cannot be {action}.");
+                    }
+                }
             }
         }
     }
