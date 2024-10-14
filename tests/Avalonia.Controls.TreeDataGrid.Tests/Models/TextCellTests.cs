@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Reactive.Subjects;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Data;
 using Avalonia.Headless.XUnit;
-using Avalonia.Media;
 using Xunit;
 
 namespace Avalonia.Controls.TreeDataGridTests.Models
@@ -94,6 +91,39 @@ namespace Avalonia.Controls.TreeDataGridTests.Models
             Assert.Equal("initial", target.Text);
             Assert.Equal("initial", target.Value);
             Assert.Equal(new[] { "initial" }, result);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Setting_Text_Does_Not_Change_ReadOnly_Value()
+        {
+            var binding = new BehaviorSubject<BindingValue<CustomValueObject>>(value: new CustomValueObject(100));
+            var target = new TextCell<CustomValueObject>(binding, isReadOnly: true);
+
+            Assert.Equal(100, target.Value.Value);
+
+            // simulating TreeDataGridTextCell.OnModelPropertyChanged
+            target.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == nameof(ITextCell.Value))
+                    target.Text = target.Value.ToString();
+            };
+
+            target.Value = new CustomValueObject(42);
+            Assert.Equal(42, target.Value.Value);
+        }
+
+        private readonly struct CustomValueObject
+        {
+            private readonly int _value;
+
+            public CustomValueObject(int value)
+            {
+                _value = value;
+            }
+
+            public int Value => _value;
+
+            public override string ToString() => _value.ToString(CultureInfo.InvariantCulture);
         }
     }
 }
