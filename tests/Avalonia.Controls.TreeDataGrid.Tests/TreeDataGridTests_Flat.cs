@@ -313,6 +313,35 @@ namespace Avalonia.Controls.TreeDataGridTests
         }
 
         [AvaloniaFact(Timeout = 10000)]
+        public void Header_Column_Indexes_Are_Updated_When_Columns_Are_Updated()
+        {
+            var (target, items) = CreateTarget(columns: new IColumn<Model>[]
+            {
+                new TextColumn<Model, int>("ID", x => x.Id, width: new GridLength(1, GridUnitType.Star)),
+                new TextColumn<Model, string?>("Title1", x => x.Title,  width: new GridLength(1, GridUnitType.Star)),
+                new TextColumn<Model, string?>("Title2", x => x.Title,  width: new GridLength(1, GridUnitType.Star)),
+                new TextColumn<Model, string?>("Title3", x => x.Title,  width: new GridLength(1, GridUnitType.Star)),
+            });
+
+            AssertColumnIndexes(target, 0, 4);
+
+            var source =(FlatTreeDataGridSource<Model>)target.Source!;
+
+            var movedColumn = source.Columns[1];
+            source.Columns.Remove(movedColumn);
+
+            AssertColumnIndexes(target, 0, 3);
+
+            source.Columns.Add(movedColumn);
+
+            var root = (TestWindow)target.GetVisualRoot()!;
+            root.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+
+            AssertColumnIndexes(target, 0, 4);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
         public void Columns_Are_Correctly_Sized_After_Changing_Source()
         {
             // Create the initial target with 2 columns and make sure our preconditions are correct.
