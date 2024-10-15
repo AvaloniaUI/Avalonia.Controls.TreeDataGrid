@@ -3,12 +3,12 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 using TreeDataGridDemo.Models;
 
 namespace TreeDataGridDemo.ViewModels
 {
-    internal class CountriesPageViewModel : ReactiveObject
+    internal class CountriesPageViewModel : ObservableObject
     {
         private readonly ObservableCollection<Country> _data;
         private bool _cellSelection;
@@ -50,7 +50,7 @@ namespace TreeDataGridDemo.ViewModels
                         Source.Selection = new TreeDataGridCellSelectionModel<Country>(Source) { SingleSelect = false };
                     else
                         Source.Selection = new TreeDataGridRowSelectionModel<Country>(Source) { SingleSelect = false };
-                    this.RaisePropertyChanged();
+                    OnPropertyChanged();
                 }
             }
         }

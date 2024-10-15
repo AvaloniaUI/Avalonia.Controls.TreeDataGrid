@@ -4,11 +4,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using Avalonia.Threading;
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace TreeDataGridDemo.Models
 {
-    public class FileTreeNodeModel : ReactiveObject, IEditableObject
+    public class FileTreeNodeModel : ObservableObject, IEditableObject
     {
         private string _path;
         private string _name;
@@ -42,37 +42,37 @@ namespace TreeDataGridDemo.Models
         public string Path 
         {
             get => _path;
-            private set => this.RaiseAndSetIfChanged(ref _path, value);
+            private set => SetProperty(ref _path, value);
         }
 
         public string Name 
         {
             get => _name;
-            private set => this.RaiseAndSetIfChanged(ref _name, value);
+            private set => SetProperty(ref _name, value);
         }
 
         public long? Size 
         {
             get => _size;
-            private set => this.RaiseAndSetIfChanged(ref _size, value);
+            private set => SetProperty(ref _size, value);
         }
 
         public DateTimeOffset? Modified 
         {
             get => _modified;
-            private set => this.RaiseAndSetIfChanged(ref _modified, value);
+            private set => SetProperty(ref _modified, value);
         }
 
         public bool HasChildren
         {
             get => _hasChildren;
-            private set => this.RaiseAndSetIfChanged(ref _hasChildren, value);
+            private set => SetProperty(ref _hasChildren, value);
         }
 
         public bool IsExpanded
         {
             get => _isExpanded;
-            set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+            set => SetProperty(ref _isExpanded, value);
         }
 
         public bool IsChecked { get; set; }

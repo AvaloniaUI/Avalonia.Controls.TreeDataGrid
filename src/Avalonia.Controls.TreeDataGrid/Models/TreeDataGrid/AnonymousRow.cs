@@ -15,10 +15,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     internal class AnonymousRow<TModel> : IRow<TModel>, IModelIndexableRow
     {
         private int _modelIndex;
-        [AllowNull] private TModel _model;
+        private TModel? _model;
 
         public object? Header => _modelIndex;
-        public TModel Model => _model;
+        public TModel Model => _model!;
         public int ModelIndex => _modelIndex;
         public IndexPath ModelIndexPath => _modelIndex;
 
