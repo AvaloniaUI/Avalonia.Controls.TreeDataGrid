@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Media;
@@ -11,11 +10,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     public class TextCell<T> : NotifyingBase, ITextCell, IDisposable, IEditableObject
     {
         private readonly ISubject<BindingValue<T>>? _binding;
+        private readonly ITextCellOptions? _options;
         private readonly IDisposable? _subscription;
-        [AllowNull] private T? _value;
-        [AllowNull] private T? _cancelValue;
+        private string? _editText;
+        private T? _value;
         private bool _isEditing;
-        private ITextCellOptions? _options;
 
         public TextCell(T? value)
         {
@@ -48,15 +47,31 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public string? Text
         {
-            get => _value?.ToString();
-            set{
-                if (string.IsNullOrEmpty(value))
+            get
+            {
+                if (_isEditing)
+                    return _editText;
+                else if (_options?.StringFormat is { } format)
+                    return string.Format(_options.Culture ?? CultureInfo.CurrentCulture, format, _value);
+                else
+                    return _value?.ToString();
+            }
+            set
+            {
+                if (_isEditing)
                 {
-                    Value = default(T?);
+                    _editText = value;
                 }
                 else
                 {
-                    Value = (T?)Convert.ChangeType(value, typeof(T));
+                    try
+                    {
+                        Value = (T?)Convert.ChangeType(value, typeof(T));
+                    }
+                    catch
+                    {
+                        // TODO: Data validation errors.
+                    }
                 }
             }
         }
@@ -78,7 +93,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             if (!_isEditing && !IsReadOnly)
             {
                 _isEditing = true;
-                _cancelValue = Value;
+                _editText = Text;
             }
         }
 
@@ -86,19 +101,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             if (_isEditing)
             {
-                Value = _cancelValue;
                 _isEditing = false;
-                _cancelValue = default;
+                _editText = null;
             }
         }
 
         public void EndEdit()
         {
-            if (_isEditing && !EqualityComparer<T>.Default.Equals(_value, _cancelValue))
+            if (_isEditing)
             {
+                var text = _editText;
                 _isEditing = false;
-                _cancelValue = default;
-                _binding!.OnNext(_value!);
+                _editText = null;
+                Text = text;
             }
         }
 
