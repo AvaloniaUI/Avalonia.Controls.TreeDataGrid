@@ -1517,7 +1517,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 var target = CreateTarget(data);
                 var selectionChangedRaised = 0;
                 var sourceResetRaised = 0;
-                var indexesChangedraised = 0;
+                var indexesChangedRaised = 0;
 
                 target.Select(new IndexPath(0, 1));
                 target.Select(new IndexPath(0, 1, 0));
@@ -1528,7 +1528,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
 
                 target.SelectionChanged += (s, e) => ++selectionChangedRaised;
                 target.SourceReset += (s, e) => ++sourceResetRaised;
-                target.IndexesChanged += (s, e) => ++indexesChangedraised;
+                target.IndexesChanged += (s, e) => ++indexesChangedRaised;
 
                 data[0].Children!.Clear();
 
@@ -1538,7 +1538,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Selection
                 Assert.Equal("Node 1-3", target.SelectedItem!.Caption);
                 Assert.Equal(new[] { "Node 1-3" }, target.SelectedItems.Select(x => x!.Caption));
                 Assert.Equal(new IndexPath(1, 3), target.AnchorIndex);
-                Assert.Equal(0, indexesChangedraised);
+                Assert.Equal(0, indexesChangedRaised);
                 Assert.Equal(0, selectionChangedRaised);
                 Assert.Equal(1, sourceResetRaised);
             }
