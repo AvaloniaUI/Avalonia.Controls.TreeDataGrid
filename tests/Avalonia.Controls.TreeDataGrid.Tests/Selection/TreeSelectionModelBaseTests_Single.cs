@@ -1170,7 +1170,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, selectedIndexRaised);
                 Assert.Equal(1, selectedItemRaised);
             }
-#if false
+
             [AvaloniaFact(Timeout = 10000)]
             public void Resetting_Root_Updates_State()
             {
@@ -1178,7 +1178,6 @@ namespace Avalonia.Controls.TreeDataGridTests
                 var target = CreateTarget(data);
                 var selectionChangedRaised = 0;
                 var selectedIndexRaised = 0;
-                var resetRaised = 0;
 
                 target.Select(new IndexPath(1));
 
@@ -1200,10 +1199,9 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Empty(target.SelectedItems);
                 Assert.Equal(default, target.AnchorIndex);
                 Assert.Equal(0, selectionChangedRaised);
-                Assert.Equal(1, resetRaised);
                 Assert.Equal(1, selectedIndexRaised);
             }
-#endif
+
             [AvaloniaFact(Timeout = 10000)]
             public void Handles_Selection_Made_In_CollectionChanged()
             {

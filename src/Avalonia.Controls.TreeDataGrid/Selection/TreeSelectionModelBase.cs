@@ -340,6 +340,13 @@ namespace Avalonia.Controls.Selection
                 selectedIndexChanged = selectedItemChanged = true;
             }
 
+            // If the anchor index is invalid, clear it.
+            if (_anchorIndex != default && !TryGetItemAt(_anchorIndex, out _))
+            {
+                _anchorIndex = default;
+                anchorIndexChanged = true;
+            }
+
             Count -= removeCount;
             SourceReset?.Invoke(this, new TreeSelectionModelSourceResetEventArgs(parentIndex));
 
