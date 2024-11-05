@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
+using System.Globalization;
+using System.Reflection;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
@@ -64,6 +64,7 @@ namespace Avalonia.Controls.Primitives
             get => _textAlignment;
             set => SetAndRaise(TextAlignmentProperty, ref _textAlignment, value);
         }
+
         public override void Realize(
             TreeDataGridElementFactory factory,
             ITreeDataGridSelectionInteraction? selection,
@@ -71,7 +72,7 @@ namespace Avalonia.Controls.Primitives
             int columnIndex,
             int rowIndex)
         {
-            Value = model.Value?.ToString();
+            Value = (model as ITextCell)?.Text;
             TextTrimming = (model as ITextCell)?.TextTrimming ?? TextTrimming.CharacterEllipsis;
             TextWrapping = (model as ITextCell)?.TextWrapping ?? TextWrapping.NoWrap;
             TextAlignment = (model as ITextCell)?.TextAlignment ?? TextAlignment.Left;
@@ -83,6 +84,11 @@ namespace Avalonia.Controls.Primitives
         {
             UnsubscribeFromModelChanges();
             base.Unrealize();
+        }
+
+        protected override void UpdateValue()
+        {
+            Value = (Model as ITextCell)?.Text;
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

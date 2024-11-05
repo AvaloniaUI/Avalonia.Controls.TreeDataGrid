@@ -93,7 +93,10 @@ namespace Avalonia.Controls.Primitives
         protected void EndEdit()
         {
             if (EndEditCore() && Model is IEditableObject editable)
+            {
                 editable.EndEdit();
+                UpdateValue();
+            }
         }
 
         protected void SubscribeToModelChanges()
@@ -106,6 +109,10 @@ namespace Avalonia.Controls.Primitives
         {
             if (Model is INotifyPropertyChanged inpc)
                 inpc.PropertyChanged -= OnModelPropertyChanged;
+        }
+
+        protected virtual void UpdateValue()
+        {
         }
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)

@@ -63,7 +63,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Models
             target.Text = "new";
 
             Assert.Equal("new", target.Text);
-            Assert.Equal("new", target.Value);
+            Assert.Equal("initial", target.Value);
             Assert.Equal(new[] { "initial"}, result);
 
             target.EndEdit();
@@ -86,7 +86,7 @@ namespace Avalonia.Controls.TreeDataGridTests.Models
             target.Text = "new";
 
             Assert.Equal("new", target.Text);
-            Assert.Equal("new", target.Value);
+            Assert.Equal("initial", target.Value);
             Assert.Equal(new[] { "initial" }, result);
 
             target.CancelEdit();
@@ -94,6 +94,47 @@ namespace Avalonia.Controls.TreeDataGridTests.Models
             Assert.Equal("initial", target.Text);
             Assert.Equal("initial", target.Value);
             Assert.Equal(new[] { "initial" }, result);
+        }
+
+        public class StringFormat
+        {
+            [AvaloniaFact(Timeout = 10000)]
+            public void Initial_Int_Value_Is_Formatted()
+            {
+                var binding = new BehaviorSubject<BindingValue<int>>(42);
+                var target = new TextCell<int>(binding, true, GetOptions());
+
+                Assert.Equal("42.00", target.Text);
+                Assert.Equal(42, target.Value);
+            }
+
+            [AvaloniaFact(Timeout = 10000)]
+            public void Int_Value_Is_Formatted_After_Editing()
+            {
+                var binding = new BehaviorSubject<BindingValue<int>>(42);
+                var target = new TextCell<int>(binding, false, GetOptions());
+                var result = new List<int>();
+
+                binding.Subscribe(x => result.Add(x.Value));
+
+                target.BeginEdit();
+                target.Text = "43";
+
+                Assert.Equal("43", target.Text);
+                Assert.Equal(42, target.Value);
+                Assert.Equal(new[] { 42 }, result);
+
+                target.EndEdit();
+
+                Assert.Equal("43.00", target.Text);
+                Assert.Equal(43, target.Value);
+                Assert.Equal(new[] { 42, 43 }, result);
+            }
+
+            private ITextCellOptions? GetOptions(string format = "{0:n2}")
+            {
+                return new TextColumnOptions<int> { StringFormat = format };
+            }
         }
     }
 }
