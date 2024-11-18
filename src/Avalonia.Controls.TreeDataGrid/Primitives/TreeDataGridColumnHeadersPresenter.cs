@@ -36,6 +36,7 @@ namespace Avalonia.Controls.Primitives
 
         protected override void UpdateElementIndex(Control element, int oldIndex, int newIndex)
         {
+            ((TreeDataGridColumnHeader)element).UpdateColumnIndex(newIndex);
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, newIndex));
         }
 

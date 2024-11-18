@@ -66,6 +66,11 @@ namespace Avalonia.Controls.Primitives
                 newInpc.PropertyChanged += OnModelPropertyChanged;
         }
 
+        public void UpdateColumnIndex(int columnIndex)
+        {
+            ColumnIndex = columnIndex;
+        }
+
         public void Unrealize()
         {
             if (_model is INotifyPropertyChanged oldInpc)
