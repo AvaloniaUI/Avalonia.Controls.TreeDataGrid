@@ -8,12 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+      - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: | 
-            6.0.x
-            7.0.x
       - name: Install dependencies
         run: dotnet restore
       - name: Build
