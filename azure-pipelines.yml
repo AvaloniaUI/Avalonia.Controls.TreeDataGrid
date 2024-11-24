@@ -9,18 +9,7 @@ pool:
 steps:
 - task: UseDotNet@2
   inputs:
-    useGlobalJson: false
-    version: 5.0.408
-
-- task: UseDotNet@2
-  inputs:
-      useGlobalJson: false
-      version: 6.0.428
-
-- task: UseDotNet@2
-  inputs:
-      useGlobalJson: false
-      version: 8.0.404
+    useGlobalJson: true
 
 - task: CmdLine@2
   displayName: 'Install Nuke'
