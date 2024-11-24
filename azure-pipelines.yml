@@ -7,6 +7,10 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- task: UseDotNet@2
+  inputs:
+    useGlobalJson: true
+
 - task: CmdLine@2
   displayName: 'Install Nuke'
   inputs:
