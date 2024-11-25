@@ -271,7 +271,8 @@ namespace Avalonia.Controls.Selection
 
         internal void OnNodeCollectionChanged(
             IndexPath parentIndex,
-            int shiftIndex,
+            int shiftStartIndex,
+            int shiftEndIndex,
             int shiftDelta,
             bool raiseIndexesChanged,
             IReadOnlyList<T?>? removed)
@@ -285,13 +286,13 @@ namespace Avalonia.Controls.Selection
             {
                 IndexesChanged?.Invoke(
                     this,
-                    new TreeSelectionModelIndexesChangedEventArgs(parentIndex, shiftIndex, shiftDelta));
+                    new TreeSelectionModelIndexesChangedEventArgs(parentIndex, shiftStartIndex, shiftEndIndex, shiftDelta));
             }
 
             // Shift or clear the selected and anchor indexes according to the shift index/delta.
             var hadSelection = _selectedIndex != default;
-            var selectedIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _selectedIndex);
-            var anchorIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _anchorIndex);
+            var selectedIndexChanged = ShiftIndex(parentIndex, shiftStartIndex, shiftDelta, ref _selectedIndex);
+            var anchorIndexChanged = ShiftIndex(parentIndex, shiftStartIndex, shiftDelta, ref _anchorIndex);
             var selectedItemChanged = false;
 
             // Check that the selected index is still selected in the node. It can get
