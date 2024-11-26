@@ -1,4 +1,6 @@
-﻿using Avalonia.Media;
+﻿using System.Globalization;
+
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -12,6 +14,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets or sets a value indicating whether the column takes part in text searches.
         /// </summary>
         public bool IsTextSearchEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the format string for the cells in the column.
+        /// </summary>
+        public string StringFormat { get; set; } = "{0}";
+
+        /// <summary>
+        /// Culture info used in conjunction with <see cref="StringFormat"/>
+        /// </summary>
+        public CultureInfo Culture { get; set; } = CultureInfo.CurrentCulture;
 
         /// <summary>
         /// Gets or sets the text trimming mode for the cells in the column.
