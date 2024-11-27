@@ -23,6 +23,16 @@ namespace Avalonia.Controls.Primitives
             return new Size(Math.Min(availableSize.Width, column.MaxActualWidth), availableSize.Height);
         }
 
+        protected override (int index, double position) GetOrEstimateAnchorElementForViewport(
+            double viewportStart,
+            double viewportEnd,
+            int itemCount)
+        {
+            if (Columns?.GetColumnAt(viewportStart) is var (index, position) && index >= 0)
+                return (index, position);
+            return base.GetOrEstimateAnchorElementForViewport(viewportStart, viewportEnd, itemCount);
+        }
+
         protected sealed override bool NeedsFinalMeasurePass(int firstIndex, IReadOnlyList<Control?> elements)
         {
             var columns = Columns!;

@@ -397,6 +397,20 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected virtual (int index, double position) GetOrEstimateAnchorElementForViewport(
+            double viewportStart,
+            double viewportEnd,
+            int itemCount)
+        {
+            Debug.Assert(_realizedElements is not null);
+
+            return _realizedElements.GetOrEstimateAnchorElementForViewport(
+                viewportStart,
+                viewportEnd,
+                itemCount,
+                ref _lastEstimatedElementSizeU);
+        }
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -539,11 +553,7 @@ namespace Avalonia.Controls.Primitives
 
             // Get or estimate the anchor element from which to start realization.
             var itemCount = items.Count;
-            var (anchorIndex, anchorU) = _realizedElements.GetOrEstimateAnchorElementForViewport(
-                viewportStart,
-                viewportEnd,
-                itemCount,
-                ref _lastEstimatedElementSizeU);
+            var (anchorIndex, anchorU) = GetOrEstimateAnchorElementForViewport(viewportStart, viewportEnd, itemCount);
 
             // Check if the anchor element is not within the currently realized elements.
             var disjunct = anchorIndex < _realizedElements.FirstIndex ||
