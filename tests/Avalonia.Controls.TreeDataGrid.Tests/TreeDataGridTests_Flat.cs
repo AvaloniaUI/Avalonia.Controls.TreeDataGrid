@@ -560,6 +560,69 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Show_Horizontal_ScrollBar()
+        {
+            var (target, items) = CreateTarget(columns:
+            [
+                new TextColumn<Model, int>("ID", x => x.Id, width: new GridLength(100, GridUnitType.Pixel)),
+                new TextColumn<Model, string?>("Title1", x => x.Title,  width: new GridLength(100, GridUnitType.Pixel)),
+            ]);
+            var scroll = Assert.IsType<ScrollViewer>(target.Scroll);
+            var headerScroll = Assert.IsType<ScrollViewer>(
+                target.GetVisualDescendants().Single(x => x.Name == "PART_HeaderScrollViewer"));
+
+            Assert.Equal(new(100, 100), scroll.Viewport);
+            Assert.Equal(new(200, 1000), scroll.Extent);
+            Assert.Equal(new(100, 0), headerScroll.Viewport);
+            Assert.Equal(new(200, 0), headerScroll.Extent);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Show_Horizontal_ScrollBar_With_No_Initial_Rows()
+        {
+            var (target, items) = CreateTarget(columns:
+            [
+                new TextColumn<Model, int>("ID", x => x.Id, width: new GridLength(100, GridUnitType.Pixel)),
+                new TextColumn<Model, string?>("Title1", x => x.Title,  width: new GridLength(100, GridUnitType.Pixel)),
+            ], itemCount: 0);
+            var scroll = Assert.IsType<ScrollViewer>(target.Scroll);
+            var headerScroll = Assert.IsType<ScrollViewer>(
+                target.GetVisualDescendants().Single(x => x.Name == "PART_HeaderScrollViewer"));
+
+            Assert.Equal(new(100, 100), scroll.Viewport);
+            Assert.Equal(new(200, 100), scroll.Extent);
+            Assert.Equal(new(100, 0), headerScroll.Viewport);
+            Assert.Equal(new(200, 0), headerScroll.Extent);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Preserve_Horizontal_ScrollBar_When_Rows_Removed()
+        {
+            var (target, items) = CreateTarget(columns:
+            [
+                new TextColumn<Model, int>("ID", x => x.Id, width: new GridLength(100, GridUnitType.Pixel)),
+                new TextColumn<Model, string?>("Title1", x => x.Title,  width: new GridLength(100, GridUnitType.Pixel)),
+            ]);
+            var scroll = Assert.IsType<ScrollViewer>(target.Scroll);
+            var headerScroll = Assert.IsType<ScrollViewer>(
+                target.GetVisualDescendants().Single(x => x.Name == "PART_HeaderScrollViewer"));
+
+            scroll.PropertyChanged += (s, e) => 
+            { 
+                if (e.Property == ScrollViewer.ExtentProperty)
+                {
+                }
+            };
+            items.Clear();
+            target.UpdateLayout();
+
+            Assert.Equal(new(100, 100), scroll.Viewport);
+            Assert.Equal(new(200, 100), scroll.Extent);
+            Assert.Equal(new(100, 0), headerScroll.Viewport);
+            Assert.Equal(new(200, 0), headerScroll.Extent);
+        }
+
         private static void AssertRowIndexes(TreeDataGrid target, int firstRowIndex, int rowCount)
         {
             var presenter = target.RowsPresenter;
