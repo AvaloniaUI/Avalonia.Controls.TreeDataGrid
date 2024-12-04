@@ -2,6 +2,7 @@
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -127,6 +128,17 @@ namespace TreeDataGridDemo
             var realizedRowCount = rows.GetRealizedElements().Count();
             var unrealizedRowCount = rows.GetVisualChildren().Count() - realizedRowCount;
             textBlock.Text = $"{realizedRowCount} rows realized ({unrealizedRowCount} unrealized)";
+        }
+
+        private void DragDrop_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (e.ClickCount != 2)
+                return;
+
+            var row = (e.Source as Control)?.FindAncestorOfType<TreeDataGridRow>();
+
+            if (row?.DataContext is DragDropItem item)
+                item.IsExpanded = !item.IsExpanded;
         }
     }
 }
