@@ -33,6 +33,7 @@ namespace Avalonia.Controls.Primitives
 
         private string? _value;
         private TextBox? _edit;
+        private bool _modelValueChanging;
         private TextTrimming _textTrimming = TextTrimming.CharacterEllipsis;
         private TextWrapping _textWrapping = TextWrapping.NoWrap;
         private TextAlignment _textAlignment = TextAlignment.Left;
@@ -54,7 +55,7 @@ namespace Avalonia.Controls.Primitives
             get => _value;
             set
             {
-                if (SetAndRaise(ValueProperty, ref _value, value) && Model is ITextCell cell)
+                if (SetAndRaise(ValueProperty, ref _value, value) && Model is ITextCell cell && !_modelValueChanging)
                     cell.Text = _value;
             }
         }
@@ -109,7 +110,17 @@ namespace Avalonia.Controls.Primitives
             base.OnModelPropertyChanged(sender, e);
 
             if (e.PropertyName == nameof(ITextCell.Value))
-                Value = Model?.Value?.ToString();
+            {
+                try
+                {
+                    _modelValueChanging = true;
+                    Value = Model?.Value?.ToString();
+                }
+                finally
+                {
+                    _modelValueChanging = false;
+                }
+            }
         }
     }
 }
