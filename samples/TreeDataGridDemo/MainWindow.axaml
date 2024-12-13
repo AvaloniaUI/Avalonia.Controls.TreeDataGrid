@@ -28,7 +28,9 @@
         </StackPanel>
         <TreeDataGrid Name="countries"
                       Source="{Binding Countries.Source}"
-                      AutoDragDropRows="True">
+                      AutoDragDropRows="True"
+                      CellValueChanged="TreeDataGrid_CellValueChanged"
+                      RowPrepared="TreeDataGrid_RowPrepared">
           <TreeDataGrid.Resources>
             <!-- Template for Region column cells -->
             <DataTemplate x:Key="RegionCell" DataType="m:Country">

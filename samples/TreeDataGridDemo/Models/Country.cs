@@ -1,8 +1,17 @@
-﻿namespace TreeDataGridDemo.Models
+﻿using ReactiveUI;
+
+namespace TreeDataGridDemo.Models
 {
-    internal class Country
+    internal class Country : ReactiveObject
     {
-        public string? Name { get; set; }
+        private string? _name;
+
+        public string? Name 
+        { 
+            get => _name;
+            set => this.RaiseAndSetIfChanged(ref _name, value);
+        }
+
         public string Region { get; private set; }
         public int Population { get; private set; }
         //Square Miles

@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using TreeDataGridDemo.Models;
@@ -127,6 +128,31 @@ namespace TreeDataGridDemo
             var realizedRowCount = rows.GetRealizedElements().Count();
             var unrealizedRowCount = rows.GetVisualChildren().Count() - realizedRowCount;
             textBlock.Text = $"{realizedRowCount} rows realized ({unrealizedRowCount} unrealized)";
+        }
+
+        private void TreeDataGrid_RowPrepared(object? sender, TreeDataGridRowEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            var modelIndex = vm.Countries.Source.Rows.RowIndexToModelIndex(e.RowIndex);
+            var model = vm.Countries.Data[modelIndex[0]];
+
+            e.Row.Background = model.Name?.StartsWith('A') == true ? Brushes.Yellow : null;
+        }
+
+        private void TreeDataGrid_CellValueChanged(object? sender, TreeDataGridCellEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel vm ||
+                sender is not TreeDataGrid tdg ||
+                e.ColumnIndex != 0 ||
+                tdg.TryGetRow(e.RowIndex) is not {  } row)
+                return;
+
+            var modelIndex = vm.Countries.Source.Rows.RowIndexToModelIndex(e.RowIndex);
+            var model = vm.Countries.Data[modelIndex[0]];
+
+            row.Background = model.Name?.StartsWith('A') == true ? Brushes.Yellow : null;
         }
     }
 }

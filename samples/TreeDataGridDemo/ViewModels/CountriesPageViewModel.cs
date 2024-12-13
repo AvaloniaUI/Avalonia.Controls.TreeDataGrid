@@ -10,14 +10,13 @@ namespace TreeDataGridDemo.ViewModels
 {
     internal class CountriesPageViewModel : ReactiveObject
     {
-        private readonly ObservableCollection<Country> _data;
         private bool _cellSelection;
 
         public CountriesPageViewModel()
         {
-            _data = new ObservableCollection<Country>(Countries.All);
+            Data = new ObservableCollection<Country>(Countries.All);
 
-            Source = new FlatTreeDataGridSource<Country>(_data)
+            Source = new FlatTreeDataGridSource<Country>(Data)
             {
                 Columns =
                 {
@@ -55,18 +54,14 @@ namespace TreeDataGridDemo.ViewModels
             }
         }
 
+        public ObservableCollection<Country> Data { get; }
         public FlatTreeDataGridSource<Country> Source { get; }
 
-        public void AddCountry(Country country) => _data.Add(country);
+        public void AddCountry(Country country) => Data.Add(country);
 
         public void RemoveSelected()
         {
-            var selection = ((ITreeSelectionModel)Source.Selection!).SelectedIndexes.ToList();
-
-            for (var i = selection.Count - 1; i >= 0; --i)
-            {
-                _data.RemoveAt(selection[i][0]);
-            }
+            Data[0].Name = "Foo";
         }
     }
 }
