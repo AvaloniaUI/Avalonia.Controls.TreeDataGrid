@@ -491,6 +491,36 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
+        [AvaloniaFact(Timeout = 10000)]
+        public void Adding_Second_Expander_Column_Throws()
+        {
+            var data = CreateData();
+            var target = CreateTarget(data, false);
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                target.Columns.Add(new HierarchicalExpanderColumn<Node>(
+                    new TextColumn<Node, int>("ID", x => x.Id),
+                    x => x.Children,
+                    null,
+                    x => x.IsExpanded));
+            });
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Removing_Expander_Column_Throws()
+        {
+            var data = CreateData();
+            var target = CreateTarget(data, false);
+
+            var expander = target.Columns.OfType<IExpanderColumn<Node>>().First();
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                target.Columns.Remove(expander);
+            });
+        }
+
         public class ExpansionBinding
         {
             [AvaloniaFact(Timeout = 10000)]

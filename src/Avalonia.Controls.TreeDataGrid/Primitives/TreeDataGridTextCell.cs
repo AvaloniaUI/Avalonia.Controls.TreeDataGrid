@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
+using System.Globalization;
+using System.Reflection;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
@@ -33,6 +33,7 @@ namespace Avalonia.Controls.Primitives
 
         private string? _value;
         private TextBox? _edit;
+        private bool _modelValueChanging;
         private TextTrimming _textTrimming = TextTrimming.CharacterEllipsis;
         private TextWrapping _textWrapping = TextWrapping.NoWrap;
         private TextAlignment _textAlignment = TextAlignment.Left;
@@ -54,7 +55,7 @@ namespace Avalonia.Controls.Primitives
             get => _value;
             set
             {
-                if (SetAndRaise(ValueProperty, ref _value, value) && Model is ITextCell cell)
+                if (SetAndRaise(ValueProperty, ref _value, value) && Model is ITextCell cell && !_modelValueChanging)
                     cell.Text = _value;
             }
         }
@@ -64,6 +65,7 @@ namespace Avalonia.Controls.Primitives
             get => _textAlignment;
             set => SetAndRaise(TextAlignmentProperty, ref _textAlignment, value);
         }
+
         public override void Realize(
             TreeDataGridElementFactory factory,
             ITreeDataGridSelectionInteraction? selection,
@@ -71,7 +73,7 @@ namespace Avalonia.Controls.Primitives
             int columnIndex,
             int rowIndex)
         {
-            Value = model.Value?.ToString();
+            Value = (model as ITextCell)?.Text;
             TextTrimming = (model as ITextCell)?.TextTrimming ?? TextTrimming.CharacterEllipsis;
             TextWrapping = (model as ITextCell)?.TextWrapping ?? TextWrapping.NoWrap;
             TextAlignment = (model as ITextCell)?.TextAlignment ?? TextAlignment.Left;
@@ -83,6 +85,11 @@ namespace Avalonia.Controls.Primitives
         {
             UnsubscribeFromModelChanges();
             base.Unrealize();
+        }
+
+        protected override void UpdateValue()
+        {
+            Value = (Model as ITextCell)?.Text;
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -103,7 +110,17 @@ namespace Avalonia.Controls.Primitives
             base.OnModelPropertyChanged(sender, e);
 
             if (e.PropertyName == nameof(ITextCell.Value))
-                Value = Model?.Value?.ToString();
+            {
+                try
+                {
+                    _modelValueChanging = true;
+                    Value = Model?.Value?.ToString();
+                }
+                finally
+                {
+                    _modelValueChanging = false;
+                }
+            }
         }
     }
 }

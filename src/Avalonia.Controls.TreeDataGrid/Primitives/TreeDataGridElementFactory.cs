@@ -22,6 +22,7 @@ namespace Avalonia.Controls.Primitives
 
                     if (e.Parent == parent)
                     {
+                        parent.InvalidateMeasure();
                         elements.RemoveAt(i);
                         return e;
                     }
@@ -35,6 +36,7 @@ namespace Avalonia.Controls.Primitives
 
                     if (e.Parent is null || parentPanel is not null)
                     {
+                        parent.InvalidateMeasure();
                         parentPanel?.Children.Remove(e);
                         Debug.Assert(e.Parent is null);
                         elements.RemoveAt(i);

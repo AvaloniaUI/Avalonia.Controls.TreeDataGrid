@@ -275,13 +275,13 @@ namespace Avalonia.Controls.Selection
         public static int Remove(
             IList<IndexRange> destination,
             IReadOnlyList<IndexRange> source,
-            IList<IndexRange>? added = null)
+            IList<IndexRange>? removed = null)
         {
             var result = 0;
 
             foreach (var range in source)
             {
-                result += Remove(destination, range, added);
+                result += Remove(destination, range, removed);
             }
 
             return result;

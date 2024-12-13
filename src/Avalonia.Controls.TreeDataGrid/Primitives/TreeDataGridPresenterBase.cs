@@ -397,6 +397,20 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected virtual (int index, double position) GetOrEstimateAnchorElementForViewport(
+            double viewportStart,
+            double viewportEnd,
+            int itemCount)
+        {
+            Debug.Assert(_realizedElements is not null);
+
+            return _realizedElements.GetOrEstimateAnchorElementForViewport(
+                viewportStart,
+                viewportEnd,
+                itemCount,
+                ref _lastEstimatedElementSizeU);
+        }
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -427,7 +441,7 @@ namespace Avalonia.Controls.Primitives
             // viewport.
             Viewport = e.EffectiveViewport.Size == default ? 
                 s_invalidViewport :
-                e.EffectiveViewport.Intersect(new(Bounds.Size));
+                Intersect(e.EffectiveViewport, new(Bounds.Size));
 
             _isWaitingForViewportUpdate = false;
 
@@ -539,11 +553,7 @@ namespace Avalonia.Controls.Primitives
 
             // Get or estimate the anchor element from which to start realization.
             var itemCount = items.Count;
-            var (anchorIndex, anchorU) = _realizedElements.GetOrEstimateAnchorElementForViewport(
-                viewportStart,
-                viewportEnd,
-                itemCount,
-                ref _lastEstimatedElementSizeU);
+            var (anchorIndex, anchorU) = GetOrEstimateAnchorElementForViewport(viewportStart, viewportEnd, itemCount);
 
             // Check if the anchor element is not within the currently realized elements.
             var disjunct = anchorIndex < _realizedElements.FirstIndex ||
@@ -629,9 +639,8 @@ namespace Avalonia.Controls.Primitives
             {
                 if (!c.Bounds.Equals(default) && c.TransformToVisual(this) is Matrix transform)
                 {
-                    return new Rect(0, 0, c.Bounds.Width, c.Bounds.Height)
-                        .TransformToAABB(transform)
-                        .Intersect(new(0, 0, double.PositiveInfinity, double.PositiveInfinity));
+                    var r = new Rect(0, 0, c.Bounds.Width, c.Bounds.Height).TransformToAABB(transform);
+                    return Intersect(r, new(0, 0, double.PositiveInfinity, double.PositiveInfinity));
                 }
 
                 c = c?.GetVisualParent();
@@ -663,6 +672,13 @@ namespace Avalonia.Controls.Primitives
 
         private void RecycleElementOnItemRemoved(Control element)
         {
+            if (element == _focusedElement)
+            {
+                _focusedElement.LostFocus -= OnUnrealizedFocusedElementLostFocus;
+                _focusedElement = null;
+                _focusedIndex = -1;
+            }
+
             UnrealizeElementOnItemRemoved(element);
             element.IsVisible = false;
             ElementFactory!.RecycleElement(element);
@@ -691,6 +707,12 @@ namespace Avalonia.Controls.Primitives
 
         private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            void ClearFocusedElement(int index, int count)
+            {
+                if (_focusedElement is not null && _focusedIndex >= index && _focusedIndex < index + count)
+                    RecycleElementOnItemRemoved(_focusedElement);
+            }
+
             InvalidateMeasure();
 
             if (_realizedElements is null)
@@ -703,16 +725,21 @@ namespace Avalonia.Controls.Primitives
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
+                    ClearFocusedElement(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     _realizedElements.ItemsReplaced(e.OldStartingIndex, e.OldItems!.Count, _recycleElementOnItemRemoved);
+                    ClearFocusedElement(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Move:
                     _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
                     _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
+                    ClearFocusedElement(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
+                    if (_focusedElement is not null )
+                        RecycleElementOnItemRemoved(_focusedElement);
                     break;
             }
         }
@@ -729,6 +756,24 @@ namespace Avalonia.Controls.Primitives
         }
 
         private static bool HasInfinity(Size s) => double.IsInfinity(s.Width) || double.IsInfinity(s.Height);
+
+        private static Rect Intersect(Rect a, Rect b)
+        {
+            // Hack fix for https://github.com/AvaloniaUI/Avalonia/issues/15075
+            var newLeft = (a.X > b.X) ? a.X : b.X;
+            var newTop = (a.Y > b.Y) ? a.Y : b.Y;
+            var newRight = (a.Right < b.Right) ? a.Right : b.Right;
+            var newBottom = (a.Bottom < b.Bottom) ? a.Bottom : b.Bottom;
+
+            if ((newRight >= newLeft) && (newBottom >= newTop))
+            {
+                return new Rect(newLeft, newTop, newRight - newLeft, newBottom - newTop);
+            }
+            else
+            {
+                return default;
+            }
+        }
 
         private struct MeasureViewport
         {

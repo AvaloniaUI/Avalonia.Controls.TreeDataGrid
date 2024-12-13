@@ -167,6 +167,18 @@ namespace Avalonia.Controls.Primitives
             owner?.RaiseRowDragStarted(e);
         }
 
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+            _mouseDownPosition = s_InvalidPoint;
+        }
+
+        protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+        {
+            base.OnPointerCaptureLost(e);
+            _mouseDownPosition = s_InvalidPoint;
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == IsSelectedProperty)
