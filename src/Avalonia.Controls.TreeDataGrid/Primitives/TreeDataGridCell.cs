@@ -115,6 +115,12 @@ namespace Avalonia.Controls.Primitives
         {
         }
 
+        protected void RaiseCellValueChanged()
+        {
+            if (ColumnIndex != -1 && RowIndex != -1)
+                _treeDataGrid?.RaiseCellValueChanged(this, ColumnIndex, RowIndex);
+        }
+
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             _treeDataGrid = this.FindLogicalAncestorOfType<TreeDataGrid>();

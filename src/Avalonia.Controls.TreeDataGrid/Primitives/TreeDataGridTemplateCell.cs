@@ -33,10 +33,14 @@ namespace Avalonia.Controls.Primitives
         private IDataTemplate? _editingTemplate;
         private ContentPresenter? _editingContentPresenter;
 
-        public object? Content 
-        { 
+        public object? Content
+        {
             get => _content;
-            private set => SetAndRaise(ContentProperty, ref _content, value);
+            private set
+            {
+                if (SetAndRaise(ContentProperty, ref _content, value))
+                    RaiseCellValueChanged();
+            }
         }
 
         public IDataTemplate? ContentTemplate 

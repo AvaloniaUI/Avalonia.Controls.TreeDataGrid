@@ -289,6 +289,51 @@ namespace Avalonia.Controls.TreeDataGridTests
         }
 
         [AvaloniaFact(Timeout = 10000)]
+        public void Raises_CellValueChanged_When_Model_Value_Changed()
+        {
+            var (target, items) = CreateTarget();
+            var raised = 0;
+
+            target.CellValueChanged += (s, e) =>
+            {
+                Assert.Equal(1, e.ColumnIndex);
+                Assert.Equal(1, e.RowIndex);
+                ++raised;
+            };
+
+            items[1].Title = "Changed";
+
+            Assert.Equal(1, raised);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Does_Not_Raise_CellValueChanged_Events_On_Initial_Layout()
+        {
+            var (target, items) = CreateTarget(runLayout: false);
+            var raised = 0;
+
+            target.CellValueChanged += (s, e) => ++raised;
+
+            target.UpdateLayout();
+
+            Assert.Equal(0, raised);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Does_Not_Raise_CellValueChanged_Events_On_Scroll()
+        {
+            var (target, items) = CreateTarget();
+            var raised = 0;
+
+            target.CellValueChanged += (s, e) => ++raised;
+
+            target.Scroll!.Offset = new Vector(0, 10);
+            Layout(target);
+
+            Assert.Equal(0, raised);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
         public void Does_Not_Realize_Columns_Outside_Viewport()
         {
             var (target, items) = CreateTarget(columns: new IColumn<Model>[]
@@ -785,8 +830,14 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         private class Model : NotifyingBase
         {
+            private string? _title;
+
             public int Id { get; set; }
-            public string? Title { get; set; }
+            public string? Title 
+            { 
+                get => _title;
+                set => RaiseAndSetIfChanged(ref _title, value);
+            }
         }
     }
 }
