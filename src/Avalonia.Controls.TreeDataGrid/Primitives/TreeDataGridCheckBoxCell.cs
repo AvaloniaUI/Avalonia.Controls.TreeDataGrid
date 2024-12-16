@@ -47,8 +47,12 @@ namespace Avalonia.Controls.Primitives
             get => _value;
             set
             {
-                if (SetAndRaise(ValueProperty, ref _value, value) && Model is CheckBoxCell cell)
-                    cell.Value = value;
+                if (SetAndRaise(ValueProperty, ref _value, value))
+                {
+                    if (Model is CheckBoxCell cell)
+                        cell.Value = value;
+                    RaiseCellValueChanged();
+                }
             }
         }
 

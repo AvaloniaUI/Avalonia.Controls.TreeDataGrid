@@ -74,7 +74,7 @@ namespace Avalonia.Controls.Primitives
             Model = null;
         }
 
-        protected void BeginEdit()
+        protected internal void BeginEdit()
         {
             if (!IsEditing)
             {
@@ -84,18 +84,19 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected void CancelEdit()
+        protected internal void CancelEdit()
         {
             if (EndEditCore() && Model is IEditableObject editable)
                 editable.CancelEdit();
         }
 
-        protected void EndEdit()
+        protected internal void EndEdit()
         {
             if (EndEditCore() && Model is IEditableObject editable)
             {
                 editable.EndEdit();
                 UpdateValue();
+                RaiseCellValueChanged();
             }
         }
 
@@ -113,6 +114,12 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual void UpdateValue()
         {
+        }
+
+        protected void RaiseCellValueChanged()
+        {
+            if (!IsEditing && ColumnIndex != -1 && RowIndex != -1)
+                _treeDataGrid?.RaiseCellValueChanged(this, ColumnIndex, RowIndex);
         }
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
