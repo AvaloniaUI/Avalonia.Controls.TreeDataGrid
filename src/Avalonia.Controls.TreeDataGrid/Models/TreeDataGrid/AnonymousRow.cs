@@ -15,7 +15,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     internal class AnonymousRow<TModel> : IRow<TModel>, IModelIndexableRow
     {
         private int _modelIndex;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         [AllowNull] private TModel _model;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
         public object? Header => _modelIndex;
         public TModel Model => _model;
