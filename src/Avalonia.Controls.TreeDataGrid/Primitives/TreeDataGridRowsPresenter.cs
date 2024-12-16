@@ -57,6 +57,17 @@ namespace Avalonia.Controls.Primitives
             ChildIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, ((TreeDataGridRow)element).RowIndex));
         }
 
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var result = base.MeasureOverride(availableSize);
+
+            // If we have no rows, then get the width from the columns.
+            if (Columns is not null && (Items is null || Items.Count == 0))
+                result = result.WithWidth(Columns.GetEstimatedWidth(availableSize.Width));
+
+            return result;
+        }
+
         protected override Size ArrangeOverride(Size finalSize)
         {
             Columns?.CommitActualWidths();

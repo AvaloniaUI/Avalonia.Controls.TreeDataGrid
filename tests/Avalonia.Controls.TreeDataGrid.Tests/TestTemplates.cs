@@ -61,12 +61,20 @@ namespace Avalonia.Controls.TreeDataGridTests
                 {
                     Children =
                     {
-                        new TreeDataGridColumnHeadersPresenter
+                        new ScrollViewer
                         {
-                            Name = "PART_ColumnHeadersPresenter",
+                            Name = "PART_HeaderScrollViewer",
+                            Template = ScrollViewerTemplate(),
+                            Height = 0,
+                            HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
                             [DockPanel.DockProperty] = Dock.Top,
-                            [!TreeDataGridColumnHeadersPresenter.ElementFactoryProperty] = x[!TreeDataGrid.ElementFactoryProperty],
-                            [!TreeDataGridColumnHeadersPresenter.ItemsProperty] = x[!TreeDataGrid.ColumnsProperty],
+                            Content = new TreeDataGridColumnHeadersPresenter
+                            {
+                                Name = "PART_ColumnHeadersPresenter",
+                                [!TreeDataGridColumnHeadersPresenter.ElementFactoryProperty] = x[!TreeDataGrid.ElementFactoryProperty],
+                                [!TreeDataGridColumnHeadersPresenter.ItemsProperty] = x[!TreeDataGrid.ColumnsProperty],
+                            }.RegisterInNameScope(ns),
                         }.RegisterInNameScope(ns),
                         new ScrollViewer
                         {
