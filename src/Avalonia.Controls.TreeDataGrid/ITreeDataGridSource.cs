@@ -23,9 +23,9 @@ namespace Avalonia.Controls
         IRows Rows { get; }
 
         /// <summary>
-        /// Gets the selection model.
+        /// Gets or sets the selection model.
         /// </summary>
-        ITreeDataGridSelection? Selection { get; }
+        ITreeDataGridSelection? Selection { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the data source is hierarchical.
@@ -84,8 +84,8 @@ namespace Avalonia.Controls
     public interface ITreeDataGridSource<TModel> : ITreeDataGridSource
     {
         /// <summary>
-        /// Gets the items in the data source.
+        /// Gets or sets the items in the data source.
         /// </summary>
-        new IEnumerable<TModel> Items { get; }
+        new IEnumerable<TModel> Items { get; set; }
     }
 }

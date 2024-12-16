@@ -204,7 +204,7 @@ namespace Avalonia.Controls.Selection
         
         protected virtual bool TryGetItemAt(IndexPath index, out T? result)
         {
-            var items = (IReadOnlyList<T>?)_root.ItemsView;
+            var items = (IEnumerable<T>?)_root.ItemsView;
             var count = index.Count;
 
             for (var i = 0; i < count; ++i)
@@ -215,17 +215,21 @@ namespace Avalonia.Controls.Selection
                     return false;
                 }
 
-                var j = index[i];
-
-                if (j < items.Count)
+                if (TryGetElementAt(items, index[i], out var item))
                 {
                     if (i == count - 1)
                     {
-                        result = items[j];
+                        result = item;
                         return true;
                     }
                     else
-                        items = GetChildren(items[j]) as IReadOnlyList<T>;
+                    {
+                        items = GetChildren(item);
+                    }
+                }
+                else
+                {
+                    break;
                 }
             }
 
@@ -267,7 +271,8 @@ namespace Avalonia.Controls.Selection
 
         internal void OnNodeCollectionChanged(
             IndexPath parentIndex,
-            int shiftIndex,
+            int shiftStartIndex,
+            int shiftEndIndex,
             int shiftDelta,
             bool raiseIndexesChanged,
             IReadOnlyList<T?>? removed)
@@ -281,13 +286,13 @@ namespace Avalonia.Controls.Selection
             {
                 IndexesChanged?.Invoke(
                     this,
-                    new TreeSelectionModelIndexesChangedEventArgs(parentIndex, shiftIndex, shiftDelta));
+                    new TreeSelectionModelIndexesChangedEventArgs(parentIndex, shiftStartIndex, shiftEndIndex, shiftDelta));
             }
 
             // Shift or clear the selected and anchor indexes according to the shift index/delta.
             var hadSelection = _selectedIndex != default;
-            var selectedIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _selectedIndex);
-            var anchorIndexChanged = ShiftIndex(parentIndex, shiftIndex, shiftDelta, ref _anchorIndex);
+            var selectedIndexChanged = ShiftIndex(parentIndex, shiftStartIndex, shiftDelta, ref _selectedIndex);
+            var anchorIndexChanged = ShiftIndex(parentIndex, shiftStartIndex, shiftDelta, ref _anchorIndex);
             var selectedItemChanged = false;
 
             // Check that the selected index is still selected in the node. It can get
@@ -334,6 +339,13 @@ namespace Avalonia.Controls.Selection
             {
                 _selectedIndex = GetFirstSelectedIndex(_root);
                 selectedIndexChanged = selectedItemChanged = true;
+            }
+
+            // If the anchor index is invalid, clear it.
+            if (_anchorIndex != default && !TryGetItemAt(_anchorIndex, out _))
+            {
+                _anchorIndex = default;
+                anchorIndexChanged = true;
             }
 
             Count -= removeCount;
@@ -563,6 +575,40 @@ namespace Avalonia.Controls.Selection
                 }
             }
 
+            return false;
+        }
+
+        private static bool TryGetElementAt(IEnumerable<T> items, int index, [MaybeNullWhen(false)] out T result)
+        { 
+            if (items is IList<T> list)
+            {
+                if (index < list.Count)
+                {
+                    result = list[index];
+                    return true;
+                }
+            }
+            else if (items is IReadOnlyList<T> ro)
+            {
+                if (index < ro.Count)
+                {
+                    result = ro[index];
+                    return true;
+                }
+            }
+            else
+            {
+                foreach (var item in items)
+                {
+                    if (index-- == 0)
+                    {
+                        result = item;
+                        return true;
+                    }
+                }
+            }
+
+            result = default;
             return false;
         }
 

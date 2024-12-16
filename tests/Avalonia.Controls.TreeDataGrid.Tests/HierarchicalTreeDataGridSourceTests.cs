@@ -454,6 +454,71 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.False(expander.ShowExpander);
                 Assert.False(expander.IsExpanded);
             }
+
+            [AvaloniaTheory(Timeout = 10000)]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void ExpandAll_Expands_All_Rows(bool sorted)
+            {
+                var data = CreateData(5, 3, 3);
+                var target = CreateTarget(data, sorted);
+
+                target.ExpandAll();
+
+                Assert.Equal(65, target.Rows.Count);
+            }
+
+            [AvaloniaTheory(Timeout = 10000)]
+            [InlineData(false)]
+            [InlineData(true)]
+            public void CollapseAll_Collapses_All_Rows(bool sorted)
+            {
+                var data = CreateData(5, 3, 3);
+                var target = CreateTarget(data, sorted);
+
+                // We need to expand before we can collapse.
+                target.ExpandAll();
+                Assert.Equal(65, target.Rows.Count);
+
+                // Now we can test collapsing.
+                target.CollapseAll();
+                Assert.Equal(5, target.Rows.Count);
+
+                // Ensure that nested rows were collapsed, i.e. only the first level of rows is
+                // visible after expanding now.
+                target.Expand(0);
+                Assert.Equal(8, target.Rows.Count);
+            }
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Adding_Second_Expander_Column_Throws()
+        {
+            var data = CreateData();
+            var target = CreateTarget(data, false);
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                target.Columns.Add(new HierarchicalExpanderColumn<Node>(
+                    new TextColumn<Node, int>("ID", x => x.Id),
+                    x => x.Children,
+                    null,
+                    x => x.IsExpanded));
+            });
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Removing_Expander_Column_Throws()
+        {
+            var data = CreateData();
+            var target = CreateTarget(data, false);
+
+            var expander = target.Columns.OfType<IExpanderColumn<Node>>().First();
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                target.Columns.Remove(expander);
+            });
         }
 
         public class ExpansionBinding
@@ -727,24 +792,20 @@ namespace Avalonia.Controls.TreeDataGridTests
             {
                 var data = CreateData();
                 var target = CreateTarget(data, sorted);
-                var rowsAddedRaised = 0;
-                var rowsRemovedRaised = 0;
+                var raised = 0;
 
                 Assert.Equal(5, target.Rows.Count);
 
                 target.Rows.CollectionChanged += (s, e) =>
                 {
-                    if (e.Action == NotifyCollectionChangedAction.Add)
-                        rowsAddedRaised += e.NewItems!.Count;
-                    else if (e.Action == NotifyCollectionChangedAction.Remove)
-                        rowsRemovedRaised += e.OldItems!.Count;
+                    Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+                    ++raised;
                 };
 
                 target.Items = CreateData(10);
 
                 Assert.Equal(10, target.Rows.Count);
-                Assert.Equal(5, rowsRemovedRaised);
-                Assert.Equal(10, rowsAddedRaised);
+                Assert.Equal(1, raised);
             }
 
             [AvaloniaTheory(Timeout = 10000)]
@@ -754,25 +815,21 @@ namespace Avalonia.Controls.TreeDataGridTests
             {
                 var data = CreateData();
                 var target = CreateTarget(data, sorted);
-                var rowsAddedRaised = 0;
-                var rowsRemovedRaised = 0;
+                var raised = 0;
 
                 target.Expand(0);
                 Assert.Equal(10, target.Rows.Count);
 
                 target.Rows.CollectionChanged += (s, e) =>
                 {
-                    if (e.Action == NotifyCollectionChangedAction.Add)
-                        rowsAddedRaised += e.NewItems!.Count;
-                    else if (e.Action == NotifyCollectionChangedAction.Remove)
-                        rowsRemovedRaised += e.OldItems!.Count;
+                    Assert.Equal(NotifyCollectionChangedAction.Reset, e.Action);
+                    ++raised;
                 };
 
                 target.Items = CreateData(12);
 
                 Assert.Equal(12, target.Rows.Count);
-                Assert.Equal(10, rowsRemovedRaised);
-                Assert.Equal(12, rowsAddedRaised);
+                Assert.Equal(1, raised);
             }
 
             [AvaloniaTheory(Timeout = 10000)]
@@ -864,6 +921,35 @@ namespace Avalonia.Controls.TreeDataGridTests
                 }
             }
 
+            return result;
+        }
+
+        private static AvaloniaListDebug<Node> CreateData(params int[] counts)
+        {
+            var id = 0;
+
+            void Create(int[] counts, int index, IList<Node> result)
+            {
+                var count = counts[index];
+
+                for (var i = 0; i < count; ++i)
+                {
+                    var node = new Node
+                    {
+                        Id = id++,
+                        Caption = $"Node {i}",
+                        Children = new AvaloniaListDebug<Node>(),
+                    };
+
+                    if (index < counts.Length - 1)
+                        Create(counts, index + 1, node.Children!);
+
+                    result.Add(node);
+                }
+            }
+
+            var result = new AvaloniaListDebug<Node>();
+            Create(counts, 0, result);
             return result;
         }
 

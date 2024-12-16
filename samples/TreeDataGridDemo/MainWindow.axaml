@@ -65,6 +65,11 @@
                     DockPanel.Dock="Right">
             Cell Selection
           </CheckBox>
+          <CheckBox IsChecked="{Binding Files.FlatList}"
+                    Margin="4 0 0 0"
+                    DockPanel.Dock="Right">
+            Flat
+          </CheckBox>
           <TextBox Text="{Binding Files.SelectedPath, Mode=OneWay}"
                    Margin="4 0 0 0"
                    VerticalContentAlignment="Center"
