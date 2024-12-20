@@ -495,6 +495,55 @@ namespace Avalonia.Controls.TreeDataGridTests
             AssertRealizedCells(target);
         }
 
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Use_TextCell_StringFormat()
+        {
+            var (target, items) = CreateTarget(columns: new IColumn<Model>[]
+            {
+                new TextColumn<Model, string?>("Title", x => x.Title, options: new()
+                {
+                    StringFormat = "Hello {0}"
+                }),
+            });
+
+            var rows = target.RowsPresenter!
+                .GetVisualChildren()
+                .Cast<TreeDataGridRow>()
+                .ToList();
+
+            Assert.Equal(10, rows.Count);
+
+            for (var i = 0; i < rows.Count; i++)
+            {
+                var cell = Assert.IsType<TreeDataGridTextCell>(
+                    Assert.Single(rows[i].CellsPresenter!.GetVisualChildren().Cast<TreeDataGridCell>()));
+                Assert.Equal($"Hello Item {i}", cell.Value);
+            }
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Use_TextCell_StringFormat_When_Model_Is_Updated()
+        {
+            var (target, items) = CreateTarget(columns: new IColumn<Model>[]
+            {
+                new TextColumn<Model, string?>("Title", x => x.Title, options: new()
+                {
+                    StringFormat = "Hello {0}"
+                }),
+            });
+
+            var rows = target.RowsPresenter!
+                .GetVisualChildren()
+                .Cast<TreeDataGridRow>()
+                .ToList();
+
+            Assert.Equal(10, rows.Count);
+            items[1].Title = "World";
+            var cell = Assert.IsType<TreeDataGridTextCell>(target.TryGetCell(0, 1));
+
+            Assert.Equal("Hello World", cell.Value);
+        }
+
         public class RemoveItems
         {
             [AvaloniaFact(Timeout = 10000)]
