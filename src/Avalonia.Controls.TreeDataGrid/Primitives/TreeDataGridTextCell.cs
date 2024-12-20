@@ -118,7 +118,7 @@ namespace Avalonia.Controls.Primitives
                 try
                 {
                     _modelValueChanging = true;
-                    Value = Model?.Value?.ToString();
+                    UpdateValue();
                 }
                 finally
                 {
