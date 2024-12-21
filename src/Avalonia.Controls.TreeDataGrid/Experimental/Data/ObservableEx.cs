@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Disposables;
+using Avalonia.Experimental.Data.Core;
 
 namespace Avalonia.Experimental.Data
 {
