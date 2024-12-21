@@ -14,6 +14,10 @@
           "type": "boolean",
           "description": "Indicates to continue a previously failed build attempt"
         },
+        "ForceNugetVersion": {
+          "type": "string",
+          "description": "force-nuget-version"
+        },
         "Help": {
           "type": "boolean",
           "description": "Shows the help text for this build assembly"
@@ -57,22 +61,6 @@
             "type": "string"
           }
         },
-        "PublishFramework": {
-          "type": "string",
-          "description": "publish-framework"
-        },
-        "PublishProject": {
-          "type": "string",
-          "description": "publish-project"
-        },
-        "PublishRuntime": {
-          "type": "string",
-          "description": "publish-runtime"
-        },
-        "PublishSelfContained": {
-          "type": "boolean",
-          "description": "publish-self-contained"
-        },
         "Root": {
           "type": "string",
           "description": "Root directory during build execution"
@@ -83,18 +71,30 @@
           "items": {
             "type": "string",
             "enum": [
+              "CiAzureLinux",
+              "CiAzureOSX",
+              "CiAzureWindows",
               "Clean",
               "Compile",
-              "Pack",
-              "Publish",
-              "Restore",
-              "Test"
+              "CreateNugetPackages",
+              "Package",
+              "RunCoreLibsTests",
+              "RunTests",
+              "ZipFiles"
             ]
           }
         },
+        "SkipPreviewer": {
+          "type": "boolean",
+          "description": "skip-previewer"
+        },
+        "SkipTests": {
+          "type": "boolean",
+          "description": "skip-tests"
+        },
         "Solution": {
           "type": "string",
-          "description": "Path to a solution file that is automatically loaded"
+          "description": "Path to a solution file that is automatically loaded. Default is Avalonia.Controls.TreeDataGrid.sln"
         },
         "Target": {
           "type": "array",
@@ -102,12 +102,16 @@
           "items": {
             "type": "string",
             "enum": [
+              "CiAzureLinux",
+              "CiAzureOSX",
+              "CiAzureWindows",
               "Clean",
               "Compile",
-              "Pack",
-              "Publish",
-              "Restore",
-              "Test"
+              "CreateNugetPackages",
+              "Package",
+              "RunCoreLibsTests",
+              "RunTests",
+              "ZipFiles"
             ]
           }
         },
@@ -120,10 +124,6 @@
             "Quiet",
             "Verbose"
           ]
-        },
-        "VersionSuffix": {
-          "type": "string",
-          "description": "version-suffix"
         }
       }
     }
