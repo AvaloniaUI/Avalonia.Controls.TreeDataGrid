@@ -19,8 +19,13 @@ namespace Avalonia.Controls.Utils
                 map.Add(i);
             }
 
+#if NETSTANDARD2_0
+            map.Sort(compare);
+#else
             var span = CollectionsMarshal.AsSpan(map);
             SortHelper<int>.Sort(span, compare);
+#endif
+
             return map;
         }
     }

@@ -121,8 +121,14 @@ namespace Avalonia.Controls.Selection
             };
 
             var anchor = shift ? _rangeAnchor : GetAnchor();
+
+#if NETSTANDARD
+            var columnIndex = Math.Min(Math.Max(anchor.x + x, 0), sender.Columns.Count - 1);
+            var rowIndex = Math.Min(Math.Max(anchor.y + y, 0), sender.Rows.Count - 1);
+#else
             var columnIndex = Math.Clamp(anchor.x + x, 0, sender.Columns.Count - 1);
             var rowIndex = Math.Clamp(anchor.y + y, 0, sender.Rows.Count - 1);
+#endif
 
             if (!shift)
                 Select(columnIndex, rowIndex);
@@ -170,6 +176,18 @@ namespace Avalonia.Controls.Selection
                     PointerSelect(sender, cell, e);
             }
         }
+
+        bool ITreeDataGridSelectionInteraction.IsRowSelected(IRow rowModel) => false;
+
+        bool ITreeDataGridSelectionInteraction.IsRowSelected(int rowIndex) => false;
+
+        void ITreeDataGridSelectionInteraction.OnPreviewKeyDown(TreeDataGrid sender, KeyEventArgs e) { }
+
+        void ITreeDataGridSelectionInteraction.OnKeyUp(TreeDataGrid sender, KeyEventArgs e) { }
+
+        void ITreeDataGridSelectionInteraction.OnTextInput(TreeDataGrid sender, TextInputEventArgs e) { }
+
+        void ITreeDataGridSelectionInteraction.OnPointerMoved(TreeDataGrid sender, PointerEventArgs e) { }
 
         private void BeginBatchUpdate()
         {

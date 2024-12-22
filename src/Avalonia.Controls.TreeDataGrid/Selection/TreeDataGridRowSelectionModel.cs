@@ -356,6 +356,12 @@ namespace Avalonia.Controls.Selection
             HandleTextInput(e.Text, sender, _source.Rows.ModelIndexToRowIndex(AnchorIndex));
         }
 
+        bool ITreeDataGridSelectionInteraction.IsCellSelected(int columnIndex, int rowIndex) => false;
+
+        void ITreeDataGridSelectionInteraction.OnKeyUp(TreeDataGrid sender, KeyEventArgs e) { }
+
+        void ITreeDataGridSelectionInteraction.OnPointerMoved(TreeDataGrid sender, PointerEventArgs e) { }
+
         protected internal override IEnumerable<TModel>? GetChildren(TModel node)
         {
             if (_source is HierarchicalTreeDataGridSource<TModel> treeSource)

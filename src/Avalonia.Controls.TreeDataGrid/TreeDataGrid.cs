@@ -605,7 +605,9 @@ namespace Avalonia.Controls
             _autoScrollTimer.Start();
         }
 
+#if !NETSTANDARD2_0
         [MemberNotNullWhen(true, nameof(_source))]
+#endif
         private bool CalculateAutoDragDrop(
             TreeDataGridRow targetRow,
             DragEventArgs e,
