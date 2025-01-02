@@ -1170,7 +1170,208 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Equal(1, selectedIndexRaised);
                 Assert.Equal(1, selectedItemRaised);
             }
-#if false
+
+            [AvaloniaFact(Timeout = 10000)]
+            public void Moving_Selected_Root_Item_Updates_State()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var indexesChangedRaised = 0;
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
+
+                target.Select(new IndexPath(1));
+
+                target.IndexesChanged += (s, e) =>
+                {
+                    ++indexesChangedRaised;
+                };
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                };
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    ++selectionChangedRaised;
+                };
+
+                data.Move(1, 3);
+
+                Assert.Equal(0, target.Count);
+                Assert.Equal(default, target.SelectedIndex);
+                Assert.Empty(target.SelectedIndexes);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+                Assert.Equal(1, indexesChangedRaised);
+                Assert.Equal(1, selectionChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(1, selectedItemRaised);
+            }
+
+            [AvaloniaFact(Timeout = 10000)]
+            public void Moving_Selected_Child_Item_Updates_State()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var indexesChangedRaised = 0;
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
+
+                target.Select(new IndexPath(1, 1));
+
+                target.IndexesChanged += (s, e) =>
+                {
+                    ++indexesChangedRaised;
+                };
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                };
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    ++selectionChangedRaised;
+                };
+
+                data[1].Children!.Move(1, 2);
+
+                Assert.Equal(0, target.Count);
+                Assert.Equal(default, target.SelectedIndex);
+                Assert.Empty(target.SelectedIndexes);
+                Assert.Null(target.SelectedItem);
+                Assert.Empty(target.SelectedItems);
+                Assert.Equal(1, indexesChangedRaised);
+                Assert.Equal(1, selectionChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(1, selectedItemRaised);
+            }
+
+            [AvaloniaFact(Timeout = 10000)]
+            public void Moving_Unselected_Child_Item_From_Before_Selected_Item_To_After_Updates_State()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var indexesChangedRaised = 0;
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
+
+                target.Select(new IndexPath(1, 1));
+
+                target.IndexesChanged += (s, e) =>
+                {
+                    Assert.Equal(new(1), e.ParentIndex);
+                    Assert.Equal(0, e.StartIndex);
+                    Assert.Equal(2, e.EndIndex);
+                    Assert.Equal(-1, e.Delta);
+                    ++indexesChangedRaised;
+                };
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                };
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    ++selectionChangedRaised;
+                };
+
+                data[1].Children!.Move(0, 2);
+
+                Assert.Equal(1, target.Count);
+                Assert.Equal(new(1, 0), target.SelectedIndex);
+                Assert.Equal([new(1, 0)], target.SelectedIndexes);
+                Assert.Equal("Node 1-1", target.SelectedItem?.Caption);
+                Assert.Equal(["Node 1-1"], target.SelectedItems.Select(x => x?.Caption));
+                Assert.Equal(1, indexesChangedRaised);
+                Assert.Equal(0, selectionChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(0, selectedItemRaised);
+            }
+
+            [AvaloniaFact(Timeout = 10000)]
+            public void Moving_Unselected_Child_Item_From_After_Selected_Item_To_Before_Updates_State()
+            {
+                var data = CreateData();
+                var target = CreateTarget(data);
+                var indexesChangedRaised = 0;
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
+
+                target.Select(new IndexPath(1, 1));
+
+                target.IndexesChanged += (s, e) =>
+                {
+                    Assert.Equal(new(1), e.ParentIndex);
+                    Assert.Equal(0, e.StartIndex);
+                    Assert.Equal(2, e.EndIndex);
+                    Assert.Equal(1, e.Delta);
+                    ++indexesChangedRaised;
+                };
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                };
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    ++selectionChangedRaised;
+                };
+
+                data[1].Children!.Move(2, 0);
+
+                Assert.Equal(1, target.Count);
+                Assert.Equal(new(1, 2), target.SelectedIndex);
+                Assert.Equal([new(1, 2)], target.SelectedIndexes);
+                Assert.Equal("Node 1-1", target.SelectedItem?.Caption);
+                Assert.Equal(["Node 1-1"], target.SelectedItems.Select(x => x?.Caption));
+                Assert.Equal(1, indexesChangedRaised);
+                Assert.Equal(0, selectionChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(0, selectedItemRaised);
+            }
+
+
             [AvaloniaFact(Timeout = 10000)]
             public void Resetting_Root_Updates_State()
             {
@@ -1178,7 +1379,6 @@ namespace Avalonia.Controls.TreeDataGridTests
                 var target = CreateTarget(data);
                 var selectionChangedRaised = 0;
                 var selectedIndexRaised = 0;
-                var resetRaised = 0;
 
                 target.Select(new IndexPath(1));
 
@@ -1200,10 +1400,9 @@ namespace Avalonia.Controls.TreeDataGridTests
                 Assert.Empty(target.SelectedItems);
                 Assert.Equal(default, target.AnchorIndex);
                 Assert.Equal(0, selectionChangedRaised);
-                Assert.Equal(1, resetRaised);
                 Assert.Equal(1, selectedIndexRaised);
             }
-#endif
+
             [AvaloniaFact(Timeout = 10000)]
             public void Handles_Selection_Made_In_CollectionChanged()
             {
