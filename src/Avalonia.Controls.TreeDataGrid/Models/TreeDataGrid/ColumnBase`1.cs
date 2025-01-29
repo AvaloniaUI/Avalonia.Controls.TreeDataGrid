@@ -134,6 +134,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             var oldWidth = ActualWidth;
             ActualWidth = width;
             _starWidthWasConstrained = false;
+
+            if (double.IsNaN(oldWidth) && double.IsNaN(ActualWidth))
+            {
+                return false;
+            }
+            
             return !MathUtilities.AreClose(oldWidth, ActualWidth);
         }
 
