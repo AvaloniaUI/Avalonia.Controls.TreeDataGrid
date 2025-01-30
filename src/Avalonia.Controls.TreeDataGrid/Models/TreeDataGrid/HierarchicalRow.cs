@@ -22,6 +22,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         private bool _isExpanded;
         private bool? _showExpander;
 
+#if NETSTANDARD2_0
+        object? IRow.Model => Model;
+#endif
+
         public HierarchicalRow(
             IExpanderRowController<TModel> controller,
             IExpanderColumn<TModel> expanderColumn,

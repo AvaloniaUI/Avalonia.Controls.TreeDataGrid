@@ -649,8 +649,8 @@ namespace Avalonia.Controls.Primitives
             return new Rect(
                 0,
                 0,
-                double.IsFinite(availableSize.Width) ? availableSize.Width : 0,
-                double.IsFinite(availableSize.Height) ? availableSize.Height : 0); 
+                Double.IsFinite(availableSize.Width) ? availableSize.Width : 0,
+                Double.IsFinite(availableSize.Height) ? availableSize.Height : 0); 
         }
 
         private void RecycleElement(Control element, int index)
