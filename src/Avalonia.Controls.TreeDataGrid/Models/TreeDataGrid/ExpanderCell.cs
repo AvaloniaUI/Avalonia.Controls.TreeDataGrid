@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Reactive.Disposables;
 using Avalonia.Data;
 using Avalonia.Experimental.Data.Core;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         where TModel : class
     {
         private readonly ICell _inner;
-        private readonly CompositeDisposable _subscription = new();
+        private readonly IDisposable _subscription;
 
         public ExpanderCell(
             ICell inner,
@@ -24,15 +24,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             Row = row;
             row.PropertyChanged += RowPropertyChanged;
 
-            _subscription.Add(showExpander.Subscribe(x => Row.UpdateShowExpander(this, x)));
-
+            var expanderSubscription = showExpander.Subscribe(new AnonymousObserver<bool>(x => Row.UpdateShowExpander(this, x)));
             if (isExpanded is not null)
             {
-                _subscription.Add(isExpanded.Subscribe(x =>
+                var isExpandedSubscription = isExpanded.Subscribe(new AnonymousObserver<BindingValue<bool>>(x =>
                 {
                     if (x.HasValue)
                         IsExpanded = x.Value;
                 }));
+                _subscription = new CompositeDisposable(expanderSubscription, isExpandedSubscription);
+            }
+            else
+            {
+                _subscription = expanderSubscription;
             }
         }
 
