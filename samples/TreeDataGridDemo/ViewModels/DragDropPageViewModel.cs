@@ -22,7 +22,9 @@ namespace TreeDataGridDemo.ViewModels
                             "Name",
                             x => x.Name,
                             GridLength.Star),
-                        x => x.Children),
+                        x => x.Children,
+                        x => x.Children.Count > 0,
+                        x => x.IsExpanded),
                     new CheckBoxColumn<DragDropItem>(
                         "Allow Drag",
                         x => x.AllowDrag,
