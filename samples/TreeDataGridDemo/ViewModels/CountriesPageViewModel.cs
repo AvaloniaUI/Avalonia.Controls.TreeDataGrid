@@ -31,6 +31,7 @@ namespace TreeDataGridDemo.ViewModels
                     new TextColumn<Country, int>("GDP", x => x.GDP, new GridLength(3, GridUnitType.Star), new()
                     {
                         TextAlignment = Avalonia.Media.TextAlignment.Right,
+                        IsVisible = true,
                         MaxWidth = new GridLength(150)
                     }),
                 }
