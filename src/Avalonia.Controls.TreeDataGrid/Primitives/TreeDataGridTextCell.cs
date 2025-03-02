@@ -55,8 +55,12 @@ namespace Avalonia.Controls.Primitives
             get => _value;
             set
             {
-                if (SetAndRaise(ValueProperty, ref _value, value) && Model is ITextCell cell && !_modelValueChanging)
-                    cell.Text = _value;
+                if (SetAndRaise(ValueProperty, ref _value, value) && Model is ITextCell cell)
+                {
+                    if (!_modelValueChanging)
+                        cell.Text = _value;
+                    RaiseCellValueChanged();
+                }
             }
         }
 
@@ -114,7 +118,7 @@ namespace Avalonia.Controls.Primitives
                 try
                 {
                     _modelValueChanging = true;
-                    Value = Model?.Value?.ToString();
+                    UpdateValue();
                 }
                 finally
                 {

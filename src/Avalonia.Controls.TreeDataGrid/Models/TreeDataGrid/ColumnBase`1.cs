@@ -141,6 +141,18 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             var oldWidth = ActualWidth;
             ActualWidth = width;
             _starWidthWasConstrained = false;
+
+            // MathUtilites.AreClose will return true for this condition.
+            // If the user has auto columns that are not yet realized, then the
+            // _autoWidth will remain NaN.
+            // This will lead to an endless layout cycle causing the whole UI
+            // to have degraded performance, until all columns have an actual value
+            // set for _autoWidth.
+            if (double.IsNaN(oldWidth) && double.IsNaN(ActualWidth))
+            {
+                return false;
+            }
+            
             return !MathUtilities.AreClose(oldWidth, ActualWidth);
         }
 

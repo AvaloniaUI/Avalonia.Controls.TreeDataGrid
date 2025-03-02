@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Input;
@@ -46,8 +47,12 @@ namespace Avalonia.Controls.Primitives
             get => _value;
             set
             {
-                if (SetAndRaise(ValueProperty, ref _value, value) && Model is CheckBoxCell cell)
-                    cell.Value = value;
+                if (SetAndRaise(ValueProperty, ref _value, value))
+                {
+                    if (Model is CheckBoxCell cell)
+                        cell.Value = value;
+                    RaiseCellValueChanged();
+                }
             }
         }
 
@@ -70,6 +75,21 @@ namespace Avalonia.Controls.Primitives
             }
 
             base.Realize(factory, selection, model, columnIndex, rowIndex);
+            SubscribeToModelChanges();
+        }
+
+        public override void Unrealize()
+        {
+            UnsubscribeFromModelChanges();
+            base.Unrealize();
+        }
+        
+        protected override void OnModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            base.OnModelPropertyChanged(sender, e);
+
+            if (e.PropertyName == nameof(CheckBoxCell.Value) && Model is CheckBoxCell checkBoxCell)
+                Value = checkBoxCell.Value;
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
