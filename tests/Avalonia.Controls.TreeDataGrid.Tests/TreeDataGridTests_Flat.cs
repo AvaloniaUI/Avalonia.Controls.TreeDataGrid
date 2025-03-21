@@ -1,19 +1,15 @@
-﻿using Avalonia.Collections;
-using Avalonia.Controls.Models.TreeDataGrid;
-using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Selection;
-using Avalonia.Layout;
-using Avalonia.LogicalTree;
-using Avalonia.Styling;
-using Avalonia.VisualTree;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Avalonia.Controls.Embedding;
-using Avalonia.Headless;
+using Avalonia.Collections;
+using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Headless.XUnit;
+using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Xunit;
 using Enumerable = System.Linq.Enumerable;
 
@@ -293,6 +289,77 @@ namespace Avalonia.Controls.TreeDataGridTests
         }
 
         [AvaloniaFact(Timeout = 10000)]
+        public void Raises_CellValueChanged_When_Model_Value_Changed()
+        {
+            var (target, items) = CreateTarget();
+            var raised = 0;
+
+            target.CellValueChanged += (s, e) =>
+            {
+                Assert.Equal(1, e.ColumnIndex);
+                Assert.Equal(1, e.RowIndex);
+                ++raised;
+            };
+
+            items[1].Title = "Changed";
+
+            Assert.Equal(1, raised);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Raises_CellValueChanged_After_Cell_Edit()
+        {
+            var (target, items) = CreateTarget();
+            var raised = 0;
+
+            target.CellValueChanged += (s, e) =>
+            {
+                Assert.Equal(1, e.ColumnIndex);
+                Assert.Equal(1, e.RowIndex);
+                ++raised;
+            };
+
+            var cell = Assert.IsType<TreeDataGridTextCell>(target.TryGetRow(1)?.TryGetCell(1));
+            cell.BeginEdit();
+            cell.Value = "Changed";
+
+            Assert.Equal(0, raised);
+            Assert.Equal("Item 1", items[1].Title);
+
+            cell.EndEdit();
+
+            Assert.Equal("Changed", items[1].Title);
+            Assert.Equal(1, raised);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Does_Not_Raise_CellValueChanged_Events_On_Initial_Layout()
+        {
+            var (target, items) = CreateTarget(runLayout: false);
+            var raised = 0;
+
+            target.CellValueChanged += (s, e) => ++raised;
+
+            target.UpdateLayout();
+
+            Assert.Equal(0, raised);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Does_Not_Raise_CellValueChanged_Events_On_Scroll()
+        {
+            var (target, items) = CreateTarget();
+            var raised = 0;
+
+            target.CellValueChanged += (s, e) => ++raised;
+
+            target.Scroll!.Offset = new Vector(0, 10);
+            Layout(target);
+
+            Assert.Equal(0, raised);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
         public void Does_Not_Realize_Columns_Outside_Viewport()
         {
             var (target, items) = CreateTarget(columns: new IColumn<Model>[]
@@ -379,6 +446,102 @@ namespace Avalonia.Controls.TreeDataGridTests
             Assert.Equal(60, columns[0].ActualWidth);
             Assert.Equal(20, columns[1].ActualWidth);
             Assert.Equal(20, columns[2].ActualWidth);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Correctly_Align_Columns_When_Vertically_Scrolling_With_First_Column_Unrealized()
+        {
+            // Issue #298
+            static void AssertRealizedCells(TreeDataGrid target)
+            {
+                var rows = target.RowsPresenter!.GetVisualChildren().Cast<TreeDataGridRow>();
+
+                foreach (var row in rows)
+                {
+                    var cells = row.CellsPresenter!.GetRealizedElements()
+                        .Cast<TreeDataGridCell>()
+                        .OrderBy(x => x.ColumnIndex)
+                        .ToList();
+
+                    Assert.Equal(3, cells.Count);
+                    Assert.Equal(1, cells[0].ColumnIndex);
+                    Assert.Equal(100, cells[0].Bounds.Left);
+                    Assert.Equal(150, cells[1].Bounds.Left);
+                    Assert.Equal(200, cells[2].Bounds.Left);
+                }
+            }
+
+            var (target, items) = CreateTarget(columns:
+            [
+                new TextColumn<Model, int>("ID", x => x.Id, width: new GridLength(100, GridUnitType.Pixel)),
+                new TextColumn<Model, string?>("Title1", x => x.Title, width: new GridLength(50, GridUnitType.Pixel)),
+                new TextColumn<Model, string?>("Title2", x => x.Title, width: new GridLength(50, GridUnitType.Pixel)),
+                new TextColumn<Model, string?>("Title3", x => x.Title, width: new GridLength(50, GridUnitType.Pixel)),
+            ]);
+
+            // Scroll horizontally and check that the realized cells are positioned correctly.
+            target.Scroll!.Offset = new Vector(120, 0);
+            target.UpdateLayout();
+            AssertRealizedCells(target);
+
+            // Scroll down a row and check that the realized cells are positioned correctly.
+            target.Scroll!.Offset = new Vector(120, 10);
+            target.UpdateLayout();
+            AssertRealizedCells(target);
+
+            // Now scroll back vertically and check once more.
+            target.Scroll!.Offset = new Vector(120, 0);
+            target.UpdateLayout();
+            AssertRealizedCells(target);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Use_TextCell_StringFormat()
+        {
+            var (target, items) = CreateTarget(columns: new IColumn<Model>[]
+            {
+                new TextColumn<Model, string?>("Title", x => x.Title, options: new()
+                {
+                    StringFormat = "Hello {0}"
+                }),
+            });
+
+            var rows = target.RowsPresenter!
+                .GetVisualChildren()
+                .Cast<TreeDataGridRow>()
+                .ToList();
+
+            Assert.Equal(10, rows.Count);
+
+            for (var i = 0; i < rows.Count; i++)
+            {
+                var cell = Assert.IsType<TreeDataGridTextCell>(
+                    Assert.Single(rows[i].CellsPresenter!.GetVisualChildren().Cast<TreeDataGridCell>()));
+                Assert.Equal($"Hello Item {i}", cell.Value);
+            }
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Use_TextCell_StringFormat_When_Model_Is_Updated()
+        {
+            var (target, items) = CreateTarget(columns: new IColumn<Model>[]
+            {
+                new TextColumn<Model, string?>("Title", x => x.Title, options: new()
+                {
+                    StringFormat = "Hello {0}"
+                }),
+            });
+
+            var rows = target.RowsPresenter!
+                .GetVisualChildren()
+                .Cast<TreeDataGridRow>()
+                .ToList();
+
+            Assert.Equal(10, rows.Count);
+            items[1].Title = "World";
+            var cell = Assert.IsType<TreeDataGridTextCell>(target.TryGetCell(0, 1));
+
+            Assert.Equal("Hello World", cell.Value);
         }
 
         public class RemoveItems
@@ -517,6 +680,69 @@ namespace Avalonia.Controls.TreeDataGridTests
             }
         }
 
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Show_Horizontal_ScrollBar()
+        {
+            var (target, items) = CreateTarget(columns:
+            [
+                new TextColumn<Model, int>("ID", x => x.Id, width: new GridLength(100, GridUnitType.Pixel)),
+                new TextColumn<Model, string?>("Title1", x => x.Title,  width: new GridLength(100, GridUnitType.Pixel)),
+            ]);
+            var scroll = Assert.IsType<ScrollViewer>(target.Scroll);
+            var headerScroll = Assert.IsType<ScrollViewer>(
+                target.GetVisualDescendants().Single(x => x.Name == "PART_HeaderScrollViewer"));
+
+            Assert.Equal(new(100, 100), scroll.Viewport);
+            Assert.Equal(new(200, 1000), scroll.Extent);
+            Assert.Equal(new(100, 0), headerScroll.Viewport);
+            Assert.Equal(new(200, 0), headerScroll.Extent);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Show_Horizontal_ScrollBar_With_No_Initial_Rows()
+        {
+            var (target, items) = CreateTarget(columns:
+            [
+                new TextColumn<Model, int>("ID", x => x.Id, width: new GridLength(100, GridUnitType.Pixel)),
+                new TextColumn<Model, string?>("Title1", x => x.Title,  width: new GridLength(100, GridUnitType.Pixel)),
+            ], itemCount: 0);
+            var scroll = Assert.IsType<ScrollViewer>(target.Scroll);
+            var headerScroll = Assert.IsType<ScrollViewer>(
+                target.GetVisualDescendants().Single(x => x.Name == "PART_HeaderScrollViewer"));
+
+            Assert.Equal(new(100, 100), scroll.Viewport);
+            Assert.Equal(new(200, 100), scroll.Extent);
+            Assert.Equal(new(100, 0), headerScroll.Viewport);
+            Assert.Equal(new(200, 0), headerScroll.Extent);
+        }
+
+        [AvaloniaFact(Timeout = 10000)]
+        public void Should_Preserve_Horizontal_ScrollBar_When_Rows_Removed()
+        {
+            var (target, items) = CreateTarget(columns:
+            [
+                new TextColumn<Model, int>("ID", x => x.Id, width: new GridLength(100, GridUnitType.Pixel)),
+                new TextColumn<Model, string?>("Title1", x => x.Title,  width: new GridLength(100, GridUnitType.Pixel)),
+            ]);
+            var scroll = Assert.IsType<ScrollViewer>(target.Scroll);
+            var headerScroll = Assert.IsType<ScrollViewer>(
+                target.GetVisualDescendants().Single(x => x.Name == "PART_HeaderScrollViewer"));
+
+            scroll.PropertyChanged += (s, e) => 
+            { 
+                if (e.Property == ScrollViewer.ExtentProperty)
+                {
+                }
+            };
+            items.Clear();
+            target.UpdateLayout();
+
+            Assert.Equal(new(100, 100), scroll.Viewport);
+            Assert.Equal(new(200, 100), scroll.Extent);
+            Assert.Equal(new(100, 0), headerScroll.Viewport);
+            Assert.Equal(new(200, 0), headerScroll.Extent);
+        }
+
         private static void AssertRowIndexes(TreeDataGrid target, int firstRowIndex, int rowCount)
         {
             var presenter = target.RowsPresenter;
@@ -617,7 +843,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             else
             {
                 source.Columns.Add(new TextColumn<Model, int>("ID", x => x.Id));
-                source.Columns.Add(new TextColumn<Model, string?>("Title", x => x.Title));
+                source.Columns.Add(new TextColumn<Model, string?>("Title", x => x.Title, (o, v) => o.Title = v));
             }
 
             var target = new TreeDataGrid
@@ -679,8 +905,14 @@ namespace Avalonia.Controls.TreeDataGridTests
 
         private class Model : NotifyingBase
         {
+            private string? _title;
+
             public int Id { get; set; }
-            public string? Title { get; set; }
+            public string? Title 
+            { 
+                get => _title;
+                set => RaiseAndSetIfChanged(ref _title, value);
+            }
         }
     }
 }

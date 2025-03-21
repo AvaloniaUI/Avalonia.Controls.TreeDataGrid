@@ -123,7 +123,8 @@ namespace Avalonia.Controls.Selection
 
         protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            var shiftIndex = 0;
+            var shiftStartIndex = 0;
+            var shiftEndIndex = -1;
             var shiftDelta = 0;
             var indexesChanged = false;
             List<T?>? removed = null;
@@ -132,24 +133,33 @@ namespace Avalonia.Controls.Selection
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    shiftIndex = e.NewStartingIndex;
+                    shiftStartIndex = e.NewStartingIndex;
                     shiftDelta = e.NewItems!.Count;
-                    indexesChanged = OnItemsAdded(shiftIndex, e.NewItems).ShiftDelta > 0;
+                    indexesChanged = OnItemsAdded(shiftStartIndex, e.NewItems).ShiftDelta > 0;
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    shiftIndex = e.OldStartingIndex;
+                    shiftStartIndex = e.OldStartingIndex;
                     shiftDelta = -e.OldItems!.Count;
-                    var change = OnItemsRemoved(shiftIndex, e.OldItems);
+                    var change = OnItemsRemoved(shiftStartIndex, e.OldItems);
                     indexesChanged = change.ShiftDelta != 0;
                     removed = change.RemovedItems;
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
                     var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
-                    shiftIndex = removeChange.ShiftIndex;
+                    shiftStartIndex = removeChange.ShiftIndex;
                     shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
                     indexesChanged = shiftDelta != 0;
                     removed = removeChange.RemovedItems;
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    shiftStartIndex = Math.Min(e.OldStartingIndex, e.NewStartingIndex);
+                    shiftEndIndex = Math.Max(e.OldStartingIndex, e.NewStartingIndex);
+                    shiftDelta = e.OldStartingIndex < e.NewStartingIndex ? -e.OldItems!.Count : e.OldItems!.Count;
+                    var moveRemoveChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
+                    var moveAddChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
+                    indexesChanged = shiftDelta != 0;
+                    removed = moveRemoveChange.RemovedItems;
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     OnSourceReset();
@@ -161,29 +171,33 @@ namespace Avalonia.Controls.Selection
             // Adjust the paths of any child nodes.
             if (_children?.Count > 0 && shiftDelta != 0)
             {
-                for (var i = shiftIndex; i < _children.Count; ++i)
+                for (var i = shiftStartIndex; i < _children.Count; ++i)
                 {
                     var child = _children[i];
 
-                    if (shiftDelta < 1 && i >= shiftIndex && i < shiftIndex - shiftDelta)
+                    if (shiftDelta < 1 && i >= shiftStartIndex && i < shiftStartIndex - shiftDelta)
                     {
                         child?.AncestorRemoved(ref removed);
                     }
                     else
                     {
-                        child?.AncestorIndexChanged(Path, shiftIndex, shiftDelta);
+                        child?.AncestorIndexChanged(Path, shiftStartIndex, shiftDelta);
                         indexesChanged = true;
                     }
                 }
 
                 if (shiftDelta > 0)
-                    _children.InsertMany(shiftIndex, null, shiftDelta);
+                    _children.InsertMany(shiftStartIndex, null, shiftDelta);
                 else
-                    _children.RemoveRange(shiftIndex, -shiftDelta);
+                    _children.RemoveRange(shiftStartIndex, -shiftDelta);
             }
 
-            if (shiftDelta != 0 || removed?.Count> 0)
-                _owner.OnNodeCollectionChanged(Path, shiftIndex, shiftDelta, indexesChanged, removed);
+            if (shiftDelta != 0 || removed?.Count > 0)
+            {
+                if (shiftEndIndex == -1)
+                    shiftEndIndex = ItemsView?.Count ?? 0;
+                _owner.OnNodeCollectionChanged(Path, shiftStartIndex, shiftEndIndex, shiftDelta, indexesChanged, removed);
+            }
         }
 
         protected override void OnSourceCollectionChangeFinished()
