@@ -323,6 +323,7 @@ namespace Avalonia.Experimental.Data.Core
             // The member that changed is the next one in the chain.
             var changedMemberIndex = senderIndex + 1;
 
+            // Update subscriptions on the changed member and the links after it.
             if (changedMemberIndex < _chain.Length)
             {
                 StopListeningToChain(from: changedMemberIndex);
