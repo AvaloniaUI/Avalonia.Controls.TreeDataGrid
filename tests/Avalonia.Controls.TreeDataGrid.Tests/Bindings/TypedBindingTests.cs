@@ -4,13 +4,14 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Data;
 using Avalonia.Experimental.Data;
+using Avalonia.Headless.XUnit;
 using Xunit;
 
 namespace Avalonia.Controls.TreeDataGridTests.Bindings;
 
 public class TypedBindingTests
 {
-    [Fact]
+    [AvaloniaFact]
     public void OneWay_Binding_Single_Link_Should_Get_Value()
     {
         // Arrange
@@ -28,7 +29,7 @@ public class TypedBindingTests
         Assert.Equal("Test", target.Text);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void OneWay_Binding_Single_Link_Should_Listen_To_Changes()
     {
         // Arrange
@@ -47,7 +48,7 @@ public class TypedBindingTests
         Assert.Equal("Updated", target.Text);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void TwoWay_Binding_Single_Link_Should_Listen_And_Write()
     {
         // Arrange
@@ -75,7 +76,7 @@ public class TypedBindingTests
         Assert.Equal("UpdatedFromTarget", source.Name);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void OneWay_Binding_Two_Links_Should_Get_Value()
     {
         // Arrange
@@ -94,7 +95,7 @@ public class TypedBindingTests
         Assert.Equal("Child", target.Text);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void OneWay_Binding_Two_Links_Should_Listen_To_Changes()
     {
         // Arrange
@@ -123,7 +124,7 @@ public class TypedBindingTests
         Assert.Equal("NewChild", target.Text);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void TwoWay_Binding_Two_Links_Should_Listen_And_Write()
     {
         // Arrange
@@ -166,7 +167,7 @@ public class TypedBindingTests
         Assert.Equal("FinalUpdate", newChild.Name);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void OneWay_Binding_Three_Links_Should_Get_Value()
     {
         // Arrange
@@ -186,7 +187,7 @@ public class TypedBindingTests
         Assert.Equal("GrandChild", target.Text);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void OneWay_Binding_Three_Links_Should_Listen_To_Changes()
     {
         // Arrange
@@ -227,7 +228,7 @@ public class TypedBindingTests
         Assert.Equal("NewestGrandChild", target.Text);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void TwoWay_Binding_Three_Links_Should_Listen_And_Write()
     {
         // Arrange
@@ -266,7 +267,7 @@ public class TypedBindingTests
         Assert.Equal("AfterIntermediateChange", newGrandChild.Name);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void OneWay_Binding_Four_Links_Should_Get_Value()
     {
         // Arrange
@@ -287,7 +288,7 @@ public class TypedBindingTests
         Assert.Equal("GreatGrandChild", target.Text);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void OneWay_Binding_Four_Links_Should_Listen_To_Changes()
     {
         // Arrange
@@ -329,7 +330,7 @@ public class TypedBindingTests
         Assert.Equal("BrandNewGreatGrandChild", target.Text);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void TwoWay_Binding_Four_Links_Should_Listen_And_Write()
     {
         // Arrange
@@ -386,7 +387,7 @@ public class TypedBindingTests
         Assert.Equal("AfterMiddleChange", newGrandChildWithChild.Child.Name);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void Binding_Should_Handle_Null_Intermediate_Values()
     {
         // Arrange
@@ -411,7 +412,7 @@ public class TypedBindingTests
         Assert.Equal("NewChild", target.Text);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void TwoWay_Binding_Single_Link_Should_Update_Via_OnNext()
     {
         // Arrange
@@ -433,7 +434,7 @@ public class TypedBindingTests
         Assert.Equal("UpdatedViaOnNext", target.Text);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void TwoWay_Binding_Two_Links_Should_Update_Via_OnNext()
     {
         // Arrange
@@ -469,7 +470,7 @@ public class TypedBindingTests
         Assert.Equal("AfterIntermediateChange", newChild.Name);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void TwoWay_Binding_Three_Links_Should_Update_Via_OnNext()
     {
         // Arrange
@@ -505,7 +506,7 @@ public class TypedBindingTests
         Assert.Equal("AfterIntermediateChange", newGrandChild.Name);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void TwoWay_Binding_Should_Propagate_IsExpanded_Toggle()
     {
         // Arrange
@@ -553,7 +554,7 @@ public class TypedBindingTests
         Assert.Equal(1, node.CollapseCallCount);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void TwoWay_Binding_Should_Work_With_Multiple_Binding_Expressions()
     {
         // Arrange
@@ -587,96 +588,101 @@ public class TypedBindingTests
         Assert.False(target2.IsExpanded);
     }
 
-    [Fact]
-public void TwoWay_Binding_Should_Work_With_Multiple_Binding_Expressions_And_Long_Chain()
-{
-    // Create a deep chain of 5 TestViewModels
-    var level5 = new TestViewModel { Name = "Level5" };
-    var level4 = new TestViewModel { Name = "Level4", Child = level5 };
-    var level3 = new TestViewModel { Name = "Level3", Child = level4 };
-    var level2 = new TestViewModel { Name = "Level2", Child = level3 };
-    var level1 = new TestViewModel { Name = "Level1", Child = level2 };
-    var root = new TestViewModel { Name = "Root", Child = level1 };
+    [AvaloniaFact]
+    public void TwoWay_Binding_Should_Work_With_Multiple_Binding_Expressions_And_Long_Chain()
+    {
+        // Create a deep chain of 5 TestViewModels
+        var level5 = new TestViewModel { Name = "Level5" };
+        var level4 = new TestViewModel { Name = "Level4", Child = level5 };
+        var level3 = new TestViewModel { Name = "Level3", Child = level4 };
+        var level2 = new TestViewModel { Name = "Level2", Child = level3 };
+        var level1 = new TestViewModel { Name = "Level1", Child = level2 };
+        var root = new TestViewModel { Name = "Root", Child = level1 };
 
-    // Create simple targets with a Text property
-    var target1 = new TestTarget();
-    var target2 = new TestTarget();
+        // Create simple targets with a Text property
+        var target1 = new TestTarget();
+        var target2 = new TestTarget();
 
-    // Create a binding for the deep Name property (5 levels deep)
-    var binding = TypedBinding<TestViewModel>.TwoWay(vm => vm.Child!.Child!.Child!.Child!.Child!.Name);
+        // Create a binding for the deep Name property (5 levels deep)
+        var binding = TypedBinding<TestViewModel>.TwoWay(vm => vm.Child!.Child!.Child!.Child!.Child!.Name);
 
-    // Create two separate binding expressions from the same binding
-    var expression1 = binding.Instance(root, BindingMode.TwoWay);
-    var expression2 = binding.Instance(root, BindingMode.TwoWay);
+        // Create two separate binding expressions from the same binding
+        var expression1 = binding.Instance(root, BindingMode.TwoWay);
+        var expression2 = binding.Instance(root, BindingMode.TwoWay);
 
-    // Initialize bindings
-    target1.Bind(TestTarget.TextProperty, expression1);
-    target2.Bind(TestTarget.TextProperty, expression2);
+        // Initialize bindings
+        target1.Bind(TestTarget.TextProperty, expression1);
+        target2.Bind(TestTarget.TextProperty, expression2);
 
-    // Assert initial binding
-    Assert.Equal("Level5", target1.Text);
-    Assert.Equal("Level5", target2.Text);
+        // Assert initial binding
+        Assert.Equal("Level5", target1.Text);
+        Assert.Equal("Level5", target2.Text);
 
-    // Act - change leaf node property
-    level5.Name = "Updated Level5";
+        // Act - change leaf node property
+        level5.Name = "Updated Level5";
 
-    // Assert both targets updated
-    Assert.Equal("Updated Level5", target1.Text);
-    Assert.Equal("Updated Level5", target2.Text);
+        // Assert both targets updated
+        Assert.Equal("Updated Level5", target1.Text);
+        Assert.Equal("Updated Level5", target2.Text);
 
-    // Act - replace a middle node in the chain
-    var newLevel4 = new TestViewModel { 
-        Name = "New Level4", 
-        Child = new TestViewModel { Name = "New Level5" } 
-    };
-    level3.Child = newLevel4;
+        // Act - replace a middle node in the chain
+        var newLevel4 = new TestViewModel
+        {
+            Name = "New Level4",
+            Child = new TestViewModel { Name = "New Level5" }
+        };
+        level3.Child = newLevel4;
 
-    // Assert both targets updated to the new path
-    Assert.Equal("New Level5", target1.Text);
-    Assert.Equal("New Level5", target2.Text);
+        // Assert both targets updated to the new path
+        Assert.Equal("New Level5", target1.Text);
+        Assert.Equal("New Level5", target2.Text);
 
-    // Act - change leaf node property on the old path
-    level5.Name = "Changed from Old Path";
+        // Act - change leaf node property on the old path
+        level5.Name = "Changed from Old Path";
 
-    // Assert both targets still point to the new path
-    Assert.Equal("New Level5", target1.Text);
-    Assert.Equal("New Level5", target2.Text);
+        // Assert both targets still point to the new path
+        Assert.Equal("New Level5", target1.Text);
+        Assert.Equal("New Level5", target2.Text);
 
-    // Act - update from target after chain replacement
-    target1.Text = "Changed from Target1";
-    binding.Write!.Invoke(root, target1.Text);
+        // Act - update from target after chain replacement
+        target1.Text = "Changed from Target1";
+        binding.Write!.Invoke(root, target1.Text);
 
-    // Assert the new leaf node and other target got updated
-    Assert.Equal("Changed from Target1", newLevel4.Child!.Name);
-    Assert.Equal("Changed from Target1", target2.Text);
+        // Assert the new leaf node and other target got updated
+        Assert.Equal("Changed from Target1", newLevel4.Child!.Name);
+        Assert.Equal("Changed from Target1", target2.Text);
 
-    // Act - replace another node higher in the chain
-    var newLevel2 = new TestViewModel { 
-        Name = "New Level2", 
-        Child = new TestViewModel { 
-            Name = "Newest Level3", 
-            Child = new TestViewModel { 
-                Name = "Newest Level4", 
-                Child = new TestViewModel { 
-                    Name = "Newest Level5" 
-                } 
-            } 
-        } 
-    };
-    level1.Child = newLevel2;
+        // Act - replace another node higher in the chain
+        var newLevel2 = new TestViewModel
+        {
+            Name = "New Level2",
+            Child = new TestViewModel
+            {
+                Name = "Newest Level3",
+                Child = new TestViewModel
+                {
+                    Name = "Newest Level4",
+                    Child = new TestViewModel
+                    {
+                        Name = "Newest Level5"
+                    }
+                }
+            }
+        };
+        level1.Child = newLevel2;
 
-    // Assert both targets updated to the new deeply nested chain
-    Assert.Equal("Newest Level5", target1.Text);
-    Assert.Equal("Newest Level5", target2.Text);
+        // Assert both targets updated to the new deeply nested chain
+        Assert.Equal("Newest Level5", target1.Text);
+        Assert.Equal("Newest Level5", target2.Text);
 
-    // Act - update from target after major chain replacement
-    target2.Text = "Final value";
-    binding.Write!.Invoke(root, target2.Text);
+        // Act - update from target after major chain replacement
+        target2.Text = "Final value";
+        binding.Write!.Invoke(root, target2.Text);
 
-    // Assert the new deep leaf node and other target got updated
-    Assert.Equal("Final value", newLevel2.Child!.Child!.Child!.Name);
-    Assert.Equal("Final value", target1.Text);
-}
+        // Assert the new deep leaf node and other target got updated
+        Assert.Equal("Final value", newLevel2.Child!.Child!.Child!.Name);
+        Assert.Equal("Final value", target1.Text);
+    }
 
 
     // Test model that tracks expand/collapse operations
