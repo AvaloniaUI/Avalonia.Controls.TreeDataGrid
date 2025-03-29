@@ -64,7 +64,8 @@ namespace Avalonia.Experimental.Data
                 (o, v) => property.SetValue(o, v) :
                 (root, v) =>
                 {
-                    var o = links[^2](root);
+                    // The last link points the object containing the property to set
+                    var o = links[^1](root);
                     property.SetValue(o, v);
                 };
 
