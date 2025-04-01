@@ -53,7 +53,6 @@ namespace Avalonia.Controls.Primitives
             _recycleElement = RecycleElement;
             _recycleElementOnItemRemoved = RecycleElementOnItemRemoved;
             _updateElementIndex = UpdateElementIndex;
-            EffectiveViewportChanged += OnEffectiveViewportChanged;
         }
 
         public TreeDataGridElementFactory? ElementFactory
@@ -415,12 +414,14 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnAttachedToVisualTree(e);
             _scrollViewer = this.FindAncestorOfType<ScrollViewer>();
+            EffectiveViewportChanged += OnEffectiveViewportChanged;
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
             _scrollViewer = null;
+            EffectiveViewportChanged -= OnEffectiveViewportChanged;
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
