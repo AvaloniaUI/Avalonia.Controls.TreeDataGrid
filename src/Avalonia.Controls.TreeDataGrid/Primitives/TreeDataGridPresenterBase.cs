@@ -41,6 +41,7 @@ namespace Avalonia.Controls.Primitives
         private bool _isInLayout;
         private bool _isWaitingForViewportUpdate;
         private IReadOnlyList<TItem>? _items;
+        private bool _isSubscribedToItemChanges;
         private RealizedStackElements? _measureElements;
         private RealizedStackElements? _realizedElements;
         private ScrollViewer? _scrollViewer;
@@ -68,14 +69,12 @@ namespace Avalonia.Controls.Primitives
             {
                 if (_items != value)
                 {
-                    if (_items is INotifyCollectionChanged oldIncc)
-                        oldIncc.CollectionChanged -= OnItemsCollectionChanged;
+                    UnsubscribeFromItemChanges();
 
                     var oldValue = _items;
                     _items = value;
 
-                    if (_items is INotifyCollectionChanged newIncc)
-                        newIncc.CollectionChanged += OnItemsCollectionChanged;
+                    SubscribeToItemChanges();
 
                     RaisePropertyChanged(
                         ItemsProperty,
@@ -415,6 +414,8 @@ namespace Avalonia.Controls.Primitives
             base.OnAttachedToVisualTree(e);
             _scrollViewer = this.FindAncestorOfType<ScrollViewer>();
             EffectiveViewportChanged += OnEffectiveViewportChanged;
+            
+            SubscribeToItemChanges();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -422,6 +423,8 @@ namespace Avalonia.Controls.Primitives
             base.OnDetachedFromVisualTree(e);
             _scrollViewer = null;
             EffectiveViewportChanged -= OnEffectiveViewportChanged;
+
+            UnsubscribeFromItemChanges();
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -459,6 +462,24 @@ namespace Avalonia.Controls.Primitives
         protected virtual void UnrealizeElementOnItemRemoved(Control element)
         {
             UnrealizeElement(element);
+        }
+
+        private void SubscribeToItemChanges()
+        {
+            if (!_isSubscribedToItemChanges && _items is INotifyCollectionChanged newIncc)
+            {
+                newIncc.CollectionChanged += OnItemsCollectionChanged;
+                _isSubscribedToItemChanges = true;
+            }
+        }
+
+        private void UnsubscribeFromItemChanges()
+        {
+            if (_isSubscribedToItemChanges && _items is INotifyCollectionChanged oldIncc)
+            {
+                oldIncc.CollectionChanged -= OnItemsCollectionChanged;
+                _isSubscribedToItemChanges = false;
+            }
         }
 
         private void RealizeElements(
