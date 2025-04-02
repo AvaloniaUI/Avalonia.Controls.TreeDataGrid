@@ -413,6 +413,9 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnAttachedToVisualTree(e);
             _scrollViewer = this.FindAncestorOfType<ScrollViewer>();
+            
+            // Subscribing to this event adds a reference to 'this' in the layout manager.
+            // so this must be unsubscribed to avoid memory leaks.
             EffectiveViewportChanged += OnEffectiveViewportChanged;
             
             SubscribeToItemChanges();
@@ -422,6 +425,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDetachedFromVisualTree(e);
             _scrollViewer = null;
+            
             EffectiveViewportChanged -= OnEffectiveViewportChanged;
 
             UnsubscribeFromItemChanges();
