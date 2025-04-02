@@ -5,13 +5,14 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>nullable</WarningsAsErrors>
-    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>12</LangVersion>
     <!-- https://github.com/dotnet/msbuild/issues/2661 -->
     <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
     <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
   <PropertyGroup>
     <AvaloniaVersion>11.0.0</AvaloniaVersion>
+    <AvaloniaSamplesVersion>11.1.3</AvaloniaSamplesVersion>
   </PropertyGroup>
 </Project>

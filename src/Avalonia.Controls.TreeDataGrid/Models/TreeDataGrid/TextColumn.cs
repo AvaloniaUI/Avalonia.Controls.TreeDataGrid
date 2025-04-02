@@ -62,7 +62,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public override ICell CreateCell(IRow<TModel> row)
         {
-            return new TextCell<TValue?>(CreateBindingExpression(row.Model), Binding.Write is null, Options);
+            var expression = CreateBindingExpression(row.Model);
+            return new TextCell<TValue?>(expression, expression, Binding.Write is null, Options);
         }
 
         string? ITextSearchableColumn<TModel>.SelectValue(TModel model)
