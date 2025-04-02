@@ -519,8 +519,10 @@ namespace Avalonia.Controls.Selection
         {
             var result = 0;
 
-            foreach (var (parent, ranges) in selectedRanges.Ranges)
+            foreach (var row in selectedRanges.Ranges)
             {
+                var parent = row.Key;
+                var ranges = row.Value;
                 var node = GetOrCreateNode(parent);
 
                 if (node is not null)
@@ -537,8 +539,10 @@ namespace Avalonia.Controls.Selection
         {
             var result = 0;
 
-            foreach (var (parent, ranges) in selectedRanges.Ranges)
+            foreach (var row in selectedRanges.Ranges)
             {
+                var parent = row.Key;
+                var ranges = row.Value;
                 var node = GetOrCreateNode(parent);
 
                 if (node is not null)
