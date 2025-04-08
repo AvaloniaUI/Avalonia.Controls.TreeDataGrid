@@ -754,7 +754,15 @@ namespace Avalonia.Controls.Primitives
                     ClearFocusedElement(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    _realizedElements.ItemsReplaced(e.OldStartingIndex, e.OldItems!.Count, _recycleElementOnItemRemoved);
+                    if (e.OldItems!.Count == e.NewItems!.Count)
+                    {
+                        _realizedElements.ItemsReplaced(e.OldStartingIndex, e.OldItems!.Count, _recycleElementOnItemRemoved);
+                    }
+                    else
+                    {
+                        _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
+                        _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
+                    }
                     ClearFocusedElement(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Move:
