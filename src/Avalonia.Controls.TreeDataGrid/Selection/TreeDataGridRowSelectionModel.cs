@@ -323,14 +323,14 @@ namespace Avalonia.Controls.Selection
             //   if the user is trying to drag multiple rows
             //
             // Otherwise select on pointer release.
-            var inputSupportsSelection = e.Pointer.Type switch
+            var pointerSupportSelectionOnPress = e.Pointer.Type switch
             {
                 PointerType.Mouse => true,
                 PointerType.Pen => e.GetCurrentPoint(null).Properties.IsRightButtonPressed,
                 _ => false
             };
             if (!e.Handled &&
-                inputSupportsSelection &&
+                pointerSupportSelectionOnPress &&
                 e.Source is Control source &&
                 sender.TryGetRow(source, out var row) &&
                 _source.Rows.RowIndexToModelIndex(row.RowIndex) is { } modelIndex &&
