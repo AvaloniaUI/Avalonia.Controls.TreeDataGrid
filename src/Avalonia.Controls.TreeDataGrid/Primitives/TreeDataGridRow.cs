@@ -152,9 +152,17 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerMoved(e);
 
-            var delta = e.GetPosition(this) - _mouseDownPosition;
+            var currentPoint = e.GetCurrentPoint(this);
+            var delta = currentPoint.Position - _mouseDownPosition;
 
-            if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || 
+            var pointerSupportsDrag = currentPoint.Pointer.Type switch
+            {
+                PointerType.Mouse => currentPoint.Properties.IsLeftButtonPressed,
+                PointerType.Pen => currentPoint.Properties.IsRightButtonPressed,
+                _ => false
+            };
+
+            if (!pointerSupportsDrag ||
                 e.Handled ||
                 Math.Abs(delta.X) < DragDistance && Math.Abs(delta.Y) < DragDistance ||
                 _mouseDownPosition == s_InvalidPoint)
