@@ -12,15 +12,15 @@ namespace Avalonia.Controls.Selection
     {
         public event EventHandler? SelectionChanged;
 
-        bool IsCellSelected(int columnIndex, int rowIndex) => false;
-        bool IsRowSelected(IRow rowModel) => false;
-        bool IsRowSelected(int rowIndex) => false;
-        public void OnKeyDown(TreeDataGrid sender, KeyEventArgs e) { }
-        public void OnPreviewKeyDown(TreeDataGrid sender, KeyEventArgs e) { }
-        public void OnKeyUp(TreeDataGrid sender, KeyEventArgs e) { }
-        public void OnTextInput(TreeDataGrid sender, TextInputEventArgs e) { }
-        public void OnPointerPressed(TreeDataGrid sender, PointerPressedEventArgs e) { }
-        public void OnPointerMoved(TreeDataGrid sender, PointerEventArgs e) { }
-        public void OnPointerReleased(TreeDataGrid sender, PointerReleasedEventArgs e) { }
+        bool IsCellSelected(int columnIndex, int rowIndex);
+        bool IsRowSelected(IRow rowModel);
+        bool IsRowSelected(int rowIndex);
+        void OnKeyDown(TreeDataGrid sender, KeyEventArgs e);
+        void OnPreviewKeyDown(TreeDataGrid sender, KeyEventArgs e);
+        void OnKeyUp(TreeDataGrid sender, KeyEventArgs e);
+        void OnTextInput(TreeDataGrid sender, TextInputEventArgs e);
+        void OnPointerPressed(TreeDataGrid sender, PointerPressedEventArgs e);
+        void OnPointerMoved(TreeDataGrid sender, PointerEventArgs e);
+        void OnPointerReleased(TreeDataGrid sender, PointerReleasedEventArgs e);
     }
 }
