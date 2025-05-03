@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -11,6 +13,11 @@ namespace Avalonia.Controls.Primitives
         public event EventHandler<ChildIndexChangedEventArgs>? ChildIndexChanged;
 
         protected override Orientation Orientation => Orientation.Horizontal;
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new TreeDataGridColumnHeadersPresenterAutomationPeer(this);
+        }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
