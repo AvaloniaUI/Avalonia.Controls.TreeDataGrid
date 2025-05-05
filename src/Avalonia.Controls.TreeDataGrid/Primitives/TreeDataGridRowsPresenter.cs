@@ -3,6 +3,7 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -97,6 +98,11 @@ namespace Avalonia.Controls.Primitives
                 if (oldValue != null && newValue != null)
                 {
                     newValue.ViewportChanged(Viewport);
+
+                    if (!TryToMaintainColumnLayouts(oldValue, newValue))
+                    {
+                        Dispatcher.UIThread.Post(ScrollToHome, DispatcherPriority.Background);
+                    }
                 }
             }
 
@@ -110,6 +116,38 @@ namespace Avalonia.Controls.Primitives
                 if (element is TreeDataGridRow { RowIndex: >= 0 } row)
                     row.UpdateSelection(selection);
             }
+        }
+        
+        /// <summary>
+        /// When the source has changed and the Columns are recreated, if the data is essentially the same
+        /// restore the column measure information.
+        /// </summary>
+        /// <param name="oldValue">The previous columns</param>
+        /// <param name="newValue">The new columns</param>
+        private static bool TryToMaintainColumnLayouts(IColumns oldValue, IColumns newValue)
+        {
+            if (oldValue.Count == newValue.Count)
+            {
+                for (int i = 0; i < oldValue.Count; i++)
+                {
+                    if (newValue[i].Header == oldValue[i].Header)
+                    {
+                        if (newValue[i] is IUpdateColumnLayout iucl)
+                        {
+                            iucl.CellMeasured(oldValue[i].ActualWidth, 0);
+                        }
+                    }
+                    else
+                    {
+                        // The user is probably showing different data.
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         private void OnColumnLayoutInvalidated(object? sender, EventArgs e)

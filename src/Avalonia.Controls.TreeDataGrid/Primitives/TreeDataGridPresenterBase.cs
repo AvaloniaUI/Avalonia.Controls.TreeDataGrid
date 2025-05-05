@@ -90,6 +90,16 @@ namespace Avalonia.Controls.Primitives
         protected abstract Orientation Orientation { get; }
         protected Rect Viewport { get; private set; } = s_invalidViewport;
 
+        public void ScrollToHome()
+        {
+            _scrollViewer?.ScrollToHome();
+        }
+
+        public void ScrollToEnd()
+        {
+            _scrollViewer?.ScrollToEnd();
+        }
+
         public Control? BringIntoView(int index, Rect? rect = null)
         {
             var items = Items;
