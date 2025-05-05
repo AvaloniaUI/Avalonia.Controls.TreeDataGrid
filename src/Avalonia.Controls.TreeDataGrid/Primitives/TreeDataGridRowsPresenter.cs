@@ -128,19 +128,20 @@ namespace Avalonia.Controls.Primitives
         {
             if (oldValue.Count == newValue.Count)
             {
+                // Ensure the data is likely the same by checking the headers.
                 for (int i = 0; i < oldValue.Count; i++)
                 {
-                    if (newValue[i].Header == oldValue[i].Header)
+                    if (newValue[i].Header != oldValue[i].Header)
                     {
-                        if (newValue[i] is IUpdateColumnLayout iucl)
-                        {
-                            iucl.CellMeasured(oldValue[i].ActualWidth, 0);
-                        }
-                    }
-                    else
-                    {
-                        // The user is probably showing different data.
                         return false;
+                    }
+                }
+                
+                for (int i = 0; i < oldValue.Count; i++)
+                {
+                    if (newValue[i] is IUpdateColumnLayout iucl)
+                    {
+                        iucl.CellMeasured(oldValue[i].ActualWidth, 0);
                     }
                 }
 
