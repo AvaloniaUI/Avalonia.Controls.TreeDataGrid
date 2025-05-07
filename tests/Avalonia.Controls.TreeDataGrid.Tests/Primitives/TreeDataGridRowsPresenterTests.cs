@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -423,6 +426,53 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
             // The correct element should be shown.
             Assert.Same(items[0], target.RealizedElements.ElementAt(0)!.DataContext);
         }
+        
+        [AvaloniaFact(Timeout = 10000)]
+        public void Handles_Adding_Rows_While_Detached_From_VisualTree()
+        {
+            var (target, scroll, items) = CreateTarget(itemCount: 5);
+            var testWindow = scroll.Parent as TestWindow;
+
+            if (testWindow != null)
+            {
+                testWindow.Content = null;
+                testWindow.UpdateLayout();
+            }
+
+            var tabItem = new TabItem { Content = scroll };
+            var tabControl = new TabControl { Items = { tabItem, new TabItem() }, Template = TabControlTemplate() };
+            
+            ApplyTemplate(tabControl);
+            
+            if (testWindow != null)
+            {
+                testWindow.Content = tabControl;
+                tabControl.ApplyTemplate();
+                testWindow.UpdateLayout();
+            }
+            
+            Dispatcher.UIThread.RunJobs();
+            
+            tabControl.SelectedIndex = 1;
+            
+            Layout(target);
+            
+            Enumerable.Range(5, 5).ToList().ForEach(x => items.Insert(1, new Model { Id = x, Title = "Item " + x }));
+            
+            tabControl.SelectedIndex = 0;
+            Layout(target);
+
+            var indexes = GetRealizedRowIndexes(target);
+            var models = target!.RealizedElements
+                .Cast<TreeDataGridRow?>().Select(x => x?.Model)
+                .Cast<Model>().ToList();
+            
+            var distinctModelCount = models.DistinctBy(x => x.Id).Count();
+
+            Assert.Equal(10, indexes.Count);
+            Assert.Equal(10, models.Count);
+            Assert.Equal(10, distinctModelCount);
+        }
 
         [AvaloniaFact(Timeout = 10000)]
         public void Updates_Star_Column_ActualWidth()
@@ -614,6 +664,55 @@ namespace Avalonia.Controls.TreeDataGridTests.Primitives
         private static void Layout(TreeDataGridRowsPresenter target)
         {
             target.UpdateLayout();
+        }
+        
+        private static void ApplyTemplate(TabControl target)
+        {
+            target.ApplyTemplate();
+
+            target.Presenter?.ApplyTemplate();
+
+            foreach (var tabItem in target.GetLogicalChildren().OfType<TabItem>())
+            {
+                tabItem.Template = TabItemTemplate();
+
+                tabItem.ApplyTemplate();
+
+                tabItem.Presenter?.UpdateChild();
+            }
+        }
+        
+        private static IControlTemplate TabItemTemplate()
+        {
+            return new FuncControlTemplate<TabItem>((parent, scope) =>
+                new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [~ContentPresenter.ContentProperty] = new TemplateBinding(TabItem.HeaderProperty),
+                    [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabItem.HeaderTemplateProperty),
+                    RecognizesAccessKey = true,
+                }.RegisterInNameScope(scope));
+        }
+        
+        private static IControlTemplate TabControlTemplate()
+        {
+            return new FuncControlTemplate<TabControl>((parent, scope) =>
+                new StackPanel
+                {
+                    Children =
+                    {
+                        new ItemsPresenter
+                        {
+                            Name = "PART_ItemsPresenter",
+                        }.RegisterInNameScope(scope),
+                        new ContentPresenter
+                        {
+                            Name = "PART_SelectedContentHost",
+                            [~ContentPresenter.ContentProperty] = new TemplateBinding(TabControl.SelectedContentProperty),
+                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabControl.SelectedContentTemplateProperty),
+                        }.RegisterInNameScope(scope)
+                    }
+                });
         }
 
         private class Model
