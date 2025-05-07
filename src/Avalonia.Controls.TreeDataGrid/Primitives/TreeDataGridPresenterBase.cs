@@ -95,16 +95,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         protected double StartU => _realizedElements?.StartU ?? 0;
 
-        public void ScrollToHome()
-        {
-            _scrollViewer?.ScrollToHome();
-        }
-
-        public void ScrollToEnd()
-        {
-            _scrollViewer?.ScrollToEnd();
-        }
-
         public Control? BringIntoView(int index, Rect? rect = null)
         {
             var items = Items;
