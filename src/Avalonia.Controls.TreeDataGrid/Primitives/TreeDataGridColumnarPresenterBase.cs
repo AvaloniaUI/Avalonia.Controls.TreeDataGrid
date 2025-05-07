@@ -33,7 +33,7 @@ namespace Avalonia.Controls.Primitives
             if (Columns?.GetColumnAt(viewportStart) is (var index and >= 0, var position))
                 return (index, position);
             
-            if (Columns?.GetOrEstimateColumnAt(viewportStart, viewportEnd, itemCount, StartU, ref _lastEstimatedElementSizeU) is { index: >= 0 } res)
+            if (Columns?.GetOrEstimateColumnAt(viewportStart, viewportEnd, itemCount, StartU,  FirstIndex, ref _lastEstimatedElementSizeU) is { index: >= 0 } res)
                 return res;
             
             return base.GetOrEstimateAnchorElementForViewport(viewportStart, viewportEnd, itemCount);

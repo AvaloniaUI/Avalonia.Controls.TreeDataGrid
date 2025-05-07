@@ -45,8 +45,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return (-1, -1);
         }
 
-        public (int index, double position) GetOrEstimateColumnAt(double viewportStartU, double viewportEndU, int itemCount, double startU,
-            ref double estimatedElementSizeU)
+        public (int index, double position) GetOrEstimateColumnAt(double viewportStartU, double viewportEndU, int itemCount, double startU, int firstIndex, ref double estimatedElementSizeU)
         {
             // We have no elements, nothing to do here.
             if (itemCount <= 0)
@@ -55,16 +54,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             // If we're at 0 then display the first item.
             if (MathUtilities.IsZero(viewportStartU))
                 return (0, 0);
-
-            int firstIndex = -1;
-            for (var i = 0; i < Count; ++i)
-            {
-                if (!double.IsNaN(this[i].ActualWidth))
-                {
-                    firstIndex = i;
-                    break;
-                }
-            }
 
             var u = startU;
 

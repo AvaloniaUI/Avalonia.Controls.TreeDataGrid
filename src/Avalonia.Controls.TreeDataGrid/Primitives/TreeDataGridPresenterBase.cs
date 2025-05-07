@@ -94,6 +94,8 @@ namespace Avalonia.Controls.Primitives
         /// Gets the position of the first realized element on the primary axis.
         /// </summary>
         protected double StartU => _realizedElements?.StartU ?? 0;
+        
+        protected int FirstIndex => _realizedElements?.FirstIndex ?? 0;
 
         public Control? BringIntoView(int index, Rect? rect = null)
         {
