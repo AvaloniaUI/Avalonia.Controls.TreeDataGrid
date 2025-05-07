@@ -98,11 +98,6 @@ namespace Avalonia.Controls.Primitives
                 if (oldValue != null && newValue != null)
                 {
                     newValue.ViewportChanged(Viewport);
-
-                    if (!TryToMaintainColumnLayouts(oldValue, newValue))
-                    {
-                        Dispatcher.UIThread.Post(ScrollToHome, DispatcherPriority.Background);
-                    }
                 }
             }
 
@@ -116,39 +111,6 @@ namespace Avalonia.Controls.Primitives
                 if (element is TreeDataGridRow { RowIndex: >= 0 } row)
                     row.UpdateSelection(selection);
             }
-        }
-        
-        /// <summary>
-        /// When the source has changed and the Columns are recreated, if the data is essentially the same
-        /// restore the column measure information.
-        /// </summary>
-        /// <param name="oldValue">The previous columns</param>
-        /// <param name="newValue">The new columns</param>
-        private static bool TryToMaintainColumnLayouts(IColumns oldValue, IColumns newValue)
-        {
-            if (oldValue.Count == newValue.Count)
-            {
-                // Ensure the data is likely the same by checking the headers.
-                for (int i = 0; i < oldValue.Count; i++)
-                {
-                    if (newValue[i].Header != oldValue[i].Header)
-                    {
-                        return false;
-                    }
-                }
-                
-                for (int i = 0; i < oldValue.Count; i++)
-                {
-                    if (newValue[i] is IUpdateColumnLayout iucl)
-                    {
-                        iucl.CellMeasured(oldValue[i].ActualWidth, 0);
-                    }
-                }
-
-                return true;
-            }
-
-            return false;
         }
 
         private void OnColumnLayoutInvalidated(object? sender, EventArgs e)
