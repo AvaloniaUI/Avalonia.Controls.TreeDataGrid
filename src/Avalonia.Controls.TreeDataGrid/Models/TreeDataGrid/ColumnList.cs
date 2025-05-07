@@ -180,7 +180,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         public void ViewportChanged(Rect viewport)
         {
-            if (_viewportWidth != viewport.Width)
+            if (!MathUtilities.AreClose(_viewportWidth, viewport.Width))
             {
                 _viewportWidth = viewport.Width;
                 if (_initialized)
