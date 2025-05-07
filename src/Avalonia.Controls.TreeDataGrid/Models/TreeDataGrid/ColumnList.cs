@@ -216,7 +216,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 // Size the star columns.
                 var starWidthWasConstrained = false;
-                var used = 0.0;
 
                 availableSpace = Math.Max(0, availableSpace);
 
@@ -228,7 +227,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                     if (column.Width.IsStar)
                     {
                         column.CalculateStarWidth(availableSpace, totalStars);
-                        used += NotNaN(column.ActualWidth);
                         starWidthWasConstrained |= column.StarWidthWasConstrained;
                     }
                 }
