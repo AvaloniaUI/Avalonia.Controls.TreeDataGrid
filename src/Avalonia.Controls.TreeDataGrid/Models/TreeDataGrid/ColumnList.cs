@@ -45,6 +45,84 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return (-1, -1);
         }
 
+        public (int index, double position) GetOrEstimateColumnAt(double viewportStartU, double viewportEndU, int itemCount, double startU,
+            ref double estimatedElementSizeU)
+        {
+            // We have no elements, nothing to do here.
+            if (itemCount <= 0)
+                return (-1, 0);
+
+            // If we're at 0 then display the first item.
+            if (MathUtilities.IsZero(viewportStartU))
+                return (0, 0);
+
+            int firstIndex = -1;
+            for (var i = 0; i < Count; ++i)
+            {
+                if (!double.IsNaN(this[i].ActualWidth))
+                {
+                    firstIndex = i;
+                    break;
+                }
+            }
+
+            var u = startU;
+
+            for (var i = 0; i < Count; ++i)
+            {
+                var size = this[i].ActualWidth;
+
+                if (double.IsNaN(size))
+                    break;
+
+                var endU = u + size;
+
+                if (endU > viewportStartU && u < viewportEndU)
+                    return (firstIndex + i, u);
+
+                u = endU;
+            }
+
+            // We don't have any realized elements in the requested viewport, or can't rely on
+            // StartU being valid. Estimate the index using only the estimated size. First,
+            // estimate the element size, using defaultElementSizeU if we don't have any realized
+            // elements.
+            var estimatedSize = EstimateElementSizeU() switch
+            {
+                -1 => estimatedElementSizeU,
+                var v => v,
+            };
+
+            // Store the estimated size for the next layout pass.
+            estimatedElementSizeU = estimatedSize;
+
+            // Estimate the element at the start of the viewport.
+            var index = Math.Min((int)(viewportStartU / estimatedSize), itemCount - 1);
+            return (index, index * estimatedSize);
+        }
+        
+        public double EstimateElementSizeU()
+        {
+            var total = 0.0;
+            var divisor = 0.0;
+
+            // Average the size of the realized elements.
+            foreach (var column in this)
+            {
+                var size = column.ActualWidth;
+                if (double.IsNaN(size))
+                    continue;
+                total += size;
+                ++divisor;
+            }
+
+            // We don't have any elements on which to base our estimate.
+            if (divisor == 0 || total == 0)
+                return -1;
+
+            return total / divisor;
+        }
+
         public double GetEstimatedWidth(double constraint)
         {
             var hasStar = false;

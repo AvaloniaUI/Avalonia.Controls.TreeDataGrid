@@ -39,6 +39,10 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </returns>
         (int index, double x) GetColumnAt(double x);
 
+        public (int index, double position) GetOrEstimateColumnAt(double viewportStartU, double viewportEndU, int itemCount, double startU, ref double estimatedElementSizeU);
+
+        public double EstimateElementSizeU();
+
         /// <summary>
         /// Gets the estimated total width of all columns.
         /// </summary>
