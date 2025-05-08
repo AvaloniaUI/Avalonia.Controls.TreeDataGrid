@@ -489,9 +489,8 @@ namespace Avalonia.Controls.Primitives
             else
             {
                 var startIndex = (index + 1) - FirstIndex;
-                var count = _elements.Count;
 
-                for (var i = startIndex; i < count; ++i)
+                for (var i = startIndex; i < _elements.Count; ++i)
                 {
                     if (_elements[i] is Control e)
                     {
