@@ -24,7 +24,7 @@ namespace Avalonia.Controls
         /// <param name="routedEvent">The event being raised.</param>
         /// <param name="row">The row that is being dragged over.</param>
         /// <param name="inner">The inner drag event args.</param>
-        public TreeDataGridRowDragEventArgs(RoutedEvent routedEvent, TreeDataGridRow row, DragEventArgs inner)
+        public TreeDataGridRowDragEventArgs(RoutedEvent routedEvent, TreeDataGridRow? row, DragEventArgs inner)
             : base(routedEvent)
         {
             TargetRow = row;
@@ -39,7 +39,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the row being dragged over.
         /// </summary>
-        public TreeDataGridRow TargetRow { get; }
+        public TreeDataGridRow? TargetRow { get; }
 
         /// <summary>
         /// Gets or sets a value indicating the how the data should be dropped into
