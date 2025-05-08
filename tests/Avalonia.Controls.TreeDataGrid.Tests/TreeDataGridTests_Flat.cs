@@ -494,6 +494,107 @@ namespace Avalonia.Controls.TreeDataGridTests
             target.UpdateLayout();
             AssertRealizedCells(target);
         }
+        
+        [AvaloniaFact(Timeout = 10000)]
+        public void Ensure_That_Falling_Back_To_The_RowPresenters_ViewPort_Instead_Of_Estimating_Prevents_A_Full_Realization_of_Columns()
+        {
+            var (target, items) = CreateTarget(headerPresenterSize: 10, columns:
+            [
+                new TextColumn<Model, int>("ID", x => x.Id),
+                new TextColumn<Model, string?>("Title1", x => x.Title),
+                new TextColumn<Model, string?>("Title2", x => x.Title),
+                new TextColumn<Model, string?>("Title3", x => x.Title),
+                new TextColumn<Model, string?>("Title4", x => x.Title),
+                new TextColumn<Model, string?>("Title5", x => x.Title),
+                new TextColumn<Model, string?>("Title6", x => x.Title),
+                new TextColumn<Model, string?>("Title7", x => x.Title),
+                new TextColumn<Model, string?>("Title8", x => x.Title),
+                new TextColumn<Model, string?>("Title9", x => x.Title),
+                new TextColumn<Model, string?>("Title10", x => x.Title),
+                new TextColumn<Model, string?>("Title11", x => x.Title),
+                new TextColumn<Model, string?>("Title12", x => x.Title),
+                new TextColumn<Model, string?>("Title13", x => x.Title),
+                new TextColumn<Model, string?>("Title14", x => x.Title),
+                new TextColumn<Model, string?>("Title15", x => x.Title),
+            ]);
+            
+            // Scroll all the way to the right.
+            target.Scroll!.Offset = target.Scroll.Offset.WithX(target.Scroll.Extent.Width);
+            target.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+            
+            // Replace the source, so that non  of the columns have an actual width.
+            var newSource = new FlatTreeDataGridSource<Model>(items)
+            {
+                Columns =
+                {
+                    new TextColumn<Model, int>("ID", x => x.Id),
+                    new TextColumn<Model, string?>("Title1", x => x.Title),
+                    new TextColumn<Model, string?>("Title2", x => x.Title),
+                    new TextColumn<Model, string?>("Title3", x => x.Title),
+                    new TextColumn<Model, string?>("Title4", x => x.Title),
+                    new TextColumn<Model, string?>("Title5", x => x.Title),
+                    new TextColumn<Model, string?>("Title6", x => x.Title),
+                    new TextColumn<Model, string?>("Title7", x => x.Title),
+                    new TextColumn<Model, string?>("Title8", x => x.Title),
+                    new TextColumn<Model, string?>("Title9", x => x.Title),
+                    new TextColumn<Model, string?>("Title10", x => x.Title),
+                    new TextColumn<Model, string?>("Title11", x => x.Title),
+                    new TextColumn<Model, string?>("Title12", x => x.Title),
+                    new TextColumn<Model, string?>("Title13", x => x.Title),
+                    new TextColumn<Model, string?>("Title14", x => x.Title),
+                    new TextColumn<Model, string?>("Title15", x => x.Title),
+                }
+            };
+            
+            target.Source = newSource;
+            Dispatcher.UIThread.RunJobs();
+            
+            Assert.True(double.IsNaN(newSource.Columns[1].ActualWidth));
+            Assert.True(double.IsNaN(newSource.Columns[2].ActualWidth));
+            Assert.True(double.IsNaN(newSource.Columns[3].ActualWidth));
+            Assert.True(double.IsNaN(newSource.Columns[4].ActualWidth));
+            
+            AssertRealizedCells(target, (columnHeaders, cells) =>
+            {
+                Assert.Equal(4, cells.Count);
+                Assert.Equal(12, cells[0].ColumnIndex);
+                Assert.Equal(13, cells[1].ColumnIndex);
+                Assert.Equal(14, cells[2].ColumnIndex);
+                Assert.Equal(15, cells[3].ColumnIndex);
+                
+                Assert.Equal(12, columnHeaders[0].ColumnIndex);
+                Assert.Equal(13, columnHeaders[1].ColumnIndex);
+                Assert.Equal(14, columnHeaders[2].ColumnIndex);
+                Assert.Equal(15, columnHeaders[3].ColumnIndex);
+                
+                Assert.Equal(columnHeaders[0].Bounds.Left, cells[0].Bounds.Left);
+                Assert.Equal(columnHeaders[1].Bounds.Left, cells[1].Bounds.Left);
+                Assert.Equal(columnHeaders[2].Bounds.Left, cells[2].Bounds.Left);
+                Assert.Equal(columnHeaders[3].Bounds.Left, cells[3].Bounds.Left);
+            });
+            return;
+
+            static void AssertRealizedCells(TreeDataGrid target, Action<List<TreeDataGridColumnHeader>, List<TreeDataGridCell>> assert)
+            {
+                var columnHeaders = target.ColumnHeadersPresenter!.GetRealizedElements()
+                    .Cast<TreeDataGridColumnHeader>()
+                    .OrderBy(x=>x.ColumnIndex)
+                    .ToList();
+                
+                var rows = target.RowsPresenter!.GetRealizedElements().Cast<TreeDataGridRow>();
+
+                foreach (var row in rows)
+                {
+                    var cells = row.CellsPresenter!.GetRealizedElements()
+                        .Cast<TreeDataGridCell>()
+                        .OrderBy(x => x.ColumnIndex)
+                        .ToList();
+                    
+                    assert(columnHeaders, cells);
+                }
+            }
+        }
 
         [AvaloniaFact(Timeout = 10000)]
         public void Should_Use_TextCell_StringFormat()
@@ -814,7 +915,8 @@ namespace Avalonia.Controls.TreeDataGridTests
         private static (TreeDataGrid, AvaloniaList<Model>) CreateTarget(IEnumerable<Model>? models = null,
             IEnumerable<IColumn<Model>>? columns = null,
             int itemCount = 100,
-            bool runLayout = true)
+            bool runLayout = true,
+            double headerPresenterSize = 0)
         {
             AvaloniaList<Model>? items = null;
             if (models == null)
@@ -848,7 +950,7 @@ namespace Avalonia.Controls.TreeDataGridTests
 
             var target = new TreeDataGrid
             {
-                Template = TestTemplates.TreeDataGridTemplate(),
+                Template = TestTemplates.TreeDataGridTemplate(headerPresenterSize),
                 Source = source,
             };
 
