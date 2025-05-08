@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Xml.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
@@ -61,6 +62,13 @@ namespace Avalonia.Controls.Primitives
                 if (element is TreeDataGridCell { RowIndex: >= 0, ColumnIndex: >= 0 } cell)
                     cell.UpdateRowIndex(index);
             }
+        }
+
+        protected override Rect? GetParentPresenterViewPort()
+        {
+            var parentRowPresenter = this.GetVisualAncestors().OfType<TreeDataGridRowsPresenter>().FirstOrDefault();
+
+            return parentRowPresenter?.Viewport;
         }
 
         protected override Size MeasureOverride(Size availableSize)

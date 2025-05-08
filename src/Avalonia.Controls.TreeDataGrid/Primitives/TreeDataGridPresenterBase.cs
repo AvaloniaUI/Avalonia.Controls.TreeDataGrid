@@ -88,7 +88,8 @@ namespace Avalonia.Controls.Primitives
         internal IReadOnlyList<Control?> RealizedElements => _realizedElements?.Elements ?? Array.Empty<Control>();
 
         protected abstract Orientation Orientation { get; }
-        protected Rect Viewport { get; private set; } = s_invalidViewport;
+        
+        internal Rect Viewport { get; private set; } = s_invalidViewport;
 
         public Control? BringIntoView(int index, Rect? rect = null)
         {
@@ -652,8 +653,18 @@ namespace Avalonia.Controls.Primitives
             return _lastEstimatedElementSizeU;
         }
 
+        protected virtual Rect? GetParentPresenterViewPort()
+        {
+            return null;
+        }
+
         private Rect EstimateViewport(Size availableSize)
         {
+            if (GetParentPresenterViewPort() is { } parentViewport && parentViewport != s_invalidViewport)
+            {
+                return parentViewport;
+            }
+            
             var c = this.GetVisualParent();
 
             if (c is null)
