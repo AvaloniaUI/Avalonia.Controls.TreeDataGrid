@@ -730,6 +730,21 @@ namespace Avalonia.Controls.Primitives
                     }
                 }
             }
+            
+            var logicalChildren = LogicalChildren;
+            
+            if (logicalChildren.Count > count)
+            {
+                for (var i = logicalChildren.Count - 1; i >= 0; --i)
+                {
+                    var child = logicalChildren[i];
+
+                    if (child is Visual { IsVisible: false })
+                    {
+                        logicalChildren.RemoveAt(i);
+                    }
+                }
+            }
         }
 
         private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
