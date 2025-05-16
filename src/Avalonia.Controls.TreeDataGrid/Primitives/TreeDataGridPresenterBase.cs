@@ -636,6 +636,7 @@ namespace Avalonia.Controls.Primitives
             if (e.GetVisualParent() is null)
             {
                 ((ISetLogicalParent)e).SetParent(this);
+                LogicalChildren.Add(e);
                 VisualChildren.Add(e);
             }
             return e;
