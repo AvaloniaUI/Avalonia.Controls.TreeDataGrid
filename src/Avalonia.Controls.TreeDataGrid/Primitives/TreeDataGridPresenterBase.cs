@@ -636,6 +636,7 @@ namespace Avalonia.Controls.Primitives
             if (e.GetVisualParent() is null)
             {
                 ((ISetLogicalParent)e).SetParent(this);
+                LogicalChildren.Add(e);
                 VisualChildren.Add(e);
             }
             return e;
@@ -726,6 +727,21 @@ namespace Avalonia.Controls.Primitives
                     {
                         ((ISetLogicalParent)child).SetParent(null);
                         children.RemoveAt(i);
+                    }
+                }
+            }
+            
+            var logicalChildren = LogicalChildren;
+            
+            if (logicalChildren.Count > count)
+            {
+                for (var i = logicalChildren.Count - 1; i >= 0; --i)
+                {
+                    var child = logicalChildren[i];
+
+                    if (child is Visual { IsVisible: false })
+                    {
+                        logicalChildren.RemoveAt(i);
                     }
                 }
             }

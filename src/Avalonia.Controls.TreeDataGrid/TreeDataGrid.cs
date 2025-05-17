@@ -321,8 +321,16 @@ namespace Avalonia.Controls
             }
 
             base.OnApplyTemplate(e);
-            ColumnHeadersPresenter = e.NameScope.Find<TreeDataGridColumnHeadersPresenter>("PART_ColumnHeadersPresenter");
+            ColumnHeadersPresenter =
+                e.NameScope.Find<TreeDataGridColumnHeadersPresenter>("PART_ColumnHeadersPresenter");
             RowsPresenter = e.NameScope.Find<TreeDataGridRowsPresenter>("PART_RowsPresenter");
+
+            if (ColumnHeadersPresenter is { }) 
+                LogicalChildren.Add(ColumnHeadersPresenter);
+
+            if(RowsPresenter is { })
+                LogicalChildren.Add(RowsPresenter);
+            
             Scroll = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
             _headerScroll = e.NameScope.Find<ScrollViewer>("PART_HeaderScrollViewer");
 
