@@ -89,6 +89,13 @@ namespace Avalonia.Controls.Primitives
 
         protected abstract Orientation Orientation { get; }
         protected Rect Viewport { get; private set; } = s_invalidViewport;
+        
+        /// <summary>
+        /// Gets the position of the first realized element on the primary axis.
+        /// </summary>
+        protected double StartU => _realizedElements?.StartU ?? 0;
+        
+        protected int FirstIndex => _realizedElements?.FirstIndex ?? 0;
 
         public Control? BringIntoView(int index, Rect? rect = null)
         {
@@ -641,7 +648,7 @@ namespace Avalonia.Controls.Primitives
             return e;
         }
 
-        private double EstimateElementSizeU()
+        protected virtual double EstimateElementSizeU()
         {
             if (_realizedElements is null)
                 return _lastEstimatedElementSizeU;
