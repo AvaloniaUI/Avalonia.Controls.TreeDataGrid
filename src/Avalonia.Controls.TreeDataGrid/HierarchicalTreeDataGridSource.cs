@@ -217,6 +217,14 @@ namespace Avalonia.Controls
             return false;
         }
 
+        public void UnSort()
+        {
+            Sort(null);
+            Sorted?.Invoke();
+            foreach (var c in Columns)
+                c.SortDirection = null;
+        }
+
         void ITreeDataGridSource.DragDropRows(
             ITreeDataGridSource source,
             IEnumerable<IndexPath> indexes,

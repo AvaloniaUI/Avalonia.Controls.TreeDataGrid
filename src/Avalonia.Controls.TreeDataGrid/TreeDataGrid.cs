@@ -491,8 +491,17 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    _userSortDirection = _userSortDirection == ListSortDirection.Ascending ?
-                        ListSortDirection.Descending : ListSortDirection.Ascending;
+                    if (_userSortDirection == ListSortDirection.Descending)
+                    {
+                        _userSortColumn = null;
+                        _source.UnSort();
+                        return;
+                    }
+                    else
+                    {
+                        _userSortDirection = _userSortDirection == ListSortDirection.Ascending ?
+                            ListSortDirection.Descending : ListSortDirection.Ascending;
+                    }
                 }
 
                 var column = _source.Columns[columnHeader.ColumnIndex];

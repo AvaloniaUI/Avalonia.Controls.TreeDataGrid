@@ -158,6 +158,14 @@ namespace Avalonia.Controls
             return false;
         }
 
+        void ITreeDataGridSource.UnSort()
+        {
+            _rows?.Sort(null);
+            Sorted?.Invoke();
+            foreach (var c in Columns)
+                c.SortDirection = null;
+        }
+
         IEnumerable<object> ITreeDataGridSource.GetModelChildren(object model)
         {
             return Enumerable.Empty<object>();
