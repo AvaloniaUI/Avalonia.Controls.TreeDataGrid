@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Text;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
@@ -110,6 +112,11 @@ namespace Avalonia.Controls.Primitives
             DataContext = null;
             IsSelected = false;
             CellsPresenter?.Unrealize();
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new TreeDataGridRowAutomationPeer(this);
         }
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
