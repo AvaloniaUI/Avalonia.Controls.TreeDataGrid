@@ -146,12 +146,12 @@
 
         <Style Selector="^[SortDirection=Ascending] /template/ Path#SortIcon">
           <Setter Property="IsVisible" Value="True" />
-          <Setter Property="Data" Value="{StaticResource TreeDataGridSortIconAscendingPath}" />
+          <Setter Property="Data" Value="{DynamicResource TreeDataGridSortIconAscendingPath}" />
         </Style>
 
         <Style Selector="^[SortDirection=Descending] /template/ Path#SortIcon">
           <Setter Property="IsVisible" Value="True" />
-          <Setter Property="Data" Value="{StaticResource TreeDataGridSortIconDescendingPath}" />
+          <Setter Property="Data" Value="{DynamicResource TreeDataGridSortIconDescendingPath}" />
         </Style>
 
       </ControlTheme>

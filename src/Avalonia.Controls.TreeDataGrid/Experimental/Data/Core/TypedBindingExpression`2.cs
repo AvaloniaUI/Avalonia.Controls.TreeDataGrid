@@ -308,15 +308,26 @@ namespace Avalonia.Experimental.Data.Core
 
         private void ChainPropertyChanged(object? sender)
         {
-            if (sender is null)
+            if (sender is null || _chain is null)
                 return;
 
-            var index = ChainIndexOf(sender);
+            var senderIndex = ChainIndexOf(sender);
 
-            if (index != -1)
+            if (senderIndex == -1)
             {
-                StopListeningToChain(index);
-                ListenToChain(index);
+                // If the sender is not in the chain, we should stop listening to it.
+                UnsubscribeToChanges(sender);
+                return;
+            }
+
+            // The member that changed is the next one in the chain.
+            var changedMemberIndex = senderIndex + 1;
+
+            // Update subscriptions on the changed member and the links after it.
+            if (changedMemberIndex < _chain.Length)
+            {
+                StopListeningToChain(from: changedMemberIndex);
+                ListenToChain(from: changedMemberIndex);
             }
 
             PublishValue();
