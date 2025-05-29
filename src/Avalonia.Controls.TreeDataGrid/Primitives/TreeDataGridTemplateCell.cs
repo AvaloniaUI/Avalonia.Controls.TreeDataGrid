@@ -104,6 +104,13 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromLogicalTree(e);
+            ContentTemplate = null;
+            EditingTemplate = null;
+        }
+
         protected override void OnDataContextChanged(EventArgs e)
         {
             base.OnDataContextChanged(e);
@@ -120,6 +127,11 @@ namespace Avalonia.Controls.Primitives
                 {
                     ContentTemplate = cell.GetCellTemplate(this);
                     EditingTemplate = cell.GetCellEditingTemplate?.Invoke(this);
+                }
+                else
+                {
+                    ContentTemplate = null;
+                    EditingTemplate = null;
                 }
             }
             else
