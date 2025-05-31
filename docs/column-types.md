@@ -90,8 +90,6 @@ new TemplateColumn<Person>(
         <DataTemplate x:Key="CheckBoxCell">
             <CheckBox IsChecked="{Binding IsSelected}"/>
         </DataTemplate>
-        
-    </DataTemplate>
               
     </TreeDataGrid.Resources>
 </TreeDataGrid>
