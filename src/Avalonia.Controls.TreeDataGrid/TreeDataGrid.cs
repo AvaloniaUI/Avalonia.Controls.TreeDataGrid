@@ -451,10 +451,10 @@ namespace Avalonia.Controls
 
         internal void RaiseRowDragStarted(PointerEventArgs trigger)
         {
-            if (_source is null || RowSelection is null)
+            if (!AutoDragDropRows || _source is null || RowSelection is null)
                 return;
 
-            var allowedEffects = AutoDragDropRows && !_source.IsSorted ?
+            var allowedEffects = !_source.IsSorted ?
                 DragDropEffects.Move :
                 DragDropEffects.None;
             var route = BuildEventRoute(RowDragStartedEvent);
@@ -612,8 +612,7 @@ namespace Avalonia.Controls
             [NotNullWhen(true)] out DragInfo? data,
             out TreeDataGridRowDropPosition position)
         {
-            if (!AutoDragDropRows ||
-                e.Data.Get(DragInfo.DataFormat) is not DragInfo di ||
+            if (e.Data.Get(DragInfo.DataFormat) is not DragInfo di ||
                 _source is null ||
                 _source.IsSorted ||
                 targetRow is null ||
@@ -645,6 +644,9 @@ namespace Avalonia.Controls
 
         private void OnDragOver(DragEventArgs e)
         {
+            if (!AutoDragDropRows)
+                return;
+
             if (!TryGetRow(e.Source as Control, out var row))
             {
                 e.DragEffects = DragDropEffects.None;
@@ -683,11 +685,17 @@ namespace Avalonia.Controls
 
         private void OnDragLeave(RoutedEventArgs e)
         {
+            if (!AutoDragDropRows)
+                return;
+
             StopDrag();
         }
 
         private void OnDrop(DragEventArgs e)
         {
+            if (!AutoDragDropRows)
+                return;
+
             StopDrag();
 
             TryGetRow(e.Source as Control, out var row);
