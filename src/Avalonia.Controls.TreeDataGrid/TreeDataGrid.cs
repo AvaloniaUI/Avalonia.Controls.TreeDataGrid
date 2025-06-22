@@ -607,7 +607,7 @@ namespace Avalonia.Controls
 
         [MemberNotNullWhen(true, nameof(_source))]
         private bool CalculateAutoDragDrop(
-            TreeDataGridRow targetRow,
+            TreeDataGridRow? targetRow,
             DragEventArgs e,
             [NotNullWhen(true)] out DragInfo? data,
             out TreeDataGridRowDropPosition position)
@@ -616,6 +616,7 @@ namespace Avalonia.Controls
                 e.Data.Get(DragInfo.DataFormat) is not DragInfo di ||
                 _source is null ||
                 _source.IsSorted ||
+                targetRow is null ||
                 di.Source != _source)
             {
                 data = null;
@@ -647,7 +648,6 @@ namespace Avalonia.Controls
             if (!TryGetRow(e.Source as Control, out var row))
             {
                 e.DragEffects = DragDropEffects.None;
-                return;
             }
 
             if (!CalculateAutoDragDrop(row, e, out _, out var adorner))
@@ -663,7 +663,10 @@ namespace Avalonia.Controls
                 adorner = ev.Position;
             }
 
-            ShowDragAdorner(row, adorner);
+            if (row != null)
+            {
+                ShowDragAdorner(row, adorner);
+            }
 
             if (Scroll is ScrollViewer scroller)
             {
@@ -687,8 +690,7 @@ namespace Avalonia.Controls
         {
             StopDrag();
 
-            if (!TryGetRow(e.Source as Control, out var row))
-                return;
+            TryGetRow(e.Source as Control, out var row);
 
             var autoDrop = CalculateAutoDragDrop(row, e, out var data, out var position);
             var route = BuildEventRoute(RowDropEvent);
@@ -707,6 +709,7 @@ namespace Avalonia.Controls
 
             if (autoDrop &&
                 _source is not null &&
+                row is not null &&
                 position != TreeDataGridRowDropPosition.None)
             {
                 var targetIndex = _source.Rows.RowIndexToModelIndex(row.RowIndex);

@@ -318,12 +318,19 @@ namespace Avalonia.Controls.Selection
             // Select a row on pointer pressed if:
             //
             // - It's a mouse click, not touch: we don't want to select on touch scroll gesture start
+            // - It's a pen secondary button press, we don't want to select on primary button scroll gesture start
             // - The row isn't already selected: we don't want to deselect an existing multiple selection
             //   if the user is trying to drag multiple rows
             //
             // Otherwise select on pointer release.
+            var pointerSupportSelectionOnPress = e.Pointer.Type switch
+            {
+                PointerType.Mouse => true,
+                PointerType.Pen => e.GetCurrentPoint(null).Properties.IsRightButtonPressed,
+                _ => false
+            };
             if (!e.Handled &&
-                e.Pointer.Type == PointerType.Mouse &&
+                pointerSupportSelectionOnPress &&
                 e.Source is Control source &&
                 sender.TryGetRow(source, out var row) &&
                 _source.Rows.RowIndexToModelIndex(row.RowIndex) is { } modelIndex &&

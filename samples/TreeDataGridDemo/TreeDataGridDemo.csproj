@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <IsPackable>False</IsPackable>
     <OutputType>WinExe</OutputType>
   </PropertyGroup>
@@ -12,12 +12,12 @@
     <None Remove="Assets\folder.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
-    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia" Version="$(AvaloniaSamplesVersion)" />
+    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaSamplesVersion)" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="$(AvaloniaSamplesVersion)" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaSamplesVersion)" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaSamplesVersion)" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaSamplesVersion)" />
     <PackageReference Include="Bogus" Version="34.0.2" />
   </ItemGroup>
   <ItemGroup>
