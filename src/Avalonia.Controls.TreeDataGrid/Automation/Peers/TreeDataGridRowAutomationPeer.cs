@@ -12,7 +12,7 @@ public class TreeDataGridRowAutomationPeer : ControlAutomationPeer
 
     protected override AutomationControlType GetAutomationControlTypeCore()
     {
-        return AutomationControlType.DataItem;
+        return AutomationControlType.TreeItem;
     }
 
     protected override bool IsContentElementCore() => true;
