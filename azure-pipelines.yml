@@ -7,6 +7,12 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+
+- task: UseDotNet@2
+  displayName: 'Use .NET SDK'
+  inputs:
+    version: 8.0.x
+
 - task: CmdLine@2
   displayName: 'Install Nuke'
   inputs:

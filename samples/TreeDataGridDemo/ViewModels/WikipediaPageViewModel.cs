@@ -45,7 +45,7 @@ namespace TreeDataGridDemo.ViewModels
                 var client = new HttpClient();
                 var d = DateTimeOffset.Now.Day;
                 var m = DateTimeOffset.Now.Month;
-                var uri = $"https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/{m}/{d}";
+                var uri = $"https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/{m:00}/{d:00}";
                 var s = await client.GetStringAsync(uri);
                 var data = JsonSerializer.Deserialize<OnThisDay>(s, new JsonSerializerOptions
                 {

@@ -6,12 +6,12 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Nuke.Common;
+using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.MSBuild;
 using static Nuke.Common.EnvironmentInfo;
-using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
@@ -82,8 +82,7 @@ partial class Build : NukeBuild
         return MSBuild(c => c
             .SetProjectFile(projectFile)
             // This is required for VS2019 image on Azure Pipelines
-            .When(Parameters.IsRunningOnWindows &&
-                  Parameters.IsRunningOnAzure, _ => _
+            .When(_ => Parameters.IsRunningOnWindows && Parameters.IsRunningOnAzure, _ => _
                 .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64")))
             .AddProperty("PackageVersion", Parameters.Version)
             .AddProperty("iOSRoslynPathHackRequired", true)
@@ -95,13 +94,13 @@ partial class Build : NukeBuild
 
     Target Clean => _ => _.Executes(() =>
     {
-        Parameters.BuildDirs.ForEach(DeleteDirectory);
-        Parameters.BuildDirs.ForEach(EnsureCleanDirectory);
-        EnsureCleanDirectory(Parameters.ArtifactsDir);
-        EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
-        EnsureCleanDirectory(Parameters.NugetRoot);
-        EnsureCleanDirectory(Parameters.ZipRoot);
-        EnsureCleanDirectory(Parameters.TestResultsRoot);
+        Parameters.BuildDirs.ForEach(p => p.DeleteDirectory());
+        Parameters.BuildDirs.ForEach(p => p.CreateOrCleanDirectory());
+        Parameters.ArtifactsDir.CreateOrCleanDirectory();
+        Parameters.NugetIntermediateRoot.CreateOrCleanDirectory();
+        Parameters.NugetRoot.CreateOrCleanDirectory();
+        Parameters.ZipRoot.CreateOrCleanDirectory();
+        Parameters.TestResultsRoot.CreateOrCleanDirectory();
     });
 
     Target Compile => _ => _
@@ -110,7 +109,7 @@ partial class Build : NukeBuild
         {
             if (Parameters.IsRunningOnWindows)
                 MsBuildCommon(Parameters.MSBuildSolution, c => c
-                    .SetProcessArgumentConfigurator(a => a.Add("/r"))
+                    .SetProcessAdditionalArguments("/r")
                     .AddTargets("Build")
                 );
 
@@ -122,41 +121,23 @@ partial class Build : NukeBuild
                 );
         });
 
-    void RunCoreTest(string projectName)
-    {
-        Information($"Running tests from {projectName}");
-        var project = Solution.GetProject(projectName).NotNull("project != null");
-
-        foreach (var fw in project.GetTargetFrameworks())
-        {
-            if (fw.StartsWith("net4")
-                && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-                && Environment.GetEnvironmentVariable("FORCE_LINUX_TESTS") != "1")
-            {
-                Information($"Skipping {projectName} ({fw}) tests on Linux - https://github.com/mono/mono/issues/13969");
-                continue;
-            }
-
-            Information($"Running for {projectName} ({fw}) ...");
-
-            DotNetTest(c => c
-                .SetProjectFile(project)
-                .SetConfiguration(Parameters.Configuration)
-                .SetFramework(fw)
-                .EnableNoBuild()
-                .EnableNoRestore()
-                .When(Parameters.PublishTestResults, _ => _
-                    .SetLoggers("trx")
-                    .SetResultsDirectory(Parameters.TestResultsRoot)));
-        }
-    }
-
     Target RunCoreLibsTests => _ => _
         .OnlyWhenStatic(() => !Parameters.SkipTests)
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("Avalonia.Controls.TreeDataGrid.Tests");
+            foreach (var testProject in (RootDirectory / "tests").GlobFiles("**/*.csproj"))
+            {
+                Information($"Running tests from {testProject}");
+                DotNetTest(c => c
+                    .SetProjectFile(testProject)
+                    .SetConfiguration(Parameters.Configuration)
+                    .EnableNoBuild()
+                    .EnableNoRestore()
+                    .When(_ => Parameters.PublishTestResults, _ => _
+                        .SetLoggers("trx")
+                        .SetResultsDirectory(Parameters.TestResultsRoot)));
+            }
         });
 
     Target ZipFiles => _ => _

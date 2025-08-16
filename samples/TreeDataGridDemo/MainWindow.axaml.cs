@@ -107,7 +107,7 @@ namespace TreeDataGridDemo
         private void DragDrop_RowDragOver(object? sender, TreeDataGridRowDragEventArgs e)
         {
             if (e.Position == TreeDataGridRowDropPosition.Inside &&
-                e.TargetRow.Model is DragDropItem i &&
+                e.TargetRow?.Model is DragDropItem i &&
                 !i.AllowDrop)
                 e.Inner.DragEffects = DragDropEffects.None;
         }

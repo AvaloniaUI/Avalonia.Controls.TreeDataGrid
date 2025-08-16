@@ -17,6 +17,19 @@ namespace Avalonia.Data.Core.Parsers
             _rootExpression = expression;
         }
 
+        /// <summary>
+        /// Builds an array of delegates which return the intermediate objects in the expression chain.
+        /// <example>
+        /// For example, if the expression is <c>x => x.Foo.Bar.Baz</c> then the links will be:
+        /// <code>
+        ///  - x => x
+        ///  - x => x.Foo
+        ///  - x => x.Foo.Bar
+        /// </code>
+        /// There is no delegate for the final property of the expression <c>x => x.Foo.Bar.Baz</c>.
+        /// </example>
+        /// </summary>
+    
         public static Func<TIn, object>[] Build<TOut>(Expression<Func<TIn, TOut>> expression)
         {
             var visitor = new ExpressionChainVisitor<TIn>(expression);

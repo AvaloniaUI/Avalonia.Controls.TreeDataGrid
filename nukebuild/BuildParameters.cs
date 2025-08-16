@@ -56,7 +56,7 @@ public partial class Build
         public AbsolutePath BinRoot { get; }
         public AbsolutePath TestResultsRoot { get; }
         public string DirSuffix { get; }
-        public List<string> BuildDirs { get; }
+        public List<AbsolutePath> BuildDirs { get; }
         public string FileZipSuffix { get; }
         public AbsolutePath ZipCoreArtifacts { get; }
         public AbsolutePath ZipNuGetArtifacts { get; }
@@ -125,7 +125,7 @@ public partial class Build
             ZipRoot = ArtifactsDir / "zip";
             BinRoot = ArtifactsDir / "bin";
             TestResultsRoot = ArtifactsDir / "test-results";
-            BuildDirs = GlobDirectories(RootDirectory, "**bin").Concat(GlobDirectories(RootDirectory, "**obj")).ToList();
+            BuildDirs = RootDirectory.GlobDirectories("**bin").Concat(RootDirectory.GlobDirectories("**obj")).ToList();
             DirSuffix = Configuration;
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
