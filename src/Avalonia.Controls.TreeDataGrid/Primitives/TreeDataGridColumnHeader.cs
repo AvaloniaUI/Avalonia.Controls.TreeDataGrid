@@ -23,13 +23,20 @@ namespace Avalonia.Controls.Primitives
                 nameof(SortDirection),
                 o => o.SortDirection);
 
+        public static readonly DirectProperty<TreeDataGridColumnHeader, bool> ShowFilterProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridColumnHeader, bool>(
+                nameof(ShowFilter),
+                o => o.ShowFilter);
+
         private bool _canUserResize;
         private IColumns? _columns;
         private object? _header;
         private IColumn? _model;
         private ListSortDirection? _sortDirection;
+        private bool _showFilter;
         private TreeDataGrid? _owner;
         private Thumb? _resizer;
+        private TextBox? _filterBox;
 
         public bool CanUserResize
         {
@@ -49,6 +56,12 @@ namespace Avalonia.Controls.Primitives
         {
             get => _sortDirection;
             private set => SetAndRaise(SortDirectionProperty, ref _sortDirection, value);
+        }
+
+        public bool ShowFilter
+        {
+            get => _showFilter;
+            private set => SetAndRaise(ShowFilterProperty, ref _showFilter, value);
         }
 
         public void Realize(IColumns columns, int columnIndex)
@@ -86,11 +99,24 @@ namespace Avalonia.Controls.Primitives
             base.OnApplyTemplate(e);
 
             _resizer = e.NameScope.Find<Thumb>("PART_Resizer");
+            _filterBox = e.NameScope.Find<TextBox>("PART_FilterBox");
 
             if (_resizer is not null)
             {
                 _resizer.DragDelta += ResizerDragDelta;
                 _resizer.DoubleTapped += ResizerDoubleTapped;
+            }
+
+            if (_filterBox is not null)
+            {
+                _filterBox.TextChanged += OnFilterTextChanged;
+                _filterBox.KeyDown += OnFilterKeyDown;
+            }
+
+            // Only update filter if we have a model and owner
+            if (_model != null && _owner != null)
+            {
+                UpdateFilter();
             }
         }
 
@@ -177,6 +203,114 @@ namespace Avalonia.Controls.Primitives
             CanUserResize = _model?.CanUserResize ?? _owner?.CanUserResizeColumns ?? false;
             Header = _model?.Header;
             SortDirection = _model?.SortDirection;
+            
+            // Only update filter if we have all necessary references
+            if (_model != null && _owner != null)
+            {
+                UpdateFilter();
+            }
+            else
+            {
+                ShowFilter = false;
+            }
+        }
+
+        private void UpdateFilter()
+        {
+            var shouldShowFilter = _owner?.ShowColumnFilters == true && HasFilterEnabled();
+            ShowFilter = shouldShowFilter;
+
+            if (_filterBox != null && _model != null && shouldShowFilter)
+            {
+                var currentFilter = GetCurrentFilter();
+                _filterBox.Text = currentFilter ?? string.Empty;
+                _filterBox.Watermark = "Filter...";
+            }
+            else if (_filterBox != null)
+            {
+                _filterBox.Text = string.Empty;
+            }
+        }
+
+        private bool HasFilterEnabled()
+        {
+            // Simple check for filtering - we'll enable it for any text column that has IsFilterEnabled = true
+            return _model != null && IsTextColumnWithFilterEnabled(_model);
+        }
+
+        private static bool IsTextColumnWithFilterEnabled(object column)
+        {
+            try
+            {
+                var type = column.GetType();
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(TextColumn<,>))
+                {
+                    // Use the most specific Options property to avoid ambiguity
+                    var optionsProperty = type.GetProperty("Options", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly);
+                    if (optionsProperty?.GetValue(column) is object options)
+                    {
+                        var isFilterEnabledProperty = options.GetType().GetProperty("IsFilterEnabled");
+                        return (bool)(isFilterEnabledProperty?.GetValue(options) ?? false);
+                    }
+                }
+            }
+            catch
+            {
+                // If reflection fails, just return false
+            }
+            return false;
+        }
+
+        private string? GetCurrentFilter()
+        {
+            if (_owner?.Source != null && _model != null)
+            {
+                var sourceType = _owner.Source.GetType();
+                if (sourceType.IsGenericType && sourceType.GetGenericTypeDefinition() == typeof(FlatTreeDataGridSource<>))
+                {
+                    try
+                    {
+                        var method = sourceType.GetMethod("GetColumnFilter");
+                        return method?.Invoke(_owner.Source, new[] { _model }) as string;
+                    }
+                    catch { }
+                }
+            }
+            return null;
+        }
+
+        private void SetFilter(string? filterText)
+        {
+            if (_owner?.Source != null && _model != null)
+            {
+                var sourceType = _owner.Source.GetType();
+                if (sourceType.IsGenericType && sourceType.GetGenericTypeDefinition() == typeof(FlatTreeDataGridSource<>))
+                {
+                    try
+                    {
+                        var method = sourceType.GetMethod("SetColumnFilter");
+                        method?.Invoke(_owner.Source, new object?[] { _model, filterText });
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        private void OnFilterTextChanged(object? sender, TextChangedEventArgs e)
+        {
+            if (_filterBox != null)
+            {
+                SetFilter(_filterBox.Text);
+            }
+        }
+
+        private void OnFilterKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape && _filterBox != null)
+            {
+                _filterBox.Text = string.Empty;
+                e.Handled = true;
+            }
         }
     }
 }

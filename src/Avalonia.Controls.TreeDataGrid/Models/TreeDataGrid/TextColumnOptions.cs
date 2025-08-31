@@ -16,6 +16,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public bool IsTextSearchEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether filtering is enabled for this column.
+        /// </summary>
+        public bool IsFilterEnabled { get; set; }
+
+        /// <summary>
         /// Gets or sets the format string for the cells in the column.
         /// </summary>
         public string StringFormat { get; set; } = "{0}";

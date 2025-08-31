@@ -24,12 +24,14 @@ namespace Avalonia.Controls
         private IComparer<TModel>? _comparer;
         private ITreeDataGridSelection? _selection;
         private bool _isSelectionSet;
+        private readonly Dictionary<IColumn, string> _columnFilters = new();
 
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = items;
             _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(items);
             Columns = new ColumnList<TModel>();
+            Columns.CollectionChanged += OnColumnsCollectionChanged;
         }
 
         public ColumnList<TModel> Columns { get; }
@@ -81,7 +83,13 @@ namespace Avalonia.Controls
         public bool IsHierarchical => false;
         public bool IsSorted => _comparer is not null;
 
+        /// <summary>
+        /// Gets a value indicating whether any filters are currently applied.
+        /// </summary>
+        public bool IsFiltered => _columnFilters.Any(kvp => !string.IsNullOrWhiteSpace(kvp.Value));
+
         public event Action? Sorted;
+        public event Action? Filtered;
 
         public void Dispose()
         {
@@ -100,6 +108,8 @@ namespace Avalonia.Controls
                 throw new NotSupportedException("Only move is currently supported for drag/drop.");
             if (IsSorted)
                 throw new NotSupportedException("Drag/drop is not supported on sorted data.");
+            if (IsFiltered)
+                throw new NotSupportedException("Drag/drop is not supported on filtered data.");
             if (position == TreeDataGridRowDropPosition.Inside)
                 throw new ArgumentException("Invalid drop position.", nameof(position));
             if (indexes.Any(x => x.Count != 1))
@@ -161,6 +171,91 @@ namespace Avalonia.Controls
         IEnumerable<object> ITreeDataGridSource.GetModelChildren(object model)
         {
             return Enumerable.Empty<object>();
+        }
+
+        /// <summary>
+        /// Sets a filter value for the specified column.
+        /// </summary>
+        /// <param name="column">The column to filter.</param>
+        /// <param name="filterText">The filter text.</param>
+        public void SetColumnFilter(IColumn column, string? filterText)
+        {
+            if (string.IsNullOrWhiteSpace(filterText))
+            {
+                _columnFilters.Remove(column);
+            }
+            else
+            {
+                _columnFilters[column] = filterText;
+            }
+            
+            ApplyFilters();
+        }
+
+        /// <summary>
+        /// Gets the filter text for the specified column.
+        /// </summary>
+        /// <param name="column">The column.</param>
+        /// <returns>The filter text or null if no filter is set.</returns>
+        public string? GetColumnFilter(IColumn column)
+        {
+            return _columnFilters.TryGetValue(column, out var filter) ? filter : null;
+        }
+
+        /// <summary>
+        /// Clears all column filters.
+        /// </summary>
+        public void ClearAllFilters()
+        {
+            _columnFilters.Clear();
+            ApplyFilters();
+        }
+
+        private void ApplyFilters()
+        {
+            if (IsFiltered)
+            {
+                var filteredItems = _items.Where(PassesAllFilters);
+                _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(filteredItems);
+            }
+            else
+            {
+                _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(_items);
+            }
+
+            _rows?.SetItems(_itemsView);
+            Filtered?.Invoke();
+        }
+
+        private bool PassesAllFilters(TModel model)
+        {
+            foreach (var kvp in _columnFilters)
+            {
+                if (string.IsNullOrWhiteSpace(kvp.Value))
+                    continue;
+
+                if (kvp.Key is ITextSearchableColumn<TModel> searchableColumn)
+                {
+                    var value = searchableColumn.SelectValue(model);
+                    if (value == null || !value.Contains(kvp.Value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private void OnColumnsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            // Clear filters for removed columns
+            if (e.OldItems != null)
+            {
+                foreach (var item in e.OldItems.OfType<IColumn>())
+                {
+                    _columnFilters.Remove(item);
+                }
+            }
         }
 
         private AnonymousSortableRows<TModel> CreateRows()

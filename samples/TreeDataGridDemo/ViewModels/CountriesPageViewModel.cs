@@ -24,14 +24,22 @@ namespace TreeDataGridDemo.ViewModels
                     new TextColumn<Country, string>("Country", x => x.Name, (r, v) => r.Name = v, new GridLength(6, GridUnitType.Star), new()
                     {
                         IsTextSearchEnabled = true,
+                        IsFilterEnabled = true,
                     }),
                     new TemplateColumn<Country>("Region", "RegionCell", "RegionEditCell"),
-                    new TextColumn<Country, int>("Population", x => x.Population, new GridLength(3, GridUnitType.Star)),
-                    new TextColumn<Country, int>("Area", x => x.Area, new GridLength(3, GridUnitType.Star)),
+                    new TextColumn<Country, int>("Population", x => x.Population, new GridLength(3, GridUnitType.Star), new()
+                    {
+                        IsFilterEnabled = true,
+                    }),
+                    new TextColumn<Country, int>("Area", x => x.Area, new GridLength(3, GridUnitType.Star), new()
+                    {
+                        IsFilterEnabled = true,
+                    }),
                     new TextColumn<Country, int>("GDP", x => x.GDP, new GridLength(3, GridUnitType.Star), new()
                     {
                         TextAlignment = Avalonia.Media.TextAlignment.Right,
-                        MaxWidth = new GridLength(150)
+                        MaxWidth = new GridLength(150),
+                        IsFilterEnabled = true,
                     }),
                 }
             };
