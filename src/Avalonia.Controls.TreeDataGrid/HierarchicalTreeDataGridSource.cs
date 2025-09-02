@@ -98,6 +98,7 @@ namespace Avalonia.Controls
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsing;
         public event EventHandler<RowEventArgs<HierarchicalRow<TModel>>>? RowCollapsed;
         public event Action? Sorted;
+        // public event Action? Filtered;
 
         public void Dispose()
         {
@@ -215,6 +216,11 @@ namespace Avalonia.Controls
             }
 
             return false;
+        }
+
+        public void Filter(IDictionary<IFilterableColumn, object?> _conditions)
+        {
+            throw new NotImplementedException();
         }
 
         void ITreeDataGridSource.DragDropRows(

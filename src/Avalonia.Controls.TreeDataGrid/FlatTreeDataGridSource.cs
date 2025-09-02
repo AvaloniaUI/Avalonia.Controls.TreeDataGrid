@@ -24,14 +24,12 @@ namespace Avalonia.Controls
         private IComparer<TModel>? _comparer;
         private ITreeDataGridSelection? _selection;
         private bool _isSelectionSet;
-        private readonly Dictionary<IFilterableColumn<TModel>, object?> _filterConditions = new();
 
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
             _items = items;
             _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(items);
             Columns = new ColumnList<TModel>();
-            Columns.CollectionChanged += OnColumnsCollectionChanged;
         }
 
         public ColumnList<TModel> Columns { get; }
@@ -182,52 +180,37 @@ namespace Avalonia.Controls
             return false;
         }
 
-        public void Filter()
+        public void Filter(IDictionary<IFilterableColumn, object?> conditions)
         {
-            if (HasFilters())
+            var newConditions = new Dictionary<IFilterableColumn<TModel>, object?>();
+            foreach (var condition in conditions)
             {
-                var filteredItems = _items.Where(PassesAllFilters);
-                _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(filteredItems);
+                newConditions.Add((IFilterableColumn<TModel>)condition.Key, condition.Value);
             }
-            else
-            {
-                _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(_items);
-            }
-
+            var filteredItems = _items.Where(item => PassesAllFilters(item, newConditions));
+            _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(filteredItems);
             _rows?.SetItems(_itemsView);
             Filtered?.Invoke();
         }
+
         IEnumerable<object> ITreeDataGridSource.GetModelChildren(object model)
         {
             return Enumerable.Empty<object>();
         }
 
 
-        private bool PassesAllFilters(TModel model)
+        private bool PassesAllFilters(TModel model, Dictionary<IFilterableColumn<TModel>, object?> conditions)
         {
             // Check immutable filter system first (only apply active filters)
-            foreach (var column in Columns)
+            foreach (var kvp in conditions)
             {
-                if (column is IFilterableColumn<TModel> { IsFilterEnabled: true } col)
-                    if (!col.PassesFilter(model))
+                if (kvp.Key.IsFilterEnabled)
+                    if (!kvp.Key.PassesFilter(model, kvp.Value))
                         return false;
             }
 
 
             return true;
-        }
-
-        private void OnColumnsCollectionChanged(object? sender,
-            System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            // Clear filters for removed columns
-            if (e.OldItems != null)
-            {
-                foreach (var item in e.OldItems.OfType<IFilterableColumn<TModel>>())
-                {
-                    _filterConditions.Remove(item);
-                }
-            }
         }
 
         private AnonymousSortableRows<TModel> CreateRows()

@@ -62,9 +62,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <returns>A filter control that can be used to filter the column.</returns>
         public IFilterControl? CreateFilterControl(IColumn column, object? initialValue)
         {
-            if (column is IFilterableColumn<TModel> && IsFilterEnabled)
+            if (column is IFilterableColumn<TModel> col && IsFilterEnabled)
             {
-                return new TextFilterControl(FilterPrompt, initialValue);
+                return new TextFilterControl(col, FilterPrompt, initialValue);
             }
             
             return null;

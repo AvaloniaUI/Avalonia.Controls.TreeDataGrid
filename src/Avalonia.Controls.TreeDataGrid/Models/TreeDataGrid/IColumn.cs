@@ -48,5 +48,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         object? Tag { get; set; }
 
+        object? ErasedOptions();
     }
 }

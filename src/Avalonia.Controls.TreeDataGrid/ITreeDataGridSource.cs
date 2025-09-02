@@ -41,7 +41,7 @@ namespace Avalonia.Controls
         /// Event which would be triggered after SortBy method execution.
         /// </summary>
         event Action Sorted;
-        event Action Filtered;
+        // event Action Filtered;
 
         /// <summary>
         /// Executes a row drag/drop operation.
@@ -78,7 +78,7 @@ namespace Avalonia.Controls
         /// <returns>True if the sort could be performed; otherwise false.</returns>
         bool SortBy(IColumn column, ListSortDirection direction);
 
-        void Filter();
+        void Filter(IDictionary<IFilterableColumn, object?> conditions);
     }
 
     /// <summary>

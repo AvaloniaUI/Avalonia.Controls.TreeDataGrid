@@ -14,6 +14,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The model type.</typeparam>
     public interface IFilterableColumn<TModel>: IFilterableColumn
     {
-        bool PassesFilter(TModel model);
+        bool PassesFilter(TModel model, object? condition);
     }
 }

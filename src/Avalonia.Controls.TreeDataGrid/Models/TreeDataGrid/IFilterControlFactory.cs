@@ -25,18 +25,20 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// </summary>
     public class FilterValueChangedEventArgs : EventArgs
     {
+        public IFilterableColumn Column { get; }
         /// <summary>
         /// Gets the new filter value.
         /// </summary>
-        public object? FilterValue { get; }
+        public object? FilterCondition { get; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="FilterValueChangedEventArgs"/> class.
         /// </summary>
-        /// <param name="filterValue">The new filter value.</param>
-        public FilterValueChangedEventArgs(object? filterValue)
+        /// <param name="filterCondition">The new filter value.</param>
+        public FilterValueChangedEventArgs(IFilterableColumn column, object? filterCondition)
         {
-            FilterValue = filterValue;
+            Column = column;
+            FilterCondition = filterCondition;
         }
     }
     
@@ -79,13 +81,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Event raised when the filter value changes.
         /// </summary>
         public event EventHandler<FilterValueChangedEventArgs>? FilterValueChanged;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TextFilterControl"/> class.
         /// </summary>
+        /// <param name="column"></param>
         /// <param name="watermark">The watermark to display in the text box.</param>
         /// <param name="initialValue">The initial filter value.</param>
-        public TextFilterControl(string watermark, object? initialValue)
+        public TextFilterControl(IFilterableColumn column, string watermark, object? initialValue)
         {
             _textBox = new TextBox
             {
@@ -99,6 +102,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _textBox.GetObservable(TextBox.TextProperty).Subscribe(text =>
             {
                 FilterValueChanged?.Invoke(this, new FilterValueChangedEventArgs(
+                    column,
                     string.IsNullOrWhiteSpace(text) ? null : text));
             });
         }
@@ -135,7 +139,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         /// <param name="isThreeState">Whether the checkbox should support three states.</param>
         /// <param name="initialValue">The initial filter value.</param>
-        public CheckBoxFilterControl(bool isThreeState, object? initialValue)
+        public CheckBoxFilterControl(IFilterableColumn column, bool isThreeState, object? initialValue)
         {
             bool? initialChecked = null;
             if (initialValue is bool boolValue)
@@ -158,7 +162,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             
             _checkBox.GetObservable(ToggleButton.IsCheckedProperty).Subscribe(isChecked =>
             {
-                FilterValueChanged?.Invoke(this, new FilterValueChangedEventArgs(isChecked));
+                FilterValueChanged?.Invoke(this, new FilterValueChangedEventArgs(column, isChecked));
             });
         }
     }

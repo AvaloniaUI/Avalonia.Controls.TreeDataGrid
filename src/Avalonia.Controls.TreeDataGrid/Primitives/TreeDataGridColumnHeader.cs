@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
@@ -58,10 +59,8 @@ namespace Avalonia.Controls.Primitives
             get => _sortDirection;
             private set => SetAndRaise(SortDirectionProperty, ref _sortDirection, value);
         }
-
-        private IColumn? CurrentColumn => _columns?[ColumnIndex];
-
-        public bool ShowFilter => CurrentColumn is IFilterableColumn filterable && filterable.IsFilterEnabled;
+        
+        public bool ShowFilter => _model is IFilterableColumn filterable && filterable.IsFilterEnabled;
 
 
         public void Realize(IColumns columns, int columnIndex)
@@ -235,7 +234,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             if (_model == null) return;
-            var options = CurrentColumn?.ErasedOptions();
+            var options = _model.ErasedOptions();
 
             // Get the filter control factory from the column options
             if (options is not IFilterControlFactory factory) return;
@@ -257,21 +256,14 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        private Dictionary<IFilterableColumn, object?> _filterConditions = new();
+
         private void OnFilterValueChanged(object? sender, FilterValueChangedEventArgs e)
         {
             // Update the filter value
-            if (_owner?.Source != null && _model != null)
-            {
-                var sourceType = _owner.Source.GetType();
-                if (sourceType.IsGenericType &&
-                    sourceType.GetGenericTypeDefinition() == typeof(FlatTreeDataGridSource<>))
-                {
-                    var method = sourceType.GetMethod("SetColumnFilter");
-                    // For backward compatibility, convert to string if needed
-                    string? stringValue = e.FilterValue?.ToString();
-                    method?.Invoke(_owner.Source, new object?[] { _model, stringValue });
-                }
-            }
+            if (_owner?.Source == null || _model == null) return;
+            _filterConditions[e.Column] = e.FilterCondition;
+            
         }
     }
 }
