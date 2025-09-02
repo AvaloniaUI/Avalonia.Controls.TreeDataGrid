@@ -12,8 +12,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// Interface for columns that support text-based filtering.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public interface IFilterableColumn<IModel>: IFilterableColumn
+    public interface IFilterableColumn<TModel>: IFilterableColumn
     {
-        bool PassesFilter(IModel model, object? condition);
+        bool PassesFilter(TModel model);
     }
 }

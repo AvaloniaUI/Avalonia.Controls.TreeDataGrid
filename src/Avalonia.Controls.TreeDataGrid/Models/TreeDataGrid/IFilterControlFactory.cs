@@ -13,12 +13,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets the visual control element.
         /// </summary>
         Control Control { get; }
-        
-        /// <summary>
-        /// Gets or sets the current filter value.
-        /// </summary>
-        object? FilterValue { get; set; }
-        
+
         /// <summary>
         /// Event raised when the filter value changes.
         /// </summary>
@@ -165,74 +160,6 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 FilterValueChanged?.Invoke(this, new FilterValueChangedEventArgs(isChecked));
             });
-        }
-    }
-
-    /// <summary>
-    /// A wrapper for a direct control to be used as an IFilterControl.
-    /// </summary>
-    public class DirectControlWrapper : IFilterControl
-    {
-        private readonly Control _control;
-        private object? _filterValue;
-        
-        /// <summary>
-        /// Gets the visual control element.
-        /// </summary>
-        public Control Control => _control;
-        
-        /// <summary>
-        /// Gets or sets the current filter value.
-        /// </summary>
-        public object? FilterValue 
-        { 
-            get => _filterValue;
-            set => _filterValue = value;
-        }
-        
-        /// <summary>
-        /// Event raised when the filter value changes.
-        /// </summary>
-        public event EventHandler<FilterValueChangedEventArgs>? FilterValueChanged;
-        
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DirectControlWrapper"/> class.
-        /// </summary>
-        /// <param name="control">The control to wrap.</param>
-        public DirectControlWrapper(Control control)
-        {
-            _control = control;
-        }
-        
-        /// <summary>
-        /// Raises the FilterValueChanged event.
-        /// </summary>
-        /// <param name="value">The new filter value.</param>
-        public void RaiseFilterValueChanged(object? value)
-        {
-            _filterValue = value;
-            FilterValueChanged?.Invoke(this, new FilterValueChangedEventArgs(value));
-        }
-    }
-    
-    /// <summary>
-    /// Extension methods for working with columns.
-    /// </summary>
-    public static class ColumnExtensions
-    {
-        /// <summary>
-        /// Gets the erased options for a column.
-        /// </summary>
-        /// <param name="column">The column.</param>
-        /// <returns>The column options, or null if the column doesn't have options.</returns>
-        public static object? ErasedOptions(this IColumn? column)
-        {
-            if (column == null)
-                return null;
-                
-            // Try to get the Options property using reflection
-            var optionsProperty = column.GetType().GetProperty("Options");
-            return optionsProperty?.GetValue(column);
         }
     }
 }

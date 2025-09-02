@@ -118,8 +118,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         
         public bool PassesFilter(TModel model, object? condition)
         {
-            var value = Options.FilterValueSelector?.Invoke(model) ?? 
-                       (Options.TextSearchValueSelector != null ? Options.TextSearchValueSelector(model) : null);
+            var value = Options.FilterValueSelector?.Invoke(model);
             return Options.Filter?.Passes(condition, value) ?? true;
         }
     }

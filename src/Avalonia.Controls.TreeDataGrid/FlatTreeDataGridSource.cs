@@ -182,12 +182,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        IEnumerable<object> ITreeDataGridSource.GetModelChildren(object model)
-        {
-            return Enumerable.Empty<object>();
-        }
-
-        private void ApplyFilters()
+        public void Filter()
         {
             if (HasFilters())
             {
@@ -202,17 +197,20 @@ namespace Avalonia.Controls
             _rows?.SetItems(_itemsView);
             Filtered?.Invoke();
         }
+        IEnumerable<object> ITreeDataGridSource.GetModelChildren(object model)
+        {
+            return Enumerable.Empty<object>();
+        }
+
 
         private bool PassesAllFilters(TModel model)
         {
             // Check immutable filter system first (only apply active filters)
             foreach (var column in Columns)
             {
-                if (column is IFilterableColumn<TModel> col && col.IsFilterEnabled)
-                {
-                    var cond = _filterConditions[col];
-                    if (!col.PassesFilter(model, cond)) return false;
-                }
+                if (column is IFilterableColumn<TModel> { IsFilterEnabled: true } col)
+                    if (!col.PassesFilter(model))
+                        return false;
             }
 
 
