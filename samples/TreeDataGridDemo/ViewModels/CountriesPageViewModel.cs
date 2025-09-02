@@ -25,54 +25,49 @@ namespace TreeDataGridDemo.ViewModels
                 {
                     // Text column with advanced filter
                     new TextColumn<Country, string?>(
-                        "Country", 
-                        x => x.Name, 
-                        (r, v) => r.Name = v, 
-                        new GridLength(6, GridUnitType.Star), 
+                        "Country",
+                        x => x.Name,
+                        (r, v) => r.Name = v,
+                        new GridLength(6, GridUnitType.Star),
                         new TextColumnOptions<Country>
                         {
                             IsTextSearchEnabled = true,
                             IsFilterEnabled = true // This will create a TextFilter automatically
                         }),
-                        
+
                     // Use a template column with filtering for region
                     new TemplateColumn<Country>(
-                        "Region", 
+                        "Region",
                         "RegionCell",
                         "RegionEditCell",
                         new GridLength(3, GridUnitType.Star),
                         new TemplateColumnOptions<Country>
                         {
-                            IsFilterEnabled = true,
-                            FilterValueSelector = x => x.Region // Value selector for filtering
+                            // Value selector for filtering
+                            FilterValueSelector = x => x.Region,
+                            Filter = new TextValueFilter(),
+                            FilterControlFactory = (col) => new TextFilterControl(col, "custom filter..."),
                         }),
-                        
+
                     // Population column with numeric filtering
                     new TextColumn<Country, int>(
-                        "Population", 
-                        x => x.Population, 
-                        new GridLength(3, GridUnitType.Star), 
-                        new TextColumnOptions<Country>
-                        {
-                            IsFilterEnabled = true
-                        }),
-                        
+                        "Population",
+                        x => x.Population,
+                        new GridLength(3, GridUnitType.Star),
+                        new TextColumnOptions<Country> { IsFilterEnabled = true }),
+
                     // Area column with numeric filtering
                     new TextColumn<Country, int>(
-                        "Area", 
-                        x => x.Area, 
-                        new GridLength(3, GridUnitType.Star), 
-                        new TextColumnOptions<Country>
-                        {
-                            IsFilterEnabled = true,
-                            StringFormat = "{0:N0}"
-                        }),
-                        
+                        "Area",
+                        x => x.Area,
+                        new GridLength(3, GridUnitType.Star),
+                        new TextColumnOptions<Country> { IsFilterEnabled = true, StringFormat = "{0:N0}" }),
+
                     // GDP column
                     new TextColumn<Country, int>(
-                        "GDP", 
-                        x => x.GDP, 
-                        new GridLength(3, GridUnitType.Star), 
+                        "GDP",
+                        x => x.GDP,
+                        new GridLength(3, GridUnitType.Star),
                         new TextColumnOptions<Country>
                         {
                             TextAlignment = TextAlignment.Right,

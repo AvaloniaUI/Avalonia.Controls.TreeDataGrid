@@ -73,7 +73,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         bool IFilterableColumn<TModel>.PassesFilter(TModel model, object? condition)
         {
             var value = ValueSelector(model);
-            return Options?.Filter?.Passes(value, condition) ?? true;
+            return Options?.Filter?.Passes(condition, value) ?? true;
         }
     }
 }

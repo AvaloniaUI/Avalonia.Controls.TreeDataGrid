@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 
 using Avalonia.Media;
 
@@ -50,6 +50,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         public IValueFilter? Filter { get; set; } = new TextValueFilter();
         
         /// <summary>
+        /// Gets or sets the text filter mode to use.
+        /// </summary>
+        public TextFilterMode TextFilterMode { get; set; } = TextFilterMode.Contains;
+        
+        /// <summary>
+        /// Gets or sets whether text filtering is case sensitive.
+        /// </summary>
+        public bool TextFilterCaseSensitive { get; set; } = false;
+        
+        /// <summary>
         /// Gets or sets the filter prompt text to show in the filter box watermark.
         /// </summary>
         public string FilterPrompt { get; set; } = "Filter...";
@@ -60,11 +70,18 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <param name="column">The column for which to create a filter control.</param>
         /// <param name="initialValue">The initial filter value.</param>
         /// <returns>A filter control that can be used to filter the column.</returns>
-        public IFilterControl? CreateFilterControl(IColumn column, object? initialValue)
+        public IFilterControl? CreateFilterControl(IColumn column)
         {
             if (column is IFilterableColumn<TModel> col && IsFilterEnabled)
             {
-                return new TextFilterControl(col, FilterPrompt, initialValue);
+                // Apply the configured filter settings if using TextValueFilter
+                if (Filter is TextValueFilter textFilter)
+                {
+                    textFilter.FilterMode = TextFilterMode;
+                    textFilter.CaseSensitive = TextFilterCaseSensitive;
+                }
+                
+                return new TextFilterControl(col, FilterPrompt, "");
             }
             
             return null;

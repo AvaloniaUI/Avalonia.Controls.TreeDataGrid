@@ -240,7 +240,7 @@ namespace Avalonia.Controls.Primitives
             if (options is not IFilterControlFactory factory) return;
 
             // Create a filter control using the factory
-            _filterControl = factory.CreateFilterControl(_model, null);
+            _filterControl = factory.CreateFilterControl(_model);
 
             if (_filterControl == null) return;
 
@@ -264,6 +264,8 @@ namespace Avalonia.Controls.Primitives
             if (_owner?.Source == null || _model == null) return;
             _filterConditions[e.Column] = e.FilterCondition;
             
+            // Apply the filter to the data source
+            _owner.Source.Filter(_filterConditions);
         }
     }
 }

@@ -5,10 +5,59 @@ using System.Linq;
 namespace Avalonia.Controls.Models.TreeDataGrid;
 
 /// <summary>
+/// Defines the mode of text filtering.
+/// </summary>
+public enum TextFilterMode
+{
+    /// <summary>
+    /// Check if the value contains the filter text.
+    /// </summary>
+    Contains,
+    
+    /// <summary>
+    /// Check if the value starts with the filter text.
+    /// </summary>
+    StartsWith,
+    
+    /// <summary>
+    /// Check if the value ends with the filter text.
+    /// </summary>
+    EndsWith
+}
+
+/// <summary>
 /// A filter that checks text values.
 /// </summary>
 public class TextValueFilter : IValueFilter<string>
 {
+    /// <summary>
+    /// Gets or sets the filter mode to use.
+    /// </summary>
+    public TextFilterMode FilterMode { get; set; } = TextFilterMode.Contains;
+    
+    /// <summary>
+    /// Gets or sets whether filtering is case sensitive.
+    /// </summary>
+    public bool CaseSensitive { get; set; } = false;
+    
+    /// <summary>
+    /// Initializes a new instance of <see cref="TextValueFilter"/> with default settings.
+    /// </summary>
+    public TextValueFilter()
+    {
+    }
+    
+    /// <summary>
+    /// Initializes a new instance of <see cref="TextValueFilter"/> with specified filter mode.
+    /// </summary>
+    /// <param name="mode">The filter mode to use.</param>
+    /// <param name="caseSensitive">Whether filtering is case sensitive.</param>
+    public TextValueFilter(TextFilterMode mode, bool caseSensitive = false)
+    {
+        FilterMode = mode;
+        CaseSensitive = caseSensitive;
+    }
+    
     /// <summary>
     /// Determines if the value passes the filter.
     /// </summary>
@@ -19,8 +68,23 @@ public class TextValueFilter : IValueFilter<string>
     {
         if (condition is not string filterText || string.IsNullOrWhiteSpace(filterText))
             return true;
-
-        return value != null && value.Contains(filterText, StringComparison.OrdinalIgnoreCase);
+            
+        if (value == null)
+            return false;
+            
+        // Determine string comparison
+        StringComparison comparison = CaseSensitive ? 
+            StringComparison.Ordinal : 
+            StringComparison.OrdinalIgnoreCase;
+        
+        // Apply filter based on mode
+        return FilterMode switch
+        {
+            TextFilterMode.Contains => value.Contains(filterText, comparison),
+            TextFilterMode.StartsWith => value.StartsWith(filterText, comparison),
+            TextFilterMode.EndsWith => value.EndsWith(filterText, comparison),
+            _ => value.Contains(filterText, comparison) // Default to Contains
+        };
     }
 }
 

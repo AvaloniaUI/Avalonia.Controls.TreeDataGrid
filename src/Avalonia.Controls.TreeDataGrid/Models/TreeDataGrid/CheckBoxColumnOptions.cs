@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 
 namespace Avalonia.Controls.Models.TreeDataGrid
 {
@@ -30,11 +30,11 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// <param name="column">The column for which to create a filter control.</param>
         /// <param name="initialValue">The initial filter value.</param>
         /// <returns>A filter control that can be used to filter the column.</returns>
-        public IFilterControl? CreateFilterControl(IColumn column, object? initialValue)
+        public IFilterControl? CreateFilterControl(IColumn column)
         {
-            if (column is CheckBoxColumn<TModel> && IsFilterEnabled)
+            if (column is CheckBoxColumn<TModel> col && IsFilterEnabled)
             {
-                return new CheckBoxFilterControl(IsThreeStateFilter, initialValue);
+                return new CheckBoxFilterControl(col, IsThreeStateFilter, null);
             }
             
             return null;

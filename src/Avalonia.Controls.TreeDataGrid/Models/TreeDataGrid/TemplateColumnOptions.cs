@@ -14,11 +14,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets or sets a value indicating whether the column takes part in text searches.
         /// </summary>
         public bool IsTextSearchEnabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether filtering is enabled for this column.
-        /// </summary>
-        public bool IsFilterEnabled { get; set; }
+        
 
         /// <summary>
         /// Gets or sets a function which selects the search text from a model.
@@ -36,24 +32,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         public IValueFilter? Filter { get; set; }
 
-
-        /// <summary>
-        /// Gets or sets a custom filter control factory to use for creating the filter control.
-        /// If null, a default text filter will be used.
-        /// </summary>
-        public IFilterControlFactory? CustomFilterFactory { get; set; }
+        public Func<IFilterableColumn, IFilterControl>? FilterControlFactory { get; set; }
 
         /// <summary>
         /// Creates a filter control for this column.
         /// </summary>
         /// <param name="column">The column for which to create a filter control.</param>
-        /// <param name="initialValue">The initial filter value.</param>
         /// <returns>A filter control that can be used to filter the column.</returns>
-        public IFilterControl? CreateFilterControl(IColumn column, object? initialValue)
+        public IFilterControl? CreateFilterControl(IColumn column)
         {
-            if (column is not TemplateColumn<TModel> || !IsFilterEnabled) return null;
-            // Use the custom factory if one is provided
-            return CustomFilterFactory?.CreateFilterControl(column, initialValue);
+            if (Filter == null) return null;
+            if (FilterControlFactory == null) return null;
+            if (!(column is TemplateColumn<TModel> col)) return null;
+            return FilterControlFactory?.Invoke(col);
         }
     }
 }
