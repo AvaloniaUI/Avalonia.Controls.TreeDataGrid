@@ -16,7 +16,7 @@ namespace Avalonia.Controls
     public class FlatTreeDataGridSource<TModel> : NotifyingBase,
         ITreeDataGridSource<TModel>,
         IDisposable
-            where TModel: class
+        where TModel : class
     {
         private IEnumerable<TModel> _items;
         private TreeDataGridItemsSourceView<TModel> _itemsView;
@@ -24,7 +24,7 @@ namespace Avalonia.Controls
         private IComparer<TModel>? _comparer;
         private ITreeDataGridSelection? _selection;
         private bool _isSelectionSet;
-        private readonly Dictionary<IColumn, string> _columnFilters = new();
+        private readonly Dictionary<IFilterableColumn<TModel>, object?> _filterConditions = new();
 
         public FlatTreeDataGridSource(IEnumerable<TModel> items)
         {
@@ -78,15 +78,28 @@ namespace Avalonia.Controls
 
         IEnumerable<object> ITreeDataGridSource.Items => Items;
 
-        public ITreeDataGridCellSelectionModel<TModel>? CellSelection => Selection as ITreeDataGridCellSelectionModel<TModel>;
-        public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
+        public ITreeDataGridCellSelectionModel<TModel>? CellSelection =>
+            Selection as ITreeDataGridCellSelectionModel<TModel>;
+
+        public ITreeDataGridRowSelectionModel<TModel>? RowSelection =>
+            Selection as ITreeDataGridRowSelectionModel<TModel>;
+
         public bool IsHierarchical => false;
         public bool IsSorted => _comparer is not null;
 
         /// <summary>
         /// Gets a value indicating whether any filters are currently applied.
         /// </summary>
-        public bool IsFiltered => _columnFilters.Any(kvp => !string.IsNullOrWhiteSpace(kvp.Value));
+        public bool HasFilters()
+        {
+            foreach (var column in Columns)
+            {
+                if (column is IFilterableColumn<TModel> { IsFilterEnabled: true })
+                    return true;
+            }
+
+            return false;
+        }
 
         public event Action? Sorted;
         public event Action? Filtered;
@@ -108,7 +121,7 @@ namespace Avalonia.Controls
                 throw new NotSupportedException("Only move is currently supported for drag/drop.");
             if (IsSorted)
                 throw new NotSupportedException("Drag/drop is not supported on sorted data.");
-            if (IsFiltered)
+            if (HasFilters())
                 throw new NotSupportedException("Drag/drop is not supported on filtered data.");
             if (position == TreeDataGridRowDropPosition.Inside)
                 throw new ArgumentException("Invalid drop position.", nameof(position));
@@ -162,6 +175,7 @@ namespace Avalonia.Controls
                     foreach (var c in Columns)
                         c.SortDirection = c == column ? direction : null;
                 }
+
                 return true;
             }
 
@@ -173,47 +187,9 @@ namespace Avalonia.Controls
             return Enumerable.Empty<object>();
         }
 
-        /// <summary>
-        /// Sets a filter value for the specified column.
-        /// </summary>
-        /// <param name="column">The column to filter.</param>
-        /// <param name="filterText">The filter text.</param>
-        public void SetColumnFilter(IColumn column, string? filterText)
-        {
-            if (string.IsNullOrWhiteSpace(filterText))
-            {
-                _columnFilters.Remove(column);
-            }
-            else
-            {
-                _columnFilters[column] = filterText;
-            }
-            
-            ApplyFilters();
-        }
-
-        /// <summary>
-        /// Gets the filter text for the specified column.
-        /// </summary>
-        /// <param name="column">The column.</param>
-        /// <returns>The filter text or null if no filter is set.</returns>
-        public string? GetColumnFilter(IColumn column)
-        {
-            return _columnFilters.TryGetValue(column, out var filter) ? filter : null;
-        }
-
-        /// <summary>
-        /// Clears all column filters.
-        /// </summary>
-        public void ClearAllFilters()
-        {
-            _columnFilters.Clear();
-            ApplyFilters();
-        }
-
         private void ApplyFilters()
         {
-            if (IsFiltered)
+            if (HasFilters())
             {
                 var filteredItems = _items.Where(PassesAllFilters);
                 _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(filteredItems);
@@ -229,31 +205,29 @@ namespace Avalonia.Controls
 
         private bool PassesAllFilters(TModel model)
         {
-            foreach (var kvp in _columnFilters)
+            // Check immutable filter system first (only apply active filters)
+            foreach (var column in Columns)
             {
-                if (string.IsNullOrWhiteSpace(kvp.Value))
-                    continue;
-
-                if (kvp.Key is ITextSearchableColumn<TModel> searchableColumn)
+                if (column is IFilterableColumn<TModel> col && col.IsFilterEnabled)
                 {
-                    var value = searchableColumn.SelectValue(model);
-                    if (value == null || !value.Contains(kvp.Value, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
+                    var cond = _filterConditions[col];
+                    if (!col.PassesFilter(model, cond)) return false;
                 }
             }
+
+
             return true;
         }
 
-        private void OnColumnsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void OnColumnsCollectionChanged(object? sender,
+            System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             // Clear filters for removed columns
             if (e.OldItems != null)
             {
-                foreach (var item in e.OldItems.OfType<IColumn>())
+                foreach (var item in e.OldItems.OfType<IFilterableColumn<TModel>>())
                 {
-                    _columnFilters.Remove(item);
+                    _filterConditions.Remove(item);
                 }
             }
         }

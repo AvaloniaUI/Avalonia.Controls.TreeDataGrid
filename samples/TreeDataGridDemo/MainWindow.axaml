@@ -11,8 +11,18 @@
     <TabItem Header="Countries">
       <DockPanel>
         <TextBlock Classes="realized-count" DockPanel.Dock="Bottom"/>
-        <StackPanel DockPanel.Dock="Right" Spacing="4" Margin="4 0 0 0">
+        <StackPanel DockPanel.Dock="Right" Spacing="4" Margin="4 0 0 0" Width="250">
           <CheckBox IsChecked="{Binding Countries.CellSelection}">Cell Selection</CheckBox>
+          
+          <TextBlock TextWrapping="Wrap" Margin="0,10,0,0" FontWeight="Bold">Filter Example:</TextBlock>
+          <TextBlock TextWrapping="Wrap" Margin="0,5,0,0">Try typing in the filter boxes under each column header:</TextBlock>
+          <TextBlock TextWrapping="Wrap" Margin="0,5,0,0">• Country: Try partial names</TextBlock>
+          <TextBlock TextWrapping="Wrap" Margin="0,5,0,0">• Region: Try "EUROPE" or "ASIA"</TextBlock>
+          <TextBlock TextWrapping="Wrap" Margin="0,5,0,0">• Population: Try numbers like "10000"</TextBlock>
+          <TextBlock TextWrapping="Wrap" Margin="0,5,0,0">• Area: Try areas like "100000"</TextBlock>
+          
+          <Separator Margin="0,10,0,10" />
+          
           <Label Target="countryTextBox">_Country</Label>
           <TextBox Name="countryTextBox">Sealand</TextBox>
           <Label Target="regionTextBox">_Region</Label>

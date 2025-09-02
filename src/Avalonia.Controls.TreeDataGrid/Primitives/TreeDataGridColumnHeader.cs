@@ -28,6 +28,12 @@ namespace Avalonia.Controls.Primitives
                 nameof(ShowFilter),
                 o => o.ShowFilter);
 
+        public static readonly DirectProperty<TreeDataGridColumnHeader, string?> FilterTextProperty =
+            AvaloniaProperty.RegisterDirect<TreeDataGridColumnHeader, string?>(
+                nameof(FilterText),
+                o => o.FilterText,
+                (o, v) => o.FilterText = v);
+
         private bool _canUserResize;
         private IColumns? _columns;
         private object? _header;
@@ -37,6 +43,7 @@ namespace Avalonia.Controls.Primitives
         private TreeDataGrid? _owner;
         private Thumb? _resizer;
         private TextBox? _filterBox;
+        private string? _filterText;
 
         public bool CanUserResize
         {
@@ -62,6 +69,25 @@ namespace Avalonia.Controls.Primitives
         {
             get => _showFilter;
             private set => SetAndRaise(ShowFilterProperty, ref _showFilter, value);
+        }
+
+        public string? FilterText
+        {
+            get => _filterText;
+            set 
+            {
+                if (SetAndRaise(FilterTextProperty, ref _filterText, value))
+                {
+                    // Update the UI if the filter box exists
+                    if (_filterBox != null && _filterBox.Text != value)
+                    {
+                        _filterBox.Text = value ?? string.Empty;
+                    }
+                    
+                    // Apply the filter
+                    SetFilter(value);
+                }
+            }
         }
 
         public void Realize(IColumns columns, int columnIndex)
@@ -110,6 +136,11 @@ namespace Avalonia.Controls.Primitives
             if (_filterBox is not null)
             {
                 _filterBox.TextChanged += OnFilterTextChanged;
+                // If we already have a filter value, apply it to the textbox
+                if (!string.IsNullOrEmpty(_filterText))
+                {
+                    _filterBox.Text = _filterText;
+                }
                 _filterBox.KeyDown += OnFilterKeyDown;
             }
 
@@ -223,6 +254,7 @@ namespace Avalonia.Controls.Primitives
             if (_filterBox != null && _model != null && shouldShowFilter)
             {
                 var currentFilter = GetCurrentFilter();
+                _filterText = currentFilter;
                 _filterBox.Text = currentFilter ?? string.Empty;
                 _filterBox.Watermark = "Filter...";
             }
@@ -234,10 +266,42 @@ namespace Avalonia.Controls.Primitives
 
         private bool HasFilterEnabled()
         {
-            // Simple check for filtering - we'll enable it for any text column that has IsFilterEnabled = true
-            return _model != null && IsTextColumnWithFilterEnabled(_model);
+            if (_model == null)
+                return false;
+                
+            // First check if it implements the new IFilterableColumn interface
+            if (IsFilterableColumn(_model))
+                return true;
+                
+            // For backward compatibility, also check the legacy way with TextColumn
+            return IsTextColumnWithFilterEnabled(_model);
         }
 
+        private static bool IsFilterableColumn(object column)
+        {
+            try
+            {
+                // Check if the column implements IFilterableColumn<T> for any T
+                var columnType = column.GetType();
+                foreach (var interfaceType in columnType.GetInterfaces())
+                {
+                    if (interfaceType.IsGenericType && 
+                        interfaceType.GetGenericTypeDefinition() == typeof(IFilterableColumn<>))
+                    {
+                        // Get the IsFilterEnabled property
+                        var isFilterEnabledProperty = interfaceType.GetProperty("IsFilterEnabled");
+                        return (bool)(isFilterEnabledProperty?.GetValue(column) ?? false);
+                    }
+                }
+            }
+            catch
+            {
+                // If reflection fails, continue to the next check
+            }
+            
+            return false;
+        }
+        
         private static bool IsTextColumnWithFilterEnabled(object column)
         {
             try
@@ -300,7 +364,8 @@ namespace Avalonia.Controls.Primitives
         {
             if (_filterBox != null)
             {
-                SetFilter(_filterBox.Text);
+                // Update the property when the text box changes
+                FilterText = _filterBox.Text;
             }
         }
 

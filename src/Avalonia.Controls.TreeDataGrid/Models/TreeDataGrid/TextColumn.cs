@@ -8,7 +8,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
     /// <typeparam name="TValue">The column data type.</typeparam>
-    public class TextColumn<TModel, TValue> : ColumnBase<TModel, TValue>, ITextSearchableColumn<TModel>
+    public class TextColumn<TModel, TValue> : ColumnBase<TModel, TValue>, ITextSearchableColumn<TModel>,
+        IFilterableColumn<TModel>
         where TModel : class
     {
         /// <summary>
@@ -65,9 +66,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return new TextCell<TValue?>(CreateBindingExpression(row.Model), Binding.Write is null, Options);
         }
 
-        string? ITextSearchableColumn<TModel>.SelectValue(TModel model)
+        string? ITextSearchableColumn<TModel>.SelectValue(TModel model) => ValueSelector(model)?.ToString();
+
+        bool IFilterableColumn<TModel>.IsFilterEnabled => Options?.IsFilterEnabled ?? false;
+        
+        bool IFilterableColumn<TModel>.PassesFilter(TModel model, object? condition)
         {
-            return ValueSelector(model)?.ToString();
+            var value = ValueSelector(model);
+            return Options?.Filter?.Passes(value, condition) ?? true;
         }
     }
 }

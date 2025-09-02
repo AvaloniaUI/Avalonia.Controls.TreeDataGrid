@@ -14,12 +14,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets or sets a value indicating whether the column takes part in text searches.
         /// </summary>
         public bool IsTextSearchEnabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether filtering is enabled for this column.
-        /// </summary>
         public bool IsFilterEnabled { get; set; }
-
         /// <summary>
         /// Gets or sets the format string for the cells in the column.
         /// </summary>
@@ -44,5 +39,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets or sets the text alignment mode for the cells in the column.
         /// </summary>
         public TextAlignment TextAlignment { get; set; } = TextAlignment.Left;
+
+        public IValueFilter? Filter { get; set; } = new TextValueFilter();
     }
 }

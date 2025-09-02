@@ -128,6 +128,7 @@
                     </ContentPresenter.DataTemplates>
                   </ContentPresenter>
                 </DockPanel>
+                <!-- FilterBox is the default filtering UI, but can be replaced by binding to FilterText directly -->
                 <TextBox Name="PART_FilterBox"
                          IsVisible="{TemplateBinding ShowFilter}"
                          Margin="2 1"

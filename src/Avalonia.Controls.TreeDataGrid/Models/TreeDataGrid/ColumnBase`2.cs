@@ -127,5 +127,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             var b = ValueSelector(y);
             return Comparer<TValue>.Default.Compare(b, a);
         }
+
+        public TValue? SelectValue(TModel model) => ValueSelector(model);
     }
 }

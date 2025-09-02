@@ -13,10 +13,19 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets or sets a value indicating whether the column takes part in text searches.
         /// </summary>
         public bool IsTextSearchEnabled { get; set; }
+        public bool IsFilterEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets a function which selects the search text from a model.
         /// </summary>
         public Func<TModel, string?>? TextSearchValueSelector { get; set; }
+        
+        /// <summary>
+        /// Gets or sets a function which selects the filter value from a model.
+        /// If null, TextSearchValueSelector will be used for filtering.
+        /// </summary>
+        public Func<TModel, object?>? FilterValueSelector { get; set; }
+        
+        public IValueFilter<object?>? Filter { get; set; }
     }
 }

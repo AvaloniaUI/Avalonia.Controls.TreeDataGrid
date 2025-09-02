@@ -8,5 +8,9 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// <typeparam name="TModel">The model type.</typeparam>
     public class CheckBoxColumnOptions<TModel> : ColumnOptions<TModel>
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether filtering is enabled for this column.
+        /// </summary>
+        public bool IsFilterEnabled { get; set; }
     }
 }

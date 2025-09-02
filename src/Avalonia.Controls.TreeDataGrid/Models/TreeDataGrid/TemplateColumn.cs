@@ -10,8 +10,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// template.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    /// <typeparam name="TValue">The column data type.</typeparam>
-    public class TemplateColumn<TModel> : ColumnBase<TModel>, ITextSearchableColumn<TModel>
+    public class TemplateColumn<TModel> : ColumnBase<TModel>, ITextSearchableColumn<TModel>,
+        IFilterableColumn<TModel>
     {
         private readonly Func<Control, IDataTemplate> _getCellTemplate;
         private readonly Func<Control, IDataTemplate>? _getEditingCellTemplate;
@@ -32,7 +32,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             _cellTemplate = cellTemplate;
             _cellEditingTemplate = cellEditingTemplate;
             _getEditingCellTemplate = cellEditingTemplate is not null ?
-                GetCellEditingTemplate : null;
+                GetCellEditingTemplate :
+                null;
         }
 
         public TemplateColumn(
@@ -62,7 +63,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             if (_cellTemplate is not null)
                 return _cellTemplate;
-            
+
             _cellTemplate = anchor.FindResource(_cellTemplateResourceKey!) as IDataTemplate;
 
             if (_cellTemplate is null)
@@ -112,5 +113,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         }
 
         string? ITextSearchableColumn<TModel>.SelectValue(TModel model) => Options.TextSearchValueSelector?.Invoke(model);
+
+        public bool IsFilterEnabled => Options?.IsTextSearchEnabled ?? false;
+        public bool PassesFilter(TModel model, object? condition)
+        {
+            var value = Options.FilterValueSelector?.Invoke(model);
+            return Options.Filter?.Passes(condition, value) ?? true;
+        }
     }
 }
