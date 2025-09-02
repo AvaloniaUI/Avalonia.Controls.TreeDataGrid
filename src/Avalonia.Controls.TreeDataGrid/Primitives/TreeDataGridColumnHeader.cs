@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Utilities;
 
@@ -27,23 +29,15 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.RegisterDirect<TreeDataGridColumnHeader, bool>(
                 nameof(ShowFilter),
                 o => o.ShowFilter);
-
-        public static readonly DirectProperty<TreeDataGridColumnHeader, string?> FilterTextProperty =
-            AvaloniaProperty.RegisterDirect<TreeDataGridColumnHeader, string?>(
-                nameof(FilterText),
-                o => o.FilterText,
-                (o, v) => o.FilterText = v);
-
+        
         private bool _canUserResize;
         private IColumns? _columns;
         private object? _header;
         private IColumn? _model;
         private ListSortDirection? _sortDirection;
-        private bool _showFilter;
         private TreeDataGrid? _owner;
         private Thumb? _resizer;
-        private TextBox? _filterBox;
-        private string? _filterText;
+        private IFilterControl? _filterControl;
 
         public bool CanUserResize
         {
@@ -65,34 +59,14 @@ namespace Avalonia.Controls.Primitives
             private set => SetAndRaise(SortDirectionProperty, ref _sortDirection, value);
         }
 
-        public bool ShowFilter
-        {
-            get => _showFilter;
-            private set => SetAndRaise(ShowFilterProperty, ref _showFilter, value);
-        }
+        private IColumn? CurrentColumn => _columns?[ColumnIndex];
 
-        public string? FilterText
-        {
-            get => _filterText;
-            set 
-            {
-                if (SetAndRaise(FilterTextProperty, ref _filterText, value))
-                {
-                    // Update the UI if the filter box exists
-                    if (_filterBox != null && _filterBox.Text != value)
-                    {
-                        _filterBox.Text = value ?? string.Empty;
-                    }
-                    
-                    // Apply the filter
-                    SetFilter(value);
-                }
-            }
-        }
+        public bool ShowFilter => CurrentColumn is IFilterableColumn filterable && filterable.IsFilterEnabled;
+
 
         public void Realize(IColumns columns, int columnIndex)
         {
-            if (_model is object)
+            if (_model != null)
                 throw new InvalidOperationException("Column header is already realized.");
 
             _columns = columns;
@@ -125,7 +99,7 @@ namespace Avalonia.Controls.Primitives
             base.OnApplyTemplate(e);
 
             _resizer = e.NameScope.Find<Thumb>("PART_Resizer");
-            _filterBox = e.NameScope.Find<TextBox>("PART_FilterBox");
+            var filterContainer = e.NameScope.Find<ContentControl>("PART_FilterBox");
 
             if (_resizer is not null)
             {
@@ -133,21 +107,19 @@ namespace Avalonia.Controls.Primitives
                 _resizer.DoubleTapped += ResizerDoubleTapped;
             }
 
-            if (_filterBox is not null)
-            {
-                _filterBox.TextChanged += OnFilterTextChanged;
-                // If we already have a filter value, apply it to the textbox
-                if (!string.IsNullOrEmpty(_filterText))
-                {
-                    _filterBox.Text = _filterText;
-                }
-                _filterBox.KeyDown += OnFilterKeyDown;
-            }
-
             // Only update filter if we have a model and owner
             if (_model != null && _owner != null)
             {
                 UpdateFilter();
+            }
+
+            if (filterContainer != null)
+            {
+                filterContainer.IsVisible = ShowFilter;
+                if (_filterControl != null)
+                {
+                    filterContainer.Content = _filterControl.Control;
+                }
             }
         }
 
@@ -234,147 +206,71 @@ namespace Avalonia.Controls.Primitives
             CanUserResize = _model?.CanUserResize ?? _owner?.CanUserResizeColumns ?? false;
             Header = _model?.Header;
             SortDirection = _model?.SortDirection;
-            
+
             // Only update filter if we have all necessary references
             if (_model != null && _owner != null)
             {
                 UpdateFilter();
             }
-            else
-            {
-                ShowFilter = false;
-            }
         }
 
         private void UpdateFilter()
         {
-            var shouldShowFilter = _owner?.ShowColumnFilters == true && HasFilterEnabled();
-            ShowFilter = shouldShowFilter;
-
-            if (_filterBox != null && _model != null && shouldShowFilter)
+            // Find the ContentControl named PART_FilterBox
+            var contentControl = this.GetTemplateChildren().OfType<ContentControl>()
+                .FirstOrDefault(x => x.Name == "PART_FilterBox");
+            // Clean up any existing filter control
+            if (_filterControl != null)
             {
-                var currentFilter = GetCurrentFilter();
-                _filterText = currentFilter;
-                _filterBox.Text = currentFilter ?? string.Empty;
-                _filterBox.Watermark = "Filter...";
-            }
-            else if (_filterBox != null)
-            {
-                _filterBox.Text = string.Empty;
-            }
-        }
+                _filterControl.FilterValueChanged -= OnFilterValueChanged;
 
-        private bool HasFilterEnabled()
-        {
-            if (_model == null)
-                return false;
-                
-            // First check if it implements the new IFilterableColumn interface
-            if (IsFilterableColumn(_model))
-                return true;
-                
-            // For backward compatibility, also check the legacy way with TextColumn
-            return IsTextColumnWithFilterEnabled(_model);
-        }
+                // Remove from visual tree if it was added
 
-        private static bool IsFilterableColumn(object column)
-        {
-            try
-            {
-                // Check if the column implements IFilterableColumn<T> for any T
-                var columnType = column.GetType();
-                foreach (var interfaceType in columnType.GetInterfaces())
+                if (contentControl != null)
                 {
-                    if (interfaceType.IsGenericType && 
-                        interfaceType.GetGenericTypeDefinition() == typeof(IFilterableColumn<>))
-                    {
-                        // Get the IsFilterEnabled property
-                        var isFilterEnabledProperty = interfaceType.GetProperty("IsFilterEnabled");
-                        return (bool)(isFilterEnabledProperty?.GetValue(column) ?? false);
-                    }
+                    contentControl.Content = null;
                 }
+
+                _filterControl = null;
             }
-            catch
-            {
-                // If reflection fails, continue to the next check
-            }
+
+            if (_model == null) return;
+            var options = CurrentColumn?.ErasedOptions();
+
+            // Get the filter control factory from the column options
+            if (options is not IFilterControlFactory factory) return;
+
+            // Create a filter control using the factory
+            _filterControl = factory.CreateFilterControl(_model, null);
+
+            if (_filterControl == null) return;
+
+            // Subscribe to filter value changes
+            _filterControl.FilterValueChanged += OnFilterValueChanged;
+
+            // Add to visual tree
+            var control = _filterControl.Control;
             
-            return false;
-        }
-        
-        private static bool IsTextColumnWithFilterEnabled(object column)
-        {
-            try
+            if (contentControl != null)
             {
-                var type = column.GetType();
-                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(TextColumn<,>))
-                {
-                    // Use the most specific Options property to avoid ambiguity
-                    var optionsProperty = type.GetProperty("Options", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly);
-                    if (optionsProperty?.GetValue(column) is object options)
-                    {
-                        var isFilterEnabledProperty = options.GetType().GetProperty("IsFilterEnabled");
-                        return (bool)(isFilterEnabledProperty?.GetValue(options) ?? false);
-                    }
-                }
+                contentControl.Content = control;
             }
-            catch
-            {
-                // If reflection fails, just return false
-            }
-            return false;
         }
 
-        private string? GetCurrentFilter()
+        private void OnFilterValueChanged(object? sender, FilterValueChangedEventArgs e)
         {
+            // Update the filter value
             if (_owner?.Source != null && _model != null)
             {
                 var sourceType = _owner.Source.GetType();
-                if (sourceType.IsGenericType && sourceType.GetGenericTypeDefinition() == typeof(FlatTreeDataGridSource<>))
+                if (sourceType.IsGenericType &&
+                    sourceType.GetGenericTypeDefinition() == typeof(FlatTreeDataGridSource<>))
                 {
-                    try
-                    {
-                        var method = sourceType.GetMethod("GetColumnFilter");
-                        return method?.Invoke(_owner.Source, new[] { _model }) as string;
-                    }
-                    catch { }
+                    var method = sourceType.GetMethod("SetColumnFilter");
+                    // For backward compatibility, convert to string if needed
+                    string? stringValue = e.FilterValue?.ToString();
+                    method?.Invoke(_owner.Source, new object?[] { _model, stringValue });
                 }
-            }
-            return null;
-        }
-
-        private void SetFilter(string? filterText)
-        {
-            if (_owner?.Source != null && _model != null)
-            {
-                var sourceType = _owner.Source.GetType();
-                if (sourceType.IsGenericType && sourceType.GetGenericTypeDefinition() == typeof(FlatTreeDataGridSource<>))
-                {
-                    try
-                    {
-                        var method = sourceType.GetMethod("SetColumnFilter");
-                        method?.Invoke(_owner.Source, new object?[] { _model, filterText });
-                    }
-                    catch { }
-                }
-            }
-        }
-
-        private void OnFilterTextChanged(object? sender, TextChangedEventArgs e)
-        {
-            if (_filterBox != null)
-            {
-                // Update the property when the text box changes
-                FilterText = _filterBox.Text;
-            }
-        }
-
-        private void OnFilterKeyDown(object? sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Escape && _filterBox != null)
-            {
-                _filterBox.Text = string.Empty;
-                e.Handled = true;
             }
         }
     }

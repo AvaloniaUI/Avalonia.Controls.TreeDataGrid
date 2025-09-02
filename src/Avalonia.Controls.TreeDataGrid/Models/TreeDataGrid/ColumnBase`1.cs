@@ -90,6 +90,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// </summary>
         public object? Tag { get; set; }
 
+        object IColumn.ErasedOptions()
+        {
+            return Options;
+        }
+
+
         bool? IColumn.CanUserResize => Options.CanUserResizeColumn;
         double IUpdateColumnLayout.MinActualWidth => CoerceActualWidth(0);
         double IUpdateColumnLayout.MaxActualWidth => CoerceActualWidth(double.PositiveInfinity);

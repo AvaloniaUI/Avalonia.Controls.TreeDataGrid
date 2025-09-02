@@ -47,5 +47,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         /// Gets or sets a user-defined object attached to the column.
         /// </summary>
         object? Tag { get; set; }
+
+        internal object? ErasedOptions();
     }
 }

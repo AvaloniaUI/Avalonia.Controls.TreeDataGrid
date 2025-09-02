@@ -90,12 +90,14 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 TypedBinding<TModel>.TwoWay(g, (m, v) => setter(m, v ?? false));
         }
 
-        public bool IsFilterEnabled => ((CheckBoxColumnOptions<TModel>)Options)?.IsFilterEnabled ?? false;
+        public new CheckBoxColumnOptions<TModel> Options => (CheckBoxColumnOptions<TModel>)base.Options;
+
+        public bool IsFilterEnabled => Options?.IsFilterEnabled ?? false;
 
         public bool PassesFilter(TModel model, object? condition)
         {
             var checked_ = ValueSelector(model);
-            return new BooleanValueFilter().Passes(condition, checked_);
+            return Options?.Filter?.Passes(condition, checked_) ?? true;
         }
     }
 }

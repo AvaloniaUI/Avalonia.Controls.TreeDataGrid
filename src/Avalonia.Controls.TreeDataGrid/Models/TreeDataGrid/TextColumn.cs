@@ -68,7 +68,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         string? ITextSearchableColumn<TModel>.SelectValue(TModel model) => ValueSelector(model)?.ToString();
 
-        bool IFilterableColumn<TModel>.IsFilterEnabled => Options?.IsFilterEnabled ?? false;
+        bool IFilterableColumn.IsFilterEnabled => Options?.IsFilterEnabled ?? false;
         
         bool IFilterableColumn<TModel>.PassesFilter(TModel model, object? condition)
         {

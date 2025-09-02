@@ -114,10 +114,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
 
         string? ITextSearchableColumn<TModel>.SelectValue(TModel model) => Options.TextSearchValueSelector?.Invoke(model);
 
-        public bool IsFilterEnabled => Options?.IsTextSearchEnabled ?? false;
+        public bool IsFilterEnabled => Options?.IsFilterEnabled ?? false;
+        
         public bool PassesFilter(TModel model, object? condition)
         {
-            var value = Options.FilterValueSelector?.Invoke(model);
+            var value = Options.FilterValueSelector?.Invoke(model) ?? 
+                       (Options.TextSearchValueSelector != null ? Options.TextSearchValueSelector(model) : null);
             return Options.Filter?.Passes(condition, value) ?? true;
         }
     }
