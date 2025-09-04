@@ -5,12 +5,18 @@ using System.Linq;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class TreeDataGridColumnHeader : Button
+    public class TreeDataGridColumnHeader : UserControl
     {
+        public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
+            RoutedEvent.Register<TreeDataGridColumnHeader, RoutedEventArgs>(
+                nameof(Button.Click),
+                RoutingStrategies.Bubble);
+
         public static readonly DirectProperty<TreeDataGridColumnHeader, bool> CanUserResizeProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGridColumnHeader, bool>(
                 nameof(CanUserResize),
@@ -38,6 +44,7 @@ namespace Avalonia.Controls.Primitives
         private ListSortDirection? _sortDirection;
         private TreeDataGrid? _owner;
         private Thumb? _resizer;
+        private Button? _headerButton;
         private IFilterControl? _filterControl;
 
         public bool CanUserResize
@@ -98,12 +105,18 @@ namespace Avalonia.Controls.Primitives
             base.OnApplyTemplate(e);
 
             _resizer = e.NameScope.Find<Thumb>("PART_Resizer");
+            _headerButton = e.NameScope.Find<Button>("PART_HeaderButton");
             var filterContainer = e.NameScope.Find<ContentControl>("PART_FilterBox");
 
             if (_resizer is not null)
             {
                 _resizer.DragDelta += ResizerDragDelta;
                 _resizer.DoubleTapped += ResizerDoubleTapped;
+            }
+            
+            if (_headerButton is not null)
+            {
+                _headerButton.Click += HeaderButton_Click;
             }
 
             // Only update filter if we have a model and owner
@@ -125,6 +138,7 @@ namespace Avalonia.Controls.Primitives
         private void ResizerDoubleTapped(object? sender, Interactivity.RoutedEventArgs e)
         {
             _columns?.SetColumnWidth(ColumnIndex, GridLength.Auto);
+            e.Handled = true;
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -174,7 +188,8 @@ namespace Avalonia.Controls.Primitives
         {
             if (e.PropertyName == nameof(IColumn.CanUserResize) ||
                 e.PropertyName == nameof(IColumn.Header) ||
-                e.PropertyName == nameof(IColumn.SortDirection))
+                e.PropertyName == nameof(IColumn.SortDirection) ||
+                (sender is IFilterableColumn && e.PropertyName == nameof(IFilterableColumn.IsFilterEnabled)))
                 UpdatePropertiesFromModel();
         }
 
@@ -224,7 +239,6 @@ namespace Avalonia.Controls.Primitives
                 _filterControl.FilterValueChanged -= OnFilterValueChanged;
 
                 // Remove from visual tree if it was added
-
                 if (contentControl != null)
                 {
                     contentControl.Content = null;
@@ -234,6 +248,16 @@ namespace Avalonia.Controls.Primitives
             }
 
             if (_model == null) return;
+            
+            // Make sure contentControl is properly bound to ShowFilter
+            if (contentControl != null)
+            {
+                contentControl.IsVisible = ShowFilter;
+            }
+            
+            // If filtering is not enabled, don't create a filter control
+            if (!ShowFilter) return;
+            
             var options = _model.ErasedOptions();
 
             // Get the filter control factory from the column options
@@ -257,6 +281,27 @@ namespace Avalonia.Controls.Primitives
         }
 
         private Dictionary<IFilterableColumn, object?> _filterConditions = new();
+
+        private void HeaderButton_Click(object? sender, Interactivity.RoutedEventArgs e)
+        {
+            if (_columns == null || _model == null || _owner == null || !_owner.CanUserSortColumns)
+                return;
+
+            // Toggle sort direction when the button is clicked
+            ListSortDirection? newDirection = _model.SortDirection == ListSortDirection.Ascending
+                ? ListSortDirection.Descending
+                : (_model.SortDirection == ListSortDirection.Descending
+                    ? null
+                    : ListSortDirection.Ascending);
+
+            // Raise the ClickEvent to let TreeDataGrid handle the sorting
+            var args = new RoutedEventArgs(ClickEvent);
+            RaiseEvent(args);
+            
+            e.Handled = true;
+            
+            e.Handled = true;
+        }
 
         private void OnFilterValueChanged(object? sender, FilterValueChangedEventArgs e)
         {
