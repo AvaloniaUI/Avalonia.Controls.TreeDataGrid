@@ -2,6 +2,8 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Primitives;
@@ -308,6 +310,11 @@ namespace Avalonia.Controls
             var e = new CancelEventArgs();
             SelectionChanging(this, e);
             return e.Cancel;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new TreeDataGridAutomationPeer(this);
         }
 
         protected virtual TreeDataGridElementFactory CreateDefaultElementFactory() => new TreeDataGridElementFactory();
