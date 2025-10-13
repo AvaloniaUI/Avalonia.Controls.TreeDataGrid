@@ -54,7 +54,7 @@ namespace Avalonia.Controls.TreeDataGridTests
             Setters = { new Setter(TemplatedControl.TemplateProperty, ScrollViewerTemplate()) }
         };
 
-        public static IControlTemplate TreeDataGridTemplate()
+        public static IControlTemplate TreeDataGridTemplate(double headerPresenterSize = 0)
         {
             return new FuncControlTemplate<TreeDataGrid>((x, ns) =>
                 new DockPanel
@@ -65,7 +65,7 @@ namespace Avalonia.Controls.TreeDataGridTests
                         {
                             Name = "PART_HeaderScrollViewer",
                             Template = ScrollViewerTemplate(),
-                            Height = 0,
+                            Height = headerPresenterSize,
                             HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
                             VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
                             [DockPanel.DockProperty] = Dock.Top,
