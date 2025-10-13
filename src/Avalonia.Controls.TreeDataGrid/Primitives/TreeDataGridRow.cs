@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -165,7 +167,8 @@ namespace Avalonia.Controls.Primitives
             if (!pointerSupportsDrag ||
                 e.Handled ||
                 Math.Abs(delta.X) < DragDistance && Math.Abs(delta.Y) < DragDistance ||
-                _mouseDownPosition == s_InvalidPoint)
+                _mouseDownPosition == s_InvalidPoint ||
+                (CellsPresenter?.GetVisualChildren()?.Any(x => x is TreeDataGridCell c && c.IsEditing) == true))
                 return;
 
             _mouseDownPosition = s_InvalidPoint;
