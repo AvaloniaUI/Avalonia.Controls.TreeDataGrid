@@ -16,7 +16,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         IColumn<TModel>,
         IExpanderColumn<TModel>,
         IUpdateColumnLayout
-            where TModel : class
+        where TModel : class
     {
         private readonly IColumn<TModel> _inner;
         private readonly Func<TModel, IEnumerable<TModel>?> _childSelector;
@@ -82,6 +82,12 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             get => _inner.Tag;
             set => _inner.Tag = value;
         }
+
+        object? IColumn.ErasedOptions()
+        {
+            return null;
+        }
+
 
         public GridLength Width => _inner.Width;
         public IColumn<TModel> Inner => _inner;

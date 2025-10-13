@@ -16,7 +16,7 @@ namespace Avalonia.Controls
     public class FlatTreeDataGridSource<TModel> : NotifyingBase,
         ITreeDataGridSource<TModel>,
         IDisposable
-            where TModel: class
+        where TModel : class
     {
         private IEnumerable<TModel> _items;
         private TreeDataGridItemsSourceView<TModel> _itemsView;
@@ -76,12 +76,31 @@ namespace Avalonia.Controls
 
         IEnumerable<object> ITreeDataGridSource.Items => Items;
 
-        public ITreeDataGridCellSelectionModel<TModel>? CellSelection => Selection as ITreeDataGridCellSelectionModel<TModel>;
-        public ITreeDataGridRowSelectionModel<TModel>? RowSelection => Selection as ITreeDataGridRowSelectionModel<TModel>;
+        public ITreeDataGridCellSelectionModel<TModel>? CellSelection =>
+            Selection as ITreeDataGridCellSelectionModel<TModel>;
+
+        public ITreeDataGridRowSelectionModel<TModel>? RowSelection =>
+            Selection as ITreeDataGridRowSelectionModel<TModel>;
+
         public bool IsHierarchical => false;
         public bool IsSorted => _comparer is not null;
 
+        /// <summary>
+        /// Gets a value indicating whether any filters are currently applied.
+        /// </summary>
+        public bool HasFilters()
+        {
+            foreach (var column in Columns)
+            {
+                if (column is IFilterableColumn<TModel> { IsFilterEnabled: true })
+                    return true;
+            }
+
+            return false;
+        }
+
         public event Action? Sorted;
+        public event Action? Filtered;
 
         public void Dispose()
         {
@@ -100,6 +119,8 @@ namespace Avalonia.Controls
                 throw new NotSupportedException("Only move is currently supported for drag/drop.");
             if (IsSorted)
                 throw new NotSupportedException("Drag/drop is not supported on sorted data.");
+            if (HasFilters())
+                throw new NotSupportedException("Drag/drop is not supported on filtered data.");
             if (position == TreeDataGridRowDropPosition.Inside)
                 throw new ArgumentException("Invalid drop position.", nameof(position));
             if (indexes.Any(x => x.Count != 1))
@@ -152,15 +173,44 @@ namespace Avalonia.Controls
                     foreach (var c in Columns)
                         c.SortDirection = c == column ? direction : null;
                 }
+
                 return true;
             }
 
             return false;
         }
 
+        public void Filter(IDictionary<IFilterableColumn, object?> conditions)
+        {
+            var newConditions = new Dictionary<IFilterableColumn<TModel>, object?>();
+            foreach (var condition in conditions)
+            {
+                newConditions.Add((IFilterableColumn<TModel>)condition.Key, condition.Value);
+            }
+            var filteredItems = _items.Where(item => PassesAllFilters(item, newConditions));
+            _itemsView = TreeDataGridItemsSourceView<TModel>.GetOrCreate(filteredItems);
+            _rows?.SetItems(_itemsView);
+            Filtered?.Invoke();
+        }
+
         IEnumerable<object> ITreeDataGridSource.GetModelChildren(object model)
         {
             return Enumerable.Empty<object>();
+        }
+
+
+        private bool PassesAllFilters(TModel model, Dictionary<IFilterableColumn<TModel>, object?> conditions)
+        {
+            // Check immutable filter system first (only apply active filters)
+            foreach (var kvp in conditions)
+            {
+                if (kvp.Key.IsFilterEnabled)
+                    if (!kvp.Key.PassesFilter(model, kvp.Value))
+                        return false;
+            }
+
+
+            return true;
         }
 
         private AnonymousSortableRows<TModel> CreateRows()

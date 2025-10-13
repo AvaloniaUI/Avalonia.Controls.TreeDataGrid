@@ -1,10 +1,12 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
+using Avalonia.Media;
 using ReactiveUI;
 using TreeDataGridDemo.Models;
+using TreeDataGridDemo.ViewModels;
 
 namespace TreeDataGridDemo.ViewModels
 {
@@ -21,18 +23,58 @@ namespace TreeDataGridDemo.ViewModels
             {
                 Columns =
                 {
-                    new TextColumn<Country, string>("Country", x => x.Name, (r, v) => r.Name = v, new GridLength(6, GridUnitType.Star), new()
-                    {
-                        IsTextSearchEnabled = true,
-                    }),
-                    new TemplateColumn<Country>("Region", "RegionCell", "RegionEditCell"),
-                    new TextColumn<Country, int>("Population", x => x.Population, new GridLength(3, GridUnitType.Star)),
-                    new TextColumn<Country, int>("Area", x => x.Area, new GridLength(3, GridUnitType.Star)),
-                    new TextColumn<Country, int>("GDP", x => x.GDP, new GridLength(3, GridUnitType.Star), new()
-                    {
-                        TextAlignment = Avalonia.Media.TextAlignment.Right,
-                        MaxWidth = new GridLength(150)
-                    }),
+                    // Text column with advanced filter
+                    new TextColumn<Country, string?>(
+                        "Country",
+                        x => x.Name,
+                        (r, v) => r.Name = v,
+                        new GridLength(6, GridUnitType.Star),
+                        new TextColumnOptions<Country>
+                        {
+                            IsTextSearchEnabled = true,
+                            IsFilterEnabled = true // This will create a TextFilter automatically
+                        }),
+
+                    // Use a template column with filtering for region
+                    new TemplateColumn<Country>(
+                        "Region",
+                        "RegionCell",
+                        "RegionEditCell",
+                        new GridLength(3, GridUnitType.Star),
+                        new TemplateColumnOptions<Country>
+                        {
+                            // Value selector for filtering
+                            FilterValueSelector = x => x.Region,
+                            Filter = new TextValueFilter(),
+                            FilterControlFactory = (col) => new TextFilterControl(col, "custom filter..."),
+                        }),
+
+                    // Population column with numeric filtering
+                    new TextColumn<Country, int>(
+                        "Population",
+                        x => x.Population,
+                        new GridLength(3, GridUnitType.Star),
+                        new TextColumnOptions<Country> { IsFilterEnabled = true }),
+
+                    // Area column with numeric filtering
+                    new TextColumn<Country, int>(
+                        "Area",
+                        x => x.Area,
+                        new GridLength(3, GridUnitType.Star),
+                        new TextColumnOptions<Country> { IsFilterEnabled = true, StringFormat = "{0:N0}" }),
+
+                    // GDP column
+                    new TextColumn<Country, int>(
+                        "GDP",
+                        x => x.GDP,
+                        new GridLength(3, GridUnitType.Star),
+                        new TextColumnOptions<Country>
+                        {
+                            TextAlignment = TextAlignment.Right,
+                            MaxWidth = new GridLength(150),
+                            IsFilterEnabled = true,
+                            StringFormat = "${0:N0}"
+                        }),
                 }
             };
             Source.RowSelection!.SingleSelect = false;

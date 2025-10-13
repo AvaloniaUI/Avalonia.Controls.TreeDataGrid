@@ -51,6 +51,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> ShowColumnHeadersProperty =
             AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(ShowColumnHeaders), true);
 
+        public static readonly StyledProperty<bool> ShowColumnFiltersProperty =
+            AvaloniaProperty.Register<TreeDataGrid, bool>(nameof(ShowColumnFilters), true);
+
         public static readonly DirectProperty<TreeDataGrid, ITreeDataGridSource?> SourceProperty =
             AvaloniaProperty.RegisterDirect<TreeDataGrid, ITreeDataGridSource?>(
                 nameof(Source),
@@ -156,6 +159,12 @@ namespace Avalonia.Controls
         {
             get => GetValue(ShowColumnHeadersProperty);
             set => SetValue(ShowColumnHeadersProperty, value);
+        }
+
+        public bool ShowColumnFilters
+        {
+            get => GetValue(ShowColumnFiltersProperty);
+            set => SetValue(ShowColumnFiltersProperty, value);
         }
 
         public ITreeDataGridCellSelectionModel? ColumnSelection => Source?.Selection as ITreeDataGridCellSelectionModel;

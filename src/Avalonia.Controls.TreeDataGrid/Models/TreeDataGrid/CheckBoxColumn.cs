@@ -8,7 +8,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
     /// A column in an <see cref="ITreeDataGridSource"/> which displays a check box.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
-    public class CheckBoxColumn<TModel> : ColumnBase<TModel, bool?>
+    public class CheckBoxColumn<TModel> : ColumnBase<TModel, bool?>, IFilterableColumn<TModel>
         where TModel : class
     {
         /// <summary>
@@ -88,6 +88,16 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             return setter is null ?
                 TypedBinding<TModel>.OneWay(g) :
                 TypedBinding<TModel>.TwoWay(g, (m, v) => setter(m, v ?? false));
+        }
+
+        public new CheckBoxColumnOptions<TModel> Options => (CheckBoxColumnOptions<TModel>)base.Options;
+
+        public bool IsFilterEnabled => Options?.IsFilterEnabled ?? false;
+
+        public bool PassesFilter(TModel model, object? condition)
+        {
+            var checked_ = ValueSelector(model);
+            return Options?.Filter?.Passes(condition, checked_) ?? true;
         }
     }
 }
