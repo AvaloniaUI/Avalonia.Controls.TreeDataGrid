@@ -26,6 +26,21 @@
           <Button Click="AddCountryClick">Add</Button>
           <Button Command="{Binding Countries.RemoveSelected}">Remove</Button>
         </StackPanel>
+        <DropDownButton Content="Columns Visibility"
+                        DockPanel.Dock="Top">
+            <DropDownButton.Flyout>
+                <Flyout Placement="Bottom">
+                    <ItemsControl ItemsSource="{Binding #countries.Columns}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsVisible}"
+                                          Content="{Binding Header,FallbackValue=none}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Flyout>
+            </DropDownButton.Flyout>
+        </DropDownButton>
         <TreeDataGrid Name="countries"
                       Source="{Binding Countries.Source}"
                       AutoDragDropRows="True">
