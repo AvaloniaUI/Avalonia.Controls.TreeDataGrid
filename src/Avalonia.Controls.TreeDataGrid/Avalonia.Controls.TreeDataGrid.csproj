@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net5.0;net6.0</TargetFrameworks>
     <IsPackable>True</IsPackable>
     <RootNamespace>Avalonia.Controls</RootNamespace>
   </PropertyGroup>
@@ -11,5 +11,14 @@
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
     
     <PackageReference Include="System.Reactive" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'netstandard2.0'">
+    <Compile Remove="StandardExtensions\**" />
+    <None Remove="StandardExtensions\**" />
   </ItemGroup>
 </Project>
