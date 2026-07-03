@@ -14,5 +14,7 @@
   <PropertyGroup>
     <AvaloniaVersion>11.0.0</AvaloniaVersion>
     <AvaloniaSamplesVersion>11.2.8</AvaloniaSamplesVersion>
+    <Version>11.1.0-cbuild20250522</Version>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 </Project>

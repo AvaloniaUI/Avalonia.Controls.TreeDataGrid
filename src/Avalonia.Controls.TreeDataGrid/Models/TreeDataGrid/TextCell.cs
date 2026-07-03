@@ -92,8 +92,8 @@ namespace Avalonia.Controls.Models.TreeDataGrid
         {
             if (!_isEditing && !IsReadOnly)
             {
-                _isEditing = true;
                 _editText = Text;
+                _isEditing = true;
             }
         }
 
@@ -103,6 +103,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
             {
                 _isEditing = false;
                 _editText = null;
+                RaisePropertyChanged(nameof(Value));
             }
         }
 
@@ -114,6 +115,7 @@ namespace Avalonia.Controls.Models.TreeDataGrid
                 _isEditing = false;
                 _editText = null;
                 Text = text;
+                RaisePropertyChanged(nameof(Value));
             }
         }
 
